@@ -28,30 +28,11 @@ import { getLowestDisplayValue } from '@/lib/utils'
 import { isLowestValue } from '@/lib/utils'
 import { abbreviateNumber } from '@/lib/utils'
 import { Button } from '../ui/button'
-import { TChain } from '@/types/chain'
 import { Check, Copy, LoaderCircle, LogOut } from 'lucide-react'
-
-interface TokenDetails {
-    symbol: string
-    address: string
-    positionAmount: string
-    positionAmountInUsd: string
-    logo: string
-    apy: number
-    price_usd: number
-}
-
-interface NetworkDetails {
-    name: string
-    logo: string
-    chainId: number
-}
 
 interface ProfileMenuDropdownProps {
     open: boolean
     setOpen: (open: boolean) => void
-    chains: TChain[]
-    tokens: TokenDetails[]
     displayText: string
     logout: () => Promise<void>
     walletAddress: string
@@ -60,8 +41,6 @@ interface ProfileMenuDropdownProps {
 export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
     open,
     setOpen,
-    chains,
-    tokens,
     displayText,
     walletAddress,
     logout,
