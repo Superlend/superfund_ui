@@ -1,0 +1,180 @@
+'use client'
+
+import { BodyText, HeadingText } from "@/components/ui/typography"
+import { getTokenLogo } from "@/lib/utils"
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card"
+import ImageWithDefault from "@/components/ImageWithDefault"
+import ExternalLink from "@/components/ExternalLink"
+import AllocationDetailsChart from "@/components/allocation-details-chart"
+import PerformanceHistoryChart from "@/components/performance-history-chart"
+import { Period } from "@/types/periodButtons"
+import { AllocationHistoryChart } from "@/components/allocation-history-chart"
+
+
+export default function VaultOverview() {
+    return (
+        <div className="flex flex-col gap-[40px]">
+            <section className="block flex flex-col gap-2" id="vault-information">
+                <HeadingText level="h4" weight="medium">
+                    Vault Information
+                </HeadingText>
+                <BodyText level="body1" weight="normal" className="text-gray-600">
+                    SuperUSD Vault is an automated yield vault built with Euler's EVT.
+                    It optimizes earnings by rebalancing deposits across USD-pegged assets like USDC and USDT,
+                    leveraging lending platforms like Aave, Compound, and Morpho for top APYs.
+                    Future updates will enable deposits as collateral, unlocking borrower integration and boosting returns.
+                </BodyText>
+            </section>
+            <section className="block flex flex-col gap-4" id="tokens-supported">
+                <HeadingText level="h4" weight="medium">
+                    Tokens Suported
+                </HeadingText>
+                <Card>
+                    <CardContent className="flex flex-col divide-y divide-gray-400 px-8 py-5">
+                        {
+                            ['USDC', 'USDT', 'DAI'].map((token) => (
+                                <div className="item flex items-center justify-between gap-[12px] py-6 first:pt-2 last:pb-2" key={token}>
+                                    <div className="flex items-center gap-2">
+                                        <ImageWithDefault
+                                            src={getTokenLogo(token)}
+                                            alt={token}
+                                            width={24}
+                                            height={24}
+                                        />
+                                        <BodyText level="body1" weight="medium">
+                                            {token}
+                                        </BodyText>
+                                    </div>
+                                    <ExternalLink href="/" className="font-medium">
+                                        Contract
+                                    </ExternalLink>
+                                </div>
+                            ))
+                        }
+                    </CardContent>
+                </Card>
+            </section>
+            <section className="block flex flex-col gap-4" id="rebalanced-across">
+                <HeadingText level="h4" weight="medium">
+                    Rebalanced Across
+                </HeadingText>
+                <Card>
+                    <CardContent className="p-5 flex items-center justify-around gap-4">
+                        {
+                            ['AAVE', 'EULER', 'MORPHO', 'FLUID'].map((token) => (
+                                <div className="item flex items-center gap-2" key={token}>
+                                    <ImageWithDefault
+                                        src={'/images/platforms/morpho.webp'}
+                                        alt={token}
+                                        width={24}
+                                        height={24}
+                                    />
+                                    <div className="flex items-center gap-1">
+                                        <ExternalLink
+                                            href="/"
+                                            className="font-medium text-gray-500 stroke-gray-600"
+                                            variant="ghost"
+                                            iconSize={14}
+                                        >
+                                            <BodyText level="body1" weight="medium">
+                                                {token}
+                                            </BodyText>
+                                        </ExternalLink>
+                                    </div>
+                                </div>
+                            ))
+                        }
+                    </CardContent>
+                </Card>
+            </section>
+            <PerformanceHistoryChart
+                selectedRange={Period.oneMonth}
+                handleRangeChange={() => { }}
+                selectedFilter={Period.oneMonth}
+                handleFilterChange={() => { }}
+                chartData={[]}
+                disableCategoryFilters={[]}
+            />
+            <AllocationDetailsChart />
+            <AllocationHistoryChart />
+            <section className="block flex flex-col gap-4">
+                <HeadingText level="h4" weight="medium">
+                    Additional Information
+                </HeadingText>
+                <Card>
+                    <CardContent className="px-9 py-8 bg-gray-100/50 divide-y divide-gray-400">
+                        <div className="row flex max-lg:flex-col gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
+                            <div className="col flex-1 flex items-center gap-2">
+                                <BodyText level="body1" weight="medium">
+                                    Audit Report
+                                </BodyText>
+                                <div className="h-[16px] w-[2px] bg-gray-500" />
+                                <BodyText level="body1" weight="medium">
+                                    Yauditors
+                                </BodyText>
+                            </div>
+
+                            <div className="col flex-1">
+                                <BodyText level="body2" weight="medium" className="text-gray-600 text-center">
+                                    20 Jan 2025
+                                </BodyText>
+                            </div>
+                            <div className="col flex-1 flex justify-end">
+                                <ExternalLink href="/" className="font-medium" variant="secondary">
+                                    <BodyText level="body2" weight="medium">
+                                        View Report
+                                    </BodyText>
+                                </ExternalLink>
+                            </div>
+                        </div>
+                        <div className="row flex max-lg:flex-col gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
+                            <div className="col flex-1 flex items-center gap-2">
+                                <BodyText level="body1" weight="medium">
+                                    Documentation
+                                </BodyText>
+                            </div>
+
+                            <div className="col flex-1">
+                                <BodyText level="body2" weight="medium" className="text-gray-600 text-center">
+                                    Updated Recently
+                                </BodyText>
+                            </div>
+                            <div className="col flex-1 flex justify-end">
+                                <ExternalLink href="/" className="font-medium" variant="secondary">
+                                    <BodyText level="body2" weight="medium">
+                                        View documentation
+                                    </BodyText>
+                                </ExternalLink>
+                            </div>
+                        </div>
+                        <div className="row flex max-lg:flex-col gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
+                            <div className="col flex-1 flex items-center gap-2">
+                                <BodyText level="body1" weight="medium">
+                                    Management Fees
+                                </BodyText>
+                            </div>
+
+                            <div className="col flex-1">
+                                <BodyText level="body2" weight="medium" className="text-gray-600 text-center">
+                                    Every Rebalance
+                                </BodyText>
+                            </div>
+                            <div className="col flex-1 flex justify-end">
+                                <BodyText level="body1" weight="medium">
+                                    10% of earnings
+                                </BodyText>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </section>
+        </div>
+    )
+}

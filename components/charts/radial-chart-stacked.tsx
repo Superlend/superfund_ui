@@ -27,7 +27,6 @@ import {
     isLowestValue,
 } from '@/lib/utils'
 import { useContext } from 'react'
-import { AssetsDataContext } from '@/context/data-provider'
 import AvatarCircles from '../ui/avatar-circles'
 import { Skeleton } from '../ui/skeleton'
 import { ChartPie } from 'lucide-react'
@@ -186,7 +185,11 @@ export function RadialChartStacked({
     data: TPortfolio
     isLoading: boolean
 }) {
-    const { allChainsData } = useContext(AssetsDataContext)
+    const allChainsData = [{
+        chain_id: 1,
+        name: 'Ethereum',
+        logo: '/images/chains/ethereum.webp'
+    }]
     const PLATFORMS_WITH_POSITIONS = data.platforms.filter(
         (platform) => platform.positions.length > 0
     )

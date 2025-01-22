@@ -9,7 +9,7 @@ export default function VaultStats() {
 
     return (
         <section>
-            <div className="flex items-center justify-around">
+            <div className="flex items-center justify-between gap-4 px-6">
                 <div className="block">
                     <BodyText level="body1" weight="normal" className="text-gray-600">
                         Spot APY
