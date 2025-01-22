@@ -1,6 +1,3 @@
-import BorrowButton from '../BorrowButton'
-import { PlatformType, PlatformValue } from '../../../types/platform'
-import { countCompoundDecimals } from '@/lib/utils'
 import WithdrawButton from '../WithdrawButton'
 import { TPositionType } from '@/types'
 import DepositButton from '../DepositButton'

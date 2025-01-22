@@ -1,6 +1,5 @@
 import MainContainer from '@/components/MainContainer'
 import React from 'react'
-import PageHeader from './page-header'
 import {
     Card,
     CardContent,
@@ -19,7 +18,6 @@ export default function SuperVaultPage() {
     return (
         <TxProvider>
             <MainContainer className="flex flex-col gap-[40px] w-full mx-auto my-24">
-                {/* <PageHeader /> */}
                 <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-[16px]">
                     <div className="flex flex-col gap-10">
                         <VaultStats />
