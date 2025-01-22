@@ -5,7 +5,7 @@ import { useVaultHook } from "@/hooks/vault_hooks/vaultHook";
 
 export default function VaultStats() {
 
-    const { totalAssets, isLoading, error } = useVaultHook()
+    const { totalAssets, spotApy, isLoading, error } = useVaultHook()
 
     return (
         <section>
@@ -15,7 +15,7 @@ export default function VaultStats() {
                         Spot APY
                     </BodyText>
                     <HeadingText level="h3" weight="medium">
-                        N/A%
+                        {spotApy}%
                     </HeadingText>
                 </div>
 
