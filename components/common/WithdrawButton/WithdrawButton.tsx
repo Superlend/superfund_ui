@@ -4,22 +4,21 @@ import {
     type BaseError,
     useAccount,
 } from 'wagmi'
-import COMPOUND_ABI from '@/data/abi/compoundABI.json'
-import AAVE_POOL_ABI from '@/data/abi/aavePoolABI.json'
 import { useCallback, useEffect } from 'react'
-import {
-    CONFIRM_ACTION_IN_WALLET_TEXT,
-    ERROR_TOAST_ICON_STYLES,
-    POOL_AAVE_MAP,
-    SOMETHING_WENT_WRONG_MESSAGE,
-    SUCCESS_MESSAGE,
-} from '../../../constants'
 import { parseUnits } from 'ethers/lib/utils'
 import { Button } from '@/components/ui/button'
 import { PlatformType, PlatformValue } from '@/types/platform'
 import CustomAlert from '@/components/alerts/CustomAlert'
 import { TWithdrawTx, TTxContext, useTxContext } from '@/context/super-vault-tx-provider'
 import { ArrowRightIcon } from 'lucide-react'
+import { USDC_DECIMALS, VAULT_ADDRESS } from '@/lib/constants'
+import { parseAbi } from 'viem'
+import { usePrivy } from '@privy-io/react-auth'
+
+const VAULT_ABI = parseAbi([
+    'function withdraw(uint256 _assets, address _receiver, address _owner) returns (uint256)'
+]);
+
 interface IWithdrawButtonProps {
     disabled: boolean
     asset: any
@@ -40,7 +39,7 @@ const WithdrawButton = ({
         error,
     } = useWriteContract()
     const { withdrawTx, setWithdrawTx } = useTxContext() as TTxContext
-
+    const { address: walletAddress } = useAccount()
     const txBtnStatus: Record<string, string> = {
         pending: 'Withdrawing...',
         confirming: 'Confirming...',
@@ -106,12 +105,22 @@ const WithdrawButton = ({
 
     const handleWithdrawSuperVault = useCallback(
         async () => {
+
+            // const { user } = usePrivy()
+            // const walletAddress = user?.wallet?.address
+
+            // console.log("walletAddress", walletAddress)
+
+            const amountInWei = parseUnits(amount, USDC_DECIMALS)
+
+            console.log("amount", amountInWei.toBigInt())
+
             try {
                 writeContractAsync({
-                    address: asset.core_contract as `0x${string}`,
-                    abi: [],
-                    functionName: 'withdrawCollateral',
-                    args: [],
+                    address: VAULT_ADDRESS as `0x${string}`,
+                    abi: VAULT_ABI,
+                    functionName: 'withdraw',
+                    args: [amountInWei.toBigInt(), walletAddress as `0x${string}`, walletAddress as `0x${string}`],
                 })
             } catch (error) {
                 error

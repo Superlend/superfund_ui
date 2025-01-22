@@ -1,7 +1,7 @@
 import { WarningMessages } from '@/constants'
 import { Period } from './periodButtons'
 
-export type TPositionType = 'lend' | 'borrow'
+export type TPositionType = 'deposit' | 'withdraw'
 export type TActionType = 'lend' | 'borrow' | 'withdraw' | 'repay'
 
 export type TToken = {

@@ -6,28 +6,21 @@ import { Button } from '@/components/ui/button'
 import {
     Card,
     CardContent,
-    CardDescription,
     CardFooter,
-    CardHeader,
-    CardTitle,
 } from '@/components/ui/card'
 import { TPositionType } from '@/types'
-import { PlatformType, TPlatformAsset } from '@/types/platform'
+import { TPlatformAsset } from '@/types/platform'
 import {
     ArrowRightIcon,
     ArrowUpRightIcon,
-    CircleCheck,
     CircleCheckIcon,
     CircleXIcon,
     LoaderCircle,
     X,
 } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
-import { useMemo, useState, useEffect } from 'react'
-import { useSwitchChain } from 'wagmi'
+import { useState, useEffect } from 'react'
 import {
     abbreviateNumber,
-    checkDecimalPlaces,
     decimalPlacesCount,
     getLowestDisplayValue,
     hasExponent,
@@ -38,26 +31,19 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ChevronDownIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Skeleton } from '@/components/ui/skeleton'
 import CustomNumberInput from '@/components/inputs/CustomNumberInput'
-import { useAccount } from 'wagmi'
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogHeader,
-    DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import LoadingSectionSkeleton from '@/components/skeletons/LoadingSection'
 import {
-    TOO_MANY_DECIMALS_VALIDATIONS_TEXT,
     TX_EXPLORER_LINKS,
 } from '@/constants'
 import ActionButton from '@/components/common/ActionButton'
@@ -67,28 +53,30 @@ import {
     TTxContext,
     useTxContext,
 } from '@/context/super-vault-tx-provider'
-import { PlatformValue } from '@/types/platform'
-import ConnectWalletButton from '@/components/ConnectWalletButton'
 import { BigNumber } from 'ethers'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import CustomAlert from '@/components/alerts/CustomAlert'
-import { Checkbox } from '@/components/ui/checkbox'
 import useDimensions from '@/hooks/useDimensions'
 import {
     Drawer,
-    DrawerClose,
     DrawerContent,
-    DrawerDescription,
-    DrawerFooter,
     DrawerHeader,
-    DrawerTitle,
     DrawerTrigger,
 } from '@/components/ui/drawer'
 import { ChainId } from '@/types/chain'
+import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
+import { usePrivy } from '@privy-io/react-auth'
 
 export default function DepositAndWithdrawAssets() {
-    const [positionType, setPositionType] = useState<TPositionType>('lend')
+    const [positionType, setPositionType] = useState<TPositionType>('deposit')
     const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] = useState<boolean>(false)
+
+    const [userEnteredDepositAmount, setUserEnteredDepositAmount] = useState<string>('')
+    const [userEnteredWithdrawAmount, setUserEnteredWithdrawAmount] = useState<string>('')
+
+    const { user } = usePrivy()
+    const walletAddress = user?.wallet?.address
+
+    const { balance, userMaxWithdrawAmount, isLoading, error } = useUserBalance(walletAddress as `0x${string}`)
 
     // Render component
     return (
@@ -96,7 +84,7 @@ export default function DepositAndWithdrawAssets() {
             <LendBorrowToggle
                 type={positionType}
                 handleToggle={setPositionType}
-                title={{ lend: 'Deposit', borrow: 'Withdraw' }}
+                title={{ deposit: 'Deposit', withdraw: 'Withdraw' }}
             />
             <Card className="flex flex-col gap-[12px] p-[16px]">
                 <div className="flex items-center justify-between px-[14px]">
@@ -105,7 +93,7 @@ export default function DepositAndWithdrawAssets() {
                         weight="normal"
                         className="capitalize text-gray-600"
                     >
-                        {positionType === 'lend'
+                        {positionType === 'deposit'
                             ? 'Deposit'
                             : `Withdraw`}
                     </BodyText>
@@ -115,9 +103,25 @@ export default function DepositAndWithdrawAssets() {
                         className="capitalize text-gray-600 flex items-center gap-[4px]"
                     >
                         Bal:{' '}
-                        [BALANCE]
+                        {isLoading ? (
+                            <LoaderCircle className="text-primary w-4 h-4 animate-spin" />
+                        ) : (
+                            abbreviateNumber(
+                                Number(
+                                    getLowestDisplayValue(
+                                        Number(
+                                            isDepositPositionType(positionType)
+                                                ? balance ?? 0
+                                                : userMaxWithdrawAmount ?? 0
+                                        ),
+                                        2
+                                    )
+                                ),
+                                2
+                            )
+                        )}
                         <span className="inline-block truncate max-w-[70px]">
-                            [tokenSymbol]
+                            USDC
                         </span>
                     </BodyText>
                 </div>
@@ -132,33 +136,12 @@ export default function DepositAndWithdrawAssets() {
                     >
                         {/* Single token */}
                         <ImageWithDefault
-                            src={''}
+                            src={'https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg'}
                             alt={''}
                             className="shrink-0 w-[24px] h-[24px] rounded-full"
                             width={24}
                             height={24}
                         />
-                        {/* )} */}
-                        {/* Borrow position type - Select token dropdown */}
-                        {/* {(isLoading ||
-                            !selectedBorrowTokenDetails?.token?.address) &&
-                            !isLendPositionType(positionType) && (
-                                <LoaderCircle className="text-primary w-[60px] h-[34px] animate-spin" />
-                            )} */}
-                        {/* {!isLoading &&
-                            !!selectedBorrowTokenDetails?.token?.address &&
-                            !isLendPositionType(positionType) && (
-                                <SelectTokensDropdown
-                                    key={positionType}
-                                    options={borrowTokensDetails}
-                                    selectedItemDetails={
-                                        selectedBorrowTokenDetails
-                                    }
-                                    setSelectedItemDetails={
-                                        setSelectedBorrowTokenDetails
-                                    }
-                                />
-                            )} */}
                         <BodyText
                             level="body2"
                             weight="normal"
@@ -169,12 +152,13 @@ export default function DepositAndWithdrawAssets() {
                         <div className="flex flex-col flex-1 gap-[4px]">
                             <CustomNumberInput
                                 key={'true'}
-                                amount={'10'}
-                                setAmount={() => { }}
+                                amount={isDepositPositionType(positionType) ? userEnteredDepositAmount : userEnteredWithdrawAmount}
+                                setAmount={isDepositPositionType(positionType) ? setUserEnteredDepositAmount : setUserEnteredWithdrawAmount}
                             />
                         </div>
                         <Button
                             variant="link"
+                            onClick={() => isDepositPositionType(positionType) ? setUserEnteredDepositAmount(balance) : setUserEnteredWithdrawAmount(userMaxWithdrawAmount)}
                             className="uppercase text-[14px] font-medium w-fit"
                         >
                             max
@@ -198,14 +182,14 @@ export default function DepositAndWithdrawAssets() {
                             assetDetails={
                                 {}
                             }
-                            amount={'10'}
-                            balance={'10'}
+                            amount={isDepositPositionType(positionType) ? userEnteredDepositAmount : userEnteredWithdrawAmount}
+                            balance={isDepositPositionType(positionType) ? balance : userMaxWithdrawAmount}
                             maxBorrowAmount={'10'}
-                            setAmount={() => { }}
+                            setAmount={isDepositPositionType(positionType) ? setUserEnteredDepositAmount : setUserEnteredWithdrawAmount}
                             healthFactorValues={
                                 {
-                                    healthFactor: 10,
-                                    newHealthFactor: 10,
+                                    healthFactor: 0,
+                                    newHealthFactor: 0,
                                 }
                             }
                             open={isConfirmationDialogOpen}
@@ -293,7 +277,6 @@ export function ConfirmationDialogForSuperVault({
     balance,
     maxBorrowAmount,
     healthFactorValues,
-    isVault,
     open,
     setOpen,
     setActionType,
@@ -325,6 +308,9 @@ export function ConfirmationDialogForSuperVault({
             resetDepositWithdrawTx()
         }
     }, [])
+
+    const { user } = usePrivy()
+    const walletAddress = user?.wallet?.address
 
     function resetDepositWithdrawTx() {
         setDepositTx((prev: TDepositTx) => ({
@@ -363,7 +349,7 @@ export function ConfirmationDialogForSuperVault({
     }
 
     function isShowBlock(status: { deposit: boolean; withdraw: boolean }) {
-        return isLendPositionType(positionType) ? status.deposit : status.withdraw
+        return isDepositPositionType(positionType) ? status.deposit : status.withdraw
     }
 
     const inputUsdAmount =
@@ -391,11 +377,11 @@ export function ConfirmationDialogForSuperVault({
     const withdrawTxSpinnerColor = withdrawTx.isPending
         ? 'text-secondary-500'
         : 'text-primary'
-    const txSpinnerColor = isLendPositionType(positionType)
+    const txSpinnerColor = isDepositPositionType(positionType)
         ? depositTxSpinnerColor
         : withdrawTxSpinnerColor
 
-    const canDisplayExplorerLinkWhileLoading = isLendPositionType(positionType)
+    const canDisplayExplorerLinkWhileLoading = isDepositPositionType(positionType)
         ? depositTx.hash.length > 0 && (depositTx.isConfirming || depositTx.isPending)
         : withdrawTx.hash.length > 0 &&
         (withdrawTx.isConfirming || withdrawTx.isPending)
@@ -419,9 +405,9 @@ export function ConfirmationDialogForSuperVault({
         )
     }
 
-    const disableActionButton =
-        disabled ||
-        (!isLendPositionType(positionType) && isHfLow())
+    // const disableActionButton =
+    //     disabled ||
+    //     (!isDepositPositionType(positionType) && isHfLow())
 
     // SUB_COMPONENT: Trigger button to open the dialog
     const triggerButton = (
@@ -432,7 +418,7 @@ export function ConfirmationDialogForSuperVault({
             className="group flex items-center gap-[4px] py-[13px] w-full rounded-5"
         >
             <span className="uppercase leading-[0]">
-                {isLendPositionType(positionType)
+                {positionType === 'deposit'
                     ? 'Deposit'
                     : 'Withdraw'}
             </span>
@@ -471,11 +457,11 @@ export function ConfirmationDialogForSuperVault({
                 {getTxInProgressText({
                     amount,
                     tokenName: assetDetails?.asset?.token?.symbol,
-                    txStatus: isLendPositionType(positionType)
+                    txStatus: isDepositPositionType(positionType)
                         ? depositTx
                         : withdrawTx,
                     positionType,
-                    actionTitle: isLendPositionType(positionType)
+                    actionTitle: isDepositPositionType(positionType)
                         ? 'deposit'
                         : 'withdraw',
                 })}
@@ -497,7 +483,7 @@ export function ConfirmationDialogForSuperVault({
                         >
                             <a
                                 href={getExplorerLink(
-                                    isLendPositionType(positionType)
+                                    isDepositPositionType(positionType)
                                         ? depositTx.hash
                                         : withdrawTx.hash,
                                     assetDetails?.chain_id ||
@@ -508,7 +494,7 @@ export function ConfirmationDialogForSuperVault({
                                 className="text-secondary-500"
                             >
                                 {getTruncatedTxHash(
-                                    isLendPositionType(positionType)
+                                    isDepositPositionType(positionType)
                                         ? depositTx.hash
                                         : withdrawTx.hash
                                 )}
@@ -538,7 +524,7 @@ export function ConfirmationDialogForSuperVault({
                         weight="medium"
                         className="text-gray-800 text-center capitalize"
                     >
-                        Confirm {isLendPositionType(positionType)
+                        Confirm {isDepositPositionType(positionType)
                             ? 'Deposit'
                             : `Withdraw`}
                     </HeadingText>
@@ -576,7 +562,7 @@ export function ConfirmationDialogForSuperVault({
                                     variant={isTxFailed ? 'destructive' : 'green'}
                                     className="capitalize flex items-center gap-[4px] font-medium text-[14px]"
                                 >
-                                    {isLendPositionType(positionType) &&
+                                    {isDepositPositionType(positionType) &&
                                         depositTx.status === 'view'
                                         ? 'Deposit'
                                         : 'Withdraw'}{' '}
@@ -664,7 +650,7 @@ export function ConfirmationDialogForSuperVault({
                     withdraw: false,
                 }) && (
                         <div
-                            className={`flex items-center ${isLendPositionType(positionType) ? 'justify-end' : 'justify-between'} px-[24px] mb-[4px] gap-1`}
+                            className={`flex items-center ${isDepositPositionType(positionType) ? 'justify-end' : 'justify-between'} px-[24px] mb-[4px] gap-1`}
                         >
                             <BodyText
                                 level="body2"
@@ -701,7 +687,7 @@ export function ConfirmationDialogForSuperVault({
                                 </BodyText>
                                 <Badge variant="green">
                                     {abbreviateNumber(
-                                        isLendPositionType(positionType)
+                                        isDepositPositionType(positionType)
                                             ? Number(
                                                 (assetDetails?.asset?.apy ||
                                                     assetDetails?.asset
@@ -837,7 +823,7 @@ export function ConfirmationDialogForSuperVault({
                                     >
                                         <a
                                             href={getExplorerLink(
-                                                isLendPositionType(positionType)
+                                                isDepositPositionType(positionType)
                                                     ? depositTx.hash
                                                     : withdrawTx.hash,
                                                 assetDetails?.chain_id ||
@@ -848,7 +834,7 @@ export function ConfirmationDialogForSuperVault({
                                             className="text-secondary-500"
                                         >
                                             {getTruncatedTxHash(
-                                                isLendPositionType(positionType)
+                                                isDepositPositionType(positionType)
                                                     ? depositTx.hash
                                                     : withdrawTx.hash
                                             )}
@@ -862,27 +848,17 @@ export function ConfirmationDialogForSuperVault({
                                 </div>
                             </div>
                         )}
-                    {/* <div className="flex items-center justify-between w-full py-[16px]">
-                                <BodyText level="body2" weight="normal" className="text-gray-600">
-                                    View on explorer
-                                </BodyText>
-                                <div className="flex items-center gap-[4px]">
-                                    <BodyText level="body2" weight="normal" className="text-gray-800">
-                                        0
-                                    </BodyText>
-                                    <ImageWithDefault src={'/images/tokens/eth.webp'} alt={"Ethereum"} width={16} height={16} className='rounded-full max-w-[16px] max-h-[16px]' />
-                                </div>
-                            </div> */}
                 </div>
                 {/* Block 4 */}
                 <div className={`${isTxInProgress ? 'invisible h-0' : ''}`}>
                     <ActionButton
-                        disabled={disableActionButton}
+                        disabled={false}
                         handleCloseModal={handleOpenChange}
                         asset={assetDetails}
                         amount={amount}
                         setActionType={setActionType}
                         actionType={positionType}
+                        walletAddress={walletAddress as `0x${string}`}
                     />
                 </div>
             </div>
@@ -934,8 +910,8 @@ export function ConfirmationDialogForSuperVault({
     )
 }
 
-function isLendPositionType(positionType: TPositionType) {
-    return positionType === 'lend'
+function isDepositPositionType(positionType: TPositionType) {
+    return positionType === 'deposit'
 }
 
 function getExplorerLink(hash: string, chainId: ChainId) {

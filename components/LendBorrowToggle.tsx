@@ -8,29 +8,29 @@ type TProps = {
     handleToggle: (positionType: TPositionType) => void
     addCollateral?: boolean
     title?: {
-        lend?: string
-        borrow?: string
+        deposit?: string
+        withdraw?: string
     }
     showTab?: {
-        lend?: boolean
-        borrow?: boolean
+        deposit?: boolean
+        withdraw?: boolean
     }
 }
 
 const titleInitial = {
-    lend: 'Lend',
-    borrow: 'Borrow',
+    deposit: 'Deposit',
+    withdraw: 'Withdraw',
 }
 
 const showTabInitial = {
-    lend: true,
-    borrow: true,
+    deposit: true,
+    withdraw: true,
 }
 
 const LendBorrowToggle = ({ type, handleToggle, title, showTab }: TProps) => {
     const positionType = {
-        lend: 'lend',
-        borrow: 'borrow',
+        deposit: 'deposit',
+        withdraw: 'withdraw',
     }
 
     function checkType(typeToMatch: TPositionType): boolean {
@@ -44,24 +44,24 @@ const LendBorrowToggle = ({ type, handleToggle, title, showTab }: TProps) => {
 
     return (
         <div className="flex gap-1 items-center w-full p-[4px] tracking-normal leading-tight uppercase whitespace-nowrap rounded-4 text-stone-800 bg-white bg-opacity-40 shadow-[0px_2px_2px_rgba(0,0,0,0.02)]">
-            {(showTab ? showTab?.lend : showTabInitial.lend) && (
+            {(showTab ? showTab?.deposit : showTabInitial.deposit) && (
                 <Button
-                    variant={checkType('lend') ? 'primary' : 'ghost'}
+                    variant={checkType('deposit') ? 'primary' : 'ghost'}
                     size="sm"
-                    onClick={() => handleToggle('lend')}
-                    className={`${BUTTON_DEFAULT_STYLE} ${checkType('lend') ? BUTTON_ACTIVE_STYLE : ''}`}
+                    onClick={() => handleToggle('deposit')}
+                    className={`${BUTTON_DEFAULT_STYLE} ${checkType('deposit') ? BUTTON_ACTIVE_STYLE : ''}`}
                 >
-                    {title?.lend || titleInitial.lend}
+                    {title?.deposit || titleInitial.deposit}
                 </Button>
             )}
-            {(showTab ? showTab?.borrow : showTabInitial.borrow) && (
+            {(showTab ? showTab?.withdraw : showTabInitial.withdraw) && (
                 <Button
-                    variant={checkType('borrow') ? 'primary' : 'ghost'}
+                    variant={checkType('withdraw') ? 'primary' : 'ghost'}
                     size="sm"
-                    onClick={() => handleToggle('borrow')}
-                    className={`${BUTTON_DEFAULT_STYLE} ${checkType('borrow') ? BUTTON_ACTIVE_STYLE : ''}`}
+                    onClick={() => handleToggle('withdraw')}
+                    className={`${BUTTON_DEFAULT_STYLE} ${checkType('withdraw') ? BUTTON_ACTIVE_STYLE : ''}`}
                 >
-                    {title?.borrow || titleInitial.borrow}
+                    {title?.withdraw || titleInitial.withdraw}
                 </Button>
             )}
         </div>
