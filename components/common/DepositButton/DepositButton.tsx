@@ -1,19 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-    BaseError,
     useAccount,
     useConnect,
     useWaitForTransactionReceipt,
     useWriteContract,
 } from 'wagmi'
-import AAVE_APPROVE_ABI from '@/data/abi/aaveApproveABI.json'
-import AAVE_POOL_ABI from '@/data/abi/aavePoolABI.json'
-// import CustomButton from '@/components/ui/CustomButton'
-// import { getActionName } from '@/lib/getActionName'
-// import { Action } from '@/types/assetsTable'
-// import { AddressType } from '@/types/address'
 import { parseUnits } from 'ethers/lib/utils'
-// import toast from 'react-hot-toast'
 import {
     APPROVE_MESSAGE,
     CONFIRM_ACTION_IN_WALLET_TEXT,
@@ -21,16 +13,13 @@ import {
     SOMETHING_WENT_WRONG_MESSAGE,
     SUCCESS_MESSAGE,
 } from '@/constants'
-// import { getErrorText } from '@/lib/getErrorText'
 import { Button } from '@/components/ui/button'
-import { useSearchParams } from 'next/navigation'
-import { TLendTx, TTxContext, useTxContext } from '@/context/tx-provider'
+import { TDepositTx, TTxContext, useTxContext } from '@/context/super-vault-tx-provider'
 import CustomAlert from '@/components/alerts/CustomAlert'
 import { ArrowRightIcon } from 'lucide-react'
 import { BigNumber } from 'ethers'
 import { getErrorText } from '@/lib/getErrorText'
 import { BodyText } from '@/components/ui/typography'
-// import { useCreatePendingToast } from '@/hooks/useCreatePendingToast'
 
 interface IDepositButtonProps {
     disabled: boolean
@@ -64,7 +53,7 @@ const DepositButton = ({
     // const { createToast } = useCreatePendingToast()
     const { isConnected } = useAccount()
     const { connect, connectors } = useConnect()
-    const { lendTx, setLendTx } = useTxContext() as TTxContext
+    const { depositTx, setDepositTx } = useTxContext() as TTxContext
 
     const amountBN = useMemo(() => {
         return amount ? parseUnits(amount, decimals) : BigNumber.from(0)
@@ -72,12 +61,12 @@ const DepositButton = ({
 
     const txBtnStatus: Record<string, string> = {
         pending:
-            lendTx.status === 'approve'
+            depositTx.status === 'approve'
                 ? 'Approving token...'
                 : 'Lending token...',
         confirming: 'Confirming...',
         success: 'Close',
-        default: lendTx.status === 'approve' ? 'Approve token' : 'Lend token',
+        default: depositTx.status === 'approve' ? 'Approve token' : 'Deposit token',
     }
 
     const getTxButtonText = (
@@ -89,12 +78,12 @@ const DepositButton = ({
             isConfirming
                 ? 'confirming'
                 : isConfirmed
-                  ? lendTx.status === 'view'
-                      ? 'success'
-                      : 'default'
-                  : isPending
-                    ? 'pending'
-                    : 'default'
+                    ? depositTx.status === 'view'
+                        ? 'success'
+                        : 'default'
+                    : isPending
+                        ? 'pending'
+                        : 'default'
         ]
     }
 
@@ -102,33 +91,28 @@ const DepositButton = ({
 
     const supply = useCallback(async () => {
         try {
-            setLendTx((prev: TLendTx) => ({
+            setDepositTx((prev: TDepositTx) => ({
                 ...prev,
-                status: 'lend',
+                status: 'deposit',
                 hash: '',
                 errorMessage: '',
             }))
 
             writeContractAsync({
                 address: poolContractAddress,
-                abi: AAVE_POOL_ABI,
-                functionName: 'supply',
-                args: [
-                    underlyingAssetAdress,
-                    parseUnits(amount, decimals),
-                    walletAddress,
-                    0,
-                ],
+                abi: [],
+                functionName: 'deposit',
+                args: [],
             })
                 .then((data) => {
-                    setLendTx((prev: TLendTx) => ({
+                    setDepositTx((prev: TDepositTx) => ({
                         ...prev,
                         status: 'view',
                         errorMessage: '',
                     }))
                 })
                 .catch((error) => {
-                    setLendTx((prev: TLendTx) => ({
+                    setDepositTx((prev: TDepositTx) => ({
                         ...prev,
                         isPending: false,
                         isConfirming: false,
@@ -148,7 +132,7 @@ const DepositButton = ({
     ])
 
     useEffect(() => {
-        setLendTx((prev: TLendTx) => ({
+        setDepositTx((prev: TDepositTx) => ({
             ...prev,
             isPending: isPending,
             isConfirming: isConfirming,
@@ -158,18 +142,18 @@ const DepositButton = ({
     }, [isPending, isConfirming, isConfirmed])
 
     useEffect(() => {
-        if (lendTx.status === 'view') return
+        if (depositTx.status === 'view') return
 
-        if (!lendTx.isConfirmed && !lendTx.isPending && !lendTx.isConfirming) {
-            if (lendTx.allowanceBN.gte(amountBN)) {
-                setLendTx((prev: TLendTx) => ({
+        if (!depositTx.isConfirmed && !depositTx.isPending && !depositTx.isConfirming) {
+            if (depositTx.allowanceBN.gte(amountBN)) {
+                setDepositTx((prev: TDepositTx) => ({
                     ...prev,
-                    status: 'lend',
+                    status: 'deposit',
                     hash: '',
                     errorMessage: '',
                 }))
             } else {
-                setLendTx((prev: TLendTx) => ({
+                setDepositTx((prev: TDepositTx) => ({
                     ...prev,
                     status: 'approve',
                     hash: '',
@@ -177,22 +161,22 @@ const DepositButton = ({
                 }))
             }
         }
-    }, [lendTx.allowanceBN])
+    }, [depositTx.allowanceBN])
 
     useEffect(() => {
-        if ((lendTx.status === 'approve' || lendTx.status === 'lend') && hash) {
-            setLendTx((prev: TLendTx) => ({
+        if ((depositTx.status === 'approve' || depositTx.status === 'deposit') && hash) {
+            setDepositTx((prev: TDepositTx) => ({
                 ...prev,
                 hash: hash || '',
             }))
         }
-        if (lendTx.status === 'view' && hash) {
-            setLendTx((prev: TLendTx) => ({
+        if (depositTx.status === 'view' && hash) {
+            setDepositTx((prev: TDepositTx) => ({
                 ...prev,
                 hash: hash || '',
             }))
         }
-    }, [hash, lendTx.status])
+    }, [hash, depositTx.status])
 
     const onApproveSupply = async () => {
         // if (!isConnected) {
@@ -208,7 +192,7 @@ const DepositButton = ({
         // }
 
         try {
-            setLendTx((prev: TLendTx) => ({
+            setDepositTx((prev: TDepositTx) => ({
                 ...prev,
                 status: 'approve',
                 hash: '',
@@ -217,11 +201,11 @@ const DepositButton = ({
 
             writeContractAsync({
                 address: underlyingAssetAdress,
-                abi: AAVE_APPROVE_ABI,
+                abi: [],
                 functionName: 'approve',
                 args: [poolContractAddress, parseUnits(amount, decimals)],
             }).catch((error) => {
-                setLendTx((prev: TLendTx) => ({
+                setDepositTx((prev: TDepositTx) => ({
                     ...prev,
                     isPending: false,
                     isConfirming: false,
@@ -234,7 +218,7 @@ const DepositButton = ({
 
     return (
         <div className="flex flex-col gap-2">
-            {lendTx.status === 'approve' && (
+            {depositTx.status === 'approve' && (
                 <CustomAlert
                     variant="info"
                     hasPrefixIcon={false}
@@ -269,18 +253,18 @@ const DepositButton = ({
                     }
                 />
             )}
-            {lendTx.errorMessage.length > 0 && (
-                <CustomAlert description={lendTx.errorMessage} />
+            {depositTx.errorMessage.length > 0 && (
+                <CustomAlert description={depositTx.errorMessage} />
             )}
             <Button
                 disabled={
                     (isPending || isConfirming || disabled) &&
-                    lendTx.status !== 'view'
+                    depositTx.status !== 'view'
                 }
                 onClick={() => {
-                    if (lendTx.status === 'approve') {
+                    if (depositTx.status === 'approve') {
                         onApproveSupply()
-                    } else if (lendTx.status === 'lend') {
+                    } else if (depositTx.status === 'deposit') {
                         supply()
                     } else {
                         handleCloseModal(false)
@@ -290,7 +274,7 @@ const DepositButton = ({
                 variant="primary"
             >
                 {txBtnText}
-                {lendTx.status !== 'view' && !isPending && !isConfirming && (
+                {depositTx.status !== 'view' && !isPending && !isConfirming && (
                     <ArrowRightIcon
                         width={16}
                         height={16}

@@ -11,8 +11,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card'
-import useGetPlatformData from '@/hooks/useGetPlatformData'
-import useGetPortfolioData from '@/hooks/useGetPortfolioData'
 import { TPositionType } from '@/types'
 import { PlatformType, TPlatformAsset } from '@/types/platform'
 import {
@@ -47,9 +45,7 @@ import { ChevronDownIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 import CustomNumberInput from '@/components/inputs/CustomNumberInput'
-import AAVE_POOL_ABI from '@/data/abi/aaveApproveABI.json'
-import { Config, useAccount, useReadContract } from 'wagmi'
-import { formatUnits, parseUnits } from 'ethers/lib/utils'
+import { useAccount } from 'wagmi'
 import {
     Dialog,
     DialogContent,
@@ -61,8 +57,6 @@ import {
 import { Badge } from '@/components/ui/badge'
 import LoadingSectionSkeleton from '@/components/skeletons/LoadingSection'
 import {
-    CHAIN_ID_MAPPER,
-    POOL_BASED_PROTOCOLS,
     TOO_MANY_DECIMALS_VALIDATIONS_TEXT,
     TX_EXPLORER_LINKS,
 } from '@/constants'
@@ -75,12 +69,8 @@ import {
 } from '@/context/super-vault-tx-provider'
 import { PlatformValue } from '@/types/platform'
 import ConnectWalletButton from '@/components/ConnectWalletButton'
-import { useAaveV3Data } from '../../hooks/protocols/useAaveV3Data'
 import { BigNumber } from 'ethers'
-import { useUserTokenBalancesContext } from '@/context/user-token-balances-provider'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { calculateHealthFactorFromBalancesBigUnits } from '@aave/math-utils'
-import { valueToBigNumber } from '@aave/math-utils'
 import CustomAlert from '@/components/alerts/CustomAlert'
 import { Checkbox } from '@/components/ui/checkbox'
 import useDimensions from '@/hooks/useDimensions'
@@ -94,11 +84,7 @@ import {
     DrawerTitle,
     DrawerTrigger,
 } from '@/components/ui/drawer'
-// import { modal } from '@/context'
-import { polygon } from '@reown/appkit/networks'
 import { ChainId } from '@/types/chain'
-import { useSetActiveWallet } from '@privy-io/wagmi'
-import { usePrivy, useWallets } from '@privy-io/react-auth'
 
 export default function DepositAndWithdrawAssets() {
     const [positionType, setPositionType] = useState<TPositionType>('lend')
@@ -130,18 +116,10 @@ export default function DepositAndWithdrawAssets() {
                     >
                         Bal:{' '}
                         [BALANCE]
-                        {/* <span className="inline-block truncate max-w-[70px]">
+                        <span className="inline-block truncate max-w-[70px]">
                             [tokenSymbol]
-                        </span> */}
+                        </span>
                     </BodyText>
-                    {/* <BodyText
-                        level="body2"
-                        weight="normal"
-                        className="capitalize text-gray-600 flex items-center gap-[4px]"
-                    >
-                        limit:{' '}
-                        [MAX_AMOUNT_TO_BORROW]
-                    </BodyText> */}
                 </div>
                 <CardContent className="p-0 bg-white rounded-5">
                     <div
@@ -152,11 +130,7 @@ export default function DepositAndWithdrawAssets() {
                             'border-gray-200 py-[12px] px-[20px] flex items-center gap-[12px]'
                         )}
                     >
-                        {/* {isLoading && (
-                            <Skeleton className="shrink-0 w-[24px] h-[24px] rounded-full" />
-                        )} */}
-                        {/* Lend position type - Selected token image */}
-                        {/* {!isLoading && isLendPositionType(positionType) && ( */}
+                        {/* Single token */}
                         <ImageWithDefault
                             src={''}
                             alt={''}
@@ -202,90 +176,23 @@ export default function DepositAndWithdrawAssets() {
                         <Button
                             variant="link"
                             className="uppercase text-[14px] font-medium w-fit"
-                        // onClick={() =>
-                        //     setAmount(
-                        //         isLendPositionType(positionType)
-                        //             ? (balance ?? '0')
-                        //             : (maxBorrowAmount ?? '0')
-                        //     )
-                        // }
-                        // disabled={isDisabledMaxBtn()}
                         >
                             max
                         </Button>
                     </div>
-                    {/* Net APY - ONLY FOR BORROW TAB */}
-                    {/* {!isLendPositionType(positionType) && isWalletConnected && (
-                        <div className="flex items-center justify-between w-full py-[12px] px-[24px] rounded-b-5 bg-white border-y border-gray-200 shadow-[0px_4px_16px_rgba(0,0,0,0.04)]">
-                            <BodyText
-                                level="body3"
-                                weight="normal"
-                                className="text-gray-600"
-                            >
-                                Net APY
-                            </BodyText>
-                            {isLoadingMaxBorrowingAmount && (
-                                <Skeleton className="w-[50px] h-[20px]" />
-                            )}
-                            {!isLoadingMaxBorrowingAmount && (
-                                <Badge variant="green">
-                                    {abbreviateNumber(
-                                        isLendPositionType(positionType)
-                                            ? Number(
-                                                  assetDetails?.asset?.apy ?? 0
-                                              )
-                                            : Number(
-                                                  selectedBorrowTokenDetails?.variable_borrow_apy ??
-                                                      0
-                                              )
-                                    )}
-                                    %
-                                </Badge>
-                            )}
-                        </div>
-                    )} */}
-                    {/* {isWalletConnected && ( */}
-                    {/* <div className="card-content-bottom max-md:px-2 py-3 max-w-[250px] mx-auto">
-                            {isLoadingHelperText && (
-                                <BodyText
-                                    level="body2"
-                                    weight="normal"
-                                    className="w-full text-gray-500 text-center"
-                                >
-                                    {getLoadingHelperText()}
-                                </BodyText>
-                            )}
-                            {!errorMessage && !isLoadingHelperText && (
-                                <BodyText
-                                    level="body2"
-                                    weight="normal"
-                                    className="w-full text-gray-500 text-center"
-                                >
-                                    {isLendPositionType(positionType)
-                                        ? 'Enter amount to proceed with supplying collateral for this position'
-                                        : 'Enter the amount you want to borrow from this position'}
-                                </BodyText>
-                            )}
-                            {errorMessage &&
-                                !isLoadingHelperText &&
-                                !isLoadingErc20TokensBalanceData &&
-                                !isLoadingMaxBorrowingAmount && (
-                                    <BodyText
-                                        level="body2"
-                                        weight="normal"
-                                        className="text-center text-destructive-foreground"
-                                    >
-                                        {errorMessage}
-                                    </BodyText>
-                                )}
-                        </div> */}
-                    {/* )} */}
+                    <div className="card-content-bottom max-md:px-2 py-3 max-w-[250px] mx-auto">
+                        <BodyText
+                            level="body2"
+                            weight="normal"
+                            className="w-full text-gray-500 text-center"
+                        >
+                            Enter amount to proceed
+                        </BodyText>
+                    </div>
                 </CardContent>
                 <CardFooter className="p-0 justify-center">
-                    {/* {!isWalletConnected && <ConnectWalletButton />} */}
-                    {/* {isWalletConnected && !isLoading && ( */}
                     <div className="flex flex-col gap-[12px] w-full">
-                        <ConfirmationDialog
+                        <ConfirmationDialogForSuperVault
                             disabled={false}
                             positionType={positionType}
                             assetDetails={
@@ -305,7 +212,6 @@ export default function DepositAndWithdrawAssets() {
                             setOpen={setIsConfirmationDialogOpen}
                         />
                     </div>
-                    {/* )} */}
                 </CardFooter>
             </Card>
         </section>
@@ -378,7 +284,7 @@ function SelectTokensDropdown({
     )
 }
 
-export function ConfirmationDialog({
+export function ConfirmationDialogForSuperVault({
     disabled,
     positionType,
     assetDetails,
@@ -410,22 +316,8 @@ export function ConfirmationDialog({
 }) {
     const { depositTx, setDepositTx, withdrawTx, setWithdrawTx } =
         useTxContext() as TTxContext
-    const [hasAcknowledgedRisk, setHasAcknowledgedRisk] = useState(false)
-    const searchParams = useSearchParams()
-    const chain_id = searchParams.get('chain_id') || 1
     const { width: screenWidth } = useDimensions()
     const isDesktop = screenWidth > 768
-    const isTxFailed = isLendPositionType(positionType)
-        ? depositTx.errorMessage.length > 0
-        : withdrawTx.errorMessage.length > 0
-    const isMorpho = assetDetails?.protocol_type === PlatformType.MORPHO
-    const isMorphoMarkets = isMorpho && !assetDetails?.isVault
-    const isMorphoVault = isMorpho && assetDetails?.isVault
-    const { address: walletAddress } = useAccount()
-    const { wallets } = useWallets()
-    const wallet = wallets.find(
-        (wallet: any) => wallet.address === walletAddress
-    )
 
     useEffect(() => {
         // Reset the tx status when the dialog is closed
@@ -433,21 +325,6 @@ export function ConfirmationDialog({
             resetDepositWithdrawTx()
         }
     }, [])
-
-    useEffect(() => {
-        setHasAcknowledgedRisk(false)
-
-        async function handleSwitchChain() {
-            // console.log('wallet', wallet)
-            await wallet?.switchChain(Number(chain_id))
-        }
-
-        if (open) {
-            // Switch chain when the dialog is opened
-            // modal.switchNetwork(CHAIN_ID_MAPPER[Number(chain_id) as ChainId])
-            handleSwitchChain()
-        }
-    }, [open])
 
     function resetDepositWithdrawTx() {
         setDepositTx((prev: TDepositTx) => ({
@@ -506,6 +383,7 @@ export function ConfirmationDialog({
     const isWithdrawTxInProgress = withdrawTx.isPending || withdrawTx.isConfirming
 
     const isTxInProgress = isDepositTxInProgress || isWithdrawTxInProgress
+    const isTxFailed = false;
 
     const depositTxSpinnerColor = depositTx.isPending
         ? 'text-secondary-500'
@@ -543,7 +421,7 @@ export function ConfirmationDialog({
 
     const disableActionButton =
         disabled ||
-        (!hasAcknowledgedRisk && !isLendPositionType(positionType) && isHfLow())
+        (!isLendPositionType(positionType) && isHfLow())
 
     // SUB_COMPONENT: Trigger button to open the dialog
     const triggerButton = (
@@ -598,10 +476,8 @@ export function ConfirmationDialog({
                         : withdrawTx,
                     positionType,
                     actionTitle: isLendPositionType(positionType)
-                        ? isMorphoMarkets || isMorphoVault
-                            ? 'supply'
-                            : 'lend'
-                        : 'borrow',
+                        ? 'deposit'
+                        : 'withdraw',
                 })}
             </BodyText>
             {canDisplayExplorerLinkWhileLoading && (
@@ -702,12 +578,8 @@ export function ConfirmationDialog({
                                 >
                                     {isLendPositionType(positionType) &&
                                         depositTx.status === 'view'
-                                        ? isMorphoMarkets
-                                            ? 'Add Collateral'
-                                            : isMorphoVault
-                                                ? 'Supply to vault'
-                                                : 'Lend'
-                                        : 'Borrow'}{' '}
+                                        ? 'Deposit'
+                                        : 'Withdraw'}{' '}
                                     {isTxFailed ? 'Failed' : 'Successful'}
                                     {!isTxFailed && (
                                         <CircleCheckIcon
@@ -1002,35 +874,6 @@ export function ConfirmationDialog({
                                 </div>
                             </div> */}
                 </div>
-                {isShowBlock({
-                    deposit: false,
-                    withdraw:
-                        withdrawTx.status === 'withdraw' &&
-                        !isWithdrawTxInProgress &&
-                        isHfLow(),
-                }) && (
-                        <div className="flex flex-col items-center justify-center">
-                            <CustomAlert description="Borrowing this amount is not advisable, as the heath factor is close to 1, posing a risk of liquidation." />
-                            <div
-                                className="flex items-center gap-2 w-fit my-5"
-                                onClick={() =>
-                                    setHasAcknowledgedRisk(!hasAcknowledgedRisk)
-                                }
-                            >
-                                <Checkbox
-                                    id="terms"
-                                    checked={hasAcknowledgedRisk}
-                                />
-                                <Label
-                                    size="medium"
-                                    className="text-gray-800"
-                                    id="terms"
-                                >
-                                    I acknowledge the risks involved.
-                                </Label>
-                            </div>
-                        </div>
-                    )}
                 {/* Block 4 */}
                 <div className={`${isTxInProgress ? 'invisible h-0' : ''}`}>
                     <ActionButton

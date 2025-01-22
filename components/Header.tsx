@@ -95,7 +95,7 @@ const Header: React.FC = () => {
                             className="object-contain shrink-0 my-auto aspect-[6.54] w-36 cursor-pointer"
                         />
                     </Link>
-                    <nav className="hidden md:flex gap-3 lg:gap-5 items-center self-stretch my-auto text-sm tracking-normal leading-none whitespace-nowrap min-w-[240px] text-stone-800 max-md:max-w-full">
+                    {/* <nav className="hidden md:flex gap-3 lg:gap-5 items-center self-stretch my-auto text-sm tracking-normal leading-none whitespace-nowrap min-w-[240px] text-stone-800 max-md:max-w-full">
                         {tabs.map((tab) => (
                             <Button
                                 key={tab.id}
@@ -116,7 +116,7 @@ const Header: React.FC = () => {
                                 </Link>
                             </Button>
                         ))}
-                    </nav>
+                    </nav> */}
                     <div className="flex items-center gap-[12px]">
                         <ConnectWalletButton />
                         {/* <Button variant="outline" size={"md"} className="hidden max-md:block rounded-[12px] py-2 border border-gray-500 py-[6px]" onClick={() => setOpenMenu(true)}>
@@ -127,7 +127,7 @@ const Header: React.FC = () => {
             </header>
 
             {/* Footer nav */}
-            <div className="z-50 fixed bottom-0 left-0 md:hidden w-full flex justify-center">
+            {/* <div className="z-50 fixed bottom-0 left-0 md:hidden w-full flex justify-center">
                 <nav className="flex gap-3 lg:gap-5 items-center justify-center self-stretch py-1.5 px-10 text-sm tracking-normal leading-none whitespace-nowrap text-stone-800 w-full bg-white bg-opacity-40 backdrop-blur">
                     {tabs.map((tab) => (
                         <Button
@@ -150,7 +150,7 @@ const Header: React.FC = () => {
                         </Button>
                     ))}
                 </nav>
-            </div>
+            </div> */}
             {/* Footer nav */}
         </>
     )

@@ -1,39 +1,17 @@
 'use client'
 
-import { customMetisNetwork, projectId, wagmiAdapter } from '@/config'
 import React, { type ReactNode } from 'react'
-// import { queryClient } from './query-client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import AssetsDataProvider from './data-provider'
-// import { WagmiProvider } from 'wagmi'
-import { type Config, cookieToInitialState } from 'wagmi'
-import UserTokenBalancesProvider from './user-token-balances-provider'
-// import {
-//     mainnet,
-//     arbitrum,
-//     polygon,
-//     bsc,
-//     gnosis,
-//     base,
-//     optimism,
-//     avalanche,
-//     scroll,
-//     etherlink,
-// } from '@reown/appkit/networks'
-// import { createAppKit } from '@reown/appkit/react'
 import { PrivyProvider } from '@privy-io/react-auth'
 import { createConfig, WagmiProvider } from '@privy-io/wagmi'
-import { base, mainnet, sepolia, polygon, avalanche, optimism, gnosis, arbitrum, etherlink, bsc, scroll, metis } from 'viem/chains'
+import { base, mainnet, polygon, avalanche, optimism, gnosis, arbitrum, etherlink, bsc, scroll, metis } from 'viem/chains'
 import { http } from 'wagmi'
 
 // Set up queryClient
 const queryClient = new QueryClient()
 
 const appId = 'cm5o77rga039b99tzkjakb6ji'
-
-// if (!projectId) {
-//     throw new Error('Project ID is not defined')
-// }
 
 // Set up metadata
 const metadata = {
@@ -42,32 +20,6 @@ const metadata = {
     url: 'https://beta.superlend.xyz.com', // origin must match your domain & subdomain
     icons: ['https://avatars.githubusercontent.com/u/179229932'],
 }
-
-// Create the modal
-// export const modal = createAppKit({
-//     adapters: [wagmiAdapter],
-//     projectId,
-//     networks: [
-//         mainnet,
-//         customMetisNetwork,
-//         scroll,
-//         avalanche,
-//         optimism,
-//         base,
-//         bsc,
-//         gnosis,
-//         arbitrum,
-//         polygon,
-//         etherlink,
-//     ],
-//     defaultNetwork: mainnet,
-//     metadata: metadata,
-//     features: {
-//         analytics: true,
-//         connectMethodsOrder: ['wallet'],
-//     },
-//     themeMode: 'light',
-// })
 
 export const config = createConfig({
     chains: [mainnet, polygon, base, scroll, avalanche, optimism, bsc, gnosis, arbitrum, etherlink, metis], // Pass your required chains as an array
@@ -93,11 +45,6 @@ function ContextProvider({
     children: ReactNode
     cookies: string | null
 }) {
-    const initialState = cookieToInitialState(
-        wagmiAdapter.wagmiConfig as Config,
-        cookies
-    )
-
     return (
         <PrivyProvider
             appId={appId}
@@ -117,9 +64,7 @@ function ContextProvider({
             <QueryClientProvider client={queryClient}>
                 <WagmiProvider config={config}>
                     <AssetsDataProvider>
-                        <UserTokenBalancesProvider>
-                            {children}
-                        </UserTokenBalancesProvider>
+                        {children}
                     </AssetsDataProvider>
                 </WagmiProvider>
             </QueryClientProvider>

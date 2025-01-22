@@ -1,7 +1,6 @@
 import MainContainer from '@/components/MainContainer'
 import React from 'react'
 import PageHeader from './page-header'
-import AssetHistory from './asset-history'
 import {
     Card,
     CardContent,
@@ -12,27 +11,24 @@ import {
 } from '@/components/ui/card'
 import { BodyText } from '@/components/ui/typography'
 import DepositAndWithdrawAssets from './deposit-and-withdraw'
-import PositionManagementProvider from '@/context/position-management-provider'
-import TxProvider from '@/context/tx-provider'
+import TxProvider from '@/context/super-vault-tx-provider'
 
 export default function SuperVaultPage() {
     return (
-        <PositionManagementProvider>
-            <TxProvider>
-                <MainContainer className="flex flex-col gap-[40px] w-full max-w-[500px] mx-auto my-24">
-                    {/* <PageHeader /> */}
-                    {/* <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-[16px]"> */}
-                        {/* <div className="flex flex-col gap-[16px]">
+        <TxProvider>
+            <MainContainer className="flex flex-col gap-[40px] w-full max-w-[500px] mx-auto my-24">
+                {/* <PageHeader /> */}
+                {/* <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-[16px]"> */}
+                {/* <div className="flex flex-col gap-[16px]">
                             <PositionDetails />
                             <AssetHistory />
                         </div> */}
-                        <DepositAndWithdrawAssets />
-                        {/* <LendAndBorrowAssetsMorpho /> */}
-                        {/* <BlogCard /> */}
-                    {/* </div> */}
-                </MainContainer>
-            </TxProvider>
-        </PositionManagementProvider>
+                <DepositAndWithdrawAssets />
+                {/* <LendAndBorrowAssetsMorpho /> */}
+                {/* <BlogCard /> */}
+                {/* </div> */}
+            </MainContainer>
+        </TxProvider>
     )
 }
 

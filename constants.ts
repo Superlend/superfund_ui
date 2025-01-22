@@ -1,4 +1,3 @@
-import { customMetisNetwork } from './config'
 import { ChainId } from './types/chain'
 import { Period, PeriodDisplay } from './types/periodButtons'
 import {
@@ -16,9 +15,8 @@ import {
     optimism,
     avalanche,
     scroll,
-    AppKitNetwork,
     etherlink,
-} from '@reown/appkit/networks'
+} from 'viem/chains'
 
 export type TPlatformWebsiteLinks = {
     aave: PlatformWebsiteLink.AAVE
@@ -276,17 +274,3 @@ export const MORPHO_WEBSITE_LINK = 'https://morpho.org/'
 
 export const EIP_20_SIGNED_APPROVALS_LINK =
     'https://eips.ethereum.org/EIPS/eip-2612'
-
-export const CHAIN_ID_MAPPER: { [key in ChainId]: AppKitNetwork } = {
-    [ChainId.Polygon]: polygon,
-    [ChainId.Arbitrum]: arbitrum,
-    [ChainId.Base]: base,
-    [ChainId.Ethereum]: mainnet,
-    [ChainId.Avalanche]: avalanche,
-    [ChainId.Bsc]: bsc,
-    [ChainId.Gnosis]: gnosis,
-    [ChainId.Optimism]: optimism,
-    [ChainId.Scroll]: scroll,
-    [ChainId.Metis]: customMetisNetwork,
-    [ChainId.Etherlink]: etherlink,
-}
