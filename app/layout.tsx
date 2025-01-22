@@ -6,12 +6,6 @@ import ContextProvider from '@/context'
 import Footer from '@/components/Footer'
 import { GoogleTagManager } from '@next/third-parties/google'
 import ScrollToTop from '@/components/ScrollToTop'
-import { Meta } from '@/components/Meta'
-import { Toaster } from 'react-hot-toast'
-import EasterEgg from '@/components/EasterEgg'
-// import { Inter } from "next/font/google";
-
-// const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
     metadataBase: new URL('https://beta.superlend.xyz'),
@@ -72,8 +66,6 @@ export default function RootLayout({
                 <ScrollToTop />
                 <GoogleTagManager gtmId={GTM_ID} />
                 <ContextProvider cookies={cookies}>
-                    <Toaster />
-                    <EasterEgg />
                     <Header />
                     {children}
                     <Footer />
