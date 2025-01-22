@@ -26,7 +26,7 @@ export default function VaultOverview() {
                     Vault Information
                 </HeadingText>
                 <BodyText level="body1" weight="normal" className="text-gray-600">
-                    SuperUSD Vault is an automated yield vault built with Euler's EVT.
+                    SuperUSD Vault is an automated yield vault built with Euler&apos;s EVT.
                     It optimizes earnings by rebalancing deposits across USD-pegged assets like USDC and USDT,
                     leveraging lending platforms like Aave, Compound, and Morpho for top APYs.
                     Future updates will enable deposits as collateral, unlocking borrower integration and boosting returns.
