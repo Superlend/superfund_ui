@@ -20,6 +20,9 @@ import { ArrowRightIcon } from 'lucide-react'
 import { BigNumber } from 'ethers'
 import { getErrorText } from '@/lib/getErrorText'
 import { BodyText } from '@/components/ui/typography'
+import { USDC_ADDRESS, USDC_DECIMALS, VAULT_ADDRESS } from '@/lib/constants'
+import { useWalletConnection } from '@/hooks/useWalletConnection'
+import { parseAbi } from 'viem'
 
 interface IDepositButtonProps {
     disabled: boolean
@@ -28,7 +31,16 @@ interface IDepositButtonProps {
     amount: string
     decimals: number
     handleCloseModal: (isVisible: boolean) => void
+    walletAddress: `0x${string}`
 }
+
+const USDC_ABI = parseAbi([
+    "function approve(address spender, uint256 amount) returns (bool)",
+])
+
+const VAULT_ABI = parseAbi([
+    "function deposit(uint256 assets, address receiver)"
+])
 
 const DepositButton = ({
     poolContractAddress,
@@ -37,6 +49,7 @@ const DepositButton = ({
     decimals,
     disabled,
     handleCloseModal,
+    walletAddress
 }: IDepositButtonProps) => {
     const {
         writeContractAsync,
@@ -49,7 +62,7 @@ const DepositButton = ({
             confirmations: 2,
             hash,
         })
-    const { address: walletAddress } = useAccount()
+
     // const { createToast } = useCreatePendingToast()
     const { isConnected } = useAccount()
     const { connect, connectors } = useConnect()
@@ -98,11 +111,13 @@ const DepositButton = ({
                 errorMessage: '',
             }))
 
+            const amountInWei = parseUnits(amount, USDC_DECIMALS)
+
             writeContractAsync({
-                address: poolContractAddress,
-                abi: [],
+                address: VAULT_ADDRESS,
+                abi: VAULT_ABI,
                 functionName: 'deposit',
-                args: [],
+                args: [amountInWei.toBigInt(), walletAddress],
             })
                 .then((data) => {
                     setDepositTx((prev: TDepositTx) => ({
@@ -125,7 +140,6 @@ const DepositButton = ({
         amount,
         poolContractAddress,
         underlyingAssetAdress,
-        walletAddress,
         handleCloseModal,
         writeContractAsync,
         decimals,
@@ -179,18 +193,6 @@ const DepositButton = ({
     }, [hash, depositTx.status])
 
     const onApproveSupply = async () => {
-        // if (!isConnected) {
-        //     // If not connected, prompt connection first
-        //     try {
-        //         const connector = connectors[0] // Usually metamask/injected connector
-        //         await connect({ connector })
-        //         return
-        //     } catch (error) {
-        //         console.error('Connection failed:', error)
-        //         return
-        //     }
-        // }
-
         try {
             setDepositTx((prev: TDepositTx) => ({
                 ...prev,
@@ -199,11 +201,12 @@ const DepositButton = ({
                 errorMessage: '',
             }))
 
+            const amountInWei = parseUnits(amount, USDC_DECIMALS)
             writeContractAsync({
-                address: underlyingAssetAdress,
-                abi: [],
+                address: USDC_ADDRESS,
+                abi: USDC_ABI,
                 functionName: 'approve',
-                args: [poolContractAddress, parseUnits(amount, decimals)],
+                args: [VAULT_ADDRESS, amountInWei.toBigInt()],
             }).catch((error) => {
                 setDepositTx((prev: TDepositTx) => ({
                     ...prev,
@@ -213,6 +216,14 @@ const DepositButton = ({
             })
         } catch (error) {
             error
+        } finally {
+            // TODO: Add check for allowance
+            setDepositTx((prev: TDepositTx) => ({
+                ...prev,
+                status: 'deposit',
+                hash: '',
+                errorMessage: '',
+            }))
         }
     }
 

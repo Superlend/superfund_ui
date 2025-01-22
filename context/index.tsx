@@ -2,7 +2,6 @@
 
 import React, { type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import AssetsDataProvider from './data-provider'
 import { PrivyProvider } from '@privy-io/react-auth'
 import { createConfig, WagmiProvider } from '@privy-io/wagmi'
 import { base, mainnet, polygon, avalanche, optimism, gnosis, arbitrum, etherlink, bsc, scroll, metis } from 'viem/chains'
@@ -63,9 +62,7 @@ function ContextProvider({
         >
             <QueryClientProvider client={queryClient}>
                 <WagmiProvider config={config}>
-                    <AssetsDataProvider>
-                        {children}
-                    </AssetsDataProvider>
+                    {children}
                 </WagmiProvider>
             </QueryClientProvider>
         </PrivyProvider>

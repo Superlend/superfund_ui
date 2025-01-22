@@ -11,16 +11,12 @@ import useIsClient from '@/hooks/useIsClient'
 //     useAppKitState,
 // } from '@reown/appkit/react'
 import { usePrivy } from '@privy-io/react-auth'
-import { useUserTokenBalancesContext } from '@/context/user-token-balances-provider'
 import { ProfileMenuDropdown } from './dropdowns/ProfileMenuDropdown'
-import { useAssetsDataContext } from '@/context/data-provider'
 
 export default function ConnectWalletButton() {
     const { isClient } = useIsClient()
     const { ready, authenticated, login, logout, user } = usePrivy()
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
-    // const { erc20TokensBalanceData } = useUserTokenBalancesContext()
-    const { allChainsData, allTokensData } = useAssetsDataContext()
     const walletAddress = user?.wallet?.address
     const disableLogin = !ready || (ready && authenticated)
     const disableLogout = !ready || (ready && !authenticated)
@@ -44,8 +40,6 @@ export default function ConnectWalletButton() {
                         <ProfileMenuDropdown
                             open={isProfileMenuOpen}
                             setOpen={setIsProfileMenuOpen}
-                            chains={allChainsData}
-                            tokens={[]}
                             displayText={displayText}
                             walletAddress={walletAddress}
                             logout={logout}

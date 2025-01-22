@@ -10,8 +10,9 @@ interface IActionButtonSelectComponent {
     asset: any
     amount: string
     handleCloseModal: (isVisible: boolean) => void
-    actionType: 'lend' | 'borrow' | 'repay' | 'withdraw'
+    actionType: 'deposit' | 'withdraw'
     setActionType?: (actionType: TPositionType) => void
+    walletAddress: `0x${string}`
 }
 
 const ActionButton = ({
@@ -21,7 +22,9 @@ const ActionButton = ({
     handleCloseModal,
     actionType,
     setActionType,
+    walletAddress
 }: IActionButtonSelectComponent) => {
+    console.log('actionType', actionType)
     if (actionType === 'withdraw') {
         return (
             <WithdrawButton
@@ -37,6 +40,7 @@ const ActionButton = ({
             <DepositButton
                 disabled={disabled}
                 handleCloseModal={handleCloseModal}
+                walletAddress={walletAddress}
                 poolContractAddress={asset?.core_contract || ''}
                 underlyingAssetAdress={asset?.asset?.token?.address || ''}
                 amount={amount || ''}

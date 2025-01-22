@@ -12,21 +12,21 @@ import {
 import { BodyText } from '@/components/ui/typography'
 import DepositAndWithdrawAssets from './deposit-and-withdraw'
 import TxProvider from '@/context/super-vault-tx-provider'
+import VaultStats from './vault-stats'
+import VaultOverview from './vault-overview'
 
 export default function SuperVaultPage() {
     return (
         <TxProvider>
-            <MainContainer className="flex flex-col gap-[40px] w-full max-w-[500px] mx-auto my-24">
+            <MainContainer className="flex flex-col gap-[40px] w-full mx-auto my-24">
                 {/* <PageHeader /> */}
-                {/* <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-[16px]"> */}
-                {/* <div className="flex flex-col gap-[16px]">
-                            <PositionDetails />
-                            <AssetHistory />
-                        </div> */}
-                <DepositAndWithdrawAssets />
-                {/* <LendAndBorrowAssetsMorpho /> */}
-                {/* <BlogCard /> */}
-                {/* </div> */}
+                <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-[16px]">
+                    <div className="flex flex-col gap-10">
+                        <VaultStats />
+                        <VaultOverview />
+                    </div>
+                    <DepositAndWithdrawAssets />
+                </div>
             </MainContainer>
         </TxProvider>
     )
