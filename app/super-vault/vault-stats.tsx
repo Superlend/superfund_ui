@@ -30,8 +30,8 @@ export default function VaultStats() {
     return (
         <section>
             <div className="flex items-center justify-between gap-4 pl-2 pr-6">
-                {items.map((item) => (
-                    <div className="block">
+                {items.map((item, index) => (
+                    <div className="block" key={index}>
                         <BodyText level="body1" weight="normal" className="text-gray-600">
                             {item.title}
                         </BodyText>
