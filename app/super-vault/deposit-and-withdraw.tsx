@@ -289,8 +289,8 @@ export default function DepositAndWithdrawAssets() {
                                             symbol: 'USDC',
                                         },
                                         spot_apy: spotApy,
-                                        chain_id: ChainId.Base,
                                     },
+                                    chain_id: ChainId.Base,
                                 }
                             }
                             amount={isDepositPositionType ? userEnteredDepositAmount : userEnteredWithdrawAmount}
