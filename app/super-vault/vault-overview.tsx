@@ -16,9 +16,12 @@ import AllocationDetailsChart from "@/components/allocation-details-chart"
 import PerformanceHistoryChart from "@/components/performance-history-chart"
 import { Period } from "@/types/periodButtons"
 import { AllocationHistoryChart } from "@/components/allocation-history-chart"
-
+import { useVaultAllocationPoints } from "@/hooks/vault_hooks/vaultHook"
 
 export default function VaultOverview() {
+
+    const { allocationPoints } = useVaultAllocationPoints()
+
     return (
         <div className="flex flex-col gap-[40px]">
             <section className="block flex flex-col gap-2" id="vault-information">
@@ -102,7 +105,7 @@ export default function VaultOverview() {
                 chartData={[]}
                 disableCategoryFilters={[]}
             />
-            <AllocationDetailsChart />
+            <AllocationDetailsChart allocationPoints={allocationPoints} />
             <AllocationHistoryChart />
             <section className="block flex flex-col gap-4">
                 <HeadingText level="h4" weight="medium">

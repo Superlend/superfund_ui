@@ -2,15 +2,24 @@ export const DEFAULT_ROUTE = {
     home: '/discover',
 }
 
-export const MULTICALL_ADDRESSES: Record<number, string> = {
-    42793: '0x84EF812D47a703d521e0D67319222c9590bc1E48',
-}
-
-export const BUNDLER_ADDRESS_MORPHO: Record<number, string> = {
-    1: '0x4095F064B8d3c3548A3bebfd0Bbfd04750E30077',
-    8453: '0x23055618898e202386e6c13955a58D3C68200BFB',
-}
-
 export const VAULT_ADDRESS = '0x33095029D7E528EDDABc76C72AD107be4970210e';
 export const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
 export const USDC_DECIMALS = 6;
+
+// 1 million allocation points
+export const TOTAL_ALLOCATION_POINTS = 1_000_000;
+// 1% as a cash reserve
+export const CASH_RESERVE_POINTS = 10_000;
+
+export const VAULT_STRATEGIES = {
+    Morpho: [
+        '0xeE8F4eC5672F09119b96Ab6fB59C27E1b7e44b61',
+        '0xc1256Ae5FF1cf2719D4937adb3bbCCab2E00A2Ca',
+        '0xc0c5689e6f4D256E861F65465b691aeEcC0dEb12',
+        '0xbeeF010f9cb27031ad51e3333f9aF9C6B1228183',
+        '0x23479229e52Ab6aaD312D0B03DF9F33B46753B5e',
+        '0x12AFDeFb2237a5963e7BAb3e2D46ad0eee70406e'
+    ],
+    AaveV3: ['0x7aC16Ce4829833F069f345A00B1CFc5b27916530'],
+    Fluid: ['0xf42f5795D9ac7e9D757dB633D693cD548Cfd9169'],
+}

@@ -31,7 +31,7 @@ const CustomTooltip = ({ active, payload }: any) => {
     return null;
 };
 
-export default function AllocationDetailsChart() {
+export default function AllocationDetailsChart({ allocationPoints }: { allocationPoints: { name: string, value: number }[] }) {
     return (
         <motion.section
             initial={{ opacity: 0, y: 20 }}
@@ -50,7 +50,7 @@ export default function AllocationDetailsChart() {
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
                                 <Pie
-                                    data={data}
+                                    data={allocationPoints}
                                     cx="50%"
                                     cy="50%"
                                     innerRadius={80}
@@ -70,7 +70,7 @@ export default function AllocationDetailsChart() {
                                         <Sector {...props} outerRadius={outerRadius + 10} className="cursor-pointer transition-all duration-300 hover:opacity-80" />
                                     )}
                                 >
-                                    {data.map((entry, index) => (
+                                    {allocationPoints.map((entry, index) => (
                                         <Cell
                                             key={`cell-${index}`}
                                             fill={COLORS[index % COLORS.length]}
@@ -111,7 +111,7 @@ export default function AllocationDetailsChart() {
                         </ResponsiveContainer>
                     </div>
                     <div className="flex flex-col gap-6">
-                        {data.map((item, index) => (
+                        {allocationPoints.map((item, index) => (
                             <div key={item.name} className="flex items-center space-x-2">
                                 <div
                                     className="w-3 h-3 rounded-full"
