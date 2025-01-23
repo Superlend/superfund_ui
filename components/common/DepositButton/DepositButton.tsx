@@ -57,20 +57,18 @@ const DepositButton = ({
         data: hash,
         error,
     } = useWriteContract()
+
     const { isLoading: isConfirming, isSuccess: isConfirmed } =
         useWaitForTransactionReceipt({
             confirmations: 2,
             hash,
         })
 
-    // const { createToast } = useCreatePendingToast()
-    const { isConnected } = useAccount()
-    const { connect, connectors } = useConnect()
     const { depositTx, setDepositTx } = useTxContext() as TTxContext
 
     const amountBN = useMemo(() => {
-        return amount ? parseUnits(amount, decimals) : BigNumber.from(0)
-    }, [amount, decimals])
+        return amount ? parseUnits(amount ?? '0', USDC_DECIMALS) : BigNumber.from(0)
+    }, [amount, USDC_DECIMALS])
 
     const txBtnStatus: Record<string, string> = {
         pending:
@@ -102,7 +100,7 @@ const DepositButton = ({
 
     const txBtnText = getTxButtonText(isPending, isConfirming, isConfirmed)
 
-    const supply = useCallback(async () => {
+    const deposit = useCallback(async () => {
         try {
             setDepositTx((prev: TDepositTx) => ({
                 ...prev,
@@ -192,7 +190,7 @@ const DepositButton = ({
         }
     }, [hash, depositTx.status])
 
-    const onApproveSupply = async () => {
+    const onApproveDeposit = async () => {
         try {
             setDepositTx((prev: TDepositTx) => ({
                 ...prev,
@@ -241,7 +239,7 @@ const DepositButton = ({
                         >
                             Note: You need to complete an &apos;approval
                             transaction&apos; granting permission to move funds
-                            from your wallet as the first step before supplying
+                            from your wallet as the first step before depositing
                             the asset.
                             <a
                                 href="https://eips.ethereum.org/EIPS/eip-2612"
@@ -274,9 +272,9 @@ const DepositButton = ({
                 }
                 onClick={() => {
                     if (depositTx.status === 'approve') {
-                        onApproveSupply()
+                        onApproveDeposit()
                     } else if (depositTx.status === 'deposit') {
-                        supply()
+                        deposit()
                     } else {
                         handleCloseModal(false)
                     }

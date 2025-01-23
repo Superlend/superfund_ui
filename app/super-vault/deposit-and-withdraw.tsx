@@ -65,18 +65,81 @@ import {
 import { ChainId } from '@/types/chain'
 import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
 import { usePrivy } from '@privy-io/react-auth'
+import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
+import ConnectWalletButton from '@/components/ConnectWalletButton'
+import { useWalletConnection } from '@/hooks/useWalletConnection'
 
 export default function DepositAndWithdrawAssets() {
+    const { isWalletConnected } = useWalletConnection()
     const [positionType, setPositionType] = useState<TPositionType>('deposit')
     const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] = useState<boolean>(false)
 
     const [userEnteredDepositAmount, setUserEnteredDepositAmount] = useState<string>('')
     const [userEnteredWithdrawAmount, setUserEnteredWithdrawAmount] = useState<string>('')
 
+    const isDepositPositionType = positionType === 'deposit';
+
     const { user } = usePrivy()
     const walletAddress = user?.wallet?.address
 
-    const { balance, userMaxWithdrawAmount, isLoading, error } = useUserBalance(walletAddress as `0x${string}`)
+    const { balance, userMaxWithdrawAmount, isLoading: isLoadingBalance, error: balanceError } = useUserBalance(walletAddress as `0x${string}`)
+    const { spotApy, isLoading: isLoadingVaultStats, error: vaultStatsError } = useVaultHook()
+
+    const getInputErrorText = (): string | null => {
+        if (isDepositPositionType) {
+            if (Number(userEnteredDepositAmount) > Number(balance)) {
+                return 'Amount is more than your balance'
+            }
+            if (Number(userEnteredDepositAmount) === 0 && userEnteredDepositAmount !== '') {
+                return 'Amount must be greater than 0'
+            }
+        } else {
+            if (Number(userEnteredWithdrawAmount) > Number(userMaxWithdrawAmount)) {
+                return 'Amount is more than your available limit'
+            }
+            if (Number(userEnteredWithdrawAmount) === 0 && userEnteredWithdrawAmount !== '') {
+                return 'Amount must be greater than 0'
+            }
+        }
+        return null;
+    }
+
+    const helperText = {
+        placeholder: {
+            deposit: 'Enter amount to proceed depositing in SuperUSD Vault',
+            withdraw: 'Enter amount to proceed withdrawing from this vault',
+        },
+        input: {
+            deposit: `You are about to deposit $${userEnteredDepositAmount} worth of USDC to SuperUSD Vault`,
+            withdraw: `You are about to withdraw $${userEnteredWithdrawAmount} worth of USDC from this vault`,
+        },
+        error: {
+            deposit: getInputErrorText(),
+            withdraw: getInputErrorText(),
+        }
+    }
+
+    const placeholderText = helperText.placeholder[positionType]
+    const inputText = helperText.input[positionType]
+    const errorText = helperText.error[positionType]
+
+    function getHelperText() {
+        if (!!errorText) {
+            return errorText
+        } else if (isDepositPositionType ? userEnteredDepositAmount !== '' : userEnteredWithdrawAmount !== '') {
+            return inputText
+        } else {
+            return placeholderText
+        }
+    }
+
+    const isDiasableActionBtn = () => {
+        if (isDepositPositionType) {
+            return Number(userEnteredDepositAmount) > Number(balance) || Number(userEnteredDepositAmount) === 0
+        } else {
+            return Number(userEnteredWithdrawAmount) > Number(userMaxWithdrawAmount) || Number(userEnteredWithdrawAmount) === 0
+        }
+    }
 
     // Render component
     return (
@@ -93,7 +156,7 @@ export default function DepositAndWithdrawAssets() {
                         weight="normal"
                         className="capitalize text-gray-600"
                     >
-                        {positionType === 'deposit'
+                        {isDepositPositionType
                             ? 'Deposit'
                             : `Withdraw`}
                     </BodyText>
@@ -102,15 +165,15 @@ export default function DepositAndWithdrawAssets() {
                         weight="normal"
                         className="capitalize text-gray-600 flex items-center gap-[4px]"
                     >
-                        Bal:{' '}
-                        {isLoading ? (
+                        {isDepositPositionType ? 'Bal' : 'Available'}:{' '}
+                        {isLoadingBalance ? (
                             <LoaderCircle className="text-primary w-4 h-4 animate-spin" />
                         ) : (
                             abbreviateNumber(
                                 Number(
                                     getLowestDisplayValue(
                                         Number(
-                                            isDepositPositionType(positionType)
+                                            isDepositPositionType
                                                 ? balance ?? 0
                                                 : userMaxWithdrawAmount ?? 0
                                         ),
@@ -152,13 +215,13 @@ export default function DepositAndWithdrawAssets() {
                         <div className="flex flex-col flex-1 gap-[4px]">
                             <CustomNumberInput
                                 key={'true'}
-                                amount={isDepositPositionType(positionType) ? userEnteredDepositAmount : userEnteredWithdrawAmount}
-                                setAmount={isDepositPositionType(positionType) ? setUserEnteredDepositAmount : setUserEnteredWithdrawAmount}
+                                amount={isDepositPositionType ? userEnteredDepositAmount : userEnteredWithdrawAmount}
+                                setAmount={isDepositPositionType ? setUserEnteredDepositAmount : setUserEnteredWithdrawAmount}
                             />
                         </div>
                         <Button
                             variant="link"
-                            onClick={() => isDepositPositionType(positionType) ? setUserEnteredDepositAmount(balance) : setUserEnteredWithdrawAmount(userMaxWithdrawAmount)}
+                            onClick={() => isDepositPositionType ? setUserEnteredDepositAmount(balance) : setUserEnteredWithdrawAmount(userMaxWithdrawAmount)}
                             className="uppercase text-[14px] font-medium w-fit"
                         >
                             max
@@ -170,32 +233,35 @@ export default function DepositAndWithdrawAssets() {
                             weight="normal"
                             className="w-full text-gray-500 text-center"
                         >
-                            Enter amount to proceed
+                            {getHelperText()}
                         </BodyText>
                     </div>
                 </CardContent>
                 <CardFooter className="p-0 justify-center">
-                    <div className="flex flex-col gap-[12px] w-full">
+                    {!isWalletConnected && (
+                        <ConnectWalletButton />
+                    )}
+                    {isWalletConnected &&
                         <ConfirmationDialogForSuperVault
-                            disabled={false}
+                            disabled={isDiasableActionBtn()}
                             positionType={positionType}
                             assetDetails={
-                                {}
-                            }
-                            amount={isDepositPositionType(positionType) ? userEnteredDepositAmount : userEnteredWithdrawAmount}
-                            balance={isDepositPositionType(positionType) ? balance : userMaxWithdrawAmount}
-                            maxBorrowAmount={'10'}
-                            setAmount={isDepositPositionType(positionType) ? setUserEnteredDepositAmount : setUserEnteredWithdrawAmount}
-                            healthFactorValues={
                                 {
-                                    healthFactor: 0,
-                                    newHealthFactor: 0,
+                                    asset: {
+                                        token: {
+                                            logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg',
+                                            symbol: 'USDC',
+                                        },
+                                        spot_apy: spotApy,
+                                    },
                                 }
                             }
+                            amount={isDepositPositionType ? userEnteredDepositAmount : userEnteredWithdrawAmount}
+                            balance={isDepositPositionType ? balance : userMaxWithdrawAmount}
+                            setAmount={isDepositPositionType ? setUserEnteredDepositAmount : setUserEnteredWithdrawAmount}
                             open={isConfirmationDialogOpen}
                             setOpen={setIsConfirmationDialogOpen}
-                        />
-                    </div>
+                        />}
                 </CardFooter>
             </Card>
         </section>
@@ -275,8 +341,6 @@ export function ConfirmationDialogForSuperVault({
     amount,
     setAmount,
     balance,
-    maxBorrowAmount,
-    healthFactorValues,
     open,
     setOpen,
     setActionType,
@@ -286,13 +350,7 @@ export function ConfirmationDialogForSuperVault({
     assetDetails: any
     amount: string
     balance: string
-    maxBorrowAmount: string
     setAmount: (amount: string) => void
-    healthFactorValues: {
-        healthFactor: any
-        newHealthFactor: any
-    }
-    isVault?: boolean
     open: boolean
     setOpen: (open: boolean) => void
     setActionType?: (actionType: TPositionType) => void
@@ -352,8 +410,8 @@ export function ConfirmationDialogForSuperVault({
         return isDepositPositionType(positionType) ? status.deposit : status.withdraw
     }
 
-    const inputUsdAmount =
-        Number(amount) * Number(assetDetails?.asset?.token?.price_usd)
+    const inputUsdAmount = Number(amount);
+    // Number(amount) * Number(assetDetails?.asset?.token?.price_usd)
 
     function handleInputUsdAmount(amount: string) {
         const amountFormatted = hasExponent(amount)
@@ -377,37 +435,13 @@ export function ConfirmationDialogForSuperVault({
     const withdrawTxSpinnerColor = withdrawTx.isPending
         ? 'text-secondary-500'
         : 'text-primary'
-    const txSpinnerColor = isDepositPositionType(positionType)
-        ? depositTxSpinnerColor
-        : withdrawTxSpinnerColor
 
     const canDisplayExplorerLinkWhileLoading = isDepositPositionType(positionType)
         ? depositTx.hash.length > 0 && (depositTx.isConfirming || depositTx.isPending)
         : withdrawTx.hash.length > 0 &&
         (withdrawTx.isConfirming || withdrawTx.isPending)
 
-    function getNewHfColor() {
-        const newHF = Number(healthFactorValues.newHealthFactor.toString())
-        const HF = Number(healthFactorValues.healthFactor.toString())
-
-        if (newHF < HF) {
-            return 'text-danger-500'
-        } else if (newHF > HF) {
-            return 'text-success-500'
-        } else {
-            return 'text-warning-500'
-        }
-    }
-
-    function isHfLow() {
-        return (
-            Number(healthFactorValues.newHealthFactor.toString()) < Number(1.5)
-        )
-    }
-
-    // const disableActionButton =
-    //     disabled ||
-    //     (!isDepositPositionType(positionType) && isHfLow())
+    const disableActionButton = disabled;
 
     // SUB_COMPONENT: Trigger button to open the dialog
     const triggerButton = (
@@ -664,9 +698,7 @@ export function ConfirmationDialogForSuperVault({
                                 weight="normal"
                                 className="text-gray-600"
                             >
-                                {handleSmallestValue(
-                                    (Number(balance) - Number(amount)).toString()
-                                )}{' '}
+                                {handleSmallestValue((Number(balance) - Number(amount)).toString())}{' '}
                                 {assetDetails?.asset?.token?.symbol}
                             </BodyText>
                         </div>
@@ -683,117 +715,11 @@ export function ConfirmationDialogForSuperVault({
                                     weight="normal"
                                     className="text-gray-600"
                                 >
-                                    Net APY
+                                    Spot APY
                                 </BodyText>
                                 <Badge variant="green">
-                                    {abbreviateNumber(
-                                        isDepositPositionType(positionType)
-                                            ? Number(
-                                                (assetDetails?.asset?.apy ||
-                                                    assetDetails?.asset
-                                                        ?.supply_apy ||
-                                                    assetDetails?.supply_apy ||
-                                                    assetDetails?.apy) ??
-                                                0
-                                            )
-                                            : Number(
-                                                (assetDetails?.asset
-                                                    ?.variable_borrow_apy ||
-                                                    assetDetails?.variable_borrow_apy) ??
-                                                0
-                                            )
-                                    )}
-                                    %
+                                    {abbreviateNumber(Number(assetDetails?.asset?.spot_apy) ?? 0)}%
                                 </Badge>
-                            </div>
-                        )}
-                    {isShowBlock({
-                        deposit: false,
-                        withdraw:
-                            withdrawTx.status === 'withdraw' &&
-                            !isWithdrawTxInProgress,
-                    }) && (
-                            <div className="flex items-center justify-between w-full py-[16px]">
-                                <BodyText
-                                    level="body2"
-                                    weight="normal"
-                                    className="text-gray-600"
-                                >
-                                    New limit
-                                </BodyText>
-                                <div className="flex items-center gap-[4px]">
-                                    <BodyText
-                                        level="body2"
-                                        weight="normal"
-                                        className="text-gray-800"
-                                    >
-                                        {handleSmallestValue(
-                                            (
-                                                Number(maxBorrowAmount) -
-                                                Number(amount)
-                                            ).toString(),
-                                            getMaxDecimalsToDisplay(
-                                                assetDetails?.asset?.token
-                                                    ?.symbol ||
-                                                assetDetails?.token?.symbol
-                                            )
-                                        )}
-                                    </BodyText>
-                                    <ImageWithDefault
-                                        src={assetDetails?.asset?.token?.logo}
-                                        alt={assetDetails?.asset?.token?.symbol}
-                                        width={16}
-                                        height={16}
-                                        className="rounded-full max-w-[16px] max-h-[16px]"
-                                    />
-                                </div>
-                            </div>
-                        )}
-                    {isShowBlock({
-                        deposit: false,
-                        withdraw:
-                            withdrawTx.status === 'withdraw' &&
-                            !isWithdrawTxInProgress,
-                    }) && (
-                            <div className="flex items-center justify-between w-full py-[16px]">
-                                <BodyText
-                                    level="body2"
-                                    weight="normal"
-                                    className="text-gray-600"
-                                >
-                                    Health factor
-                                </BodyText>
-                                <div className="flex flex-col items-end justify-end gap-2">
-                                    <div className="flex items-center gap-2">
-                                        <BodyText
-                                            level="body2"
-                                            weight="normal"
-                                            className={`text-gray-800`}
-                                        >
-                                            {healthFactorValues.healthFactor.toFixed(
-                                                2
-                                            )}
-                                        </BodyText>
-                                        <ArrowRightIcon
-                                            width={16}
-                                            height={16}
-                                            className="stroke-gray-800"
-                                            strokeWidth={2.5}
-                                        />
-                                        <BodyText
-                                            level="body2"
-                                            weight="normal"
-                                            className={getNewHfColor()}
-                                        >
-                                            {healthFactorValues.newHealthFactor.toFixed(
-                                                2
-                                            )}
-                                        </BodyText>
-                                    </div>
-                                    <Label size="small" className="text-gray-600">
-                                        Liquidation at &lt;1.0
-                                    </Label>
-                                </div>
                             </div>
                         )}
                     {isShowBlock({

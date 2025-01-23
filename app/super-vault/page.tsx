@@ -17,7 +17,7 @@ import VaultOverview from './vault-overview'
 export default function SuperVaultPage() {
     return (
         <TxProvider>
-            <MainContainer className="flex flex-col gap-[40px] w-full mx-auto my-24">
+            <MainContainer className="flex flex-col flex-wrap gap-[40px] w-full mx-auto my-24">
                 <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-[16px]">
                     <div className="flex flex-col gap-10">
                         <VaultStats />
