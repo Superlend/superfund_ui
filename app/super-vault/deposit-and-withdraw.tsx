@@ -70,7 +70,7 @@ import ConnectWalletButton from '@/components/ConnectWalletButton'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 
 export default function DepositAndWithdrawAssets() {
-    const { isWalletConnected } = useWalletConnection()
+    const { isWalletConnected, handleSwitchChain } = useWalletConnection()
     const [positionType, setPositionType] = useState<TPositionType>('deposit')
     const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] = useState<boolean>(false)
     const { depositTx, setDepositTx } = useTxContext() as TTxContext
@@ -85,6 +85,12 @@ export default function DepositAndWithdrawAssets() {
 
     const { balance, userMaxWithdrawAmount, isLoading: isLoadingBalance, error: balanceError } = useUserBalance(walletAddress as `0x${string}`)
     const { spotApy, isLoading: isLoadingVaultStats, error: vaultStatsError } = useVaultHook()
+
+    useEffect(() => {
+        if (isWalletConnected) {
+            handleSwitchChain(ChainId.Base)
+        }
+    }, [isWalletConnected])
 
     useEffect(() => {
         if (depositTx.status === 'approve' && depositTx.isRefreshingAllowance) {
@@ -386,8 +392,8 @@ export function ConfirmationDialogForSuperVault({
     setOpen: (open: boolean) => void
     setActionType?: (actionType: TPositionType) => void
 }) {
-    const { depositTx, setDepositTx, withdrawTx, setWithdrawTx } =
-        useTxContext() as TTxContext
+    const { depositTx, setDepositTx, withdrawTx, setWithdrawTx } = useTxContext() as TTxContext
+    const { isWalletConnected, handleSwitchChain } = useWalletConnection()
     const { width: screenWidth } = useDimensions()
     const isDesktop = screenWidth > 768
 
@@ -397,6 +403,12 @@ export function ConfirmationDialogForSuperVault({
             resetDepositWithdrawTx()
         }
     }, [])
+
+    useEffect(() => {
+        if (isWalletConnected) {
+            handleSwitchChain(ChainId.Base)
+        }
+    }, [isWalletConnected])
 
     const { user } = usePrivy()
     const walletAddress = user?.wallet?.address
