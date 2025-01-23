@@ -1,29 +1,36 @@
 'use client'
 
 import { BodyText, HeadingText } from "@/components/ui/typography";
+import { useWalletConnection } from "@/hooks/useWalletConnection";
+import { useUserBalance } from "@/hooks/vault_hooks/useUserBalanceHook";
 import { useVaultHook } from "@/hooks/vault_hooks/vaultHook";
 import { abbreviateNumber } from "@/lib/utils";
 
 export default function VaultStats() {
-
+    const { walletAddress } = useWalletConnection()
     const { totalAssets, spotApy, isLoading, error } = useVaultHook()
+    const { userMaxWithdrawAmount } = useUserBalance(walletAddress as `0x${string}`)
 
     const items = [
         {
-            title: 'Spot APY',
-            value: `${spotApy}%`,
+            title: 'My Position',
+            value: `${abbreviateNumber(Number(userMaxWithdrawAmount))}`,
+            show: !!Number(userMaxWithdrawAmount ?? 0),
         },
         {
-            title: 'Vault TVL',
+            title: 'Spot APY',
+            value: `${spotApy}%`,
+            show: true,
+        },
+        {
+            title: 'TVL',
             value: abbreviateNumber(Number(totalAssets)),
+            show: true,
         },
         {
             title: '7D APY',
             value: 'N/A',
-        },
-        {
-            title: 'Vault Sharpe',
-            value: 'N/A',
+            show: true,
         },
     ]
 

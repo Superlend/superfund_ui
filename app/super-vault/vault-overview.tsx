@@ -22,6 +22,32 @@ export default function VaultOverview() {
 
     const { allocationPoints } = useVaultAllocationPoints()
 
+    const rebalancedAssetsList = [
+        {
+            title: 'AAVE',
+            logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/aave.svg',
+            link: 'https://aave.com/',
+        },
+        {
+            title: 'MORPHO',
+            logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/morpho-logo.svg',
+            link: 'https://morpho.org/',
+        },
+        {
+            title: 'FLUID',
+            logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/fluid_logo.png',
+            link: 'https://fluid.instadapp.io/',
+        }
+    ]
+
+    const tokensSupportedList = [
+        {
+            title: 'USDC',
+            logo: 'https://cdn.morpho.org/assets/logos/usdc.svg',
+            link: '/',
+        },
+    ]
+
     return (
         <div className="flex flex-col gap-[40px]">
             <section className="block flex flex-col gap-2" id="vault-information">
@@ -42,20 +68,20 @@ export default function VaultOverview() {
                 <Card>
                     <CardContent className="flex flex-col divide-y divide-gray-400 px-8 py-5">
                         {
-                            ['USDC', 'USDT', 'DAI'].map((token) => (
-                                <div className="item flex items-center justify-between gap-[12px] py-6 first:pt-2 last:pb-2" key={token}>
+                            tokensSupportedList.map((token) => (
+                                <div className="item flex items-center justify-between gap-[12px] py-6 first:pt-2 last:pb-2" key={token.title}>
                                     <div className="flex items-center gap-2">
                                         <ImageWithDefault
-                                            src={getTokenLogo(token)}
-                                            alt={token}
+                                            src={token.logo}
+                                            alt={token.title}
                                             width={24}
                                             height={24}
                                         />
                                         <BodyText level="body1" weight="medium">
-                                            {token}
+                                            {token.title}
                                         </BodyText>
                                     </div>
-                                    <ExternalLink href="/" className="font-medium">
+                                    <ExternalLink href={token.link} className="font-medium">
                                         Contract
                                     </ExternalLink>
                                 </div>
@@ -71,23 +97,23 @@ export default function VaultOverview() {
                 <Card>
                     <CardContent className="p-5 flex items-center justify-around gap-4">
                         {
-                            ['AAVE', 'EULER', 'MORPHO', 'FLUID'].map((token) => (
-                                <div className="item flex items-center gap-2" key={token}>
+                            rebalancedAssetsList.map((token) => (
+                                <div className="item flex items-center gap-2" key={token.title}>
                                     <ImageWithDefault
-                                        src={'/images/platforms/morpho.webp'}
-                                        alt={token}
+                                        src={token.logo}
+                                        alt={token.title}
                                         width={24}
                                         height={24}
                                     />
                                     <div className="flex items-center gap-1">
                                         <ExternalLink
-                                            href="/"
+                                            href={token.link}
                                             className="font-medium text-gray-500 stroke-gray-600"
                                             variant="ghost"
                                             iconSize={14}
                                         >
                                             <BodyText level="body1" weight="medium">
-                                                {token}
+                                                {token.title}
                                             </BodyText>
                                         </ExternalLink>
                                     </div>
@@ -97,23 +123,23 @@ export default function VaultOverview() {
                     </CardContent>
                 </Card>
             </section>
-            <PerformanceHistoryChart
+            {/* <PerformanceHistoryChart
                 selectedRange={Period.oneMonth}
                 handleRangeChange={() => { }}
                 selectedFilter={Period.oneMonth}
                 handleFilterChange={() => { }}
                 chartData={[]}
                 disableCategoryFilters={[]}
-            />
+            /> */}
             <AllocationDetailsChart allocationPoints={allocationPoints} />
-            <AllocationHistoryChart />
+            {/* <AllocationHistoryChart /> */}
             <section className="block flex flex-col gap-4">
                 <HeadingText level="h4" weight="medium">
                     Additional Information
                 </HeadingText>
                 <Card>
                     <CardContent className="px-9 py-8 bg-gray-100/50 divide-y divide-gray-400">
-                        <div className="row flex max-lg:flex-col gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
+                        {/* <div className="row flex max-lg:flex-col gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
                             <div className="col flex-1 flex items-center gap-2">
                                 <BodyText level="body1" weight="medium">
                                     Audit Report
@@ -136,7 +162,7 @@ export default function VaultOverview() {
                                     </BodyText>
                                 </ExternalLink>
                             </div>
-                        </div>
+                        </div> */}
                         <div className="row flex max-lg:flex-col gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
                             <div className="col flex-1 flex items-center gap-2">
                                 <BodyText level="body1" weight="medium">
