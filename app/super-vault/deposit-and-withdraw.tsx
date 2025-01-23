@@ -94,7 +94,6 @@ export default function DepositAndWithdrawAssets() {
             }))
 
             checkAllowance(walletAddress as `0x${string}`).then((allowance) => {
-                console.log("allowance", allowance)
                 if (Number(allowance) > 0 && Number(allowance) >= Number(userEnteredDepositAmount)) {
                     setDepositTx((prev: TDepositTx) => ({
                         ...prev,
@@ -188,33 +187,34 @@ export default function DepositAndWithdrawAssets() {
                             ? 'Deposit'
                             : `Withdraw`}
                     </BodyText>
-                    <BodyText
-                        level="body2"
-                        weight="normal"
-                        className="capitalize text-gray-600 flex items-center gap-[4px]"
-                    >
-                        {isDepositPositionType ? 'Bal' : 'Available'}:{' '}
-                        {isLoadingBalance ? (
-                            <LoaderCircle className="text-primary w-4 h-4 animate-spin" />
-                        ) : (
-                            abbreviateNumber(
-                                Number(
-                                    getLowestDisplayValue(
-                                        Number(
-                                            isDepositPositionType
-                                                ? balance ?? 0
-                                                : userMaxWithdrawAmount ?? 0
-                                        ),
-                                        2
-                                    )
-                                ),
-                                2
-                            )
-                        )}
-                        <span className="inline-block truncate max-w-[70px]">
-                            USDC
-                        </span>
-                    </BodyText>
+                    {isWalletConnected &&
+                        <BodyText
+                            level="body2"
+                            weight="normal"
+                            className="capitalize text-gray-600 flex items-center gap-[4px]"
+                        >
+                            {isDepositPositionType ? 'Bal' : 'Available'}:{' '}
+                            {isLoadingBalance ? (
+                                <LoaderCircle className="text-primary w-4 h-4 animate-spin" />
+                            ) : (
+                                abbreviateNumber(
+                                    Number(
+                                        getLowestDisplayValue(
+                                            Number(
+                                                isDepositPositionType
+                                                    ? balance ?? 0
+                                                    : userMaxWithdrawAmount ?? 0
+                                            ),
+                                            2
+                                        )
+                                    ),
+                                    2
+                                )
+                            )}
+                            <span className="inline-block truncate max-w-[70px]">
+                                USDC
+                            </span>
+                        </BodyText>}
                 </div>
                 <CardContent className="p-0 bg-white rounded-5">
                     <div
@@ -247,23 +247,25 @@ export default function DepositAndWithdrawAssets() {
                                 setAmount={isDepositPositionType ? setUserEnteredDepositAmount : setUserEnteredWithdrawAmount}
                             />
                         </div>
-                        <Button
-                            variant="link"
-                            onClick={() => isDepositPositionType ? setUserEnteredDepositAmount(balance) : setUserEnteredWithdrawAmount(userMaxWithdrawAmount)}
-                            className="uppercase text-[14px] font-medium w-fit"
-                        >
-                            max
-                        </Button>
+                        {isWalletConnected &&
+                            <Button
+                                variant="link"
+                                onClick={() => isDepositPositionType ? setUserEnteredDepositAmount(balance) : setUserEnteredWithdrawAmount(userMaxWithdrawAmount)}
+                                className="uppercase text-[14px] font-medium w-fit"
+                            >
+                                max
+                            </Button>}
                     </div>
-                    <div className="card-content-bottom max-md:px-2 py-3 max-w-[250px] mx-auto">
-                        <BodyText
-                            level="body2"
-                            weight="normal"
-                            className="w-full text-gray-500 text-center"
-                        >
-                            {getHelperText()}
-                        </BodyText>
-                    </div>
+                    {isWalletConnected &&
+                        <div className="card-content-bottom max-md:px-2 py-3 max-w-[250px] mx-auto">
+                            <BodyText
+                                level="body2"
+                                weight="normal"
+                                className="w-full text-gray-500 text-center"
+                            >
+                                {getHelperText()}
+                            </BodyText>
+                        </div>}
                 </CardContent>
                 <CardFooter className="p-0 justify-center">
                     {!isWalletConnected && (
@@ -281,6 +283,7 @@ export default function DepositAndWithdrawAssets() {
                                             symbol: 'USDC',
                                         },
                                         spot_apy: spotApy,
+                                        chain_id: ChainId.Base,
                                     },
                                 }
                             }
@@ -548,8 +551,7 @@ export function ConfirmationDialogForSuperVault({
                                     isDepositPositionType(positionType)
                                         ? depositTx.hash
                                         : withdrawTx.hash,
-                                    assetDetails?.chain_id ||
-                                    assetDetails?.platform?.chain_id
+                                    assetDetails?.chain_id
                                 )}
                                 target="_blank"
                                 rel="noreferrer"
@@ -780,8 +782,7 @@ export function ConfirmationDialogForSuperVault({
                                                 isDepositPositionType(positionType)
                                                     ? depositTx.hash
                                                     : withdrawTx.hash,
-                                                assetDetails?.chain_id ||
-                                                assetDetails?.platform?.chain_id
+                                                assetDetails?.chain_id
                                             )}
                                             target="_blank"
                                             rel="noreferrer"
@@ -897,14 +898,14 @@ function getTxInProgressText({
     if (isPending) {
         textByStatus = {
             approve: `Approve spending ${formattedText} from your wallet`,
-            lend: `Approve transaction for ${actionTitle}ing ${formattedText} from your wallet`,
-            borrow: `Approve transaction for ${actionTitle}ing ${formattedText} from your wallet`,
+            deposit: `Approve transaction for ${actionTitle}ing ${formattedText} from your wallet`,
+            withdraw: `Approve transaction for ${actionTitle}ing ${formattedText} from your wallet`,
         }
     } else if (isConfirming) {
         textByStatus = {
             approve: `Confirming transaction for spending ${formattedText} from your wallet`,
-            lend: `Confirming transaction for ${actionTitle}ing ${formattedText} from your wallet`,
-            borrow: `Confirming transaction for ${actionTitle}ing ${formattedText} from your wallet`,
+            deposit: `Confirming transaction for ${actionTitle}ing ${formattedText} from your wallet`,
+            withdraw: `Confirming transaction for ${actionTitle}ing ${formattedText} from your wallet`,
             view: `Confirming transaction for ${actionTitle}ing ${formattedText} from your wallet`,
         }
     }

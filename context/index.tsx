@@ -21,19 +21,9 @@ const metadata = {
 }
 
 export const config = createConfig({
-    chains: [mainnet, polygon, base, scroll, avalanche, optimism, bsc, gnosis, arbitrum, etherlink, metis], // Pass your required chains as an array
+    chains: [base], // Pass your required chains as an array
     transports: {
-        [mainnet.id]: http(),
-        [polygon.id]: http(),
         [base.id]: http(),
-        [metis.id]: http(),
-        [scroll.id]: http(),
-        [avalanche.id]: http(),
-        [optimism.id]: http(),
-        [bsc.id]: http(),
-        [gnosis.id]: http(),
-        [arbitrum.id]: http(),
-        [etherlink.id]: http(),
     },
 })
 
@@ -57,7 +47,7 @@ function ContextProvider({
                     loginMessage: 'Select wallet to continue',
                     showWalletLoginFirst: true,
                 },
-                supportedChains: [mainnet, polygon, base, scroll, avalanche, optimism, bsc, gnosis, arbitrum, etherlink, metis],
+                supportedChains: [base],
             }}
         >
             <QueryClientProvider client={queryClient}>
