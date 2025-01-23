@@ -8,6 +8,7 @@ import { base } from "viem/chains";
 const USDC_ABI = parseAbi([
     'function balanceOf(address) view returns (uint256)',
     'function decimals() view returns (uint8)',
+    'function allowance(address, address) view returns (uint256)',
 ]);
 
 // Create public client outside component to prevent recreation
@@ -25,6 +26,19 @@ const VAULT_ABI = parseAbi([
     // maxWithdraw
     'function maxWithdraw(address user) view returns (uint256)',
 ]);
+
+export async function checkAllowance(walletAddress: `0x${string}`) {
+    const allowance = await publicClient.readContract({
+        address: USDC_ADDRESS,
+        abi: USDC_ABI,
+        functionName: 'allowance',
+        args: [walletAddress as `0x${string}`, VAULT_ADDRESS as `0x${string}`],
+    })
+
+    let allowanceInWei = formatUnits(allowance, USDC_DECIMALS)
+
+    return allowanceInWei
+}
 
 export function useUserBalance(walletAddress: `0x${string}`) {
     const [balance, setBalance] = useState<string>('0')

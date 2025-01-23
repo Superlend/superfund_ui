@@ -63,7 +63,7 @@ import {
     DrawerTrigger,
 } from '@/components/ui/drawer'
 import { ChainId } from '@/types/chain'
-import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
+import { checkAllowance, useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
 import { usePrivy } from '@privy-io/react-auth'
 import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import ConnectWalletButton from '@/components/ConnectWalletButton'
@@ -92,8 +92,24 @@ export default function DepositAndWithdrawAssets() {
                 ...prev,
                 isConfirming: true,
             }))
-        }
 
+            checkAllowance(walletAddress as `0x${string}`).then((allowance) => {
+                console.log("allowance", allowance)
+                if (Number(allowance) > 0 && Number(allowance) >= Number(userEnteredDepositAmount)) {
+                    setDepositTx((prev: TDepositTx) => ({
+                        ...prev,
+                        status: 'deposit',
+                        isConfirming: false,
+                    }))
+                } else {
+                    setDepositTx((prev: TDepositTx) => ({
+                        ...prev,
+                        status: 'approve',
+                        isConfirming: false,
+                    }))
+                }
+            })
+        }
         // TODO: Add logic for approval of withdraw tx
     }, [depositTx.isRefreshingAllowance])
 

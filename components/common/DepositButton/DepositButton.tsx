@@ -216,12 +216,12 @@ const DepositButton = ({
             error
         } finally {
             // TODO: Add check for allowance
-            setDepositTx((prev: TDepositTx) => ({
-                ...prev,
-                status: 'deposit',
-                hash: '',
-                errorMessage: '',
-            }))
+            // setDepositTx((prev: TDepositTx) => ({
+            //     ...prev,
+            //     status: 'deposit',
+            //     hash: '',
+            //     errorMessage: '',
+            // }))
         }
     }
 
