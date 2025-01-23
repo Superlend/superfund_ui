@@ -73,6 +73,7 @@ export default function DepositAndWithdrawAssets() {
     const { isWalletConnected } = useWalletConnection()
     const [positionType, setPositionType] = useState<TPositionType>('deposit')
     const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] = useState<boolean>(false)
+    const { depositTx, setDepositTx } = useTxContext() as TTxContext
 
     const [userEnteredDepositAmount, setUserEnteredDepositAmount] = useState<string>('')
     const [userEnteredWithdrawAmount, setUserEnteredWithdrawAmount] = useState<string>('')
@@ -84,6 +85,17 @@ export default function DepositAndWithdrawAssets() {
 
     const { balance, userMaxWithdrawAmount, isLoading: isLoadingBalance, error: balanceError } = useUserBalance(walletAddress as `0x${string}`)
     const { spotApy, isLoading: isLoadingVaultStats, error: vaultStatsError } = useVaultHook()
+
+    useEffect(() => {
+        if (depositTx.status === 'approve' && depositTx.isRefreshingAllowance) {
+            setDepositTx((prev: TDepositTx) => ({
+                ...prev,
+                isConfirming: true,
+            }))
+        }
+
+        // TODO: Add logic for approval of withdraw tx
+    }, [depositTx.isRefreshingAllowance])
 
     const getInputErrorText = (): string | null => {
         if (isDepositPositionType) {
