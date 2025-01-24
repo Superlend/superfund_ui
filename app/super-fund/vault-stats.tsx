@@ -1,26 +1,30 @@
 'use client'
 
-import { Skeleton } from "@/components/ui/skeleton";
-import { BodyText, HeadingText } from "@/components/ui/typography";
-import useIsClient from "@/hooks/useIsClient";
-import { useWalletConnection } from "@/hooks/useWalletConnection";
-import { useUserBalance } from "@/hooks/vault_hooks/useUserBalanceHook";
-import { useVaultHook } from "@/hooks/vault_hooks/vaultHook";
-import { abbreviateNumber } from "@/lib/utils";
-import { motion } from "motion/react"
+import { Skeleton } from '@/components/ui/skeleton'
+import { BodyText, HeadingText } from '@/components/ui/typography'
+import useIsClient from '@/hooks/useIsClient'
+import { useWalletConnection } from '@/hooks/useWalletConnection'
+import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
+import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
+import { abbreviateNumber } from '@/lib/utils'
+import { motion } from 'motion/react'
 
 export default function VaultStats() {
     const { walletAddress } = useWalletConnection()
     const { totalAssets, spotApy, isLoading, error } = useVaultHook()
-    const { userMaxWithdrawAmount } = useUserBalance(walletAddress as `0x${string}`)
-    const { isClient } = useIsClient();
+    const { userMaxWithdrawAmount } = useUserBalance(
+        walletAddress as `0x${string}`
+    )
+    const { isClient } = useIsClient()
 
-    const hasPosition = !!Number(userMaxWithdrawAmount ?? 0);
+    const hasPosition = !!Number(userMaxWithdrawAmount ?? 0)
 
     const vaultStats = [
         {
             title: 'My Position',
-            value: hasPosition ? `$${abbreviateNumber(Number(userMaxWithdrawAmount))}` : 'N/A',
+            value: hasPosition
+                ? `$${abbreviateNumber(Number(userMaxWithdrawAmount))}`
+                : 'N/A',
             show: hasPosition,
         },
         {
@@ -43,10 +47,13 @@ export default function VaultStats() {
     if (!isClient) {
         return (
             <div className="flex items-center justify-between gap-4">
-                {[1, 2, 3, 4].map(item => (
-                    <div className="flex flex-col items-center max-w-[250px]" key={item}>
-                        <Skeleton className='h-12 w-full' />
-                        <Skeleton className='h-8 w-[80%]' />
+                {[1, 2, 3, 4].map((item) => (
+                    <div
+                        className="flex flex-col items-center max-w-[250px]"
+                        key={item}
+                    >
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-8 w-[80%]" />
                     </div>
                 ))}
             </div>
@@ -65,10 +72,14 @@ export default function VaultStats() {
                         transition={{
                             duration: 0.3,
                             delay: index * 0.2,
-                            ease: "easeOut"
+                            ease: 'easeOut',
                         }}
                     >
-                        <BodyText level="body1" weight="normal" className="text-gray-600">
+                        <BodyText
+                            level="body1"
+                            weight="normal"
+                            className="text-gray-600"
+                        >
                             {item.title}
                         </BodyText>
                         <HeadingText level="h3" weight="medium">
@@ -78,5 +89,5 @@ export default function VaultStats() {
                 ))}
             </div>
         </section>
-    );
+    )
 }

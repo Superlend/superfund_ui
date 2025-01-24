@@ -14,7 +14,7 @@ const TxInitialState: TTxContext = {
         isConfirming: false,
         isConfirmed: false,
     },
-    setDepositTx: () => { },
+    setDepositTx: () => {},
     withdrawTx: {
         status: 'withdraw',
         hash: '',
@@ -23,7 +23,7 @@ const TxInitialState: TTxContext = {
         isConfirming: false,
         isConfirmed: false,
     },
-    setWithdrawTx: () => { },
+    setWithdrawTx: () => {},
 }
 
 export const TxContext = createContext<TTxContext>(TxInitialState)
@@ -97,6 +97,8 @@ export default function TxProvider({
 export const useTxContext = () => {
     const context = useContext(TxContext)
     if (!context)
-        throw new Error('useTxContext must be used within an SuperVaultTxProvider')
+        throw new Error(
+            'useTxContext must be used within an SuperVaultTxProvider'
+        )
     return context
 }

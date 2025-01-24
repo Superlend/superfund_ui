@@ -14,10 +14,10 @@ import { MessageSquare, MessageSquareText } from 'lucide-react'
 import useIsClient from '@/hooks/useIsClient'
 
 export function FeedbackBanner() {
-    const { isClient } = useIsClient();
+    const { isClient } = useIsClient()
 
     if (!isClient) {
-        return null;
+        return null
     }
 
     return (
