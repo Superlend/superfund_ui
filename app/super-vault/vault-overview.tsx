@@ -17,42 +17,23 @@ import PerformanceHistoryChart from "@/components/performance-history-chart"
 import { Period } from "@/types/periodButtons"
 import { AllocationHistoryChart } from "@/components/allocation-history-chart"
 import { useVaultAllocationPoints } from "@/hooks/vault_hooks/vaultHook"
+import { motion } from "motion/react"
+import { rebalancedAssetsList, tokensSupportedList } from "@/data/abi/vault-data"
 
 export default function VaultOverview() {
 
     const { allocationPoints } = useVaultAllocationPoints()
 
-    const rebalancedAssetsList = [
-        {
-            title: 'AAVE',
-            logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/aave.svg',
-            link: 'https://aave.com/',
-        },
-        {
-            title: 'MORPHO',
-            logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/morpho-logo.svg',
-            link: 'https://morpho.org/',
-        },
-        {
-            title: 'FLUID',
-            logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/fluid_logo.png',
-            link: 'https://fluid.instadapp.io/',
-        }
-    ]
-
-    const tokensSupportedList = [
-        {
-            title: 'USDC',
-            logo: 'https://cdn.morpho.org/assets/logos/usdc.svg',
-            link: '/',
-        },
-    ]
-
     return (
-        <div className="flex flex-col gap-[40px]">
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5, ease: "easeOut" }}
+            className="flex flex-col gap-[40px]"
+        >
             <section className="block flex flex-col gap-2" id="vault-information">
                 <HeadingText level="h4" weight="medium">
-                    Vault Information
+                    Fund Information
                 </HeadingText>
                 <BodyText level="body1" weight="normal" className="text-gray-600">
                     SuperUSD Vault is an automated yield vault built with Euler&apos;s EVT.
@@ -204,6 +185,6 @@ export default function VaultOverview() {
                     </CardContent>
                 </Card>
             </section>
-        </div>
+        </motion.div>
     )
 }

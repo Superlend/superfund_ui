@@ -32,6 +32,21 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 export default function AllocationDetailsChart({ allocationPoints }: { allocationPoints: { name: string, value: number }[] }) {
+    const allocatedAssetDetails = {
+        name: 'Loading...',
+        value: '0'
+    }
+
+    const getHighestValueAssetDetails = allocationPoints?.length ? allocationPoints.reduce((max, current) =>
+        current.value > max.value ? current : max,
+        allocationPoints[0]
+    ) : { name: 'Loading...', value: 0 };
+
+    const highestAllocation = getHighestValueAssetDetails;
+
+    allocatedAssetDetails.name = highestAllocation.name;
+    allocatedAssetDetails.value = highestAllocation.value.toString();
+
     return (
         <motion.section
             initial={{ opacity: 0, y: 20 }}
@@ -45,7 +60,7 @@ export default function AllocationDetailsChart({ allocationPoints }: { allocatio
                         Last Rebalance: <span className="text-gray-700">2 hrs 34 mins ago</span>
                     </BodyText>
                 </div>
-                <div className="flex flex-col lg:flex-row items-center justify-between gap-2 lg:h-[340px] w-full bg-white rounded-4 max-lg:pb-8 px-12">
+                <div className="flex flex-wrap items-center justify-center gap-6 lg:gap-24 lg:h-[340px] w-full bg-white rounded-4 max-lg:pb-8 px-12">
                     <div className="h-[340px] w-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
@@ -91,14 +106,14 @@ export default function AllocationDetailsChart({ allocationPoints }: { allocatio
                                                             y={(viewBox?.cy || 0) - 2}
                                                             className="fill-foreground text-2xl font-medium"
                                                         >
-                                                            {totalCount.toLocaleString()}%
+                                                            {allocatedAssetDetails.value.toLocaleString()}%
                                                         </tspan>
                                                         <tspan
                                                             x={viewBox.cx}
                                                             y={(viewBox.cy || 0) + 24}
                                                             className="fill-muted-foreground text-sm"
                                                         >
-                                                            Allocated to Aave
+                                                            Allocated to {allocatedAssetDetails.name.toString()}
                                                         </tspan>
                                                     </text>
                                                 )
@@ -114,7 +129,7 @@ export default function AllocationDetailsChart({ allocationPoints }: { allocatio
                         {allocationPoints.map((item, index) => (
                             <div key={item.name} className="flex items-center space-x-2">
                                 <div
-                                    className="w-3 h-3 rounded-full"
+                                    className="w-4 h-4 rounded-2"
                                     style={{ backgroundColor: COLORS[index] }}
                                 />
                                 <div className="space-y-1">
