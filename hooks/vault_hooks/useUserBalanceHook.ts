@@ -8,6 +8,7 @@ import { base } from "viem/chains";
 const USDC_ABI = parseAbi([
     'function balanceOf(address) view returns (uint256)',
     'function decimals() view returns (uint8)',
+    'function allowance(address, address) view returns (uint256)',
 ]);
 
 // Create public client outside component to prevent recreation
@@ -26,15 +27,31 @@ const VAULT_ABI = parseAbi([
     'function maxWithdraw(address user) view returns (uint256)',
 ]);
 
+export async function checkAllowance(walletAddress: `0x${string}`) {
+    const allowance = await publicClient.readContract({
+        address: USDC_ADDRESS,
+        abi: USDC_ABI,
+        functionName: 'allowance',
+        args: [walletAddress as `0x${string}`, VAULT_ADDRESS as `0x${string}`],
+    })
+
+    let allowanceInWei = formatUnits(allowance, USDC_DECIMALS)
+
+    return allowanceInWei
+}
+
 export function useUserBalance(walletAddress: `0x${string}`) {
     const [balance, setBalance] = useState<string>('0')
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [userMaxWithdrawAmount, setUserMaxWithdrawAmount] = useState<string>('0');
 
-    async function getUserBalance(walletAddress: string) {
+
+    async function getUserBalance(walletAddress: string, isFirstTimeCall: boolean) {
         try {
-            setIsLoading(true)
+            if (isFirstTimeCall) {
+                setIsLoading(true)
+            }
             const [balance, maxWithdraw] = await Promise.all([
                 publicClient.readContract({
                     address: USDC_ADDRESS,
@@ -61,16 +78,18 @@ export function useUserBalance(walletAddress: `0x${string}`) {
             console.error('Error fetching user balance:', error)
             setError('Failed to fetch user balance')
         } finally {
-            setIsLoading(false)
+            if (isFirstTimeCall) {
+                setIsLoading(false)
+            }
         }
     }
 
     useEffect(() => {
         // Initial fetch
-        getUserBalance(walletAddress)
+        getUserBalance(walletAddress, true)
 
         // Refresh every 5 seconds
-        const interval = setInterval(getUserBalance, 5000);
+        const interval = setInterval(() => getUserBalance(walletAddress, false), 5000);
         return () => clearInterval(interval);
     }, [walletAddress])
 

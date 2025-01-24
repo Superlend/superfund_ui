@@ -21,7 +21,6 @@ const ActionButton = ({
     setActionType,
     walletAddress
 }: IActionButtonSelectComponent) => {
-    console.log('actionType', actionType)
     if (actionType === 'withdraw') {
         return (
             <WithdrawButton

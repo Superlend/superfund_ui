@@ -16,20 +16,31 @@ import AllocationDetailsChart from "@/components/allocation-details-chart"
 import PerformanceHistoryChart from "@/components/performance-history-chart"
 import { Period } from "@/types/periodButtons"
 import { AllocationHistoryChart } from "@/components/allocation-history-chart"
-
+import { useVaultAllocationPoints } from "@/hooks/vault_hooks/vaultHook"
+import { motion } from "motion/react"
+import { rebalancedAssetsList, tokensSupportedList } from "@/data/abi/vault-data"
+import { DOCUMENTATION_LINK } from "@/constants"
 
 export default function VaultOverview() {
+
+    const { allocationPoints } = useVaultAllocationPoints()
+
     return (
-        <div className="flex flex-col gap-[40px]">
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5, ease: "easeOut" }}
+            className="flex flex-col gap-[40px]"
+        >
             <section className="block flex flex-col gap-2" id="vault-information">
                 <HeadingText level="h4" weight="medium">
-                    Vault Information
+                    Fund Information
                 </HeadingText>
                 <BodyText level="body1" weight="normal" className="text-gray-600">
-                    SuperUSD Vault is an automated yield vault built with Euler&apos;s EVT.
-                    It optimizes earnings by rebalancing deposits across USD-pegged assets like USDC and USDT,
-                    leveraging lending platforms like Aave, Compound, and Morpho for top APYs.
-                    Future updates will enable deposits as collateral, unlocking borrower integration and boosting returns.
+                    This SuperFund optimally allocates your USDC across trusted blue-chip lending protocols such as Aave,
+                    Morpho & Fluid to generate consistent and competitive returns.
+                    It is a low-risk, high-reliability investment vault designed for users looking to maximize yield
+                    on their stable coins in a safe and efficient way.
                 </BodyText>
             </section>
             <section className="block flex flex-col gap-4" id="tokens-supported">
@@ -39,20 +50,20 @@ export default function VaultOverview() {
                 <Card>
                     <CardContent className="flex flex-col divide-y divide-gray-400 px-8 py-5">
                         {
-                            ['USDC', 'USDT', 'DAI'].map((token) => (
-                                <div className="item flex items-center justify-between gap-[12px] py-6 first:pt-2 last:pb-2" key={token}>
+                            tokensSupportedList.map((token) => (
+                                <div className="item flex items-center justify-between gap-[12px] py-6 first:pt-2 last:pb-2" key={token.title}>
                                     <div className="flex items-center gap-2">
                                         <ImageWithDefault
-                                            src={getTokenLogo(token)}
-                                            alt={token}
+                                            src={token.logo}
+                                            alt={token.title}
                                             width={24}
                                             height={24}
                                         />
                                         <BodyText level="body1" weight="medium">
-                                            {token}
+                                            {token.title}
                                         </BodyText>
                                     </div>
-                                    <ExternalLink href="/" className="font-medium">
+                                    <ExternalLink href={token.link} className="font-medium">
                                         Contract
                                     </ExternalLink>
                                 </div>
@@ -68,23 +79,23 @@ export default function VaultOverview() {
                 <Card>
                     <CardContent className="p-5 flex items-center justify-around gap-4">
                         {
-                            ['AAVE', 'EULER', 'MORPHO', 'FLUID'].map((token) => (
-                                <div className="item flex items-center gap-2" key={token}>
+                            rebalancedAssetsList.map((token) => (
+                                <div className="item flex items-center gap-2" key={token.title}>
                                     <ImageWithDefault
-                                        src={'/images/platforms/morpho.webp'}
-                                        alt={token}
+                                        src={token.logo}
+                                        alt={token.title}
                                         width={24}
                                         height={24}
                                     />
                                     <div className="flex items-center gap-1">
                                         <ExternalLink
-                                            href="/"
+                                            href={token.link}
                                             className="font-medium text-gray-500 stroke-gray-600"
                                             variant="ghost"
                                             iconSize={14}
                                         >
                                             <BodyText level="body1" weight="medium">
-                                                {token}
+                                                {token.title}
                                             </BodyText>
                                         </ExternalLink>
                                     </div>
@@ -94,23 +105,23 @@ export default function VaultOverview() {
                     </CardContent>
                 </Card>
             </section>
-            <PerformanceHistoryChart
+            {/* <PerformanceHistoryChart
                 selectedRange={Period.oneMonth}
                 handleRangeChange={() => { }}
                 selectedFilter={Period.oneMonth}
                 handleFilterChange={() => { }}
                 chartData={[]}
                 disableCategoryFilters={[]}
-            />
-            <AllocationDetailsChart />
-            <AllocationHistoryChart />
+            /> */}
+            <AllocationDetailsChart allocationPoints={allocationPoints} />
+            {/* <AllocationHistoryChart /> */}
             <section className="block flex flex-col gap-4">
                 <HeadingText level="h4" weight="medium">
                     Additional Information
                 </HeadingText>
                 <Card>
                     <CardContent className="px-9 py-8 bg-gray-100/50 divide-y divide-gray-400">
-                        <div className="row flex max-lg:flex-col gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
+                        {/* <div className="row flex max-lg:flex-col gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
                             <div className="col flex-1 flex items-center gap-2">
                                 <BodyText level="body1" weight="medium">
                                     Audit Report
@@ -133,7 +144,7 @@ export default function VaultOverview() {
                                     </BodyText>
                                 </ExternalLink>
                             </div>
-                        </div>
+                        </div> */}
                         <div className="row flex max-lg:flex-col gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
                             <div className="col flex-1 flex items-center gap-2">
                                 <BodyText level="body1" weight="medium">
@@ -147,7 +158,7 @@ export default function VaultOverview() {
                                 </BodyText>
                             </div>
                             <div className="col flex-1 flex justify-end">
-                                <ExternalLink href="/" className="font-medium" variant="secondary">
+                                <ExternalLink href={DOCUMENTATION_LINK} className="font-medium" variant="secondary">
                                     <BodyText level="body2" weight="medium">
                                         View documentation
                                     </BodyText>
@@ -175,6 +186,6 @@ export default function VaultOverview() {
                     </CardContent>
                 </Card>
             </section>
-        </div>
+        </motion.div>
     )
 }

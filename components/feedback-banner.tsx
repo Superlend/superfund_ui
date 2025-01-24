@@ -11,8 +11,15 @@ import {
 import { FeedbackFormDialog } from './feedback-form-dialog'
 import { BodyText, HeadingText } from './ui/typography'
 import { MessageSquare, MessageSquareText } from 'lucide-react'
+import useIsClient from '@/hooks/useIsClient'
 
 export function FeedbackBanner() {
+    const { isClient } = useIsClient();
+
+    if (!isClient) {
+        return null;
+    }
+
     return (
         <Card className="w-full">
             <CardContent className="relative p-8 max-md:pt-[40px] max-md:pl-[50px] md:pl-[60px] overflow-hidden">
