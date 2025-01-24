@@ -46,9 +46,12 @@ export function useUserBalance(walletAddress: `0x${string}`) {
     const [error, setError] = useState<string | null>(null)
     const [userMaxWithdrawAmount, setUserMaxWithdrawAmount] = useState<string>('0');
 
-    async function getUserBalance(walletAddress: string) {
+
+    async function getUserBalance(walletAddress: string, isFirstTimeCall: boolean) {
         try {
-            setIsLoading(true)
+            if (isFirstTimeCall) {
+                setIsLoading(true)
+            }
             const [balance, maxWithdraw] = await Promise.all([
                 publicClient.readContract({
                     address: USDC_ADDRESS,
@@ -75,16 +78,18 @@ export function useUserBalance(walletAddress: `0x${string}`) {
             console.error('Error fetching user balance:', error)
             setError('Failed to fetch user balance')
         } finally {
-            setIsLoading(false)
+            if (isFirstTimeCall) {
+                setIsLoading(false)
+            }
         }
     }
 
     useEffect(() => {
         // Initial fetch
-        getUserBalance(walletAddress)
+        getUserBalance(walletAddress, true)
 
         // Refresh every 5 seconds
-        const interval = setInterval(getUserBalance, 5000);
+        const interval = setInterval(() => getUserBalance(walletAddress, false), 5000);
         return () => clearInterval(interval);
     }, [walletAddress])
 
