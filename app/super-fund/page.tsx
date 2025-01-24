@@ -25,7 +25,7 @@ export default function SuperVaultPage() {
     if (!isClient) {
         return (
             <MainContainer>
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-10">
                     <Skeleton className='h-12 w-[80%] md:w-80' />
                     <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-[16px]">
                         <div className="flex flex-col gap-8">

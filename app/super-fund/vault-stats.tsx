@@ -15,11 +15,13 @@ export default function VaultStats() {
     const { userMaxWithdrawAmount } = useUserBalance(walletAddress as `0x${string}`)
     const { isClient } = useIsClient();
 
+    const hasPosition = !!Number(userMaxWithdrawAmount ?? 0);
+
     const vaultStats = [
         {
             title: 'My Position',
-            value: `${abbreviateNumber(Number(userMaxWithdrawAmount))}`,
-            show: !!Number(userMaxWithdrawAmount ?? 0),
+            value: hasPosition ? `$${abbreviateNumber(Number(userMaxWithdrawAmount))}` : 'N/A',
+            show: hasPosition,
         },
         {
             title: 'Spot APY',

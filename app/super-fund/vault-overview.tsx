@@ -19,6 +19,7 @@ import { AllocationHistoryChart } from "@/components/allocation-history-chart"
 import { useVaultAllocationPoints } from "@/hooks/vault_hooks/vaultHook"
 import { motion } from "motion/react"
 import { rebalancedAssetsList, tokensSupportedList } from "@/data/abi/vault-data"
+import { DOCUMENTATION_LINK } from "@/constants"
 
 export default function VaultOverview() {
 
@@ -36,10 +37,10 @@ export default function VaultOverview() {
                     Fund Information
                 </HeadingText>
                 <BodyText level="body1" weight="normal" className="text-gray-600">
-                    SuperUSD Vault is an automated yield vault built with Euler&apos;s EVT.
-                    It optimizes earnings by rebalancing deposits across USD-pegged assets like USDC and USDT,
-                    leveraging lending platforms like Aave, Compound, and Morpho for top APYs.
-                    Future updates will enable deposits as collateral, unlocking borrower integration and boosting returns.
+                    This SuperFund optimally allocates your USDC across trusted blue-chip lending protocols such as Aave,
+                    Morpho & Fluid to generate consistent and competitive returns.
+                    It is a low-risk, high-reliability investment vault designed for users looking to maximize yield
+                    on their stable coins in a safe and efficient way.
                 </BodyText>
             </section>
             <section className="block flex flex-col gap-4" id="tokens-supported">
@@ -157,7 +158,7 @@ export default function VaultOverview() {
                                 </BodyText>
                             </div>
                             <div className="col flex-1 flex justify-end">
-                                <ExternalLink href="/" className="font-medium" variant="secondary">
+                                <ExternalLink href={DOCUMENTATION_LINK} className="font-medium" variant="secondary">
                                     <BodyText level="body2" weight="medium">
                                         View documentation
                                     </BodyText>
