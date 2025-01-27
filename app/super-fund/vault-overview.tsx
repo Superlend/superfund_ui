@@ -1,7 +1,7 @@
 'use client'
 
-import { BodyText, HeadingText } from "@/components/ui/typography"
-import { getTokenLogo } from "@/lib/utils"
+import { BodyText, HeadingText } from '@/components/ui/typography'
+import { getTokenLogo } from '@/lib/utils'
 import {
     Card,
     CardContent,
@@ -9,99 +9,121 @@ import {
     CardFooter,
     CardHeader,
     CardTitle,
-} from "@/components/ui/card"
-import ImageWithDefault from "@/components/ImageWithDefault"
-import ExternalLink from "@/components/ExternalLink"
-import AllocationDetailsChart from "@/components/allocation-details-chart"
-import PerformanceHistoryChart from "@/components/performance-history-chart"
-import { Period } from "@/types/periodButtons"
-import { AllocationHistoryChart } from "@/components/allocation-history-chart"
-import { useVaultAllocationPoints } from "@/hooks/vault_hooks/vaultHook"
-import { motion } from "motion/react"
-import { rebalancedAssetsList, tokensSupportedList } from "@/data/abi/vault-data"
-import { DOCUMENTATION_LINK } from "@/constants"
+} from '@/components/ui/card'
+import ImageWithDefault from '@/components/ImageWithDefault'
+import ExternalLink from '@/components/ExternalLink'
+import AllocationDetailsChart from '@/components/allocation-details-chart'
+import PerformanceHistoryChart from '@/components/performance-history-chart'
+import { Period } from '@/types/periodButtons'
+import { AllocationHistoryChart } from '@/components/allocation-history-chart'
+import { useVaultAllocationPoints } from '@/hooks/vault_hooks/vaultHook'
+import { motion } from 'motion/react'
+import {
+    rebalancedAssetsList,
+    tokensSupportedList,
+} from '@/data/abi/vault-data'
+import { DOCUMENTATION_LINK } from '@/constants'
 
 export default function VaultOverview() {
-
     const { allocationPoints } = useVaultAllocationPoints()
 
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5, ease: "easeOut" }}
+            transition={{ duration: 0.5, delay: 0.5, ease: 'easeOut' }}
             className="flex flex-col gap-[40px]"
         >
-            <section className="block flex flex-col gap-2" id="vault-information">
+            <section
+                className="block flex flex-col gap-2"
+                id="vault-information"
+            >
                 <HeadingText level="h4" weight="medium">
                     Fund Information
                 </HeadingText>
-                <BodyText level="body1" weight="normal" className="text-gray-600">
-                    This SuperFund optimally allocates your USDC across trusted blue-chip lending protocols such as Aave,
-                    Morpho & Fluid to generate consistent and competitive returns.
-                    It is a low-risk, high-reliability investment vault designed for users looking to maximize yield
-                    on their stable coins in a safe and efficient way.
+                <BodyText
+                    level="body1"
+                    weight="normal"
+                    className="text-gray-600"
+                >
+                    This SuperFund optimally allocates your USDC across trusted
+                    blue-chip lending protocols such as Aave, Morpho & Fluid to
+                    generate consistent and competitive returns. It is a
+                    low-risk, high-reliability investment vault designed for
+                    users looking to maximize yield on their stable coins in a
+                    safe and efficient way.
                 </BodyText>
             </section>
-            <section className="block flex flex-col gap-4" id="tokens-supported">
+            <section
+                className="block flex flex-col gap-4"
+                id="tokens-supported"
+            >
                 <HeadingText level="h4" weight="medium">
                     Tokens Suported
                 </HeadingText>
                 <Card>
                     <CardContent className="flex flex-col divide-y divide-gray-400 px-8 py-5">
-                        {
-                            tokensSupportedList.map((token) => (
-                                <div className="item flex items-center justify-between gap-[12px] py-6 first:pt-2 last:pb-2" key={token.title}>
-                                    <div className="flex items-center gap-2">
-                                        <ImageWithDefault
-                                            src={token.logo}
-                                            alt={token.title}
-                                            width={24}
-                                            height={24}
-                                        />
-                                        <BodyText level="body1" weight="medium">
-                                            {token.title}
-                                        </BodyText>
-                                    </div>
-                                    <ExternalLink href={token.link} className="font-medium">
-                                        Contract
-                                    </ExternalLink>
-                                </div>
-                            ))
-                        }
-                    </CardContent>
-                </Card>
-            </section>
-            <section className="block flex flex-col gap-4" id="rebalanced-across">
-                <HeadingText level="h4" weight="medium">
-                    Rebalanced Across
-                </HeadingText>
-                <Card>
-                    <CardContent className="p-5 flex items-center justify-around gap-4">
-                        {
-                            rebalancedAssetsList.map((token) => (
-                                <div className="item flex items-center gap-2" key={token.title}>
+                        {tokensSupportedList.map((token) => (
+                            <div
+                                className="item flex items-center justify-between gap-[12px] py-6 first:pt-2 last:pb-2"
+                                key={token.title}
+                            >
+                                <div className="flex items-center gap-2">
                                     <ImageWithDefault
                                         src={token.logo}
                                         alt={token.title}
                                         width={24}
                                         height={24}
                                     />
-                                    <div className="flex items-center gap-1">
-                                        <ExternalLink
-                                            href={token.link}
-                                            className="font-medium text-gray-500 stroke-gray-600"
-                                            variant="ghost"
-                                            iconSize={14}
-                                        >
-                                            <BodyText level="body1" weight="medium">
-                                                {token.title}
-                                            </BodyText>
-                                        </ExternalLink>
-                                    </div>
+                                    <BodyText level="body1" weight="medium">
+                                        {token.title}
+                                    </BodyText>
                                 </div>
-                            ))
-                        }
+                                <ExternalLink
+                                    href={token.link}
+                                    className="font-medium"
+                                >
+                                    Contract
+                                </ExternalLink>
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>
+            </section>
+            <section
+                className="block flex flex-col gap-4"
+                id="rebalanced-across"
+            >
+                <HeadingText level="h4" weight="medium">
+                    Rebalanced Across
+                </HeadingText>
+                <Card>
+                    <CardContent className="p-5 flex items-center justify-around gap-4">
+                        {rebalancedAssetsList.map((token) => (
+                            <div
+                                className="item flex items-center gap-2"
+                                key={token.title}
+                            >
+                                <ImageWithDefault
+                                    src={token.logo}
+                                    alt={token.title}
+                                    width={24}
+                                    height={24}
+                                />
+                                <div className="flex items-center gap-1">
+                                    <ExternalLink
+                                        href={token.link}
+                                        className="font-medium text-gray-500 stroke-gray-600"
+                                        variant="ghost"
+                                        iconSize={14}
+                                    >
+                                        <BodyText level="body1" weight="medium">
+                                            {token.title}
+                                        </BodyText>
+                                    </ExternalLink>
+                                </div>
+                            </div>
+                        ))}
                     </CardContent>
                 </Card>
             </section>
@@ -153,12 +175,20 @@ export default function VaultOverview() {
                             </div>
 
                             <div className="col flex-1">
-                                <BodyText level="body2" weight="medium" className="text-gray-600 text-center">
+                                <BodyText
+                                    level="body2"
+                                    weight="medium"
+                                    className="text-gray-600 text-center"
+                                >
                                     Updated Recently
                                 </BodyText>
                             </div>
                             <div className="col flex-1 flex justify-end">
-                                <ExternalLink href={DOCUMENTATION_LINK} className="font-medium" variant="secondary">
+                                <ExternalLink
+                                    href={DOCUMENTATION_LINK}
+                                    className="font-medium"
+                                    variant="secondary"
+                                >
                                     <BodyText level="body2" weight="medium">
                                         View documentation
                                     </BodyText>
@@ -173,7 +203,11 @@ export default function VaultOverview() {
                             </div>
 
                             <div className="col flex-1">
-                                <BodyText level="body2" weight="medium" className="text-gray-600 text-center">
+                                <BodyText
+                                    level="body2"
+                                    weight="medium"
+                                    className="text-gray-600 text-center"
+                                >
                                     Every Rebalance
                                 </BodyText>
                             </div>

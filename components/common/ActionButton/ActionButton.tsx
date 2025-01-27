@@ -19,7 +19,7 @@ const ActionButton = ({
     handleCloseModal,
     actionType,
     setActionType,
-    walletAddress
+    walletAddress,
 }: IActionButtonSelectComponent) => {
     if (actionType === 'withdraw') {
         return (

@@ -9,15 +9,19 @@ import { parseUnits } from 'ethers/lib/utils'
 import { Button } from '@/components/ui/button'
 import { PlatformType, PlatformValue } from '@/types/platform'
 import CustomAlert from '@/components/alerts/CustomAlert'
-import { TWithdrawTx, TTxContext, useTxContext } from '@/context/super-vault-tx-provider'
+import {
+    TWithdrawTx,
+    TTxContext,
+    useTxContext,
+} from '@/context/super-vault-tx-provider'
 import { ArrowRightIcon } from 'lucide-react'
 import { USDC_DECIMALS, VAULT_ADDRESS } from '@/lib/constants'
 import { parseAbi } from 'viem'
 import { usePrivy } from '@privy-io/react-auth'
 
 const VAULT_ABI = parseAbi([
-    'function withdraw(uint256 _assets, address _receiver, address _owner) returns (uint256)'
-]);
+    'function withdraw(uint256 _assets, address _receiver, address _owner) returns (uint256)',
+])
 
 interface IWithdrawButtonProps {
     disabled: boolean
@@ -54,7 +58,7 @@ const WithdrawButton = ({
         })
 
     useEffect(() => {
-        if (withdrawTx.status === 'view') return;
+        if (withdrawTx.status === 'view') return
 
         if (hash) {
             setWithdrawTx((prev: TWithdrawTx) => ({
@@ -81,57 +85,57 @@ const WithdrawButton = ({
             isPending: isPending,
             isConfirming: isConfirming,
             isConfirmed: isConfirmed,
-            isRefreshingAllowance: isConfirmed
+            isRefreshingAllowance: isConfirmed,
         }))
     }, [isPending, isConfirming, isConfirmed])
 
     const txBtnText =
         txBtnStatus[
-        isConfirming
-            ? 'confirming'
-            : isConfirmed
-                ? withdrawTx.status === 'view'
-                    ? 'success'
-                    : 'default'
-                : isPending
+            isConfirming
+                ? 'confirming'
+                : isConfirmed
+                  ? withdrawTx.status === 'view'
+                      ? 'success'
+                      : 'default'
+                  : isPending
                     ? 'pending'
                     : !isPending &&
                         !isConfirming &&
                         !isConfirmed &&
                         withdrawTx.status === 'view'
-                        ? 'error'
-                        : 'default'
+                      ? 'error'
+                      : 'default'
         ]
 
-    const handleWithdrawSuperVault = useCallback(
-        async () => {
+    const handleWithdrawSuperVault = useCallback(async () => {
+        // const { user } = usePrivy()
+        // const walletAddress = user?.wallet?.address
 
-            // const { user } = usePrivy()
-            // const walletAddress = user?.wallet?.address
+        // console.log("walletAddress", walletAddress)
 
-            // console.log("walletAddress", walletAddress)
+        const amountInWei = parseUnits(amount, USDC_DECIMALS)
 
-            const amountInWei = parseUnits(amount, USDC_DECIMALS)
+        console.log('amount', amountInWei.toBigInt())
 
-            console.log("amount", amountInWei.toBigInt())
-
-            try {
-                writeContractAsync({
-                    address: VAULT_ADDRESS as `0x${string}`,
-                    abi: VAULT_ABI,
-                    functionName: 'withdraw',
-                    args: [amountInWei.toBigInt(), walletAddress as `0x${string}`, walletAddress as `0x${string}`],
-                })
-            } catch (error) {
-                error
-            }
-        },
-        []
-    )
+        try {
+            writeContractAsync({
+                address: VAULT_ADDRESS as `0x${string}`,
+                abi: VAULT_ABI,
+                functionName: 'withdraw',
+                args: [
+                    amountInWei.toBigInt(),
+                    walletAddress as `0x${string}`,
+                    walletAddress as `0x${string}`,
+                ],
+            })
+        } catch (error) {
+            error
+        }
+    }, [])
 
     const onWithdraw = async () => {
         await handleWithdrawSuperVault()
-        return;
+        return
     }
 
     return (

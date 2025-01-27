@@ -14,7 +14,11 @@ import {
     SUCCESS_MESSAGE,
 } from '@/constants'
 import { Button } from '@/components/ui/button'
-import { TDepositTx, TTxContext, useTxContext } from '@/context/super-vault-tx-provider'
+import {
+    TDepositTx,
+    TTxContext,
+    useTxContext,
+} from '@/context/super-vault-tx-provider'
 import CustomAlert from '@/components/alerts/CustomAlert'
 import { ArrowRightIcon } from 'lucide-react'
 import { BigNumber } from 'ethers'
@@ -35,11 +39,11 @@ interface IDepositButtonProps {
 }
 
 const USDC_ABI = parseAbi([
-    "function approve(address spender, uint256 amount) returns (bool)",
+    'function approve(address spender, uint256 amount) returns (bool)',
 ])
 
 const VAULT_ABI = parseAbi([
-    "function deposit(uint256 assets, address receiver)"
+    'function deposit(uint256 assets, address receiver)',
 ])
 
 const DepositButton = ({
@@ -49,7 +53,7 @@ const DepositButton = ({
     decimals,
     disabled,
     handleCloseModal,
-    walletAddress
+    walletAddress,
 }: IDepositButtonProps) => {
     const {
         writeContractAsync,
@@ -67,7 +71,9 @@ const DepositButton = ({
     const { depositTx, setDepositTx } = useTxContext() as TTxContext
 
     const amountBN = useMemo(() => {
-        return amount ? parseUnits(amount ?? '0', USDC_DECIMALS) : BigNumber.from(0)
+        return amount
+            ? parseUnits(amount ?? '0', USDC_DECIMALS)
+            : BigNumber.from(0)
     }, [amount, USDC_DECIMALS])
 
     const txBtnStatus: Record<string, string> = {
@@ -77,7 +83,8 @@ const DepositButton = ({
                 : 'Lending token...',
         confirming: 'Confirming...',
         success: 'Close',
-        default: depositTx.status === 'approve' ? 'Approve token' : 'Deposit token',
+        default:
+            depositTx.status === 'approve' ? 'Approve token' : 'Deposit token',
     }
 
     const getTxButtonText = (
@@ -89,12 +96,12 @@ const DepositButton = ({
             isConfirming
                 ? 'confirming'
                 : isConfirmed
-                    ? depositTx.status === 'view'
-                        ? 'success'
-                        : 'default'
-                    : isPending
-                        ? 'pending'
-                        : 'default'
+                  ? depositTx.status === 'view'
+                      ? 'success'
+                      : 'default'
+                  : isPending
+                    ? 'pending'
+                    : 'default'
         ]
     }
 
@@ -156,7 +163,11 @@ const DepositButton = ({
     useEffect(() => {
         if (depositTx.status === 'view') return
 
-        if (!depositTx.isConfirmed && !depositTx.isPending && !depositTx.isConfirming) {
+        if (
+            !depositTx.isConfirmed &&
+            !depositTx.isPending &&
+            !depositTx.isConfirming
+        ) {
             if (depositTx.allowanceBN.gte(amountBN)) {
                 setDepositTx((prev: TDepositTx) => ({
                     ...prev,
@@ -176,7 +187,11 @@ const DepositButton = ({
     }, [depositTx.allowanceBN])
 
     useEffect(() => {
-        if ((depositTx.status === 'approve' || depositTx.status === 'deposit') && hash) {
+        if (
+            (depositTx.status === 'approve' ||
+                depositTx.status === 'deposit') &&
+            hash
+        ) {
             setDepositTx((prev: TDepositTx) => ({
                 ...prev,
                 hash: hash || '',
