@@ -11,6 +11,19 @@ export const TOTAL_ALLOCATION_POINTS = 1_000_000
 // 1% as a cash reserve
 export const CASH_RESERVE_POINTS = 10_000
 
+export const VAULT_STRATEGIES_COLORS = {
+    'Morpho Gauntlet USDC Prime': "#201CB0",
+    'Morpho Moonwell Flagship USDC': "#201CB0",
+    'Morpho Gauntlet USDC Core': "#201CB0",
+    'Morpho Steakhouse USDC': "#201CB0",
+    'Morpho Ionic Ecosystem USDC': "#201CB0",
+    'Morpho Re7 USDC': "#201CB0",
+    AaveV3: "#9293F7",
+    Fluid: "#753FFD",
+    'Euler Base USDC': "#0c1d2f",
+}
+
+
 export const VAULT_STRATEGIES = {
     'Morpho Gauntlet USDC Prime': [
         '0xeE8F4eC5672F09119b96Ab6fB59C27E1b7e44b61',

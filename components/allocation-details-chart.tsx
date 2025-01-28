@@ -6,6 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Label, Sector } from
 import { BodyText } from "./ui/typography";
 import { PieSectorDataItem } from "recharts/types/polar/Pie";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
+import { VAULT_STRATEGIES_COLORS } from "@/lib/constants";
 
 const data = [
     { name: 'Morpho - MEV Capital Usual USDC', value: 35 },
@@ -16,17 +17,17 @@ const data = [
 
 const totalCount = 34
 
-const COLORS = [
-    "#3b82f6",
-    "#ef4444",
-    "#8b5cf6",
-    "#0891b2",
-    "#10b981",
-    "#f59e0b",
-    "#0ea5e9",
-    "#818cf8",
-    "#a3a3a3",
-];
+// const COLORS = [
+//     "#3b82f6",
+//     "#ef4444",
+//     "#8b5cf6",
+//     "#0891b2",
+//     "#10b981",
+//     "#f59e0b",
+//     "#0ea5e9",
+//     "#818cf8",
+//     "#a3a3a3",
+// ];
 
 const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -54,9 +55,9 @@ export default function AllocationDetailsChart({
 
     const getHighestValueAssetDetails = allocationPoints?.length
         ? allocationPoints.reduce(
-              (max, current) => (current.value > max.value ? current : max),
-              allocationPoints[0]
-          )
+            (max, current) => (current.value > max.value ? current : max),
+            allocationPoints[0]
+        )
         : { name: 'Loading...', value: 0 }
 
     const highestAllocation = getHighestValueAssetDetails
@@ -118,7 +119,7 @@ export default function AllocationDetailsChart({
                                     {allocationPoints.map((entry, index) => (
                                         <Cell
                                             key={`cell-${index}`}
-                                            fill={COLORS[index % COLORS.length]}
+                                            fill={VAULT_STRATEGIES_COLORS[entry.name as keyof typeof VAULT_STRATEGIES_COLORS]}
                                         />
                                     ))}
                                     <Label
@@ -169,18 +170,18 @@ export default function AllocationDetailsChart({
                     <ScrollArea type="always" className="h-[200px] w-[300px] pr-4">
                         <div className="flex flex-col gap-6">
                             {allocationPoints
-                            .sort((a, b) => b.value - a.value)
-                            .map((item, index) => (
-                                <div key={item.name} className="flex items-center space-x-2">
-                                    <div
-                                        className="w-4 h-4 rounded-2"
-                                        style={{ backgroundColor: COLORS[index] }}
-                                    />
-                                    <div className="space-y-1">
-                                        <p className="text-sm font-medium truncate">{item.name}</p>
+                                .sort((a, b) => b.value - a.value)
+                                .map((item, index) => (
+                                    <div key={item.name} className="flex items-center space-x-2">
+                                        <div
+                                            className="w-4 h-4 rounded-2"
+                                            style={{ backgroundColor: VAULT_STRATEGIES_COLORS[item.name as keyof typeof VAULT_STRATEGIES_COLORS] }}
+                                        />
+                                        <div className="space-y-1">
+                                            <p className="text-sm font-medium truncate">{item.name}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
                         </div>
                     </ScrollArea>
                 </div>
