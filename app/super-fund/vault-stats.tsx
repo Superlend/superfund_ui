@@ -10,18 +10,18 @@ import { abbreviateNumber } from "@/lib/utils";
 import { motion } from "motion/react"
 
 export default function VaultStats() {
-    const { walletAddress } = useWalletConnection()
+    const { walletAddress, isWalletConnected } = useWalletConnection()
     const { totalAssets, spotApy, isLoading, error } = useVaultHook()
     const { userMaxWithdrawAmount } = useUserBalance(walletAddress as `0x${string}`)
     const { isClient } = useIsClient();
 
-    const hasPosition = !!Number(userMaxWithdrawAmount ?? 0);
+    // const hasPosition = !!Number(userMaxWithdrawAmount ?? 0);
 
     const vaultStats = [
         {
             title: 'My Position',
-            value: hasPosition ? `$${abbreviateNumber(Number(userMaxWithdrawAmount))}` : 'N/A',
-            show: hasPosition,
+            value: isWalletConnected ? `$${abbreviateNumber(Number(userMaxWithdrawAmount))}` : 'N/A',
+            show: isWalletConnected,
         },
         {
             title: 'Spot APY',
@@ -55,11 +55,11 @@ export default function VaultStats() {
 
     return (
         <section>
-            <div className="flex items-center justify-between gap-4 pl-2 pr-6">
+            <div className="flex flex-wrap items-center justify-between gap-6 pl-2 pr-6">
                 {vaultStats.map((item, index) => (
                     <motion.div
                         key={index}
-                        className="block"
+                        className="block shrink-0"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{

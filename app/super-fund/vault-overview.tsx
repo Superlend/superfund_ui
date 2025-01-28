@@ -20,6 +20,8 @@ import { useVaultAllocationPoints } from "@/hooks/vault_hooks/vaultHook"
 import { motion } from "motion/react"
 import { rebalancedAssetsList, tokensSupportedList } from "@/data/abi/vault-data"
 import { DOCUMENTATION_LINK } from "@/constants"
+import React from "react"
+import DepositAndWithdrawAssets from "./deposit-and-withdraw"
 
 export default function VaultOverview() {
 
@@ -43,6 +45,9 @@ export default function VaultOverview() {
                     on their stable coins in a safe and efficient way.
                 </BodyText>
             </section>
+            <div className="block lg:hidden">
+                <DepositAndWithdrawAssets />
+            </div>
             <section className="block flex flex-col gap-4" id="tokens-supported">
                 <HeadingText level="h4" weight="medium">
                     Tokens Suported
@@ -77,7 +82,7 @@ export default function VaultOverview() {
                     Rebalanced Across
                 </HeadingText>
                 <Card>
-                    <CardContent className="p-5 flex items-center justify-around gap-4">
+                    <CardContent className="p-5 sm:px-8 md:px-24 flex flex-wrap items-center justify-between gap-8 lg:gap-4">
                         {
                             rebalancedAssetsList.map((token) => (
                                 <div className="item flex items-center gap-2" key={token.title}>
