@@ -118,16 +118,12 @@ export default function AllocationDetailsChart({
                                 >
                                     {allocationPoints
                                         .sort((a, b) => b.value - a.value)
-                                        .map((entry, index) => {
-                                            console.log('entry', entry);
-                                            console.log('colors', VAULT_STRATEGIES_COLORS[entry.name as keyof typeof VAULT_STRATEGIES_COLORS]);
-                                            return (
-                                                <Cell
-                                                    key={`cell-${index}`}
-                                                    fill={VAULT_STRATEGIES_COLORS[entry.name as keyof typeof VAULT_STRATEGIES_COLORS]}
-                                                />
-                                            )
-                                        })}
+                                        .map((entry, index) => (
+                                            <Cell
+                                                key={`cell-${index}`}
+                                                fill={VAULT_STRATEGIES_COLORS[entry.name as keyof typeof VAULT_STRATEGIES_COLORS]}
+                                            />
+                                        ))}
                                     <Label
                                         content={({ viewBox }) => {
                                             if (
