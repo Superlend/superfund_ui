@@ -60,11 +60,11 @@
         --chart-green: hsla(137, 85%, 35%, 1);
         --chart-orange: hsla(21, 100%, 50%, 1);
         --chart-yellow: hsla(44, 100%, 47%, 1);
-        --chart-aave: 241 86% 77%;
-        --chart-compound: 162 99% 38%;
-        --chart-morpho: 238 73% 40%;
-        --chart-fluid: 223 98% 62%;
-        --chart-superlend: 21 100% 50%;
+        --chart-aave: 241 86% 77%; /* #9293F7 */
+        --chart-compound: 162 99% 38%; /* #87C101 */
+        --chart-morpho: 238 73% 40%; /* #201CB0 */
+        --chart-fluid: 223 98% 62%; /* #753FFD */
+        --chart-superlend: 21 100% 50%; /* #FF5900 */
         --pulse-color: 21, 100%, 50%;
         --duration: 1.3s;
     }

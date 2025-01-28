@@ -20,7 +20,7 @@ export const VAULT_STRATEGIES_COLORS = {
     'Morpho Re7 USDC': "#201CB0",
     AaveV3: "#9293F7",
     Fluid: "#753FFD",
-    'Euler Base USDC': "#0c1d2f",
+    'Euler Base USDC': "#17395e",
 }
 
 

@@ -46,7 +46,7 @@ export default function VaultOverview() {
                     className="text-gray-600"
                 >
                     This SuperFund optimally allocates your USDC across trusted
-                    blue-chip lending protocols such as Aave, Morpho & Fluid to
+                    blue-chip lending protocols such as Aave, Morpho, Euler, & Fluid to
                     generate consistent and competitive returns. It is a
                     low-risk, high-reliability investment vault designed for
                     users looking to maximize yield on their stable coins in a
