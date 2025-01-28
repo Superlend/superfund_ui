@@ -93,7 +93,7 @@ export default function VaultOverview() {
                     Rebalanced Across
                 </HeadingText>
                 <Card>
-                    <CardContent className="p-5 flex items-center justify-around gap-4">
+                    <CardContent className="p-5 flex flex-wrap items-center justify-between gap-6 sm:gap-4 sm:px-6 lg:px-24">
                         {rebalancedAssetsList.map((token) => (
                             <div
                                 className="item flex items-center gap-2"
