@@ -4,7 +4,19 @@ import React, { type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { PrivyProvider } from '@privy-io/react-auth'
 import { createConfig, WagmiProvider } from '@privy-io/wagmi'
-import { base, mainnet, polygon, avalanche, optimism, gnosis, arbitrum, etherlink, bsc, scroll, metis } from 'viem/chains'
+import {
+    base,
+    mainnet,
+    polygon,
+    avalanche,
+    optimism,
+    gnosis,
+    arbitrum,
+    etherlink,
+    bsc,
+    scroll,
+    metis,
+} from 'viem/chains'
 import { http } from 'wagmi'
 
 // Set up queryClient
@@ -51,9 +63,7 @@ function ContextProvider({
             }}
         >
             <QueryClientProvider client={queryClient}>
-                <WagmiProvider config={config}>
-                    {children}
-                </WagmiProvider>
+                <WagmiProvider config={config}>{children}</WagmiProvider>
             </QueryClientProvider>
         </PrivyProvider>
     )

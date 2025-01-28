@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import { Card } from "./ui/card";
 import { motion } from "framer-motion";
@@ -8,13 +8,13 @@ import { PieSectorDataItem } from "recharts/types/polar/Pie";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 
 const data = [
-    { name: "Morpho - MEV Capital Usual USDC", value: 35 },
-    { name: "Euler Resolv Marketplace by Apostro", value: 15 },
-    { name: "Aave v3 USDC Market", value: 38.41 },
-    { name: "Fluid USDC Vault", value: 11.59 },
-];
+    { name: 'Morpho - MEV Capital Usual USDC', value: 35 },
+    { name: 'Euler Resolv Marketplace by Apostro', value: 15 },
+    { name: 'Aave v3 USDC Market', value: 38.41 },
+    { name: 'Fluid USDC Vault', value: 11.59 },
+]
 
-const totalCount = 34;
+const totalCount = 34
 
 const COLORS = [
     "#3b82f6",
@@ -37,26 +37,32 @@ const CustomTooltip = ({ active, payload }: any) => {
                     {payload[0].value}%
                 </p>
             </div>
-        );
+        )
     }
-    return null;
-};
+    return null
+}
 
-export default function AllocationDetailsChart({ allocationPoints }: { allocationPoints: { name: string, value: number }[] }) {
+export default function AllocationDetailsChart({
+    allocationPoints,
+}: {
+    allocationPoints: { name: string; value: number }[]
+}) {
     const allocatedAssetDetails = {
         name: 'Loading...',
-        value: '0'
+        value: '0',
     }
 
-    const getHighestValueAssetDetails = allocationPoints?.length ? allocationPoints.reduce((max, current) =>
-        current.value > max.value ? current : max,
-        allocationPoints[0]
-    ) : { name: 'Loading...', value: 0 };
+    const getHighestValueAssetDetails = allocationPoints?.length
+        ? allocationPoints.reduce(
+              (max, current) => (current.value > max.value ? current : max),
+              allocationPoints[0]
+          )
+        : { name: 'Loading...', value: 0 }
 
-    const highestAllocation = getHighestValueAssetDetails;
+    const highestAllocation = getHighestValueAssetDetails
 
-    allocatedAssetDetails.name = highestAllocation.name;
-    allocatedAssetDetails.value = highestAllocation.value.toString();
+    allocatedAssetDetails.name = highestAllocation.name
+    allocatedAssetDetails.value = highestAllocation.value.toString()
 
     const truncatedAssetName = allocatedAssetDetails.name.length > 15 ? allocatedAssetDetails.name.slice(0, 15) + '...' : allocatedAssetDetails.name;
 
@@ -76,7 +82,14 @@ export default function AllocationDetailsChart({ allocationPoints }: { allocatio
                 <div className="flex flex-wrap items-center justify-center gap-6 lg:gap-8 w-full bg-white rounded-4 max-lg:pb-8 px-4 sm:px-12">
                     <div className="h-[340px] w-[300px] max-w-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
-                            <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+                            <PieChart
+                                margin={{
+                                    top: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    left: 0,
+                                }}
+                            >
                                 <Pie
                                     data={allocationPoints}
                                     cx="50%"
@@ -95,7 +108,11 @@ export default function AllocationDetailsChart({ allocationPoints }: { allocatio
                                         outerRadius = 0,
                                         ...props
                                     }: PieSectorDataItem) => (
-                                        <Sector {...props} outerRadius={outerRadius + 10} className="cursor-pointer transition-all duration-300 hover:opacity-80" />
+                                        <Sector
+                                            {...props}
+                                            outerRadius={outerRadius + 10}
+                                            className="cursor-pointer transition-all duration-300 hover:opacity-80"
+                                        />
                                     )}
                                 >
                                     {allocationPoints.map((entry, index) => (
@@ -106,7 +123,11 @@ export default function AllocationDetailsChart({ allocationPoints }: { allocatio
                                     ))}
                                     <Label
                                         content={({ viewBox }) => {
-                                            if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                                            if (
+                                                viewBox &&
+                                                'cx' in viewBox &&
+                                                'cy' in viewBox
+                                            ) {
                                                 return (
                                                     <text
                                                         x={viewBox.cx}
@@ -116,14 +137,21 @@ export default function AllocationDetailsChart({ allocationPoints }: { allocatio
                                                     >
                                                         <tspan
                                                             x={viewBox.cx}
-                                                            y={(viewBox?.cy || 0) - 2}
+                                                            y={
+                                                                (viewBox?.cy ||
+                                                                    0) - 2
+                                                            }
                                                             className="fill-foreground text-2xl font-medium"
                                                         >
-                                                            {allocatedAssetDetails.value.toLocaleString()}%
+                                                            {allocatedAssetDetails.value.toLocaleString()}
+                                                            %
                                                         </tspan>
                                                         <tspan
                                                             x={viewBox.cx}
-                                                            y={(viewBox.cy || 0) + 24}
+                                                            y={
+                                                                (viewBox.cy ||
+                                                                    0) + 24
+                                                            }
                                                             className="fill-muted-foreground text-sm"
                                                         >
                                                             {truncatedAssetName.toString()}
@@ -156,5 +184,5 @@ export default function AllocationDetailsChart({ allocationPoints }: { allocatio
                 </div>
             </Card>
         </motion.section>
-    );
+    )
 }

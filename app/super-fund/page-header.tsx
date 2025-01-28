@@ -1,23 +1,23 @@
-"use client"
+'use client'
 
 import React from 'react'
-import { motion } from "motion/react"
+import { motion } from 'motion/react'
 import { HeadingText, Label } from '@/components/ui/typography'
-import useIsClient from '@/hooks/useIsClient';
-import { Skeleton } from '@/components/ui/skeleton';
-import ImageWithDefault from '@/components/ImageWithDefault';
-import { Badge } from '@/components/ui/badge';
+import useIsClient from '@/hooks/useIsClient'
+import { Skeleton } from '@/components/ui/skeleton'
+import ImageWithDefault from '@/components/ImageWithDefault'
+import { Badge } from '@/components/ui/badge'
 
 export default function PageHeader() {
-
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
         >
             <div className="flex items-center gap-2">
-                <ImageWithDefault src={'/images/logos/superlend-rounded.svg'}
+                <ImageWithDefault
+                    src={'/images/logos/superlend-rounded.svg'}
                     alt="Bluechip Stable SuperFund"
                     width={28}
                     height={28}
@@ -31,7 +31,9 @@ export default function PageHeader() {
                 >
                     <div className="flex items-center gap-1">
                         <ImageWithDefault
-                            src={'https://superlend-assets.s3.ap-south-1.amazonaws.com/base.svg'}
+                            src={
+                                'https://superlend-assets.s3.ap-south-1.amazonaws.com/base.svg'
+                            }
                             alt={`Base`}
                             width={16}
                             height={16}

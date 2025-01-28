@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import MainContainer from '@/components/MainContainer'
 import React from 'react'

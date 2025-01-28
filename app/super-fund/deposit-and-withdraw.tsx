@@ -3,11 +3,7 @@
 import ImageWithDefault from '@/components/ImageWithDefault'
 import LendBorrowToggle from '@/components/LendBorrowToggle'
 import { Button } from '@/components/ui/button'
-import {
-    Card,
-    CardContent,
-    CardFooter,
-} from '@/components/ui/card'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { TPositionType } from '@/types'
 import { TPlatformAsset } from '@/types/platform'
 import {
@@ -43,9 +39,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import {
-    TX_EXPLORER_LINKS,
-} from '@/constants'
+import { TX_EXPLORER_LINKS } from '@/constants'
 import ActionButton from '@/components/common/ActionButton'
 import {
     TDepositTx,
@@ -63,7 +57,10 @@ import {
     DrawerTrigger,
 } from '@/components/ui/drawer'
 import { ChainId } from '@/types/chain'
-import { checkAllowance, useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
+import {
+    checkAllowance,
+    useUserBalance,
+} from '@/hooks/vault_hooks/useUserBalanceHook'
 import { usePrivy } from '@privy-io/react-auth'
 import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import ConnectWalletButton from '@/components/ConnectWalletButton'
@@ -72,19 +69,31 @@ import { useWalletConnection } from '@/hooks/useWalletConnection'
 export default function DepositAndWithdrawAssets() {
     const { isWalletConnected, handleSwitchChain } = useWalletConnection()
     const [positionType, setPositionType] = useState<TPositionType>('deposit')
-    const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] = useState<boolean>(false)
+    const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] =
+        useState<boolean>(false)
     const { depositTx, setDepositTx } = useTxContext() as TTxContext
 
-    const [userEnteredDepositAmount, setUserEnteredDepositAmount] = useState<string>('')
-    const [userEnteredWithdrawAmount, setUserEnteredWithdrawAmount] = useState<string>('')
+    const [userEnteredDepositAmount, setUserEnteredDepositAmount] =
+        useState<string>('')
+    const [userEnteredWithdrawAmount, setUserEnteredWithdrawAmount] =
+        useState<string>('')
 
-    const isDepositPositionType = positionType === 'deposit';
+    const isDepositPositionType = positionType === 'deposit'
 
     const { user } = usePrivy()
     const walletAddress = user?.wallet?.address
 
-    const { balance, userMaxWithdrawAmount, isLoading: isLoadingBalance, error: balanceError } = useUserBalance(walletAddress as `0x${string}`)
-    const { spotApy, isLoading: isLoadingVaultStats, error: vaultStatsError } = useVaultHook()
+    const {
+        balance,
+        userMaxWithdrawAmount,
+        isLoading: isLoadingBalance,
+        error: balanceError,
+    } = useUserBalance(walletAddress as `0x${string}`)
+    const {
+        spotApy,
+        isLoading: isLoadingVaultStats,
+        error: vaultStatsError,
+    } = useVaultHook()
 
     useEffect(() => {
         if (isWalletConnected) {
@@ -100,7 +109,10 @@ export default function DepositAndWithdrawAssets() {
             }))
 
             checkAllowance(walletAddress as `0x${string}`).then((allowance) => {
-                if (Number(allowance) > 0 && Number(allowance) >= Number(userEnteredDepositAmount)) {
+                if (
+                    Number(allowance) > 0 &&
+                    Number(allowance) >= Number(userEnteredDepositAmount)
+                ) {
                     setDepositTx((prev: TDepositTx) => ({
                         ...prev,
                         status: 'deposit',
@@ -123,18 +135,27 @@ export default function DepositAndWithdrawAssets() {
             if (Number(userEnteredDepositAmount) > Number(balance)) {
                 return 'Amount is more than your balance'
             }
-            if (Number(userEnteredDepositAmount) === 0 && userEnteredDepositAmount !== '') {
+            if (
+                Number(userEnteredDepositAmount) === 0 &&
+                userEnteredDepositAmount !== ''
+            ) {
                 return 'Amount must be greater than 0'
             }
         } else {
-            if (Number(userEnteredWithdrawAmount) > Number(userMaxWithdrawAmount)) {
+            if (
+                Number(userEnteredWithdrawAmount) >
+                Number(userMaxWithdrawAmount)
+            ) {
                 return 'Amount is more than your available limit'
             }
-            if (Number(userEnteredWithdrawAmount) === 0 && userEnteredWithdrawAmount !== '') {
+            if (
+                Number(userEnteredWithdrawAmount) === 0 &&
+                userEnteredWithdrawAmount !== ''
+            ) {
                 return 'Amount must be greater than 0'
             }
         }
-        return null;
+        return null
     }
 
     const helperText = {
@@ -149,7 +170,7 @@ export default function DepositAndWithdrawAssets() {
         error: {
             deposit: getInputErrorText(),
             withdraw: getInputErrorText(),
-        }
+        },
     }
 
     const placeholderText = helperText.placeholder[positionType]
@@ -159,7 +180,11 @@ export default function DepositAndWithdrawAssets() {
     function getHelperText() {
         if (!!errorText) {
             return errorText
-        } else if (isDepositPositionType ? userEnteredDepositAmount !== '' : userEnteredWithdrawAmount !== '') {
+        } else if (
+            isDepositPositionType
+                ? userEnteredDepositAmount !== ''
+                : userEnteredWithdrawAmount !== ''
+        ) {
             return inputText
         } else {
             return placeholderText
@@ -168,9 +193,16 @@ export default function DepositAndWithdrawAssets() {
 
     const isDiasableActionBtn = () => {
         if (isDepositPositionType) {
-            return Number(userEnteredDepositAmount) > Number(balance) || Number(userEnteredDepositAmount) === 0
+            return (
+                Number(userEnteredDepositAmount) > Number(balance) ||
+                Number(userEnteredDepositAmount) === 0
+            )
         } else {
-            return Number(userEnteredWithdrawAmount) > Number(userMaxWithdrawAmount) || Number(userEnteredWithdrawAmount) === 0
+            return (
+                Number(userEnteredWithdrawAmount) >
+                    Number(userMaxWithdrawAmount) ||
+                Number(userEnteredWithdrawAmount) === 0
+            )
         }
     }
 
@@ -189,11 +221,9 @@ export default function DepositAndWithdrawAssets() {
                         weight="normal"
                         className="capitalize text-gray-600"
                     >
-                        {isDepositPositionType
-                            ? 'Deposit'
-                            : `Withdraw`}
+                        {isDepositPositionType ? 'Deposit' : `Withdraw`}
                     </BodyText>
-                    {isWalletConnected &&
+                    {isWalletConnected && (
                         <BodyText
                             level="body2"
                             weight="normal"
@@ -208,8 +238,9 @@ export default function DepositAndWithdrawAssets() {
                                         getLowestDisplayValue(
                                             Number(
                                                 isDepositPositionType
-                                                    ? balance ?? 0
-                                                    : userMaxWithdrawAmount ?? 0
+                                                    ? (balance ?? 0)
+                                                    : (userMaxWithdrawAmount ??
+                                                          0)
                                             ),
                                             2
                                         )
@@ -220,7 +251,8 @@ export default function DepositAndWithdrawAssets() {
                             <span className="inline-block truncate max-w-[70px]">
                                 USDC
                             </span>
-                        </BodyText>}
+                        </BodyText>
+                    )}
                 </div>
                 <CardContent className="p-0 bg-white rounded-5">
                     <div
@@ -233,7 +265,9 @@ export default function DepositAndWithdrawAssets() {
                     >
                         {/* Single token */}
                         <ImageWithDefault
-                            src={'https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg'}
+                            src={
+                                'https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg'
+                            }
                             alt={''}
                             className="shrink-0 w-[24px] h-[24px] rounded-full"
                             width={24}
@@ -249,20 +283,35 @@ export default function DepositAndWithdrawAssets() {
                         <div className="flex flex-col flex-1 gap-[4px]">
                             <CustomNumberInput
                                 key={'true'}
-                                amount={isDepositPositionType ? userEnteredDepositAmount : userEnteredWithdrawAmount}
-                                setAmount={isDepositPositionType ? setUserEnteredDepositAmount : setUserEnteredWithdrawAmount}
+                                amount={
+                                    isDepositPositionType
+                                        ? userEnteredDepositAmount
+                                        : userEnteredWithdrawAmount
+                                }
+                                setAmount={
+                                    isDepositPositionType
+                                        ? setUserEnteredDepositAmount
+                                        : setUserEnteredWithdrawAmount
+                                }
                             />
                         </div>
-                        {isWalletConnected &&
+                        {isWalletConnected && (
                             <Button
                                 variant="link"
-                                onClick={() => isDepositPositionType ? setUserEnteredDepositAmount(balance) : setUserEnteredWithdrawAmount(userMaxWithdrawAmount)}
+                                onClick={() =>
+                                    isDepositPositionType
+                                        ? setUserEnteredDepositAmount(balance)
+                                        : setUserEnteredWithdrawAmount(
+                                              userMaxWithdrawAmount
+                                          )
+                                }
                                 className="uppercase text-[14px] font-medium w-fit"
                             >
                                 max
-                            </Button>}
+                            </Button>
+                        )}
                     </div>
-                    {isWalletConnected &&
+                    {isWalletConnected && (
                         <div className="card-content-bottom max-md:px-2 py-3 max-w-[250px] mx-auto">
                             <BodyText
                                 level="body2"
@@ -271,34 +320,44 @@ export default function DepositAndWithdrawAssets() {
                             >
                                 {getHelperText()}
                             </BodyText>
-                        </div>}
+                        </div>
+                    )}
                 </CardContent>
                 <CardFooter className="p-0 justify-center">
-                    {!isWalletConnected && (
-                        <ConnectWalletButton />
-                    )}
-                    {isWalletConnected &&
+                    {!isWalletConnected && <ConnectWalletButton />}
+                    {isWalletConnected && (
                         <ConfirmationDialogForSuperVault
                             disabled={isDiasableActionBtn()}
                             positionType={positionType}
-                            assetDetails={
-                                {
-                                    asset: {
-                                        token: {
-                                            logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg',
-                                            symbol: 'USDC',
-                                        },
-                                        spot_apy: spotApy,
+                            assetDetails={{
+                                asset: {
+                                    token: {
+                                        logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg',
+                                        symbol: 'USDC',
                                     },
-                                    chain_id: ChainId.Base,
-                                }
+                                    spot_apy: spotApy,
+                                },
+                                chain_id: ChainId.Base,
+                            }}
+                            amount={
+                                isDepositPositionType
+                                    ? userEnteredDepositAmount
+                                    : userEnteredWithdrawAmount
                             }
-                            amount={isDepositPositionType ? userEnteredDepositAmount : userEnteredWithdrawAmount}
-                            balance={isDepositPositionType ? balance : userMaxWithdrawAmount}
-                            setAmount={isDepositPositionType ? setUserEnteredDepositAmount : setUserEnteredWithdrawAmount}
+                            balance={
+                                isDepositPositionType
+                                    ? balance
+                                    : userMaxWithdrawAmount
+                            }
+                            setAmount={
+                                isDepositPositionType
+                                    ? setUserEnteredDepositAmount
+                                    : setUserEnteredWithdrawAmount
+                            }
                             open={isConfirmationDialogOpen}
                             setOpen={setIsConfirmationDialogOpen}
-                        />}
+                        />
+                    )}
                 </CardFooter>
             </Card>
         </section>
@@ -346,7 +405,7 @@ function SelectTokensDropdown({
                             className={cn(
                                 'flex items-center gap-2 hover:bg-gray-300 cursor-pointer py-2 px-4',
                                 selectedItemDetails?.token?.address ===
-                                asset?.token?.address && 'bg-gray-400'
+                                    asset?.token?.address && 'bg-gray-400'
                             )}
                         >
                             <ImageWithDefault
@@ -392,7 +451,8 @@ export function ConfirmationDialogForSuperVault({
     setOpen: (open: boolean) => void
     setActionType?: (actionType: TPositionType) => void
 }) {
-    const { depositTx, setDepositTx, withdrawTx, setWithdrawTx } = useTxContext() as TTxContext
+    const { depositTx, setDepositTx, withdrawTx, setWithdrawTx } =
+        useTxContext() as TTxContext
     const { isWalletConnected, handleSwitchChain } = useWalletConnection()
     const { width: screenWidth } = useDimensions()
     const isDesktop = screenWidth > 768
@@ -450,10 +510,12 @@ export function ConfirmationDialogForSuperVault({
     }
 
     function isShowBlock(status: { deposit: boolean; withdraw: boolean }) {
-        return isDepositPositionType(positionType) ? status.deposit : status.withdraw
+        return isDepositPositionType(positionType)
+            ? status.deposit
+            : status.withdraw
     }
 
-    const inputUsdAmount = Number(amount);
+    const inputUsdAmount = Number(amount)
     // Number(amount) * Number(assetDetails?.asset?.token?.price_usd)
 
     function handleInputUsdAmount(amount: string) {
@@ -467,10 +529,11 @@ export function ConfirmationDialogForSuperVault({
     }
 
     const isDepositTxInProgress = depositTx.isPending || depositTx.isConfirming
-    const isWithdrawTxInProgress = withdrawTx.isPending || withdrawTx.isConfirming
+    const isWithdrawTxInProgress =
+        withdrawTx.isPending || withdrawTx.isConfirming
 
     const isTxInProgress = isDepositTxInProgress || isWithdrawTxInProgress
-    const isTxFailed = false;
+    const isTxFailed = false
 
     const depositTxSpinnerColor = depositTx.isPending
         ? 'text-secondary-500'
@@ -479,12 +542,15 @@ export function ConfirmationDialogForSuperVault({
         ? 'text-secondary-500'
         : 'text-primary'
 
-    const canDisplayExplorerLinkWhileLoading = isDepositPositionType(positionType)
-        ? depositTx.hash.length > 0 && (depositTx.isConfirming || depositTx.isPending)
+    const canDisplayExplorerLinkWhileLoading = isDepositPositionType(
+        positionType
+    )
+        ? depositTx.hash.length > 0 &&
+          (depositTx.isConfirming || depositTx.isPending)
         : withdrawTx.hash.length > 0 &&
-        (withdrawTx.isConfirming || withdrawTx.isPending)
+          (withdrawTx.isConfirming || withdrawTx.isPending)
 
-    const disableActionButton = disabled;
+    const disableActionButton = disabled
 
     // SUB_COMPONENT: Trigger button to open the dialog
     const triggerButton = (
@@ -495,9 +561,7 @@ export function ConfirmationDialogForSuperVault({
             className="group flex items-center gap-[4px] py-[13px] w-full rounded-5"
         >
             <span className="uppercase leading-[0]">
-                {positionType === 'deposit'
-                    ? 'Deposit'
-                    : 'Withdraw'}
+                {positionType === 'deposit' ? 'Deposit' : 'Withdraw'}
             </span>
             <ArrowRightIcon
                 width={16}
@@ -591,92 +655,98 @@ export function ConfirmationDialogForSuperVault({
     const contentHeader = (
         <>
             {isShowBlock({
-                deposit: depositTx.status === 'approve' && !isDepositTxInProgress,
-                withdraw: withdrawTx.status === 'withdraw' && !isWithdrawTxInProgress,
+                deposit:
+                    depositTx.status === 'approve' && !isDepositTxInProgress,
+                withdraw:
+                    withdrawTx.status === 'withdraw' && !isWithdrawTxInProgress,
             }) && (
-                    // <DialogTitle asChild>
-                    <HeadingText
-                        level="h4"
-                        weight="medium"
-                        className="text-gray-800 text-center capitalize"
-                    >
-                        Confirm {isDepositPositionType(positionType)
-                            ? 'Deposit'
-                            : `Withdraw`}
-                    </HeadingText>
-                    // </DialogTitle>
-                )}
+                // <DialogTitle asChild>
+                <HeadingText
+                    level="h4"
+                    weight="medium"
+                    className="text-gray-800 text-center capitalize"
+                >
+                    Confirm{' '}
+                    {isDepositPositionType(positionType)
+                        ? 'Deposit'
+                        : `Withdraw`}
+                </HeadingText>
+                // </DialogTitle>
+            )}
             {/* Confirmation details UI */}
             {isShowBlock({
                 deposit:
-                    (depositTx.status === 'deposit' && !isDepositTxInProgress) ||
+                    (depositTx.status === 'deposit' &&
+                        !isDepositTxInProgress) ||
                     (depositTx.status === 'view' && !isDepositTxInProgress),
                 withdraw:
                     // (borrowTx.status === 'borrow' && !isBorrowTxInProgress) ||
                     withdrawTx.status === 'view' && !isWithdrawTxInProgress,
             }) && (
-                    <div className="flex flex-col items-center justify-center gap-[6px]">
-                        <ImageWithDefault
-                            src={assetDetails?.asset?.token?.logo}
-                            alt={assetDetails?.asset?.token?.symbol}
-                            width={40}
-                            height={40}
-                            className="rounded-full max-w-[40px] max-h-[40px]"
-                        />
-                        <HeadingText
-                            level="h3"
-                            weight="medium"
-                            className="text-gray-800"
+                <div className="flex flex-col items-center justify-center gap-[6px]">
+                    <ImageWithDefault
+                        src={assetDetails?.asset?.token?.logo}
+                        alt={assetDetails?.asset?.token?.symbol}
+                        width={40}
+                        height={40}
+                        className="rounded-full max-w-[40px] max-h-[40px]"
+                    />
+                    <HeadingText
+                        level="h3"
+                        weight="medium"
+                        className="text-gray-800"
+                    >
+                        {amount} {assetDetails?.asset?.token?.symbol}
+                    </HeadingText>
+                    {isShowBlock({
+                        deposit: depositTx.status === 'view',
+                        withdraw: withdrawTx.status === 'view',
+                    }) && (
+                        <Badge
+                            variant={isTxFailed ? 'destructive' : 'green'}
+                            className="capitalize flex items-center gap-[4px] font-medium text-[14px]"
                         >
-                            {amount} {assetDetails?.asset?.token?.symbol}
-                        </HeadingText>
-                        {isShowBlock({
-                            deposit: depositTx.status === 'view',
-                            withdraw: withdrawTx.status === 'view',
-                        }) && (
-                                <Badge
-                                    variant={isTxFailed ? 'destructive' : 'green'}
-                                    className="capitalize flex items-center gap-[4px] font-medium text-[14px]"
-                                >
-                                    {isDepositPositionType(positionType) &&
-                                        depositTx.status === 'view'
-                                        ? 'Deposit'
-                                        : 'Withdraw'}{' '}
-                                    {isTxFailed ? 'Failed' : 'Successful'}
-                                    {!isTxFailed && (
-                                        <CircleCheckIcon
-                                            width={16}
-                                            height={16}
-                                            className="stroke-[#00AD31]"
-                                        />
-                                    )}
-                                    {isTxFailed && (
-                                        <CircleXIcon
-                                            width={16}
-                                            height={16}
-                                            className="stroke-danger-500"
-                                        />
-                                    )}
-                                </Badge>
+                            {isDepositPositionType(positionType) &&
+                            depositTx.status === 'view'
+                                ? 'Deposit'
+                                : 'Withdraw'}{' '}
+                            {isTxFailed ? 'Failed' : 'Successful'}
+                            {!isTxFailed && (
+                                <CircleCheckIcon
+                                    width={16}
+                                    height={16}
+                                    className="stroke-[#00AD31]"
+                                />
                             )}
-                        {isShowBlock({
-                            deposit: depositTx.status === 'deposit' && !isDepositTxInProgress,
-                            withdraw: false,
-                        }) && (
-                                <Badge
-                                    variant="green"
-                                    className="capitalize flex items-center gap-[4px] font-medium text-[14px]"
-                                >
-                                    Token approved
-                                    <CircleCheckIcon
-                                        width={16}
-                                        height={16}
-                                        className="stroke-[#00AD31]"
-                                    />
-                                </Badge>
+                            {isTxFailed && (
+                                <CircleXIcon
+                                    width={16}
+                                    height={16}
+                                    className="stroke-danger-500"
+                                />
                             )}
-                    </div>
-                )}
+                        </Badge>
+                    )}
+                    {isShowBlock({
+                        deposit:
+                            depositTx.status === 'deposit' &&
+                            !isDepositTxInProgress,
+                        withdraw: false,
+                    }) && (
+                        <Badge
+                            variant="green"
+                            className="capitalize flex items-center gap-[4px] font-medium text-[14px]"
+                        >
+                            Token approved
+                            <CircleCheckIcon
+                                width={16}
+                                height={16}
+                                className="stroke-[#00AD31]"
+                            />
+                        </Badge>
+                    )}
+                </div>
+            )}
         </>
     )
 
@@ -686,84 +756,94 @@ export function ConfirmationDialogForSuperVault({
             <div className="flex flex-col gap-[12px]">
                 {/* Block 1 */}
                 {isShowBlock({
-                    deposit: depositTx.status === 'approve' && !isDepositTxInProgress,
+                    deposit:
+                        depositTx.status === 'approve' &&
+                        !isDepositTxInProgress,
                     withdraw:
-                        withdrawTx.status === 'withdraw' && !isWithdrawTxInProgress,
+                        withdrawTx.status === 'withdraw' &&
+                        !isWithdrawTxInProgress,
                 }) && (
-                        <div className="flex items-center gap-[8px] px-[24px] py-[18.5px] bg-gray-200 lg:bg-white rounded-5 w-full">
-                            <ImageWithDefault
-                                src={assetDetails?.asset?.token?.logo}
-                                alt={assetDetails?.asset?.token?.symbol}
-                                width={24}
-                                height={24}
-                                className="rounded-full max-w-[24px] max-h-[24px]"
-                            />
-                            <div className="flex flex-wrap items-center justify-between gap-1 w-full">
-                                <HeadingText
-                                    level="h3"
-                                    weight="normal"
-                                    className="text-gray-800"
-                                >
-                                    {Number(amount).toFixed(
-                                        decimalPlacesCount(amount)
-                                    )}
-                                </HeadingText>
-                                <BodyText
-                                    level="body2"
-                                    weight="normal"
-                                    className="text-gray-600"
-                                >
-                                    {handleInputUsdAmount(
-                                        inputUsdAmount.toString()
-                                    )}
-                                </BodyText>
-                            </div>
+                    <div className="flex items-center gap-[8px] px-[24px] py-[18.5px] bg-gray-200 lg:bg-white rounded-5 w-full">
+                        <ImageWithDefault
+                            src={assetDetails?.asset?.token?.logo}
+                            alt={assetDetails?.asset?.token?.symbol}
+                            width={24}
+                            height={24}
+                            className="rounded-full max-w-[24px] max-h-[24px]"
+                        />
+                        <div className="flex flex-wrap items-center justify-between gap-1 w-full">
+                            <HeadingText
+                                level="h3"
+                                weight="normal"
+                                className="text-gray-800"
+                            >
+                                {Number(amount).toFixed(
+                                    decimalPlacesCount(amount)
+                                )}
+                            </HeadingText>
+                            <BodyText
+                                level="body2"
+                                weight="normal"
+                                className="text-gray-600"
+                            >
+                                {handleInputUsdAmount(
+                                    inputUsdAmount.toString()
+                                )}
+                            </BodyText>
                         </div>
-                    )}
+                    </div>
+                )}
                 {/* Block 2 */}
                 {isShowBlock({
-                    deposit: depositTx.status === 'approve' && !isDepositTxInProgress,
+                    deposit:
+                        depositTx.status === 'approve' &&
+                        !isDepositTxInProgress,
                     withdraw: false,
                 }) && (
-                        <div
-                            className={`flex items-center ${isDepositPositionType(positionType) ? 'justify-end' : 'justify-between'} px-[24px] mb-[4px] gap-1`}
+                    <div
+                        className={`flex items-center ${isDepositPositionType(positionType) ? 'justify-end' : 'justify-between'} px-[24px] mb-[4px] gap-1`}
+                    >
+                        <BodyText
+                            level="body2"
+                            weight="normal"
+                            className="text-gray-600"
                         >
-                            <BodyText
-                                level="body2"
-                                weight="normal"
-                                className="text-gray-600"
-                            >
-                                Bal:
-                            </BodyText>
-                            <BodyText
-                                level="body2"
-                                weight="normal"
-                                className="text-gray-600"
-                            >
-                                {handleSmallestValue((Number(balance) - Number(amount)).toString())}{' '}
-                                {assetDetails?.asset?.token?.symbol}
-                            </BodyText>
-                        </div>
-                    )}
+                            Bal:
+                        </BodyText>
+                        <BodyText
+                            level="body2"
+                            weight="normal"
+                            className="text-gray-600"
+                        >
+                            {handleSmallestValue(
+                                (Number(balance) - Number(amount)).toString()
+                            )}{' '}
+                            {assetDetails?.asset?.token?.symbol}
+                        </BodyText>
+                    </div>
+                )}
                 {/* Block 3 */}
                 <div className="flex flex-col items-center justify-between px-[24px] bg-gray-200 lg:bg-white rounded-5 divide-y divide-gray-300">
                     {isShowBlock({
                         deposit: !isDepositTxInProgress,
                         withdraw: !isWithdrawTxInProgress,
                     }) && (
-                            <div className="flex items-center justify-between w-full py-[16px]">
-                                <BodyText
-                                    level="body2"
-                                    weight="normal"
-                                    className="text-gray-600"
-                                >
-                                    Spot APY
-                                </BodyText>
-                                <Badge variant="green">
-                                    {abbreviateNumber(Number(assetDetails?.asset?.spot_apy) ?? 0)}%
-                                </Badge>
-                            </div>
-                        )}
+                        <div className="flex items-center justify-between w-full py-[16px]">
+                            <BodyText
+                                level="body2"
+                                weight="normal"
+                                className="text-gray-600"
+                            >
+                                Spot APY
+                            </BodyText>
+                            <Badge variant="green">
+                                {abbreviateNumber(
+                                    Number(assetDetails?.asset?.spot_apy) ?? 0
+                                )}
+                                %
+                            </Badge>
+                        </div>
+                    )}
                     {isShowBlock({
                         deposit:
                             (depositTx.status === 'approve' ||
@@ -775,46 +855,46 @@ export function ConfirmationDialogForSuperVault({
                             withdrawTx.hash.length > 0 &&
                             !isWithdrawTxInProgress,
                     }) && (
-                            <div className="flex items-center justify-between w-full py-[16px]">
+                        <div className="flex items-center justify-between w-full py-[16px]">
+                            <BodyText
+                                level="body2"
+                                weight="normal"
+                                className="text-gray-600"
+                            >
+                                View on explorer
+                            </BodyText>
+                            <div className="flex items-center gap-[4px]">
                                 <BodyText
                                     level="body2"
-                                    weight="normal"
-                                    className="text-gray-600"
+                                    weight="medium"
+                                    className="text-gray-800 flex items-center gap-[4px]"
                                 >
-                                    View on explorer
-                                </BodyText>
-                                <div className="flex items-center gap-[4px]">
-                                    <BodyText
-                                        level="body2"
-                                        weight="medium"
-                                        className="text-gray-800 flex items-center gap-[4px]"
+                                    <a
+                                        href={getExplorerLink(
+                                            isDepositPositionType(positionType)
+                                                ? depositTx.hash
+                                                : withdrawTx.hash,
+                                            assetDetails?.chain_id
+                                        )}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-secondary-500"
                                     >
-                                        <a
-                                            href={getExplorerLink(
-                                                isDepositPositionType(positionType)
-                                                    ? depositTx.hash
-                                                    : withdrawTx.hash,
-                                                assetDetails?.chain_id
-                                            )}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="text-secondary-500"
-                                        >
-                                            {getTruncatedTxHash(
-                                                isDepositPositionType(positionType)
-                                                    ? depositTx.hash
-                                                    : withdrawTx.hash
-                                            )}
-                                        </a>
-                                        <ArrowUpRightIcon
-                                            width={16}
-                                            height={16}
-                                            className="stroke-secondary-500"
-                                        />
-                                    </BodyText>
-                                </div>
+                                        {getTruncatedTxHash(
+                                            isDepositPositionType(positionType)
+                                                ? depositTx.hash
+                                                : withdrawTx.hash
+                                        )}
+                                    </a>
+                                    <ArrowUpRightIcon
+                                        width={16}
+                                        height={16}
+                                        className="stroke-secondary-500"
+                                    />
+                                </BodyText>
                             </div>
-                        )}
+                        </div>
+                    )}
                 </div>
                 {/* Block 4 */}
                 <div className={`${isTxInProgress ? 'invisible h-0' : ''}`}>
