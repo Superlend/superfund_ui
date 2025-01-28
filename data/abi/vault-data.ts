@@ -18,6 +18,11 @@ export const rebalancedAssetsList = [
         logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/fluid_logo.png',
         link: 'https://fluid.instadapp.io/',
     },
+    {
+        title: 'Euler',
+        logo: '/images/logos/euler-symbol.svg',
+        link: 'https://euler.finance/',
+    },
 ]
 
 export const tokensSupportedList = [

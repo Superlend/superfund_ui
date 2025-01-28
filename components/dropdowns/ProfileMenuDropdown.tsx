@@ -28,7 +28,7 @@ import { getLowestDisplayValue } from '@/lib/utils'
 import { isLowestValue } from '@/lib/utils'
 import { abbreviateNumber } from '@/lib/utils'
 import { Button } from '../ui/button'
-import { Check, Copy, LoaderCircle, LogOut } from 'lucide-react'
+import { Check, Copy, LoaderCircle, LogOut, X } from 'lucide-react'
 
 interface ProfileMenuDropdownProps {
     open: boolean
@@ -151,6 +151,18 @@ export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
     //     </Card>
     // )
 
+    // SUB_COMPONENT: Close button to close the dialog
+    const closeButton = (
+        <Button
+            variant="ghost"
+            onClick={() => setOpen(false)}
+            className="h-6 w-6 flex items-center justify-center absolute right-6 top-[1.6rem] rounded-full opacity-70 bg-white ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground p-0"
+        >
+            <X strokeWidth={2.5} className="h-4 w-4 text-black" />
+            <span className="sr-only">Close</span>
+        </Button>
+    )
+
     const content = (
         <div className="flex flex-col gap-8 md:gap-6 pt-2">
             <div className="flex items-center justify-center gap-2">
@@ -206,9 +218,10 @@ export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
     return (
         <Drawer open={open} onOpenChange={setOpen}>
             <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
-            <DrawerContent className="w-full p-4">
+            <DrawerContent className="w-full p-4 dismissible-false">
                 <DrawerHeader>
                     {/* <DrawerTitle>Token Balances</DrawerTitle> */}
+                    {closeButton}
                     <DrawerDescription>
                         <VisuallyHidden.Root asChild>
                             View connected wallet details

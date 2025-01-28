@@ -9,20 +9,19 @@ import {
     CardFooter,
     CardHeader,
     CardTitle,
-} from '@/components/ui/card'
-import ImageWithDefault from '@/components/ImageWithDefault'
-import ExternalLink from '@/components/ExternalLink'
-import AllocationDetailsChart from '@/components/allocation-details-chart'
-import PerformanceHistoryChart from '@/components/performance-history-chart'
-import { Period } from '@/types/periodButtons'
-import { AllocationHistoryChart } from '@/components/allocation-history-chart'
-import { useVaultAllocationPoints } from '@/hooks/vault_hooks/vaultHook'
-import { motion } from 'motion/react'
-import {
-    rebalancedAssetsList,
-    tokensSupportedList,
-} from '@/data/abi/vault-data'
-import { DOCUMENTATION_LINK } from '@/constants'
+} from "@/components/ui/card"
+import ImageWithDefault from "@/components/ImageWithDefault"
+import ExternalLink from "@/components/ExternalLink"
+import AllocationDetailsChart from "@/components/allocation-details-chart"
+import PerformanceHistoryChart from "@/components/performance-history-chart"
+import { Period } from "@/types/periodButtons"
+import { AllocationHistoryChart } from "@/components/allocation-history-chart"
+import { useVaultAllocationPoints } from "@/hooks/vault_hooks/vaultHook"
+import { motion } from "motion/react"
+import { rebalancedAssetsList, tokensSupportedList } from "@/data/abi/vault-data"
+import { DOCUMENTATION_LINK } from "@/constants"
+import React from "react"
+import DepositAndWithdrawAssets from "./deposit-and-withdraw"
 
 export default function VaultOverview() {
     const { allocationPoints } = useVaultAllocationPoints()
@@ -47,46 +46,42 @@ export default function VaultOverview() {
                     className="text-gray-600"
                 >
                     This SuperFund optimally allocates your USDC across trusted
-                    blue-chip lending protocols such as Aave, Morpho & Fluid to
+                    blue-chip lending protocols such as Aave, Morpho, Euler, & Fluid to
                     generate consistent and competitive returns. It is a
                     low-risk, high-reliability investment vault designed for
                     users looking to maximize yield on their stable coins in a
                     safe and efficient way.
                 </BodyText>
             </section>
-            <section
-                className="block flex flex-col gap-4"
-                id="tokens-supported"
-            >
+            <div className="block lg:hidden">
+                <DepositAndWithdrawAssets />
+            </div>
+            <section className="block flex flex-col gap-4" id="tokens-supported">
                 <HeadingText level="h4" weight="medium">
                     Tokens Suported
                 </HeadingText>
                 <Card>
                     <CardContent className="flex flex-col divide-y divide-gray-400 px-8 py-5">
-                        {tokensSupportedList.map((token) => (
-                            <div
-                                className="item flex items-center justify-between gap-[12px] py-6 first:pt-2 last:pb-2"
-                                key={token.title}
-                            >
-                                <div className="flex items-center gap-2">
-                                    <ImageWithDefault
-                                        src={token.logo}
-                                        alt={token.title}
-                                        width={24}
-                                        height={24}
-                                    />
-                                    <BodyText level="body1" weight="medium">
-                                        {token.title}
-                                    </BodyText>
+                        {
+                            tokensSupportedList.map((token) => (
+                                <div className="item flex items-center justify-between gap-[12px] py-6 first:pt-2 last:pb-2" key={token.title}>
+                                    <div className="flex items-center gap-2">
+                                        <ImageWithDefault
+                                            src={token.logo}
+                                            alt={token.title}
+                                            width={24}
+                                            height={24}
+                                        />
+                                        <BodyText level="body1" weight="medium">
+                                            {token.title}
+                                        </BodyText>
+                                    </div>
+                                    <ExternalLink href={token.link} className="font-medium">
+                                        Contract
+                                    </ExternalLink>
                                 </div>
-                                <ExternalLink
-                                    href={token.link}
-                                    className="font-medium"
-                                >
-                                    Contract
-                                </ExternalLink>
-                            </div>
-                        ))}
+                            ))
+                        }
                     </CardContent>
                 </Card>
             </section>

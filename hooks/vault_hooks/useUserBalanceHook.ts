@@ -49,6 +49,8 @@ export function useUserBalance(walletAddress: `0x${string}`) {
         walletAddress: string,
         isFirstTimeCall: boolean
     ) {
+        if (!walletAddress) return
+
         try {
             if (isFirstTimeCall) {
                 setIsLoading(true)

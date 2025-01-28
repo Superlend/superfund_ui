@@ -18,6 +18,7 @@ import VaultOverview from './vault-overview'
 import PageHeader from './page-header'
 import useIsClient from '@/hooks/useIsClient'
 import { Skeleton } from '@/components/ui/skeleton'
+import FlatTabs from '@/components/tabs/flat-tabs'
 
 export default function SuperVaultPage() {
     const { isClient } = useIsClient()
@@ -25,28 +26,26 @@ export default function SuperVaultPage() {
     if (!isClient) {
         return (
             <MainContainer>
-                <div className="flex flex-col gap-10">
-                    <Skeleton className="h-12 w-[80%] md:w-80" />
+                <div className="flex flex-col gap-12">
+                    <Skeleton className='h-12 w-[80%] md:w-80 rounded-2xl' />
                     <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-[16px]">
                         <div className="flex flex-col gap-8">
                             <div className="flex items-start justify-between gap-4">
-                                {[1, 2, 3, 4].map((item) => (
-                                    <div
-                                        className="flex flex-col items-start w-full max-w-[250px] gap-2"
-                                        key={item}
-                                    >
-                                        <Skeleton className="h-8 w-full" />
-                                        <Skeleton className="h-6 w-[80%]" />
+                                {[1, 2, 3, 4].map(item => (
+                                    <div className="flex flex-col items-start w-full max-w-[250px] gap-2" key={item}>
+                                        <Skeleton className='h-8 w-full rounded-2xl' />
+                                        <Skeleton className='h-6 w-[80%] rounded-2xl' />
                                     </div>
                                 ))}
                             </div>
                             <div className="flex flex-col items-start w-full gap-4">
-                                <Skeleton className="h-8 w-full md:w-48" />
-                                <Skeleton className="h-40 w-full" />
+                                <Skeleton className='h-8 w-full md:w-48 rounded-2xl' />
+                                <Skeleton className='h-40 w-full rounded-2xl' />
                             </div>
                         </div>
-                        <div>
-                            <Skeleton className="h-[300px] w-full rounded-lg" />
+                        <div className="flex flex-col gap-4">
+                            <Skeleton className='h-[50px] w-full rounded-2xl' />
+                            <Skeleton className='h-[240px] w-full rounded-2xl' />
                         </div>
                     </div>
                 </div>
@@ -54,16 +53,32 @@ export default function SuperVaultPage() {
         )
     }
 
+    const tabs = [
+        {
+            label: 'Position Details',
+            value: 'position-details',
+            content: <div>Position Details</div>,
+        },
+        {
+            label: 'Fund Overview',
+            value: 'fund-overview',
+            content: <VaultOverview />,
+        },
+    ]
+
     return (
         <TxProvider>
             <MainContainer className="flex flex-col flex-wrap gap-[40px] w-full mx-auto my-14">
                 <PageHeader />
-                <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-[16px]">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-[16px]">
                     <div className="flex flex-col gap-10">
                         <VaultStats />
                         <VaultOverview />
+                        {/* <FlatTabs tabs={tabs} /> */}
                     </div>
-                    <DepositAndWithdrawAssets />
+                    <div className="hidden lg:block">
+                        <DepositAndWithdrawAssets />
+                    </div>
                 </div>
             </MainContainer>
         </TxProvider>
