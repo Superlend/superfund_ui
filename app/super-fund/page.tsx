@@ -18,6 +18,7 @@ import VaultOverview from './vault-overview'
 import PageHeader from './page-header'
 import useIsClient from '@/hooks/useIsClient'
 import { Skeleton } from '@/components/ui/skeleton'
+import FlatTabs from '@/components/tabs/flat-tabs'
 
 export default function SuperVaultPage() {
     const { isClient } = useIsClient()
@@ -52,6 +53,19 @@ export default function SuperVaultPage() {
         )
     }
 
+    const tabs = [
+        {
+            label: 'Position Details',
+            value: 'position-details',
+            content: <div>Position Details</div>,
+        },
+        {
+            label: 'Fund Overview',
+            value: 'fund-overview',
+            content: <VaultOverview />,
+        },
+    ]
+
     return (
         <TxProvider>
             <MainContainer className="flex flex-col flex-wrap gap-[40px] w-full mx-auto my-14">
@@ -60,6 +74,7 @@ export default function SuperVaultPage() {
                     <div className="flex flex-col gap-10">
                         <VaultStats />
                         <VaultOverview />
+                        {/* <FlatTabs tabs={tabs} /> */}
                     </div>
                     <div className="hidden lg:block">
                         <DepositAndWithdrawAssets />

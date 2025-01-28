@@ -168,7 +168,9 @@ export default function AllocationDetailsChart({
                     </div>
                     <ScrollArea type="always" className="h-[200px] w-[300px] pr-4">
                         <div className="flex flex-col gap-6">
-                            {allocationPoints.map((item, index) => (
+                            {allocationPoints
+                            .sort((a, b) => b.value - a.value)
+                            .map((item, index) => (
                                 <div key={item.name} className="flex items-center space-x-2">
                                     <div
                                         className="w-4 h-4 rounded-2"
