@@ -13,6 +13,8 @@ import {
 } from 'recharts'
 import { Period } from '@/types/periodButtons'
 import { PERIOD_LIST } from '@/constants'
+import { BodyText, HeadingText } from './ui/typography'
+import { TimelineFilterTabs } from './tabs/timeline-filter-tabs'
 
 const data = [
     { date: '11/07', value: 14 },
@@ -38,7 +40,7 @@ const CustomTooltip = ({ active, payload }: any) => {
     return null
 }
 
-export default function PerformanceHistoryChart({
+export default function InterestHistoryChart({
     selectedRange,
     handleRangeChange,
     selectedFilter,
@@ -47,31 +49,24 @@ export default function PerformanceHistoryChart({
 }: any) {
     return (
         <Card>
-            <div className="flex items-center justify-between p-6">
-                <h2 className="text-lg font-semibold">
-                    Performance History
-                </h2>
-                {/* Timeline Filters Tab */}
-                <Tabs
-                    defaultValue={Period.oneMonth}
-                    value={selectedRange}
-                    onValueChange={handleRangeChange}
-                    className="w-fit"
-                >
-                    <TabsList>
-                        {PERIOD_LIST.map((item) => (
-                            <TabsTrigger
-                                key={item.value}
-                                value={item.value}
-                                className="px-[12px] py-[2px]"
-                            >
-                                {item.label}
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
-                </Tabs>
+            <div className="flex items-center justify-between p-6 pb-4">
+                <HeadingText level="h4" weight="medium">
+                    Interest History
+                </HeadingText>
+                <div className="flex items-center gap-2">
+                    <BodyText level="body1" weight="normal" className="text-muted-foreground">
+                        Earned till date
+                    </BodyText>
+                    <HeadingText level="h4" weight="medium">
+                        $142.37
+                    </HeadingText>
+                </div>
             </div>
-            <div className="h-[300px] bg-white rounded-4">
+            <div className="relative h-[300px] bg-white rounded-4">
+                <TimelineFilterTabs
+                    selectedRange={selectedRange}
+                    handleRangeChange={handleRangeChange}
+                />
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                         data={data}
@@ -92,12 +87,12 @@ export default function PerformanceHistoryChart({
                             >
                                 <stop
                                     offset="5%"
-                                    stopColor="#22c55e"
+                                    stopColor="#FF5B0033"
                                     stopOpacity={0.3}
                                 />
                                 <stop
                                     offset="95%"
-                                    stopColor="#22c55e"
+                                    stopColor="#FF5B0033"
                                     stopOpacity={0}
                                 />
                             </linearGradient>
@@ -128,7 +123,7 @@ export default function PerformanceHistoryChart({
                         <Area
                             type="monotone"
                             dataKey="value"
-                            stroke="#22c55e"
+                            stroke="#FF5B00"
                             fillOpacity={1}
                             fill="url(#colorValue)"
                             isAnimationActive={true}

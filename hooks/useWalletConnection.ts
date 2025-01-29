@@ -2,8 +2,9 @@ import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { useAccount } from 'wagmi'
 
 export const useWalletConnection = () => {
-    // const { address: walletAddress } = useAccount()
-    const { user } = usePrivy()
+    const { isConnecting: isConnectingWagmi } = useAccount()
+    const { user, ready, authenticated } = usePrivy()
+    const isConnectingWallet = isConnectingWagmi || !ready
     const isWalletConnected = !!user
     const walletAddress = user?.wallet?.address
     const { wallets } = useWallets()
@@ -20,6 +21,7 @@ export const useWalletConnection = () => {
         wallet,
         walletAddress,
         isWalletConnected,
+        isConnectingWallet,
         handleSwitchChain,
     }
 }
