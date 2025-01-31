@@ -36,8 +36,10 @@ export function AnimatedNumber({ value, prefix = '', suffix = '', className = ''
                             key={key}
                             className="relative inline-block overflow-hidden"
                             style={{
-                                height: '0.85em',
-                                width: char === '.' ? '0.25em' : '0.65em',
+                                height: '1.0em',
+                                width: char === '.' ? '0.25em' :
+                                    char === '%' ? '0.8em' :
+                                        '0.65em',
                                 transform: 'translateY(0.1em)'
                             }}
                         >
