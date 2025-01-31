@@ -7,7 +7,6 @@ import useIsClient from '@/hooks/useIsClient'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
 import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
-import { abbreviateNumber } from '@/lib/utils'
 import { motion } from 'motion/react'
 
 export default function VaultStats() {
@@ -23,7 +22,7 @@ export default function VaultStats() {
     const vaultStats = [
         {
             title: 'My Position',
-            value: isWalletConnected ? `$${abbreviateNumber(Number(userMaxWithdrawAmount), 4)}` : 'N/A',
+            value: isWalletConnected ? `$${Number(userMaxWithdrawAmount).toFixed(4)}` : 'N/A',
             show: isWalletConnected,
         },
         {
@@ -33,7 +32,7 @@ export default function VaultStats() {
         },
         {
             title: 'TVL',
-            value: abbreviateNumber(Number(totalAssets), 4),
+            value: '$' + Number(totalAssets).toFixed(4),
             show: true,
         },
         {
