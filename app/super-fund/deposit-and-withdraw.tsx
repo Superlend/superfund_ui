@@ -97,7 +97,7 @@ export default function DepositAndWithdrawAssets() {
 
     useEffect(() => {
         if (isWalletConnected) {
-            handleSwitchChain(ChainId.Base)
+            handleSwitchChain(ChainId.ArbitrumSepolia)
         }
     }, [isWalletConnected])
 
@@ -232,22 +232,22 @@ export default function DepositAndWithdrawAssets() {
                             {isDepositPositionType ? 'Bal' : 'Available'}:{' '}
                             {isLoadingBalance ? (
                                 <LoaderCircle className="text-primary w-4 h-4 animate-spin" />
-                            ) : (
-                                abbreviateNumber(
-                                    Number(
-                                        getLowestDisplayValue(
+                            ) : 
+                                // abbreviateNumber(
+                                    // Number(
+                                    //     getLowestDisplayValue(
                                             Number(
                                                 isDepositPositionType
                                                     ? (balance ?? 0)
                                                     : (userMaxWithdrawAmount ??
                                                           0)
-                                            ),
-                                            2
-                                        )
-                                    ),
-                                    2
-                                )
-                            )}
+                                            ).toFixed(2)
+                                    //         2
+                                    //     )
+                                    // )
+                                    // 2
+                                // )
+                            }
                             <span className="inline-block truncate max-w-[70px]">
                                 USDC
                             </span>
@@ -337,7 +337,7 @@ export default function DepositAndWithdrawAssets() {
                                     },
                                     spot_apy: spotApy,
                                 },
-                                chain_id: ChainId.Base,
+                                chain_id: ChainId.ArbitrumSepolia,
                             }}
                             amount={
                                 isDepositPositionType
@@ -466,7 +466,7 @@ export function ConfirmationDialogForSuperVault({
 
     useEffect(() => {
         if (isWalletConnected) {
-            handleSwitchChain(ChainId.Base)
+            handleSwitchChain(ChainId.ArbitrumSepolia)
         }
     }, [isWalletConnected])
 

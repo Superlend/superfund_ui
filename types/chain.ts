@@ -5,6 +5,7 @@ export type TChain = {
 }
 
 export enum ChainId {
+    ArbitrumSepolia = 421614,
     Polygon = 137,
     Base = 8453,
     Ethereum = 1,

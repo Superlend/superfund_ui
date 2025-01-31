@@ -2,8 +2,8 @@ export const DEFAULT_ROUTE = {
     home: '/discover',
 }
 
-export const VAULT_ADDRESS = '0x10076ed296571cE4Fde5b1FDF0eB9014a880e47B'
-export const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+export const VAULT_ADDRESS = '0xd0fb9685C36aF3797E2518e4263338338658Ba61'
+export const USDC_ADDRESS = '0x3253a335E7bFfB4790Aa4C25C4250d206E9b9773'
 export const USDC_DECIMALS = 6
 
 // 1 million allocation points

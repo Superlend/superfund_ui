@@ -24,6 +24,6 @@ export const tokensSupportedList = [
     {
         title: 'USDC',
         logo: 'https://cdn.morpho.org/assets/logos/usdc.svg',
-        link: `${TX_EXPLORER_LINKS[ChainId.Base]}/address/${USDC_ADDRESS}`,
+        link: `${TX_EXPLORER_LINKS[ChainId.ArbitrumSepolia]}/address/${USDC_ADDRESS}`,
     },
 ]

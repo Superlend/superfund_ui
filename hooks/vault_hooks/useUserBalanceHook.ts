@@ -2,7 +2,7 @@ import { USDC_ADDRESS, USDC_DECIMALS, VAULT_ADDRESS } from '@/lib/constants'
 import { usePrivy } from '@privy-io/react-auth'
 import { useEffect, useState } from 'react'
 import { createPublicClient, formatUnits, http, parseAbi } from 'viem'
-import { base } from 'viem/chains'
+import { arbitrumSepolia } from 'viem/chains'
 
 const USDC_ABI = parseAbi([
     'function balanceOf(address) view returns (uint256)',
@@ -12,7 +12,7 @@ const USDC_ABI = parseAbi([
 
 // Create public client outside component to prevent recreation
 const publicClient = createPublicClient({
-    chain: base,
+    chain: arbitrumSepolia,
     transport: http(),
     batch: {
         multicall: true,

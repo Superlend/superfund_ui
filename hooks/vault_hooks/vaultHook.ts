@@ -9,21 +9,17 @@ import {
 import { usePrivy } from '@privy-io/react-auth'
 import { useEffect, useState, useCallback } from 'react'
 import { createPublicClient, http, formatUnits, parseAbi } from 'viem'
-import { base } from 'viem/chains'
+import { arbitrumSepolia } from 'viem/chains'
 
 const VAULT_ABI = parseAbi([
-    'function totalAssets() view returns (uint256)',
-    // maxWithdraw
-    'function maxWithdraw(address user) view returns (uint256)',
-
-    'function getEulerEarnSavingRate() view returns (uint40, uint40, uint168)',
-
+    'function lastTotalAssets() view returns (uint256)',
     'function getStrategy(address _strategy) view returns (uint120, uint96, uint160, uint8)',
+    'function maxWithdraw(address user) view returns (uint256)',
 ])
 
 // Create public client outside component to prevent recreation
 const publicClient = createPublicClient({
-    chain: base,
+    chain: arbitrumSepolia,
     transport: http(),
     batch: {
         multicall: true,
@@ -39,31 +35,31 @@ export function useVaultHook() {
     async function fetchVaultData() {
         try {
             setIsLoading(true)
-            const [assets, eulerEarnSavingRate] = await Promise.all([
+            const [assets] = await Promise.all([
                 publicClient.readContract({
                     address: VAULT_ADDRESS,
                     abi: VAULT_ABI,
-                    functionName: 'totalAssets',
+                    functionName: 'lastTotalAssets',
                 }),
-                publicClient.readContract({
-                    address: VAULT_ADDRESS,
-                    abi: VAULT_ABI,
-                    functionName: 'getEulerEarnSavingRate',
-                }),
+                // publicClient.readContract({
+                //     address: VAULT_ADDRESS,
+                //     abi: VAULT_ABI,
+                //     functionName: 'getEulerEarnSavingRate',
+                // }),
             ])
 
-            const [timeEnd, timeStart, rewards] = eulerEarnSavingRate
+            // const [timeEnd, timeStart, rewards] = eulerEarnSavingRate
 
-            const rate =
-                (((parseFloat(formatUnits(rewards, USDC_DECIMALS)) /
-                    (timeStart - timeEnd)) *
-                    (365 * 24 * 60 * 60)) /
-                    parseFloat(formatUnits(assets, USDC_DECIMALS))) *
-                100
+            // const rate =
+            //     (((parseFloat(formatUnits(rewards, USDC_DECIMALS)) /
+            //         (timeStart - timeEnd)) *
+            //         (365 * 24 * 60 * 60)) /
+            //         parseFloat(formatUnits(assets, USDC_DECIMALS))) *
+            //     100
 
             const formattedAssets = formatUnits(assets, USDC_DECIMALS)
             setTotalAssets(formattedAssets)
-            setSpotApy(convertAPRtoAPY(rate / 100).toFixed(2))
+            // setSpotApy(convertAPRtoAPY(rate / 100).toFixed(2))
             setError(null)
         } catch (err) {
             console.error('Error fetching vault data:', err)

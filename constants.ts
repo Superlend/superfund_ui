@@ -253,6 +253,7 @@ export const TX_EXPLORER_LINKS: { [key in ChainId]: string } = {
     [ChainId.Avalanche]: 'https://snowtrace.io',
     [ChainId.Bsc]: 'https://bscscan.com',
     [ChainId.Base]: 'https://basescan.org',
+    [ChainId.ArbitrumSepolia]: 'https://sepolia.arbiscan.io',
     [ChainId.Ethereum]: 'https://etherscan.io',
     [ChainId.Gnosis]: 'https://gnosisscan.io',
     [ChainId.Metis]: 'https://metis.blockscout.com',

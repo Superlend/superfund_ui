@@ -5,17 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { PrivyProvider } from '@privy-io/react-auth'
 import { createConfig, WagmiProvider } from '@privy-io/wagmi'
 import {
-    base,
-    mainnet,
-    polygon,
-    avalanche,
-    optimism,
-    gnosis,
-    arbitrum,
-    etherlink,
-    bsc,
-    scroll,
-    metis,
+    arbitrumSepolia
 } from 'viem/chains'
 import { http } from 'wagmi'
 
@@ -33,9 +23,9 @@ const metadata = {
 }
 
 export const config = createConfig({
-    chains: [base], // Pass your required chains as an array
+    chains: [arbitrumSepolia], // Pass your required chains as an array
     transports: {
-        [base.id]: http(),
+        [arbitrumSepolia.id]: http(),
     },
 })
 
@@ -59,7 +49,7 @@ function ContextProvider({
                     loginMessage: 'Select wallet to continue',
                     showWalletLoginFirst: true,
                 },
-                supportedChains: [base],
+                supportedChains: [arbitrumSepolia],
             }}
         >
             <QueryClientProvider client={queryClient}>
