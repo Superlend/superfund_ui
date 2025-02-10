@@ -1,12 +1,12 @@
 'use client'
 
+import { AnimatedNumber } from '@/components/animations/animated_number'
 import { Skeleton } from '@/components/ui/skeleton'
 import { BodyText, HeadingText } from '@/components/ui/typography'
 import useIsClient from '@/hooks/useIsClient'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
 import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
-import { abbreviateNumber } from '@/lib/utils'
 import { motion } from 'motion/react'
 
 export default function VaultStats() {
@@ -22,7 +22,7 @@ export default function VaultStats() {
     const vaultStats = [
         {
             title: 'My Position',
-            value: isWalletConnected ? `$${abbreviateNumber(Number(userMaxWithdrawAmount))}` : 'N/A',
+            value: isWalletConnected ? `$${Number(userMaxWithdrawAmount).toFixed(4)}` : 'N/A',
             show: isWalletConnected,
         },
         {
@@ -32,7 +32,7 @@ export default function VaultStats() {
         },
         {
             title: 'TVL',
-            value: abbreviateNumber(Number(totalAssets)),
+            value: '$' + Number(totalAssets).toFixed(4),
             show: true,
         },
         {
@@ -81,7 +81,7 @@ export default function VaultStats() {
                             {item.title}
                         </BodyText>
                         <HeadingText level="h3" weight="medium">
-                            {item.value}
+                            <AnimatedNumber value={item.value} />
                         </HeadingText>
                     </motion.div>
                 ))}
