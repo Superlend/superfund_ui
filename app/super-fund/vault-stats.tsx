@@ -11,6 +11,7 @@ import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
 import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import { getRewardsTooltipContent } from '@/lib/ui/getRewardsTooltipContent'
 import { abbreviateNumber } from '@/lib/utils'
+import { Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
 
 export default function VaultStats() {
@@ -86,53 +87,54 @@ export default function VaultStats() {
                             {item.title}
                         </BodyText>
                         {item.hasRewards &&
-                            <InfoTooltip
-                                label={
-                                    <div className="flex items-center gap-2">
-                                        <HeadingText level="h3" weight="medium">
-                                            <AnimatedNumber value={item.value} />
-                                        </HeadingText>
-                                        <ImageWithDefault
-                                            src="/icons/sparkles.svg"
-                                            alt="Rewards"
-                                            width={22}
-                                            height={22}
-                                            className="cursor-pointer hover:scale-110"
+                            <div className="flex items-center gap-2">
+                                <HeadingText level="h3" weight="medium">
+                                    <AnimatedNumber value={item.value} />
+                                </HeadingText>
+                                {/* Rewards tooltip */}
+                                <InfoTooltip
+                                    label={
+                                        <Sparkles
+                                            className="cursor-pointer hover:scale-150 transition-all duration-300 stroke-warning-500/80 fill-warning-500/80"
+                                            width={18}
+                                            height={18}
                                         />
-                                    </div>
-                                }
-                                content={getRewardsTooltipContent({
-                                    baseRateFormatted: '56.23',
-                                    rewards: [
-                                        {
-                                            supply_apy: 5.34,
-                                            borrow_apy: 5.34,
-                                            asset: {
-                                                symbol: 'ETH',
-                                                name: 'Ethereum',
-                                                address: '0x0000000000000000000000000000000000000000',
-                                                decimals: 18,
-                                                logo: '/images/platforms/morpho.webp',
-                                                price_usd: 1700,
-                                            }
-                                        },
-                                        {
-                                            supply_apy: 5.34,
-                                            borrow_apy: 5.34,
-                                            asset: {
-                                                symbol: 'ETH',
-                                                name: 'Ethereum',
-                                                address: '0x0000000000000000000000000000000000000000',
-                                                decimals: 18,
-                                                logo: '/images/platforms/morpho.webp',
-                                                price_usd: 1700,
-                                            }
-                                        },
-                                    ],
-                                    apyCurrent: 5.34,
-                                    positionTypeParam: 'lend',
-                                })}
-                            />}
+                                    }
+                                    content={getRewardsTooltipContent({
+                                        baseRateFormatted: '56.23',
+                                        rewards: [
+                                            {
+                                                supply_apy: 5.34,
+                                                borrow_apy: 5.34,
+                                                asset: {
+                                                    symbol: 'ETH',
+                                                    name: 'Ethereum',
+                                                    address: '0x0000000000000000000000000000000000000000',
+                                                    decimals: 18,
+                                                    logo: '/images/platforms/morpho.webp',
+                                                    price_usd: 1700,
+                                                }
+                                            },
+                                            {
+                                                supply_apy: 5.34,
+                                                borrow_apy: 5.34,
+                                                asset: {
+                                                    symbol: 'ETH',
+                                                    name: 'Ethereum',
+                                                    address: '0x0000000000000000000000000000000000000000',
+                                                    decimals: 18,
+                                                    logo: '/images/platforms/morpho.webp',
+                                                    price_usd: 1700,
+                                                }
+                                            },
+                                        ],
+                                        apyCurrent: 5.34,
+                                        positionTypeParam: 'lend',
+                                    })}
+                                />
+                            </div>
+
+                        }
                         {!item.hasRewards &&
                             <HeadingText level="h3" weight="medium">
                                 <AnimatedNumber value={item.value} />
