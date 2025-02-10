@@ -21,13 +21,11 @@ import FlatTabs from '@/components/tabs/flat-tabs'
 import PositionDetails from './position-details'
 import FundOverview from './fund-overview'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
-import { useRewardsHook } from '@/hooks/vault_hooks/vaultHook'
 
 export default function SuperVaultPage() {
     const { isClient } = useIsClient()
     const { isWalletConnected, isConnectingWallet } = useWalletConnection()
     const [selectedTab, setSelectedTab] = useState('position-details')
-    const { rewards, totalRewardApy, isLoading: isLoading2, error: error2 } = useRewardsHook()
 
     const tabs = [
         {
@@ -52,7 +50,7 @@ export default function SuperVaultPage() {
         setSelectedTab(tab)
     }
 
-    if (!isClient || isLoading2) {
+    if (!isClient) {
         return (
             <MainContainer>
                 <div className="flex flex-col gap-12">
@@ -88,7 +86,7 @@ export default function SuperVaultPage() {
                 <PageHeader />
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-[16px]">
                     <div className="flex flex-col gap-10">
-                        <VaultStats rewards={rewards} totalRewardApy={totalRewardApy} />
+                        <VaultStats />
                         <div className="block lg:hidden">
                             <DepositAndWithdrawAssets />
                         </div>
