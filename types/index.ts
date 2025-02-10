@@ -58,9 +58,14 @@ export type TGetOpportunitiesParams = {
     limit?: number
 }
 
+export type TRewardAsset = {
+    symbol: string
+    name: string
+    address: `0x${string}`
+    logo: string
+}
 export type TReward = {
     supply_apy: number
-    borrow_apy: number
     asset: {
         symbol: string
         name: string

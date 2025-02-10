@@ -80,7 +80,7 @@ export function getRewardsTooltipContent({
                         className="text-gray-800"
                     >
                         {baseRateOperator}{' '}
-                        {`${(Math.floor(Number(isLend ? reward.supply_apy : reward.borrow_apy) * 100) / 100).toFixed(2)}%`}
+                        {`${(Math.floor(Number(reward.supply_apy) * 100) / 100).toFixed(2)}%`}
                     </BodyText>
                 </div>
             ))}
