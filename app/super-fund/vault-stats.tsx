@@ -9,6 +9,7 @@ import useIsClient from '@/hooks/useIsClient'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
 import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
+import { useRewardsHook } from '@/hooks/vault_hooks/vaultHook'
 import { getRewardsTooltipContent } from '@/lib/ui/getRewardsTooltipContent'
 import { abbreviateNumber } from '@/lib/utils'
 import { Sparkles } from 'lucide-react'
@@ -17,6 +18,7 @@ import { motion } from 'motion/react'
 export default function VaultStats() {
     const { walletAddress, isWalletConnected } = useWalletConnection()
     const { totalAssets, spotApy, isLoading, error } = useVaultHook()
+    const { rewards, totalRewardApy, isLoading: isLoading2, error: error2 } = useRewardsHook()
     const { userMaxWithdrawAmount } = useUserBalance(
         walletAddress as `0x${string}`
     )
@@ -32,7 +34,7 @@ export default function VaultStats() {
         },
         {
             title: 'Spot APY',
-            value: `${spotApy}%`,
+            value: `${(Number(spotApy) + Number(totalRewardApy)).toFixed(2)}%`,
             show: true,
             hasRewards: true,
         },
@@ -101,34 +103,22 @@ export default function VaultStats() {
                                         />
                                     }
                                     content={getRewardsTooltipContent({
-                                        baseRateFormatted: '56.23',
-                                        rewards: [
-                                            {
-                                                supply_apy: 5.34,
-                                                borrow_apy: 5.34,
-                                                asset: {
-                                                    symbol: 'ETH',
-                                                    name: 'Ethereum',
-                                                    address: '0x0000000000000000000000000000000000000000',
-                                                    decimals: 18,
-                                                    logo: '/images/platforms/morpho.webp',
-                                                    price_usd: 1700,
-                                                }
-                                            },
-                                            {
-                                                supply_apy: 5.34,
-                                                borrow_apy: 5.34,
-                                                asset: {
-                                                    symbol: 'ETH',
-                                                    name: 'Ethereum',
-                                                    address: '0x0000000000000000000000000000000000000000',
-                                                    decimals: 18,
-                                                    logo: '/images/platforms/morpho.webp',
-                                                    price_usd: 1700,
-                                                }
-                                            },
-                                        ],
-                                        apyCurrent: 5.34,
+                                        baseRateFormatted: spotApy,
+                                        rewards: rewards,
+                                        // [
+                                        // {
+                                        //     supply_apy: 5.34,
+                                        //     asset: {
+                                        //         symbol: 'ETH',
+                                        //         name: 'Ethereum',
+                                        //         address: '0x0000000000000000000000000000000000000000',
+                                        //         decimals: 18,
+                                        //         logo: '/images/platforms/morpho.webp',
+                                        //         price_usd: 1700,
+                                        //     }
+                                        // },
+                                        // ],
+                                        apyCurrent: Number(spotApy) + Number(totalRewardApy),
                                         positionTypeParam: 'lend',
                                     })}
                                 />
