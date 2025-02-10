@@ -14,11 +14,17 @@ import { getRewardsTooltipContent } from '@/lib/ui/getRewardsTooltipContent'
 import { abbreviateNumber } from '@/lib/utils'
 import { Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
+import { TReward } from '@/types'
 
-export default function VaultStats() {
+interface VaultStatsProps {
+    rewards: TReward[]
+    totalRewardApy: number
+}
+
+export default function VaultStats({ rewards, totalRewardApy }: VaultStatsProps) {
     const { walletAddress, isWalletConnected } = useWalletConnection()
     const { totalAssets, spotApy, isLoading, error } = useVaultHook()
-    const { rewards, totalRewardApy, isLoading: isLoading2, error: error2 } = useRewardsHook()
+
     const { userMaxWithdrawAmount } = useUserBalance(
         walletAddress as `0x${string}`
     )
