@@ -1,7 +1,7 @@
 'use client'
 
 import MainContainer from '@/components/MainContainer'
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import {
     Card,
     CardContent,
@@ -10,18 +10,45 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card'
-import { BodyText } from '@/components/ui/typography'
+import { BodyText, HeadingText } from '@/components/ui/typography'
 import DepositAndWithdrawAssets from './deposit-and-withdraw'
 import TxProvider from '@/context/super-vault-tx-provider'
 import VaultStats from './vault-stats'
-import VaultOverview from './vault-overview'
 import PageHeader from './page-header'
 import useIsClient from '@/hooks/useIsClient'
 import { Skeleton } from '@/components/ui/skeleton'
 import FlatTabs from '@/components/tabs/flat-tabs'
+import PositionDetails from './position-details'
+import FundOverview from './fund-overview'
+import { useWalletConnection } from '@/hooks/useWalletConnection'
 
 export default function SuperVaultPage() {
     const { isClient } = useIsClient()
+    const { isWalletConnected, isConnectingWallet } = useWalletConnection()
+    const [selectedTab, setSelectedTab] = useState('position-details')
+
+    const tabs = [
+        {
+            label: 'Position Details',
+            value: 'position-details',
+            content: <PositionDetails />,
+            show: isWalletConnected,
+        },
+        {
+            label: 'Fund Overview',
+            value: 'fund-overview',
+            content: <FundOverview />,
+            show: true,
+        },
+    ]
+
+    useEffect(() => {
+        setSelectedTab(tabs.filter(tab => tab.show)[0].value)
+    }, [isWalletConnected])
+
+    const handleTabChange = (tab: string) => {
+        setSelectedTab(tab)
+    }
 
     if (!isClient) {
         return (
@@ -53,19 +80,6 @@ export default function SuperVaultPage() {
         )
     }
 
-    const tabs = [
-        {
-            label: 'Position Details',
-            value: 'position-details',
-            content: <div>Position Details</div>,
-        },
-        {
-            label: 'Fund Overview',
-            value: 'fund-overview',
-            content: <VaultOverview />,
-        },
-    ]
-
     return (
         <TxProvider>
             <MainContainer className="flex flex-col flex-wrap gap-[40px] w-full mx-auto my-14">
@@ -73,8 +87,19 @@ export default function SuperVaultPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-[16px]">
                     <div className="flex flex-col gap-10">
                         <VaultStats />
-                        <VaultOverview />
-                        {/* <FlatTabs tabs={tabs} /> */}
+                        <div className="block lg:hidden">
+                            <DepositAndWithdrawAssets />
+                        </div>
+                        {isConnectingWallet &&
+                            <LoadingTabs />
+                        }
+                        {!isConnectingWallet &&
+                            <FlatTabs
+                                tabs={tabs.filter(tab => tab.show)}
+                                activeTab={selectedTab}
+                                onTabChange={handleTabChange}
+                            />
+                        }
                     </div>
                     <div className="hidden lg:block">
                         <DepositAndWithdrawAssets />
@@ -111,6 +136,15 @@ function BlogCard() {
                     </div>
                 </CardFooter>
             </Card>
+        </div>
+    )
+}
+
+function LoadingTabs() {
+    return (
+        <div className="flex flex-col gap-4">
+            <Skeleton className="h-12 w-full rounded-lg" />
+            <Skeleton className="h-64 w-full rounded-2xl" />
         </div>
     )
 }
