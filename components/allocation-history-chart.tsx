@@ -119,31 +119,31 @@ export function AllocationHistoryChart() {
                                 tickLine={false}
                                 axisLine={false}
                                 tick={{ fontSize: 12 }}
-                                tickMargin={8}
+                                tickMargin={0}
                                 interval="preserveStartEnd"
                             />
                             <YAxis
                                 tickLine={false}
                                 axisLine={false}
                                 tick={{ fontSize: 12 }}
-                                tickMargin={8}
+                                tickMargin={0}
                                 ticks={[0, 6, 12, 18, 24]}
                             />
                             <ChartTooltip
                                 content={
                                     <ChartTooltipContent
-                                        className="flex items-center gap-2 rounded-lg border bg-white p-2 text-sm shadow-lg"
+                                        className="flex items-center gap-0 rounded-lg border bg-white p-0 text-sm shadow-lg"
                                     // indicator={false}
                                     />
                                 }
                             />
                             {
-                                Array.from({ length: 8 }, (_, index) => (
+                                chartData[chartData.length - 1]?.allocations.map((allocation, index) => (
                                     <Bar
                                         key={index}
                                         dataKey={`allocations[${index}].value`}
                                         stackId="stack"
-                                        fill="rgb(239, 108, 100)"
+                                        fill={`allocations[${index}].color`}
                                         radius={[0, 0, 4, 4]}
                                     />
                                 ))

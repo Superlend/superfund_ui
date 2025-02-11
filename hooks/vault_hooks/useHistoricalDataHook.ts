@@ -1,4 +1,4 @@
-import { VAULT_ADDRESS, VAULT_STRATEGIES } from "@/lib/constants";
+import { VAULT_ADDRESS, VAULT_STRATEGIES, VAULT_STRATEGIES_COLORS } from "@/lib/constants";
 import { THistoricalDataPerformanceHistory, THistoricalDataRebalanceHistory } from "@/types";
 import { Period } from "@/types/periodButtons";
 import { useEffect, useState } from "react";
@@ -102,7 +102,8 @@ export function useRebalanceHistory(period: Period) {
                         return {
                             name: strategyName,
                             address: address,
-                            value: value as number
+                            value: value as number,
+                            color: VAULT_STRATEGIES_COLORS[strategyName as keyof typeof VAULT_STRATEGIES_COLORS]
                         }
                     });
 

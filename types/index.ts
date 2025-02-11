@@ -83,6 +83,7 @@ export type THistoricalDataPerformanceHistory = {
         name: string
         address: string
         value: number
+        color: string
     }[]
 }
 
