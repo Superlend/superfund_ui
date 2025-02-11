@@ -80,7 +80,7 @@ export default function AllocationDetailsChart({
                         Last Rebalance: <span className="text-gray-700">2 hrs 34 mins ago</span>
                     </BodyText> */}
                 </div>
-                <div className="flex flex-wrap items-center justify-center gap-6 lg:gap-8 w-full bg-white rounded-4 max-lg:pb-8 px-4 sm:px-12">
+                <div className="flex flex-wrap items-center justify-center gap-6 lg:gap-8 w-full bg-white rounded-4 px-4 pb-4 sm:px-12">
                     <div className="h-[340px] w-[300px] max-w-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart

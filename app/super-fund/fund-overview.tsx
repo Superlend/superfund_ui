@@ -22,22 +22,25 @@ import { rebalancedAssetsList, tokensSupportedList } from "@/data/abi/vault-data
 import { DOCUMENTATION_LINK } from "@/constants"
 import React, { useState } from "react"
 import DepositAndWithdrawAssets from "./deposit-and-withdraw"
+import { useHistoricalData } from '@/hooks/vault_hooks/useHistoricalDataHook'
 
-export default function VaultOverview() {
+export default function FundOverview() {
     const { allocationPoints } = useVaultAllocationPoints()
 
     const [selectedRange, setSelectedRange] = useState<Period>(Period.oneMonth)
 
+    const { historicalData, isLoading, error } = useHistoricalData(selectedRange)
+
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5, ease: 'easeOut' }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
             className="flex flex-col gap-[40px]"
         >
             <section
                 className="block flex flex-col gap-2"
-                id="vault-information"
+                id="fund-information"
             >
                 <HeadingText level="h4" weight="medium">
                     Fund Information
@@ -55,9 +58,6 @@ export default function VaultOverview() {
                     safe and efficient way.
                 </BodyText>
             </section>
-            <div className="block lg:hidden">
-                <DepositAndWithdrawAssets />
-            </div>
             <section className="block flex flex-col gap-4" id="tokens-supported">
                 <HeadingText level="h4" weight="medium">
                     Tokens Suported
@@ -95,7 +95,7 @@ export default function VaultOverview() {
                     Rebalanced Across
                 </HeadingText>
                 <Card>
-                    <CardContent className="p-5 flex flex-wrap items-center justify-between gap-6 sm:gap-4 sm:px-6 lg:px-24">
+                    <CardContent className="p-5 flex flex-wrap items-center justify-between gap-6 sm:gap-4 sm:px-6 xl:px-24">
                         {rebalancedAssetsList.map((token) => (
                             <div
                                 className="item flex items-center gap-2"
@@ -140,7 +140,7 @@ export default function VaultOverview() {
                 </HeadingText>
                 <Card>
                     <CardContent className="px-9 py-8 bg-gray-100/50 divide-y divide-gray-400">
-                        {/* <div className="row flex max-lg:flex-col gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
+                        {/* <div className="row flex max-lg:flex-col flex-wrap gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
                             <div className="col flex-1 flex items-center gap-2">
                                 <BodyText level="body1" weight="medium">
                                     Audit Report
@@ -164,7 +164,7 @@ export default function VaultOverview() {
                                 </ExternalLink>
                             </div>
                         </div> */}
-                        <div className="row flex max-lg:flex-col gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
+                        <div className="row flex max-lg:flex-col flex-wrap gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
                             <div className="col flex-1 flex items-center gap-2">
                                 <BodyText level="body1" weight="medium">
                                     Documentation
@@ -186,13 +186,13 @@ export default function VaultOverview() {
                                     className="font-medium"
                                     variant="secondary"
                                 >
-                                    <BodyText level="body2" weight="medium">
+                                    <BodyText level="body2" weight="medium" className="shrink-0">
                                         View documentation
                                     </BodyText>
                                 </ExternalLink>
                             </div>
                         </div>
-                        <div className="row flex max-lg:flex-col gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
+                        <div className="row flex max-lg:flex-col flex-wrap gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
                             <div className="col flex-1 flex items-center gap-2">
                                 <BodyText level="body1" weight="medium">
                                     Management Fees

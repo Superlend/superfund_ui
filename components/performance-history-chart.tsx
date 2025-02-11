@@ -230,8 +230,8 @@ export default function PerformanceHistoryChart({
                             </AreaChart>
                         </Brush>
                     </LineChart>
-                </ResponsiveContainer>
-            </div>
-        </Card>
+                </ResponsiveContainer >
+            </div >
+        </Card >
     )
 }

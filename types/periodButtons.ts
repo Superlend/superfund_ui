@@ -31,5 +31,5 @@ export enum Period {
     oneMonth = 'MONTH',
     // threeMonth = '3MONTHS',
     // sixMonth = '6MONTHS',
-    oneYear = 'YEAR',
+    allTime = 'ALL TIME',
 }

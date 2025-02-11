@@ -36,7 +36,7 @@ export default function ExternalLink({
             {children}
             <ArrowRightIcon
                 weight="2.5"
-                className={`${getStrokeColor()} -rotate-45 translate-y-[1px]`}
+                className={`${getStrokeColor()} -rotate-45 translate-y-[1px] shrink-0`}
                 width={iconSize}
                 height={iconSize}
             />

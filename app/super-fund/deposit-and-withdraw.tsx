@@ -160,11 +160,11 @@ export default function DepositAndWithdrawAssets() {
 
     const helperText = {
         placeholder: {
-            deposit: 'Enter amount to proceed depositing in SuperUSD Vault',
+            deposit: 'Enter amount to proceed depositing in SuperFund Vault',
             withdraw: 'Enter amount to proceed withdrawing from this vault',
         },
         input: {
-            deposit: `You are about to deposit $${userEnteredDepositAmount} worth of USDC to SuperUSD Vault`,
+            deposit: `You are about to deposit $${userEnteredDepositAmount} worth of USDC to SuperFund Vault`,
             withdraw: `You are about to withdraw $${userEnteredWithdrawAmount} worth of USDC from this vault`,
         },
         error: {
