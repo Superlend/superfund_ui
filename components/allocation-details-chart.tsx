@@ -97,14 +97,14 @@ export default function AllocationDetailsChart({
                                     cy="50%"
                                     innerRadius={80}
                                     outerRadius={120}
-                                    paddingAngle={2}
+                                    paddingAngle={0}
                                     dataKey="value"
                                     isAnimationActive={true}
                                     startAngle={90}
                                     endAngle={450}
                                     minAngle={0}
                                     nameKey="name"
-                                    cornerRadius={12}
+                                    cornerRadius={8}
                                     activeShape={({
                                         outerRadius = 0,
                                         ...props

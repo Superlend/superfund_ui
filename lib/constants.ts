@@ -21,8 +21,8 @@ export const VAULT_STRATEGIES_COLORS = {
     'Morpho Re7 USDC': "#201CB0",
     AaveV3: "#9293F7",
     Fluid: "#753FFD",
-    'Euler Base USDC': "#fff",
-    CASH_RESERVE: "#17395e",
+    'Euler Base USDC': "#17395e",
+    'Cash Reserve': "#aeaeae",
 }
 
 export enum StrategiesType {
@@ -30,7 +30,7 @@ export enum StrategiesType {
     AaveV3 = 'AaveV3',
     Fluid = 'Fluid',
     EulerBaseUSDC = 'Euler Base USDC',
-    CASH_RESERVE = 'CASH_RESERVE',
+    CASH_RESERVE = 'Cash Reserve',
 }
 
 export const VAULT_STRATEGIES = {
@@ -70,8 +70,8 @@ export const VAULT_STRATEGIES = {
         address: '0x0A1a3b5f2041F33522C4efc754a7D096f880eE16',
         strategy_type: StrategiesType.EulerBaseUSDC,
     },
-    // CASH_RESERVE: {
-    //     address: '0x0000000000000000000000000000000000000000',
-    //     strategy_type: StrategiesType.CASH_RESERVE,
-    // },
+    'Cash Reserve': {
+        address: '0x0000000000000000000000000000000000000000',
+        strategy_type: StrategiesType.CASH_RESERVE,
+    },
 }
