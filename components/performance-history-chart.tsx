@@ -19,6 +19,7 @@ import { useEffect, useState } from 'react'
 import { useHistoricalData } from '@/hooks/vault_hooks/useHistoricalDataHook'
 import { abbreviateNumber, extractTimeFromDate, formatDateAccordingToPeriod, shortNubers } from '@/lib/utils'
 import { ChartConfig } from './ui/chart'
+import { TimelineFilterTabs } from './tabs/timeline-filter-tabs'
 
 const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -187,24 +188,10 @@ export default function PerformanceHistoryChart() {
                     Performance History
                 </h2>
                 {/* Timeline Filters Tab */}
-                <Tabs
-                    defaultValue={Period.oneMonth}
-                    value={selectedRange}
-                    onValueChange={handleRangeChange}
-                    className="w-fit"
-                >
-                    <TabsList className="bg-gray-200 rounded-2 p-0.5">
-                        {PERIOD_LIST.map((item) => (
-                            <TabsTrigger
-                                key={item.value}
-                                value={item.value}
-                                className="px-[12px] py-[2px] data-[state=active]:bg-white data-[state=active]:shadow-md rounded-2"
-                            >
-                                {item.label}
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
-                </Tabs>
+                <TimelineFilterTabs
+                    selectedRange={selectedRange}
+                    handleRangeChange={handleRangeChange}
+                />
             </div>
             <div className="h-[300px] bg-white rounded-4">
                 <ResponsiveContainer width="100%" height="100%">
@@ -247,7 +234,7 @@ export default function PerformanceHistoryChart() {
                             tickFormatter={(value) => `${shortNubers(value.toFixed(2))}%`}
                             padding={{ top: 10, bottom: 10 }}
                             domain={[
-                                minValue - (valueRange * 0.1), 
+                                minValue - (valueRange * 0.1),
                                 maxValue + (valueRange * 0.1)
                             ]}
                             allowDataOverflow={true}

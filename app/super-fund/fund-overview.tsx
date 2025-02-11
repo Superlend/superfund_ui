@@ -122,7 +122,7 @@ export default function FundOverview() {
             </section>
             <PerformanceHistoryChart />
             <AllocationDetailsChart allocationPoints={allocationPoints} />
-            {/* <AllocationHistoryChart /> */}
+            <AllocationHistoryChart />
             <section className="block flex flex-col gap-4">
                 <HeadingText level="h4" weight="medium">
                     Additional Information

@@ -18,6 +18,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Period } from '@/types/periodButtons'
 import { PERIOD_LIST } from '@/constants'
+import { TimelineFilterTabs } from './tabs/timeline-filter-tabs'
+import { useState } from 'react'
+import { useRebalanceHistory } from '@/hooks/vault_hooks/useHistoricalDataHook'
+import { abbreviateNumber, extractTimeFromDate } from '@/lib/utils'
+import { VAULT_STRATEGIES_COLORS } from '@/lib/constants'
 
 const chartData = [
     { date: '11/07', value1: 8, value2: 4, value3: 12 },
@@ -45,6 +50,42 @@ const chartConfig = {
 }
 
 export function AllocationHistoryChart() {
+    const [selectedRange, setSelectedRange] = useState<Period>(Period.oneMonth)
+    const { rebalanceHistory, isLoading, error } = useRebalanceHistory(selectedRange)
+
+    const handleRangeChange = (value: string) => {
+        setSelectedRange(value as Period)
+    }
+
+    const chartData = rebalanceHistory.map((item) => {
+        const date = new Date(item.timestamp * 1000)
+        const dateOptions: any = {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+        }
+        const formattedDate = new Intl.DateTimeFormat(
+            'en-US',
+            dateOptions
+        ).format(date)
+        const time = extractTimeFromDate(date, { exclude: ['seconds'] })
+
+        const allocations = item.allocations.map((allocation: any) => {
+            return {
+                [allocation.name]: allocation.value,
+            }
+        })
+
+        return {
+            timestamp: `${formattedDate} ${time}`,
+            date: formattedDate.split(',')[0],
+            time: time,
+            totalAssets: abbreviateNumber(item.totalAssets),
+            allocations: item.allocations,
+        }
+    })
+    console.log(chartData)
+
     return (
         <Card className="w-full">
             <CardHeader className="flex flex-row items-center justify-between">
@@ -52,24 +93,10 @@ export function AllocationHistoryChart() {
                     Allocation History
                 </CardTitle>
                 {/* Timeline Filters Tab */}
-                <Tabs
-                    defaultValue={Period.oneMonth}
-                    value={Period.oneMonth}
-                    onValueChange={() => {}}
-                    className="w-fit"
-                >
-                    <TabsList>
-                        {PERIOD_LIST.map((item) => (
-                            <TabsTrigger
-                                key={item.value}
-                                value={item.value}
-                                className="px-[12px] py-[2px]"
-                            >
-                                {item.label}
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
-                </Tabs>
+                <TimelineFilterTabs
+                    selectedRange={selectedRange}
+                    handleRangeChange={handleRangeChange}
+                />
             </CardHeader>
             <CardContent className="p-0 rounded-4 bg-white">
                 <ChartContainer
@@ -106,28 +133,21 @@ export function AllocationHistoryChart() {
                                 content={
                                     <ChartTooltipContent
                                         className="flex items-center gap-2 rounded-lg border bg-white p-2 text-sm shadow-lg"
-                                        // indicator={false}
+                                    // indicator={false}
                                     />
                                 }
                             />
-                            <Bar
-                                dataKey="value1"
-                                stackId="stack"
-                                fill="rgb(239, 108, 100)"
-                                radius={[0, 0, 4, 4]}
-                            />
-                            <Bar
-                                dataKey="value2"
-                                stackId="stack"
-                                fill="rgb(146, 136, 224)"
-                                radius={[0, 0, 0, 0]}
-                            />
-                            <Bar
-                                dataKey="value3"
-                                stackId="stack"
-                                fill="rgb(37, 99, 235)"
-                                radius={[4, 4, 0, 0]}
-                            />
+                            {
+                                Array.from({ length: 8 }, (_, index) => (
+                                    <Bar
+                                        key={index}
+                                        dataKey={`allocations[${index}].value`}
+                                        stackId="stack"
+                                        fill="rgb(239, 108, 100)"
+                                        radius={[0, 0, 4, 4]}
+                                    />
+                                ))
+                            }
                         </BarChart>
                     </ResponsiveContainer>
                 </ChartContainer>

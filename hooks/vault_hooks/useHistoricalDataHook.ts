@@ -69,7 +69,7 @@ export function useHistoricalData(period: Period) {
 
 
 export function useRebalanceHistory(period: Period) {
-    const [rebalanceHistory, setRebalanceHistory] = useState<THistoricalDataRebalanceHistory[]>([])
+    const [rebalanceHistory, setRebalanceHistory] = useState<THistoricalDataPerformanceHistory[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
