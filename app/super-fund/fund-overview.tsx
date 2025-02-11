@@ -29,7 +29,6 @@ export default function FundOverview() {
 
     const [selectedRange, setSelectedRange] = useState<Period>(Period.oneMonth)
 
-    const { historicalData, isLoading, error } = useHistoricalData(selectedRange)
 
     return (
         <motion.div

@@ -185,7 +185,7 @@ export type TPlatform = {
 export type TGetPlatformHistoryParams = {
     protocol_identifier: string
     token: string
-    period: Period.oneDay | Period.oneMonth | Period.oneWeek | Period.oneYear
+    period: Period.oneDay | Period.oneMonth | Period.oneWeek | Period.allTime
 }
 
 export type TPlatformHistoryProcessMap = {

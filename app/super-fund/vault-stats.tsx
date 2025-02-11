@@ -15,7 +15,7 @@ import { abbreviateNumber } from '@/lib/utils'
 import { Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
 
-export default function VaultStats() {
+export default function VaultStats({ last_7_day_avg_total_apy }: { last_7_day_avg_total_apy: number }) {
     const { walletAddress, isWalletConnected } = useWalletConnection()
     const { totalAssets, spotApy, isLoading, error } = useVaultHook()
     const { rewards, totalRewardApy, isLoading: isLoading2, error: error2 } = useRewardsHook()
@@ -45,7 +45,7 @@ export default function VaultStats() {
         },
         {
             title: '7D APY',
-            value: 'N/A',
+            value: `${last_7_day_avg_total_apy.toFixed(2)}%`,
             show: true,
         },
     ]
