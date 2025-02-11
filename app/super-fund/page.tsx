@@ -21,7 +21,7 @@ import FlatTabs from '@/components/tabs/flat-tabs'
 import PositionDetails from './position-details'
 import FundOverview from './fund-overview'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
-import { useHistoricalData } from '@/hooks/vault_hooks/useHistoricalDataHook'
+import { useHistoricalData, useRebalanceHistory } from '@/hooks/vault_hooks/useHistoricalDataHook'
 import { Period } from '@/types/periodButtons'
 
 export default function SuperVaultPage() {
@@ -30,6 +30,8 @@ export default function SuperVaultPage() {
     const [selectedTab, setSelectedTab] = useState('position-details')
 
     const { historicalData, days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading, error } = useHistoricalData(Period.oneDay)
+
+    const { rebalanceHistory, isLoading: isLoading2, error: error2 } = useRebalanceHistory(Period.oneDay)
 
 
     const tabs = [

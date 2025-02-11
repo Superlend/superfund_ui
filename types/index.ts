@@ -78,10 +78,17 @@ export type TReward = {
 
 export type THistoricalDataPerformanceHistory = {
     timestamp: number
-    baseApy: number
-    rewardsApy: number
-    totalApy: number
     totalAssets: number
+    allocations: {
+        name: string
+        address: string
+        value: number
+    }[]
+}
+
+export type THistoricalDataRebalanceHistory = {
+    timestamp: number
+
 }
 
 export type TOpportunity = {

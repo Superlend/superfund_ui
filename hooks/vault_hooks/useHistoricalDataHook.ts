@@ -1,5 +1,5 @@
-import { VAULT_ADDRESS } from "@/lib/constants";
-import { THistoricalDataPerformanceHistory } from "@/types";
+import { VAULT_ADDRESS, VAULT_STRATEGIES } from "@/lib/constants";
+import { THistoricalDataPerformanceHistory, THistoricalDataRebalanceHistory } from "@/types";
 import { Period } from "@/types/periodButtons";
 import { useEffect, useState } from "react";
 
@@ -65,6 +65,67 @@ export function useHistoricalData(period: Period) {
         isLoading,
         error
     }
+}
+
+
+export function useRebalanceHistory(period: Period) {
+    const [rebalanceHistory, setRebalanceHistory] = useState<THistoricalDataRebalanceHistory[]>([])
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+
+    async function fetchRebalanceHistory(startTimestamp: number) {
+        if (isLoading) return
+        setIsLoading(true)
+        const response = await fetch(`${INDEXER_API}/vaults/history_rebalance`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ vault_address: VAULT_ADDRESS, start_timestamp: startTimestamp })
+        });
+        setIsLoading(false)
+        return response.json();
+    }
+
+    useEffect(() => {
+        let startTimeStamp = getStartTimestamp(period)
+        fetchRebalanceHistory(startTimeStamp).then((response) => {
+            if (response.success && response.data) {
+                const formattedData = response.data.map((item: any) => {
+                    // Get allocations with strategy names
+                    const allocations = Object.entries(item.A).map(([address, value]) => {
+                        // Find strategy name from VAULT_STRATEGIES
+                        const strategyName = Object.entries(VAULT_STRATEGIES).find(
+                            ([_, strategy]) => strategy.address.toLowerCase() === address.toLowerCase()
+                        )?.[0] || (address === '0x0000000000000000000000000000000000000000' ? 'CASH_RESERVE' : address);
+
+                        return {
+                            name: strategyName,
+                            address: address,
+                            value: value as number
+                        }
+                    });
+
+                    return {
+                        timestamp: item.T,
+                        totalAssets: item.TA,
+                        allocations
+                    }
+                });
+
+                setRebalanceHistory(formattedData);
+            }
+        }).catch((error) => {
+            setError(error.message || 'Failed to fetch data');
+        })
+    }, [period])
+
+    return {
+        rebalanceHistory,
+        isLoading,
+        error
+    }
+
 }
 
 function getStartTimestamp(period: Period) {
