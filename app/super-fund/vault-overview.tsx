@@ -20,11 +20,13 @@ import { useVaultAllocationPoints } from "@/hooks/vault_hooks/vaultHook"
 import { motion } from "motion/react"
 import { rebalancedAssetsList, tokensSupportedList } from "@/data/abi/vault-data"
 import { DOCUMENTATION_LINK } from "@/constants"
-import React from "react"
+import React, { useState } from "react"
 import DepositAndWithdrawAssets from "./deposit-and-withdraw"
 
 export default function VaultOverview() {
     const { allocationPoints } = useVaultAllocationPoints()
+
+    const [selectedRange, setSelectedRange] = useState<Period>(Period.oneMonth)
 
     return (
         <motion.div
@@ -122,14 +124,14 @@ export default function VaultOverview() {
                     </CardContent>
                 </Card>
             </section>
-            {/* <PerformanceHistoryChart
-                selectedRange={Period.oneMonth}
-                handleRangeChange={() => { }}
-                selectedFilter={Period.oneMonth}
-                handleFilterChange={() => { }}
+            <PerformanceHistoryChart
+                selectedRange={selectedRange}
+                handleRangeChange={setSelectedRange}
+                selectedFilter={selectedRange}
+                handleFilterChange={setSelectedRange}
                 chartData={[]}
                 disableCategoryFilters={[]}
-            /> */}
+            />
             <AllocationDetailsChart allocationPoints={allocationPoints} />
             {/* <AllocationHistoryChart /> */}
             <section className="block flex flex-col gap-4">
