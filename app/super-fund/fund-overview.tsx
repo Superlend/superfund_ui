@@ -27,9 +27,6 @@ import { useHistoricalData } from '@/hooks/vault_hooks/useHistoricalDataHook'
 export default function FundOverview() {
     const { allocationPoints } = useVaultAllocationPoints()
 
-    const [selectedRange, setSelectedRange] = useState<Period>(Period.oneMonth)
-
-
     return (
         <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -123,14 +120,7 @@ export default function FundOverview() {
                     </CardContent>
                 </Card>
             </section>
-            <PerformanceHistoryChart
-                selectedRange={selectedRange}
-                handleRangeChange={setSelectedRange}
-                selectedFilter={selectedRange}
-                handleFilterChange={setSelectedRange}
-                chartData={[]}
-                disableCategoryFilters={[]}
-            />
+            <PerformanceHistoryChart />
             <AllocationDetailsChart allocationPoints={allocationPoints} />
             {/* <AllocationHistoryChart /> */}
             <section className="block flex flex-col gap-4">

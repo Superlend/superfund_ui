@@ -44,7 +44,7 @@ export function useHistoricalData(period: Period) {
                 }));
                 setHistoricalData(formattedData);
 
-                console.table(formattedData)
+                // console.table(formattedData)
 
                 // Set 7-day averages
                 const stats = response.data.vault_stats;
