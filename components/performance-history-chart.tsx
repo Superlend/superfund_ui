@@ -41,15 +41,15 @@ const CustomTooltip = ({ active, payload }: any) => {
                 <div className="space-y-1">
                     <p className="font-medium flex items-center">
                         <span className="w-2 h-2 rounded-full bg-[hsl(var(--chart-morpho))] mr-2" />
-                        Base APY: {payload[0]?.value}%
+                        Base APY: {payload[0]?.payload.baseApy}%
                     </p>
                     <p className="font-medium flex items-center">
                         <span className="w-2 h-2 rounded-full bg-[hsl(var(--chart-superlend))] mr-2" />
-                        Total APY: {payload[0]?.value}%
+                        Total APY: {payload[0]?.payload.totalApy}%
                     </p>
                     <p className="font-medium flex items-center">
                         {/* <span className="w-2 h-2 rounded-full bg-[hsl(var(--chart-superlend))] mr-2" /> */}
-                        Total Assets: ${payload[0]?.value}
+                        Total Assets: ${payload[0]?.payload.totalAssets}
                     </p>
                 </div>
             </div>
