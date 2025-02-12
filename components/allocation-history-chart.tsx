@@ -1,8 +1,11 @@
 'use client'
 
 import {
+    Area,
+    AreaChart,
     Bar,
     BarChart,
+    Brush,
     CartesianGrid,
     ResponsiveContainer,
     XAxis,
@@ -21,11 +24,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Period } from '@/types/periodButtons'
 import { PERIOD_LIST } from '@/constants'
 import { TimelineFilterTabs } from './tabs/timeline-filter-tabs'
-import { useState } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useRebalanceHistory } from '@/hooks/vault_hooks/useHistoricalDataHook'
-import { abbreviateNumber, extractTimeFromDate } from '@/lib/utils'
+import { abbreviateNumber, extractTimeFromDate, formatDateAccordingToPeriod, shortNubers } from '@/lib/utils'
 import { VAULT_STRATEGIES_COLORS } from '@/lib/constants'
 import { BodyText, Label } from './ui/typography'
+import { Skeleton } from './ui/skeleton'
 
 const chartData = [
     { date: '11/07', value1: 8, value2: 4, value3: 12 },
@@ -36,6 +40,72 @@ const chartData = [
     { date: '16/07', value1: 7, value2: 9, value3: 8 },
     { date: '17/07', value1: 8, value2: 7, value3: 9 },
 ]
+
+interface CustomYAxisTickProps {
+    x: number
+    y: number
+    payload: {
+        value: number
+    }
+    index: number
+    length: number
+    // setYAxisDigitCount: any
+}
+
+const CustomYAxisTick = ({
+    x,
+    y,
+    payload,
+    index,
+    length,
+    // setYAxisDigitCount,
+}: CustomYAxisTickProps) => {
+    // if (index === 0 || index === length - 1) return null
+    // setYAxisDigitCount(payload.value.toString().length)
+
+    return (
+        <g
+            transform={`translate(${x - 5},${y - 3})`}
+            style={{ zIndex: 10, position: 'relative', color: '#000000' }}
+        >
+            <text x={0} y={0} dy={6} dx={11} textAnchor="start" fill="#000000">
+                {`${shortNubers(payload.value)}%`}
+            </text>
+        </g>
+    )
+}
+
+interface CustomXAxisTickProps {
+    x: number
+    y: number
+    selectedRange: Period
+    payload: {
+        value: number
+    }
+    index: number
+    length: number
+}
+
+const CustomXAxisTick = ({
+    x,
+    y,
+    selectedRange,
+    payload,
+    index,
+    length,
+}: CustomXAxisTickProps) => {
+    if (index % 2) return null
+    return (
+        <g transform={`translate(${x},${y - 5})`} style={{ zIndex: 10 }}>
+            <text x={0} y={0} dy={16} textAnchor="middle" fill="#000000">
+                {formatDateAccordingToPeriod(
+                    payload.value.toString(),
+                    selectedRange
+                )}
+            </text>
+        </g>
+    )
+}
 
 function CustomChartTooltipContent({
     payload,
@@ -48,22 +118,27 @@ function CustomChartTooltipContent({
     const caption = payload[0].payload.timestamp
 
     return (
-        <div className="flex flex-col gap-2 px-1.5 pt-1.5">
-            <Label size="small" className="text-gray-600">
+        <div className="flex flex-col gap-2 px-1.5">
+            <Label size="small" weight="medium" className="text-gray-600">
                 {caption}
             </Label>
-            {
-                allocations.map((allocation: any) => (
-                    <div key={allocation.address} className="flex items-center gap-1">
-                        <BodyText level="body3" weight="medium">
-                            {abbreviateNumber(allocation.value)}%
-                        </BodyText>
-                        <Label size="small" className="text-gray-600 max-w-[100px] truncate">
-                            {allocation.name}
-                        </Label>
-                    </div>
-                ))
-            }
+            <div className="flex flex-col space-y-1">
+                {
+                    allocations.map((allocation: any, index: number) => (
+                        <div key={index} className="flex items-center gap-1">
+                            <Label size="small" weight="medium" className="text-gray-600 max-w-[300px] truncate">
+                                {allocation.name}
+                            </Label>
+                            <BodyText level="body3" weight="medium">
+                                {abbreviateNumber(allocation.value)}%
+                            </BodyText>
+                        </div>
+                    ))
+                }
+            </div>
+            <Label size="small" weight="medium" className="text-gray-600 border-t border-gray-400 pt-1">
+                Total Assets: <span className="text-black">{payload[0].payload.totalAssets}</span>
+            </Label>
         </div>
     )
 }
@@ -107,50 +182,91 @@ const chartConfig = {
     },
     '0x0000000000000000000000000000000000000000': {
         label: 'Cash Reserve',
-        color: '#17395e',
+        color: '#000000',
     }
 }
 
 export function AllocationHistoryChart() {
     const [selectedRange, setSelectedRange] = useState<Period>(Period.oneDay)
     const { rebalanceHistory, isLoading, error } = useRebalanceHistory(selectedRange)
+    const [startIndex, setStartIndex] = useState(0)
+    const [endIndex, setEndIndex] = useState(rebalanceHistory.length - 1)
 
-    const handleRangeChange = (value: string) => {
+    useEffect(() => {
+        setStartIndex(0)
+        setEndIndex(rebalanceHistory.length - 1)
+    }, [rebalanceHistory])
+
+    const handleRangeChange = useCallback((value: string) => {
         setSelectedRange(value as Period)
-    }
+    }, [])
 
-    const chartData = rebalanceHistory.map((item) => {
-        const date = new Date(item.timestamp * 1000)
-        const dateOptions: any = {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-        }
-        const formattedDate = new Intl.DateTimeFormat(
-            'en-US',
-            dateOptions
-        ).format(date)
-        const time = extractTimeFromDate(date, { exclude: ['seconds'] })
+    const chartData = useMemo(() => {
+        return rebalanceHistory.map((item) => {
+            const date = new Date(item.timestamp * 1000)
+            const dateOptions: any = {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+            }
+            const formattedDate = new Intl.DateTimeFormat(
+                'en-US',
+                dateOptions
+            ).format(date)
+            const time = extractTimeFromDate(date, { exclude: ['seconds'] })
 
-        const allocations = item.allocations.map((allocation: any) => {
             return {
-                [allocation.name]: allocation.value,
+                timestamp: `${formattedDate} ${time}`,
+                date: formattedDate.split(',')[0],
+                time: time,
+                totalAssets: abbreviateNumber(item.totalAssets),
+                allocations: item.allocations.filter((allocation: any) => allocation.value > 0),
             }
         })
+    }, [rebalanceHistory])
 
-        return {
-            timestamp: `${formattedDate} ${time}`,
-            date: formattedDate.split(',')[0],
-            time: time,
-            totalAssets: abbreviateNumber(item.totalAssets),
-            allocations: item.allocations,
-            // ...item.allocations.reduce((acc, allocation) => ({
-            //     ...acc,
-            //     [allocation.name]: allocation.value
-            // }), {})
-        }
-    })
-    console.log(chartData)
+    const memoizedBarsForChart = useMemo(() => {
+        return Object.keys(chartConfig).map((key) => (
+            <Bar
+                key={key}
+                dataKey={(data) => data.allocations.find((allocation: any) => allocation.address == key)?.value}
+                stackId="stack"
+                fill={`var(--color-${key})`}
+            />
+        ))
+    }, [])
+
+    const memoizedBarsForBrush = useMemo(() => {
+        return Object.keys(chartConfig).map((key) => (
+            <Area
+                key={key}
+                dataKey={(data) => data.allocations.find((allocation: any) => allocation.address == key)?.value}
+                stackId="stack"
+                stroke={`var(--color-${key})`}
+                strokeWidth={1}
+            />
+        ))
+    }, [])
+
+    const memoizedBrush = useMemo(() => (
+        <Brush
+            dataKey="date"
+            height={35}
+            stroke="hsl(var(--pulse-color))"
+            fill="hsl(var(--accent-cream))"
+            travellerWidth={8}
+            y={255}
+            strokeWidth={1.2}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            className="recharts-brush"
+            alwaysShowText={false}
+        >
+            <AreaChart>
+                {memoizedBarsForBrush}
+            </AreaChart>
+        </Brush>
+    ), [startIndex, endIndex, memoizedBarsForBrush])
 
     return (
         <Card className="w-full">
@@ -158,7 +274,6 @@ export function AllocationHistoryChart() {
                 <CardTitle className="text-xl font-semibold">
                     Allocation History
                 </CardTitle>
-                {/* Timeline Filters Tab */}
                 <TimelineFilterTabs
                     selectedRange={selectedRange}
                     handleRangeChange={handleRangeChange}
@@ -169,64 +284,94 @@ export function AllocationHistoryChart() {
                     config={chartConfig}
                     className="w-full h-[300px] max-w-[1200px]"
                 >
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                            data={chartData}
-                            margin={{
-                                top: 0,
-                                right: 10,
-                                left: -10,
-                                bottom: 10,
-                            }}
-                        >
-                            <CartesianGrid vertical={false} stroke="#E5E7EB" />
-                            <XAxis
-                                dataKey="date"
-                                tickLine={false}
-                                axisLine={false}
-                                tick={{ fontSize: 12 }}
-                                tickMargin={5}
-                                tickCount={5}
-                                interval="preserveStartEnd"
-                            />
-                            <YAxis
-                                tickLine={false}
-                                axisLine={false}
-                                tick={{ fontSize: 12 }}
-                                tickMargin={5}
-                                ticks={[0, 25, 50, 75, 100]}
-                            />
-                            <ChartTooltip
-                                content={
-                                    <ChartTooltipContent
-                                        className="flex items-center gap-2 rounded-lg border bg-white p-2 text-sm shadow-lg"
-                                        hideIndicator={true}
-                                        labelFormatter={(
-                                            label,
-                                            playload
-                                        ) => (
-                                            <CustomChartTooltipContent
-                                                payload={playload}
-                                                label={label}
+                    <>
+                        {!isLoading &&
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart
+                                    data={chartData}
+                                    margin={{
+                                        top: 0,
+                                        right: 10,
+                                        left: -10,
+                                        bottom: 10,
+                                    }}
+                                    barGap={-1}
+                                    barCategoryGap={-1}
+                                >
+                                    <CartesianGrid vertical={false} stroke="#E5E7EB" />
+                                    <XAxis
+                                        dataKey="date"
+                                        tickLine={false}
+                                        axisLine={false}
+                                        // tick={{ fontSize: 12 }}
+                                        // tickMargin={5}
+                                        tickCount={5}
+                                        tickFormatter={(value) =>
+                                            formatDateAccordingToPeriod(
+                                                value,
+                                                selectedRange
+                                            )
+                                        }
+                                        dx={-10}
+                                        tick={({ x, y, payload, index }) => (
+                                            <CustomXAxisTick
+                                                payload={
+                                                    payload as { value: number }
+                                                }
+                                                selectedRange={selectedRange}
+                                                x={x as number}
+                                                y={y as number}
+                                                index={index as number}
+                                                length={chartData.length}
                                             />
                                         )}
                                     />
-                                }
-                            />
-                            {/* <ChartLegend content={<ChartLegendContent />} /> */}
-                            {
-                                Object.keys(chartConfig).map((key, index) => (
-                                    <Bar
-                                        key={index}
-                                        dataKey={`allocations[${index}].value`}
-                                        stackId="stack"
-                                        fill={`var(--color-${key})`}
-                                        radius={[0, 0, 4, 4]}
+                                    <YAxis
+                                        tickLine={false}
+                                        axisLine={false}
+                                        tick={{ fontSize: 12 }}
+                                        tickMargin={5}
+                                        ticks={[0, 25, 50, 75, 100]}
+                                        domain={[0, 100]}
+                                    // tick={({ x, y, payload, index }) => (
+                                    //     <CustomYAxisTick
+                                    //         payload={
+                                    //             payload as { value: number }
+                                    //         }
+                                    //         x={x as number}
+                                    //         y={y as number}
+                                    //         index={index as number}
+                                    //         length={chartData.length}
+                                    //     />
+                                    // )}
                                     />
-                                ))
-                            }
-                        </BarChart>
-                    </ResponsiveContainer>
+                                    <ChartTooltip
+                                        content={
+                                            <ChartTooltipContent
+                                                className="flex items-center gap-2 rounded-lg border bg-white p-2 text-sm shadow-lg"
+                                                hideIndicator={true}
+                                                labelFormatter={(
+                                                    label,
+                                                    playload
+                                                ) => (
+                                                    <CustomChartTooltipContent
+                                                        payload={playload}
+                                                        label={label}
+                                                    />
+                                                )}
+                                            />
+                                        }
+                                    />
+                                    {memoizedBarsForChart}
+                                    {memoizedBrush}
+                                </BarChart>
+                            </ResponsiveContainer>
+                        }
+                        {
+                            isLoading &&
+                            <Skeleton className="w-full h-[300px] rounded-4 max-w-[1200px] bg-gray-300" />
+                        }
+                    </>
                 </ChartContainer>
             </CardContent>
         </Card>
