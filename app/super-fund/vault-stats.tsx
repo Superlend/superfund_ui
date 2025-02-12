@@ -15,16 +15,25 @@ import { abbreviateNumber } from '@/lib/utils'
 import { Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
 
-export default function VaultStats({ last_7_day_avg_total_apy }: { last_7_day_avg_total_apy: number }) {
+type VaultStatsProps = {
+    last_7_day_avg_total_apy: number
+    days_7_avg_base_apy: number
+    days_7_avg_rewards_apy: number
+}
+
+export default function VaultStats({
+    last_7_day_avg_total_apy,
+    days_7_avg_base_apy,
+    days_7_avg_rewards_apy,
+}: VaultStatsProps) {
     const { walletAddress, isWalletConnected } = useWalletConnection()
-    const { totalAssets, spotApy, isLoading, error } = useVaultHook()
-    const { rewards, totalRewardApy, isLoading: isLoading2, error: error2 } = useRewardsHook()
+    const { totalAssets, spotApy, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
+    const { rewards, totalRewardApy, isLoading: isLoadingRewards, error: errorRewards } = useRewardsHook()
     const { userMaxWithdrawAmount } = useUserBalance(
         walletAddress as `0x${string}`
     )
     const { isClient } = useIsClient()
-
-    // const hasPosition = !!Number(userMaxWithdrawAmount ?? 0);
+    const isLoadingSection = !isClient;
 
     const vaultStats = [
         {
@@ -37,6 +46,12 @@ export default function VaultStats({ last_7_day_avg_total_apy }: { last_7_day_av
             value: `${(Number(spotApy) + Number(totalRewardApy)).toFixed(2)}%`,
             show: true,
             hasRewards: true,
+            rewardsTooltip: getRewardsTooltipContent({
+                baseRateFormatted: spotApy,
+                rewards: rewards,
+                apyCurrent: Number(spotApy) + Number(totalRewardApy),
+                positionTypeParam: 'lend',
+            }),
         },
         {
             title: 'TVL',
@@ -47,19 +62,29 @@ export default function VaultStats({ last_7_day_avg_total_apy }: { last_7_day_av
             title: '7D APY',
             value: `${last_7_day_avg_total_apy.toFixed(2)}%`,
             show: true,
+            hasRewards: true,
+            rewardsTooltip: getRewardsTooltipContent({
+                baseRateFormatted: days_7_avg_base_apy.toFixed(2),
+                rewardsCustomList: [{
+                    key: 'rewards_apy',
+                    key_name: 'Rewards APY',
+                    value: days_7_avg_rewards_apy.toFixed(2),
+                }],
+                apyCurrent: last_7_day_avg_total_apy,
+            }),
         },
     ]
 
-    if (!isClient) {
+    if (isLoadingSection) {
         return (
             <div className="flex items-center justify-between gap-4">
                 {[1, 2, 3, 4].map((item) => (
                     <div
-                        className="flex flex-col items-center max-w-[250px]"
+                        className="flex flex-col items-start gap-2 w-full max-w-[250px]"
                         key={item}
                     >
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-8 w-[80%]" />
+                        <Skeleton className="h-10 w-full rounded-4" />
+                        <Skeleton className="h-7 w-[80%] rounded-4" />
                     </div>
                 ))}
             </div>
@@ -93,7 +118,6 @@ export default function VaultStats({ last_7_day_avg_total_apy }: { last_7_day_av
                                 <HeadingText level="h3" weight="medium">
                                     <AnimatedNumber value={item.value} />
                                 </HeadingText>
-                                {/* Rewards tooltip */}
                                 <InfoTooltip
                                     label={
                                         <Sparkles
@@ -102,25 +126,7 @@ export default function VaultStats({ last_7_day_avg_total_apy }: { last_7_day_av
                                             height={18}
                                         />
                                     }
-                                    content={getRewardsTooltipContent({
-                                        baseRateFormatted: spotApy,
-                                        rewards: rewards,
-                                        // [
-                                        // {
-                                        //     supply_apy: 5.34,
-                                        //     asset: {
-                                        //         symbol: 'ETH',
-                                        //         name: 'Ethereum',
-                                        //         address: '0x0000000000000000000000000000000000000000',
-                                        //         decimals: 18,
-                                        //         logo: '/images/platforms/morpho.webp',
-                                        //         price_usd: 1700,
-                                        //     }
-                                        // },
-                                        // ],
-                                        apyCurrent: Number(spotApy) + Number(totalRewardApy),
-                                        positionTypeParam: 'lend',
-                                    })}
+                                    content={item.rewardsTooltip}
                                 />
                             </div>
 

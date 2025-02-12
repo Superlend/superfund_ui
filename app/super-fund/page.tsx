@@ -93,7 +93,11 @@ export default function SuperVaultPage() {
                 <PageHeader />
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-[16px]">
                     <div className="flex flex-col gap-10">
-                        <VaultStats last_7_day_avg_total_apy={days_7_avg_total_apy} />
+                        <VaultStats
+                            last_7_day_avg_total_apy={days_7_avg_total_apy}
+                            days_7_avg_base_apy={days_7_avg_base_apy}
+                            days_7_avg_rewards_apy={days_7_avg_rewards_apy}
+                        />
                         <div className="block lg:hidden">
                             <DepositAndWithdrawAssets />
                         </div>
