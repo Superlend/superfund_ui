@@ -104,7 +104,7 @@ export default function AllocationDetailsChart({
                                     endAngle={450}
                                     minAngle={0}
                                     nameKey="name"
-                                    cornerRadius={8}
+                                    cornerRadius={4}
                                     activeShape={({
                                         outerRadius = 0,
                                         ...props

@@ -187,7 +187,7 @@ const chartConfig = {
 }
 
 export function AllocationHistoryChart() {
-    const [selectedRange, setSelectedRange] = useState<Period>(Period.oneDay)
+    const [selectedRange, setSelectedRange] = useState<Period>(Period.oneWeek)
     const { rebalanceHistory, isLoading, error } = useRebalanceHistory(selectedRange)
     const [startIndex, setStartIndex] = useState(0)
     const [endIndex, setEndIndex] = useState(rebalanceHistory.length - 1)
