@@ -21,11 +21,18 @@ import FlatTabs from '@/components/tabs/flat-tabs'
 import PositionDetails from './position-details'
 import FundOverview from './fund-overview'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
+import { useHistoricalData, useRebalanceHistory } from '@/hooks/vault_hooks/useHistoricalDataHook'
+import { Period } from '@/types/periodButtons'
 
 export default function SuperVaultPage() {
     const { isClient } = useIsClient()
     const { isWalletConnected, isConnectingWallet } = useWalletConnection()
     const [selectedTab, setSelectedTab] = useState('position-details')
+
+    const { historicalData, days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading, error } = useHistoricalData(Period.oneDay)
+
+    // const { rebalanceHistory, isLoading: isLoading2, error: error2 } = useRebalanceHistory(Period.oneDay)
+
 
     const tabs = [
         {
@@ -86,7 +93,11 @@ export default function SuperVaultPage() {
                 <PageHeader />
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-[16px]">
                     <div className="flex flex-col gap-10">
-                        <VaultStats />
+                        <VaultStats
+                            last_7_day_avg_total_apy={days_7_avg_total_apy}
+                            days_7_avg_base_apy={days_7_avg_base_apy}
+                            days_7_avg_rewards_apy={days_7_avg_rewards_apy}
+                        />
                         <div className="block lg:hidden">
                             <DepositAndWithdrawAssets />
                         </div>

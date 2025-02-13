@@ -13,25 +13,23 @@ export function TimelineFilterTabs({
 }) {
     {/* Timeline Filters Tab */ }
     return (
-        < Tabs
+        <Tabs
             defaultValue={Period.oneMonth}
             value={selectedRange}
             onValueChange={handleRangeChange}
-            className="w-fit absolute top-3 left-[60px] z-10"
+            className="w-fit"
         >
-            <TabsList className="bg-gray-200 rounded-md py-0.5">
+            <TabsList className="bg-gray-200 rounded-2 p-0.5">
                 {PERIOD_LIST.map((item) => (
                     <TabsTrigger
                         key={item.value}
                         value={item.value}
-                        className="px-[12px] py-[2px] rounded-2 data-[state=active]:text-foreground data-[state=active]:bg-background data-[state=active]:shadow-sm text-muted-foreground/50"
+                        className="px-[12px] py-[2px] data-[state=active]:bg-white data-[state=active]:shadow-md rounded-2"
                     >
-                        <BodyText level="body2" weight="medium" className="data-[state=active]:text-inherit data-[state=active]:bg-inherit data-[state=active]:shadow-inherit text-inherit">
-                            {item.label}
-                        </BodyText>
+                        {item.label}
                     </TabsTrigger>
                 ))}
             </TabsList>
-        </Tabs >
+        </Tabs>
     )
 }
