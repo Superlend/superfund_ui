@@ -13,7 +13,7 @@ const USDC_ABI = parseAbi([
 // Create public client outside component to prevent recreation
 const publicClient = createPublicClient({
     chain: base,
-    transport: http(),
+    transport: http('https://base.llamarpc.com'),
     batch: {
         multicall: true,
     },
