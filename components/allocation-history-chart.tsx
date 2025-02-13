@@ -379,11 +379,11 @@ export function AllocationHistoryChart() {
                             handleRangeChange={handleRangeChange}
                         />
                     </div>
-                    {!openDialog &&
+                    {/* {!openDialog &&
                         <Button onClick={() => setOpenDialog(true)} className='py-1'>
                             <Expand className='w-4 h-4 text-gray-600' />
                         </Button>
-                    }
+                    } */}
                 </div>
             </CardHeader>
             <CardContent className="p-0 rounded-4 bg-white">
@@ -470,11 +470,11 @@ export function AllocationHistoryChart() {
     return (
         <>
             {content}
-            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+            {/* <Dialog open={openDialog} onOpenChange={setOpenDialog}>
                 <DialogContent className='w-[90%] h-[85%] max-w-full max-h-full p-0'>
                     {content}
                 </DialogContent>
-            </Dialog>
+            </Dialog> */}
         </>
     )
 }
