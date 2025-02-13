@@ -29,7 +29,7 @@ const VAULT_ABI = parseAbi([
 // Create public client outside component to prevent recreation
 const publicClient = createPublicClient({
     chain: base,
-    transport: http('https://base.llamarpc.com'),
+    transport: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || ''),
     batch: {
         multicall: true,
     },
