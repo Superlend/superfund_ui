@@ -15,7 +15,7 @@ import {
 } from 'recharts'
 import { Period } from '@/types/periodButtons'
 import { PERIOD_LIST } from '@/constants'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useHistoricalData } from '@/hooks/vault_hooks/useHistoricalDataHook'
 import { abbreviateNumber, extractTimeFromDate, formatDateAccordingToPeriod, shortNubers } from '@/lib/utils'
 import { ChartConfig } from './ui/chart'
@@ -28,15 +28,14 @@ const CustomTooltip = ({ active, payload }: any) => {
                 <p className="font-medium text-foreground-subtle mb-1">{payload[0]?.payload.timestamp}</p>
                 <div className="space-y-1">
                     <p className="font-medium flex items-center">
-                        <span className="w-2 h-2 rounded-full bg-[hsl(var(--chart-morpho))] mr-2" />
+                        <span className="w-2 h-2 rounded-full bg-[#3366CC] mr-2" />
                         Base APY: {payload[0]?.payload.baseApy}%
                     </p>
                     <p className="font-medium flex items-center">
-                        <span className="w-2 h-2 rounded-full bg-[hsl(var(--chart-superlend))] mr-2" />
+                        <span className="w-2 h-2 rounded-full bg-[#8A2BE2] mr-2" />
                         Total APY: {payload[0]?.payload.totalApy}%
                     </p>
                     <p className="font-medium flex items-center">
-                        {/* <span className="w-2 h-2 rounded-full bg-[hsl(var(--chart-superlend))] mr-2" /> */}
                         Total Assets: ${payload[0]?.payload.totalAssets}
                     </p>
                 </div>
@@ -49,13 +48,13 @@ const CustomTooltip = ({ active, payload }: any) => {
 const styles = `
     .recharts-brush .recharts-brush-traveller {
         fill: hsl(var(--background));
-        stroke: hsl(var(--chart-superlend));
+        stroke: #8A2BE2;
         stroke-width: 1.5;
         rx: 4;
         ry: 4;
     }
     .recharts-brush .recharts-brush-slide {
-        fill: hsla(var(--chart-superlend), 0.05);
+        fill: rgba(138, 43, 226, 0.05);
         stroke: none;
     }
     .recharts-brush text {
@@ -83,7 +82,6 @@ interface CustomYAxisTickProps {
     }
     index: number
     length: number
-    setYAxisDigitCount: any
 }
 
 const CustomYAxisTick = ({
@@ -92,11 +90,7 @@ const CustomYAxisTick = ({
     payload,
     index,
     length,
-    setYAxisDigitCount,
 }: CustomYAxisTickProps) => {
-    // if (index === 0 || index === length - 1) return null
-    // setYAxisDigitCount(payload.value.toString().length)
-
     return (
         <g
             transform={`translate(${x},${y})`}
@@ -148,37 +142,99 @@ export default function PerformanceHistoryChart() {
         setEndIndex(historicalData.length - 1)
     }, [historicalData])
 
-    const chartData = historicalData.map((item: any) => {
-        const date = new Date(item.timestamp * 1000)
-        const dateOptions: any = {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-        }
-        const formattedDate = new Intl.DateTimeFormat(
-            'en-US',
-            dateOptions
-        ).format(date)
-        const time = extractTimeFromDate(date, { exclude: ['seconds'] })
-
-        return {
-            timestamp: `${formattedDate} ${time}`,
-            date: formattedDate.split(',')[0],
-            time: time,
-            baseApy: abbreviateNumber(item.baseApy),
-            totalApy: abbreviateNumber(item.totalApy),
-            totalAssets: abbreviateNumber(item.totalAssets),
-        }
-    })
-
-    const handleRangeChange = (value: string) => {
+    const handleRangeChange = useCallback((value: string) => {
         setSelectedRange(value as Period)
-    }
+    }, [])
 
-    const allValues = chartData.flatMap(d => [Number(d.baseApy), Number(d.totalApy)]);
-    const minValue = Math.min(...allValues);
-    const maxValue = Math.max(...allValues);
-    const valueRange = maxValue - minValue;
+    const chartData = useMemo(() => {
+        return historicalData.map((item: any) => {
+            const date = new Date(item.timestamp * 1000)
+            const dateOptions: any = {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+            }
+            const formattedDate = new Intl.DateTimeFormat(
+                'en-US',
+                dateOptions
+            ).format(date)
+            const time = extractTimeFromDate(date, { exclude: ['seconds'] })
+
+            return {
+                timestamp: `${formattedDate} ${time}`,
+                date: formattedDate.split(',')[0],
+                time: time,
+                baseApy: abbreviateNumber(item.baseApy),
+                totalApy: abbreviateNumber(item.totalApy),
+                totalAssets: abbreviateNumber(item.totalAssets),
+            }
+        })
+    }, [historicalData])
+
+    const { minValue, maxValue, valueRange } = useMemo(() => {
+        const allValues = chartData.flatMap(d => [Number(d.baseApy), Number(d.totalApy)])
+        const min = Math.min(...allValues)
+        const max = Math.max(...allValues)
+        return {
+            minValue: min,
+            maxValue: max,
+            valueRange: max - min
+        }
+    }, [chartData])
+
+    const memoizedLines = useMemo(() => (
+        <>
+            <Line
+                type="monotone"
+                dataKey="baseApy"
+                stroke="#3366CC"
+                strokeWidth={2}
+                fill="url(#baseApyGradient)"
+                isAnimationActive={true}
+                dot={false}
+            />
+            <Line
+                type="monotone"
+                dataKey="totalApy"
+                stroke="#8A2BE2"
+                strokeWidth={2}
+                fill="url(#totalApyGradient)"
+                isAnimationActive={true}
+                dot={false}
+            />
+        </>
+    ), [])
+
+    const memoizedBrush = useMemo(() => (
+        <Brush
+            dataKey="date"
+            height={35}
+            stroke="#8A2BE2"
+            fill="rgba(138, 43, 226, 0.1)"
+            travellerWidth={8}
+            y={245}
+            strokeWidth={1.2}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            className="recharts-brush"
+            alwaysShowText={false}
+        >
+            <AreaChart>
+                <Area
+                    type="monotone"
+                    dataKey="baseApy"
+                    stroke="#3366CC"
+                    strokeWidth={1}
+                />
+                <Area
+                    type="monotone"
+                    dataKey="totalApy"
+                    stroke="#8A2BE2"
+                    strokeWidth={1}
+                />
+            </AreaChart>
+        </Brush>
+    ), [startIndex, endIndex])
 
     return (
         <Card>
@@ -187,7 +243,6 @@ export default function PerformanceHistoryChart() {
                 <h2 className="text-lg font-semibold">
                     Performance History
                 </h2>
-                {/* Timeline Filters Tab */}
                 <TimelineFilterTabs
                     selectedRange={selectedRange}
                     handleRangeChange={handleRangeChange}
@@ -215,9 +270,7 @@ export default function PerformanceHistoryChart() {
                             dy={10}
                             tick={({ x, y, payload, index }) => (
                                 <CustomXAxisTick
-                                    payload={
-                                        payload as { value: number }
-                                    }
+                                    payload={payload as { value: number }}
                                     selectedRange={selectedRange}
                                     x={x as number}
                                     y={y as number}
@@ -243,178 +296,11 @@ export default function PerformanceHistoryChart() {
                             content={<CustomTooltip />}
                             cursor={{ stroke: 'hsl(var(--foreground-disabled))', strokeWidth: 1 }}
                         />
-                        <Line
-                            type="monotone"
-                            dataKey="baseApy"
-                            stroke="hsl(var(--chart-morpho))"
-                            strokeWidth={2}
-                            fill="url(#baseApyGradient)"
-                            isAnimationActive={true}
-                            dot={false}
-
-                        />
-                        <Line
-                            type="monotone"
-                            dataKey="totalApy"
-                            stroke="hsl(var(--chart-superlend))"
-                            strokeWidth={2}
-                            fill="url(#totalApyGradient)"
-                            isAnimationActive={true}
-                            dot={false}
-                        />
-                        <Brush
-                            dataKey="date"
-                            height={35}
-                            stroke="hsl(var(--pulse-color))"
-                            fill="hsl(var(--accent-cream))"
-                            travellerWidth={8}
-                            y={245}
-                            strokeWidth={1.2}
-                            startIndex={startIndex}
-                            endIndex={endIndex}
-                            className="recharts-brush"
-                            alwaysShowText={false}
-                        >
-                            <AreaChart>
-                                <Area
-                                    type="monotone"
-                                    dataKey="baseApy"
-                                    stroke="hsl(var(--chart-morpho))"
-                                    // fill="hsla(var(--chart-morpho), 0.15)"
-                                    strokeWidth={1}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="totalApy"
-                                    stroke="hsl(var(--chart-superlend))"
-                                    // fill="hsla(var(--chart-superlend), 0.15)"
-                                    strokeWidth={1}
-                                />
-                            </AreaChart>
-                        </Brush>
+                        {memoizedLines}
+                        {memoizedBrush}
                     </LineChart>
-                </ResponsiveContainer >
-            </div >
-        </Card >
+                </ResponsiveContainer>
+            </div>
+        </Card>
     )
 }
-
-{/* <ChartContainer
-                        config={chartConfig}
-                        className="h-[250px] w-full"
-                    >
-                        <AreaChart
-                            accessibilityLayer
-                            data={chartData}
-                            margin={{
-                                left: 10,
-                                right: 20,
-                                top: 30,
-                                bottom: 0,
-                            }}
-                        >
-                            <CartesianGrid vertical={false} />
-                            <XAxis
-                                dataKey="date"
-                                tickLine={true}
-                                axisLine={true}
-                                tickMargin={5}
-                                // interval={100}
-                                tickCount={4}
-                                tickFormatter={(value) =>
-                                    formatDateAccordingToPeriod(
-                                        value,
-                                        selectedRange
-                                    )
-                                }
-                                tick={({ x, y, payload, index }) => (
-                                    <CustomXAxisTick
-                                        payload={
-                                            payload as { value: number }
-                                        }
-                                        selectedRange={selectedRange}
-                                        x={x as number}
-                                        y={y as number}
-                                        index={index as number}
-                                        length={chartData.length}
-                                    />
-                                )}
-                            />
-                            <ChartTooltip
-                                cursor={true}
-                                content={
-                                    <ChartTooltipContent />
-                                }
-                            />
-                            <Area
-                                dataKey="totalApy"
-                                type="monotone"
-                                fill="hsl(var(--chart-superlend))"
-                                fillOpacity={0.3}
-                                stroke="hsl(var(--chart-superlend))"
-                                strokeWidth={2}
-                                stackId="a"
-                                activeDot={{ r: 6 }}
-                            />
-                            <Area
-                                dataKey="baseApy"
-                                type="monotone"
-                                fill="var(--color-platformHistory)"
-                                fillOpacity={0.3}
-                                stroke="var(--color-platformHistory)"
-                                strokeWidth={2}
-                                stackId="a"
-                                activeDot={{ r: 6 }}
-                            />
-                            <YAxis
-                                tick={({ x, y, payload, index }) => (
-                                    <CustomYAxisTick
-                                        payload={
-                                            payload as { value: number }
-                                        }
-                                        x={x as number}
-                                        y={y as number}
-                                        index={index as number}
-                                        length={chartData.length}
-                                        setYAxisDigitCount={4}
-                                    />
-                                )}
-                                // domain={[minValue, maxValue]}
-                                tickCount={4}
-                                tickMargin={40}
-                                // stroke="#FFF"
-                                tickLine={true}
-                                axisLine={true}
-                            />
-                            <Brush
-                            dataKey="date"
-                            height={35}
-                            stroke="hsl(var(--pulse-color))"
-                            fill="url(#baseApyGradient)"
-                            travellerWidth={8}
-                            y={255}
-                            strokeWidth={1.2}
-                            startIndex={0}
-                            endIndex={data.length - 1}
-                            className="recharts-brush"
-                            alwaysShowText={false}
-                        >
-                            <AreaChart>
-                                <Area
-                                    type="monotone"
-                                    dataKey="baseApy"
-                                    stroke="hsl(var(--chart-morpho))"
-                                    fill="hsla(var(--chart-morpho), 0.15)"
-                                    strokeWidth={1}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="totalApy"
-                                    stroke="hsl(var(--chart-superlend))"
-                                    fill="hsla(var(--chart-superlend), 0.15)"
-                                    strokeWidth={1}
-                                />
-                            </AreaChart>
-                        </Brush>
-                        </AreaChart>
-                    </ChartContainer> */}

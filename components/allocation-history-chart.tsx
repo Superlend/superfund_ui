@@ -3,8 +3,6 @@
 import {
     Area,
     AreaChart,
-    Bar,
-    BarChart,
     Brush,
     CartesianGrid,
     ResponsiveContainer,
@@ -49,7 +47,6 @@ interface CustomYAxisTickProps {
     }
     index: number
     length: number
-    // setYAxisDigitCount: any
 }
 
 const CustomYAxisTick = ({
@@ -58,18 +55,16 @@ const CustomYAxisTick = ({
     payload,
     index,
     length,
-    // setYAxisDigitCount,
 }: CustomYAxisTickProps) => {
-    // if (index === 0 || index === length - 1) return null
-    // setYAxisDigitCount(payload.value.toString().length)
+    if (index === 0 || index === length - 1) return null
 
     return (
         <g
-            transform={`translate(${x - 5},${y - 3})`}
-            style={{ zIndex: 10, position: 'relative', color: '#000000' }}
+            transform={`translate(${x - 35},${y + 5})`}
+            style={{ zIndex: 20, position: 'relative', color: '#000000' }}
         >
             <text x={0} y={0} dy={6} dx={11} textAnchor="start" fill="#000000">
-                {`${shortNubers(payload.value)}%`}
+                {`$${abbreviateNumber(payload.value)}`}
             </text>
         </g>
     )
@@ -114,6 +109,8 @@ function CustomChartTooltipContent({
     payload: any[]
     label: string
 }) {
+    if (!payload || payload.length === 0) return null;
+    
     const allocations = payload[0].payload.allocations.sort((a: any, b: any) => b.value - a.value)
     const caption = payload[0].payload.timestamp
 
@@ -125,64 +122,84 @@ function CustomChartTooltipContent({
             <div className="flex flex-col space-y-1">
                 {
                     allocations.map((allocation: any, index: number) => (
-                        <div key={index} className="flex items-center gap-1">
+                        <div key={index} className="flex items-center justify-between gap-1">
                             <Label size="small" weight="medium" className="text-gray-600 max-w-[300px] truncate">
                                 {allocation.name}
                             </Label>
                             <BodyText level="body3" weight="medium">
-                                {abbreviateNumber(allocation.value)}%
+                                ${abbreviateNumber(allocation.value)}
                             </BodyText>
                         </div>
                     ))
                 }
             </div>
-            <Label size="small" weight="medium" className="text-gray-600 border-t border-gray-400 pt-1">
-                Total Assets: <span className="text-black">{payload[0].payload.totalAssets}</span>
+            <Label size="small" weight="medium" className="flex items-center justify-between text-gray-600 border-t border-gray-400 pt-1">
+                Total Assets: <span className="text-black">${payload[0].payload.totalAssets}</span>
             </Label>
         </div>
     )
 }
 
-const chartConfig = {
+interface ChartDataPoint {
+    timestamp: string
+    date: string
+    time: string
+    totalAssets: string
+    allocations: {
+        name: string
+        value: number
+        address: string
+    }[]
+    [key: string]: any // Allow dynamic allocation keys
+}
+
+interface ChartConfig {
+    [key: string]: {
+        label: string
+        color: string
+    }
+}
+
+const chartConfig: ChartConfig = {
     '0xeE8F4eC5672F09119b96Ab6fB59C27E1b7e44b61': {
         label: 'Morpho Gauntlet USDC Prime',
-        color: '#201CB0',
+        color: '#3366CC', // Deep blue
     },
     '0xc1256Ae5FF1cf2719D4937adb3bbCCab2E00A2Ca': {
         label: 'Morpho Moonwell Flagship USDC',
-        color: '#201CB0',
+        color: '#8A2BE2', // Bright purple
     },
     '0xc0c5689e6f4D256E861F65465b691aeEcC0dEb12': {
         label: 'Morpho Gauntlet USDC Core',
-        color: '#201CB0',
+        color: '#FF8C00', // Dark orange
     },
     '0xbeeF010f9cb27031ad51e3333f9aF9C6B1228183': {
         label: 'Morpho Steakhouse USDC',
-        color: '#201CB0',
+        color: '#DEB887', // Beige/sand
     },
     '0x23479229e52Ab6aaD312D0B03DF9F33B46753B5e': {
         label: 'Morpho Ionic Ecosystem USDC',
-        color: '#201CB0',
+        color: '#4169E1', // Royal blue
     },
     '0x12AFDeFb2237a5963e7BAb3e2D46ad0eee70406e': {
         label: 'Morpho Re7 USDC',
-        color: '#201CB0',
+        color: '#9370DB', // Medium purple
     },
     '0x7A7815B41617e728DbCF4247E46d1CEbd2d81150': {
         label: 'AaveV3',
-        color: '#9293F7',
+        color: '#1E90FF', // Dodger blue
     },
     '0xf42f5795D9ac7e9D757dB633D693cD548Cfd9169': {
         label: 'Fluid',
-        color: '#753FFD',
+        color: '#FFA500', // Orange
     },
     '0x0A1a3b5f2041F33522C4efc754a7D096f880eE16': {
         label: 'Euler Base USDC',
-        color: '#17395e',
+        color: '#6A5ACD', // Slate blue
     },
     '0x0000000000000000000000000000000000000000': {
         label: 'Cash Reserve',
-        color: '#000000',
+        color: '#F4A460', // Sandy brown
     }
 }
 
@@ -190,11 +207,19 @@ export function AllocationHistoryChart() {
     const [selectedRange, setSelectedRange] = useState<Period>(Period.oneWeek)
     const { rebalanceHistory, isLoading, error } = useRebalanceHistory(selectedRange)
     const [startIndex, setStartIndex] = useState(0)
+    const [minTotalAssets, setMinTotalAssets] = useState(0)
+    const [maxTotalAssets, setMaxTotalAssets] = useState(0)
     const [endIndex, setEndIndex] = useState(rebalanceHistory.length - 1)
 
     useEffect(() => {
         setStartIndex(0)
         setEndIndex(rebalanceHistory.length - 1)
+        setMinTotalAssets(Math.min(...rebalanceHistory.flatMap(item => 
+            item.allocations.map(allocation => item.totalAssets * (allocation.value / 100))
+        )))
+        setMaxTotalAssets(Math.max(...rebalanceHistory.flatMap(item =>
+            item.allocations.map(allocation => item.totalAssets * (allocation.value / 100))
+        )))
     }, [rebalanceHistory])
 
     const handleRangeChange = useCallback((value: string) => {
@@ -202,7 +227,9 @@ export function AllocationHistoryChart() {
     }, [])
 
     const chartData = useMemo(() => {
-        return rebalanceHistory.map((item) => {
+        const transformedData: ChartDataPoint[] = []
+        
+        rebalanceHistory.forEach((item, index) => {
             const date = new Date(item.timestamp * 1000)
             const dateOptions: any = {
                 year: 'numeric',
@@ -215,38 +242,111 @@ export function AllocationHistoryChart() {
             ).format(date)
             const time = extractTimeFromDate(date, { exclude: ['seconds'] })
 
-            return {
+            // Calculate actual allocation values and only include non-zero allocations
+            const allocationsWithValues = item.allocations
+                .filter((allocation: any) => allocation.value > 0)
+                .map((allocation: any) => ({
+                    name: allocation.name,
+                    value: (item.totalAssets * allocation.value) / 100,
+                    address: allocation.address,
+                }))
+
+            // Create an object with all addresses having 0 value by default
+            const defaultAllocations = Object.keys(chartConfig).reduce((acc, address) => {
+                acc[address] = 0
+                return acc
+            }, {} as Record<string, number>)
+
+            // Update with actual values
+            allocationsWithValues.forEach((allocation) => {
+                defaultAllocations[allocation.address] = allocation.value
+            })
+
+            // Add the main data point
+            const dataPoint = {
                 timestamp: `${formattedDate} ${time}`,
                 date: formattedDate.split(',')[0],
                 time: time,
                 totalAssets: abbreviateNumber(item.totalAssets),
-                allocations: item.allocations.filter((allocation: any) => allocation.value > 0),
+                allocations: allocationsWithValues,
+                ...defaultAllocations
+            }
+            
+            // If there's a next item and values change, add intermediate points
+            if (index < rebalanceHistory.length - 1) {
+                const nextItem = rebalanceHistory[index + 1]
+                const hasChanges = item.allocations.some(allocation => {
+                    const nextAllocation = nextItem.allocations.find(a => a.address === allocation.address)
+                    return (nextAllocation?.value || 0) !== allocation.value
+                })
+
+                if (hasChanges) {
+                    // Add current values point
+                    transformedData.push(dataPoint)
+                    
+                    // Add intermediate point with same timestamp but next values
+                    const nextAllocationsWithValues = nextItem.allocations
+                        .filter((allocation: any) => allocation.value > 0)
+                        .map((allocation: any) => ({
+                            name: allocation.name,
+                            value: (nextItem.totalAssets * allocation.value) / 100,
+                            address: allocation.address,
+                        }))
+
+                    const nextDefaultAllocations = Object.keys(chartConfig).reduce((acc, address) => {
+                        acc[address] = 0
+                        return acc
+                    }, {} as Record<string, number>)
+
+                    nextAllocationsWithValues.forEach((allocation) => {
+                        nextDefaultAllocations[allocation.address] = allocation.value
+                    })
+
+                    transformedData.push({
+                        ...dataPoint,
+                        allocations: nextAllocationsWithValues,
+                        ...nextDefaultAllocations
+                    })
+                } else {
+                    transformedData.push(dataPoint)
+                }
+            } else {
+                transformedData.push(dataPoint)
             }
         })
+
+        return transformedData
     }, [rebalanceHistory])
 
-    const memoizedBarsForChart = useMemo(() => {
-        return Object.keys(chartConfig).map((key) => (
-            <Bar
-                key={key}
-                dataKey={(data) => data.allocations.find((allocation: any) => allocation.address == key)?.value}
-                stackId="stack"
-                fill={`var(--color-${key})`}
-            />
-        ))
-    }, [])
-
-    const memoizedBarsForBrush = useMemo(() => {
-        return Object.keys(chartConfig).map((key) => (
+    const memoizedAreasForChart = useMemo(() => {
+        // Get only the addresses that have non-zero values at any point in time
+        const activeAddresses = Object.keys(chartConfig).filter(address => 
+            chartData.some(data => data[address] > 0)
+        ).sort((a, b) => {
+            const minA = Math.min(...chartData.map(data => data[a]))
+            const minB = Math.min(...chartData.map(data => data[b]))
+            return minB - minA
+        })
+        
+        return activeAddresses.map((address) => (
             <Area
-                key={key}
-                dataKey={(data) => data.allocations.find((allocation: any) => allocation.address == key)?.value}
+                key={address}
+                type="stepAfter"
+                dataKey={address}
+                name={chartConfig[address].label}
                 stackId="stack"
-                stroke={`var(--color-${key})`}
-                strokeWidth={1}
+                stroke={chartConfig[address].color}
+                fill={chartConfig[address].color}
+                fillOpacity={1}
+                strokeOpacity={1}
+                strokeWidth={0}
+                connectNulls={true}
+                isAnimationActive={false}
+                dot={false}
+                activeDot={false}
             />
         ))
-    }, [])
+    }, [chartData])
 
     const memoizedBrush = useMemo(() => (
         <Brush
@@ -263,10 +363,10 @@ export function AllocationHistoryChart() {
             alwaysShowText={false}
         >
             <AreaChart>
-                {memoizedBarsForBrush}
+                {memoizedAreasForChart}
             </AreaChart>
         </Brush>
-    ), [startIndex, endIndex, memoizedBarsForBrush])
+    ), [startIndex, endIndex, memoizedAreasForChart])
 
     return (
         <Card className="w-full">
@@ -287,7 +387,7 @@ export function AllocationHistoryChart() {
                     <>
                         {!isLoading &&
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart
+                                <AreaChart
                                     data={chartData}
                                     margin={{
                                         top: 0,
@@ -295,29 +395,20 @@ export function AllocationHistoryChart() {
                                         left: -10,
                                         bottom: 10,
                                     }}
-                                    barGap={-1}
-                                    barCategoryGap={-1}
                                 >
                                     <CartesianGrid vertical={false} stroke="#E5E7EB" />
                                     <XAxis
                                         dataKey="date"
                                         tickLine={false}
                                         axisLine={false}
-                                        // tick={{ fontSize: 12 }}
-                                        // tickMargin={5}
                                         tickCount={5}
                                         tickFormatter={(value) =>
-                                            formatDateAccordingToPeriod(
-                                                value,
-                                                selectedRange
-                                            )
+                                            formatDateAccordingToPeriod(value, selectedRange)
                                         }
                                         dx={-10}
                                         tick={({ x, y, payload, index }) => (
                                             <CustomXAxisTick
-                                                payload={
-                                                    payload as { value: number }
-                                                }
+                                                payload={payload as { value: number }}
                                                 selectedRange={selectedRange}
                                                 x={x as number}
                                                 y={y as number}
@@ -329,31 +420,23 @@ export function AllocationHistoryChart() {
                                     <YAxis
                                         tickLine={false}
                                         axisLine={false}
-                                        tick={{ fontSize: 12 }}
                                         tickMargin={5}
-                                        ticks={[0, 25, 50, 75, 100]}
-                                        domain={[0, 100]}
-                                    // tick={({ x, y, payload, index }) => (
-                                    //     <CustomYAxisTick
-                                    //         payload={
-                                    //             payload as { value: number }
-                                    //         }
-                                    //         x={x as number}
-                                    //         y={y as number}
-                                    //         index={index as number}
-                                    //         length={chartData.length}
-                                    //     />
-                                    // )}
+                                        tick={({ x, y, payload, index }) => (
+                                            <CustomYAxisTick
+                                                payload={payload as { value: number }}
+                                                x={x as number}
+                                                y={y as number}
+                                                index={index as number}
+                                                length={chartData.length}
+                                            />
+                                        )}
                                     />
                                     <ChartTooltip
                                         content={
                                             <ChartTooltipContent
                                                 className="flex items-center gap-2 rounded-lg border bg-white p-2 text-sm shadow-lg"
                                                 hideIndicator={true}
-                                                labelFormatter={(
-                                                    label,
-                                                    playload
-                                                ) => (
+                                                labelFormatter={(label, playload) => (
                                                     <CustomChartTooltipContent
                                                         payload={playload}
                                                         label={label}
@@ -362,9 +445,9 @@ export function AllocationHistoryChart() {
                                             />
                                         }
                                     />
-                                    {memoizedBarsForChart}
+                                    {memoizedAreasForChart}
                                     {memoizedBrush}
-                                </BarChart>
+                                </AreaChart>
                             </ResponsiveContainer>
                         }
                         {

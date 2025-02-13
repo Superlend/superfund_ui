@@ -1,28 +1,32 @@
 'use client'
 
 import { BodyText, HeadingText } from '@/components/ui/typography'
-import { getTokenLogo } from '@/lib/utils'
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
 } from "@/components/ui/card"
 import ImageWithDefault from "@/components/ImageWithDefault"
 import ExternalLink from "@/components/ExternalLink"
 import AllocationDetailsChart from "@/components/allocation-details-chart"
-import PerformanceHistoryChart from "@/components/performance-history-chart"
-import { Period } from "@/types/periodButtons"
-import { AllocationHistoryChart } from "@/components/allocation-history-chart"
 import { useVaultAllocationPoints } from "@/hooks/vault_hooks/vaultHook"
 import { motion } from "motion/react"
 import { rebalancedAssetsList, tokensSupportedList } from "@/data/abi/vault-data"
 import { DOCUMENTATION_LINK } from "@/constants"
-import React, { useState } from "react"
-import DepositAndWithdrawAssets from "./deposit-and-withdraw"
-import { useHistoricalData } from '@/hooks/vault_hooks/useHistoricalDataHook'
+import React, { lazy, Suspense } from "react"
+import LazyLoad from '@/components/LazyLoad'
+import LoadingSectionSkeleton from '@/components/skeletons/LoadingSection'
+
+const AllocationHistoryChart = lazy(() =>
+    import('@/components/allocation-history-chart').then(module => ({
+        default: module.AllocationHistoryChart
+    }))
+)
+
+const PerformanceHistoryChart = lazy(() =>
+    import('@/components/performance-history-chart').then(module => ({
+        default: module.default
+    }))
+)
 
 export default function FundOverview() {
     const { allocationPoints } = useVaultAllocationPoints()
@@ -120,9 +124,17 @@ export default function FundOverview() {
                     </CardContent>
                 </Card>
             </section>
-            <PerformanceHistoryChart />
+            <LazyLoad>
+                <Suspense fallback={<LoadingSectionSkeleton className="h-[300px]" />}>
+                    <PerformanceHistoryChart />
+                </Suspense>
+            </LazyLoad>
             <AllocationDetailsChart allocationPoints={allocationPoints} />
-            <AllocationHistoryChart />
+            <LazyLoad>
+                <Suspense fallback={<LoadingSectionSkeleton className="h-[300px]" />}>
+                    <AllocationHistoryChart />
+                </Suspense>
+            </LazyLoad>
             <section className="block flex flex-col gap-4">
                 <HeadingText level="h4" weight="medium">
                     Additional Information
