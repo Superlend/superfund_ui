@@ -22,7 +22,7 @@ import { http } from 'wagmi'
 // Set up queryClient
 const queryClient = new QueryClient()
 
-const appId = 'cm5o77rga039b99tzkjakb6ji'
+const appId = process.env.NEXT_PUBLIC_PRIVY_PROJECT_ID || ''
 
 // Set up metadata
 const metadata = {
