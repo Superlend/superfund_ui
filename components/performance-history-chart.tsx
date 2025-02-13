@@ -18,7 +18,7 @@ import { PERIOD_LIST } from '@/constants'
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useHistoricalData } from '@/hooks/vault_hooks/useHistoricalDataHook'
 import { abbreviateNumber, extractTimeFromDate, formatDateAccordingToPeriod, shortNubers } from '@/lib/utils'
-import { ChartConfig } from './ui/chart'
+import { ChartConfig, ChartContainer } from './ui/chart'
 import { TimelineFilterTabs } from './tabs/timeline-filter-tabs'
 import {
     Dialog,
@@ -353,7 +353,11 @@ export function PerformanceHistoryChart() {
                         } */}
                     </div>
                 </div>
-                <div className={`h-[${false ? '500px' : '350px'}] bg-white rounded-4`}>
+                {/* <div className={`h-[${false ? '500px' : '350px'}] bg-white rounded-4`}> */}
+                <ChartContainer
+                    config={chartConfig}
+                    className={`w-full h-[${false ? '500px' : '350px'}] bg-white rounded-4`}
+                >
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart
                             data={chartData}
@@ -405,7 +409,8 @@ export function PerformanceHistoryChart() {
                             {memoizedBrush}
                         </LineChart>
                     </ResponsiveContainer>
-                </div>
+                </ChartContainer>
+                {/* </div> */}
             </Card>
         </>
     )
