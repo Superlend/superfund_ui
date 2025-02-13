@@ -142,7 +142,7 @@ const chartConfig = {
     },
 } satisfies ChartConfig
 
-export default function PerformanceHistoryChart() {
+export function PerformanceHistoryChart() {
     const [selectedRange, setSelectedRange] = useState<Period>(Period.oneMonth)
     const { historicalData } = useHistoricalData(selectedRange)
     const [startIndex, setStartIndex] = useState(0)
@@ -215,7 +215,7 @@ export default function PerformanceHistoryChart() {
                 dot={false}
             />
         </>
-    ), [])
+    ), [chartData])
 
     const memoizedBrush = useMemo(() => (
         <Brush
@@ -246,11 +246,11 @@ export default function PerformanceHistoryChart() {
                 />
             </AreaChart>
         </Brush>
-    ), [startIndex, endIndex, openDialog])
+    ), [startIndex, endIndex, openDialog, chartData])
 
     const content = (
         <Card>
-            <style>{styles}</style>
+            {/* <style>{styles}</style> */}
             <div className="flex items-center justify-between p-6">
                 <h2 className="text-lg font-semibold">
                     Performance History
