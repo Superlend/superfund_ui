@@ -28,6 +28,11 @@ import { abbreviateNumber, extractTimeFromDate, formatDateAccordingToPeriod, sho
 import { VAULT_STRATEGIES_COLORS } from '@/lib/constants'
 import { BodyText, Label } from './ui/typography'
 import { Skeleton } from './ui/skeleton'
+import { Expand } from 'lucide-react'
+import {
+    Dialog,
+    DialogContent,
+} from "@/components/ui/dialog"
 
 const chartData = [
     { date: '11/07', value1: 8, value2: 4, value3: 12 },
@@ -64,7 +69,7 @@ const CustomYAxisTick = ({
             style={{ zIndex: 20, position: 'relative', color: '#000000' }}
         >
             <text x={0} y={0} dy={6} dx={11} textAnchor="start" fill="#000000">
-                {`$${abbreviateNumber(payload.value)}`}
+                {`$${abbreviateNumber(payload.value, 0)}`}
             </text>
         </g>
     )
@@ -110,7 +115,7 @@ function CustomChartTooltipContent({
     label: string
 }) {
     if (!payload || payload.length === 0) return null;
-    
+
     const allocations = payload[0].payload.allocations.sort((a: any, b: any) => b.value - a.value)
     const caption = payload[0].payload.timestamp
 
@@ -207,20 +212,13 @@ export function AllocationHistoryChart() {
     const [selectedRange, setSelectedRange] = useState<Period>(Period.oneWeek)
     const { rebalanceHistory, isLoading, error } = useRebalanceHistory(selectedRange)
     const [startIndex, setStartIndex] = useState(0)
-    const [minTotalAssets, setMinTotalAssets] = useState(0)
-    const [maxTotalAssets, setMaxTotalAssets] = useState(0)
     const [endIndex, setEndIndex] = useState(rebalanceHistory.length - 1)
+    const [openDialog, setOpenDialog] = useState(false)
 
     useEffect(() => {
         setStartIndex(0)
         setEndIndex(rebalanceHistory.length - 1)
-        setMinTotalAssets(Math.min(...rebalanceHistory.flatMap(item => 
-            item.allocations.map(allocation => item.totalAssets * (allocation.value / 100))
-        )))
-        setMaxTotalAssets(Math.max(...rebalanceHistory.flatMap(item =>
-            item.allocations.map(allocation => item.totalAssets * (allocation.value / 100))
-        )))
-    }, [rebalanceHistory])
+    }, [rebalanceHistory.length])
 
     const handleRangeChange = useCallback((value: string) => {
         setSelectedRange(value as Period)
@@ -228,7 +226,7 @@ export function AllocationHistoryChart() {
 
     const chartData = useMemo(() => {
         const transformedData: ChartDataPoint[] = []
-        
+
         rebalanceHistory.forEach((item, index) => {
             const date = new Date(item.timestamp * 1000)
             const dateOptions: any = {
@@ -271,7 +269,7 @@ export function AllocationHistoryChart() {
                 allocations: allocationsWithValues,
                 ...defaultAllocations
             }
-            
+
             // If there's a next item and values change, add intermediate points
             if (index < rebalanceHistory.length - 1) {
                 const nextItem = rebalanceHistory[index + 1]
@@ -283,7 +281,7 @@ export function AllocationHistoryChart() {
                 if (hasChanges) {
                     // Add current values point
                     transformedData.push(dataPoint)
-                    
+
                     // Add intermediate point with same timestamp but next values
                     const nextAllocationsWithValues = nextItem.allocations
                         .filter((allocation: any) => allocation.value > 0)
@@ -320,14 +318,14 @@ export function AllocationHistoryChart() {
 
     const memoizedAreasForChart = useMemo(() => {
         // Get only the addresses that have non-zero values at any point in time
-        const activeAddresses = Object.keys(chartConfig).filter(address => 
+        const activeAddresses = Object.keys(chartConfig).filter(address =>
             chartData.some(data => data[address] > 0)
         ).sort((a, b) => {
             const minA = Math.min(...chartData.map(data => data[a]))
             const minB = Math.min(...chartData.map(data => data[b]))
             return minB - minA
         })
-        
+
         return activeAddresses.map((address) => (
             <Area
                 key={address}
@@ -355,10 +353,10 @@ export function AllocationHistoryChart() {
             stroke="hsl(var(--pulse-color))"
             fill="hsl(var(--accent-cream))"
             travellerWidth={8}
-            y={255}
+            y={openDialog ? 430 :255}
             strokeWidth={1.2}
             startIndex={startIndex}
-            endIndex={endIndex}
+            // endIndex={endIndex}
             className="recharts-brush"
             alwaysShowText={false}
         >
@@ -366,23 +364,32 @@ export function AllocationHistoryChart() {
                 {memoizedAreasForChart}
             </AreaChart>
         </Brush>
-    ), [startIndex, endIndex, memoizedAreasForChart])
+    ), [startIndex, endIndex, memoizedAreasForChart, openDialog])
 
-    return (
+    const content = (
         <Card className="w-full">
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-xl font-semibold">
                     Allocation History
                 </CardTitle>
-                <TimelineFilterTabs
-                    selectedRange={selectedRange}
-                    handleRangeChange={handleRangeChange}
-                />
+                <div className="flex items-center gap-2">
+                    <div className={`${openDialog ? 'mr-12' : ''}`}>
+                        <TimelineFilterTabs
+                            selectedRange={selectedRange}
+                            handleRangeChange={handleRangeChange}
+                        />
+                    </div>
+                    {!openDialog &&
+                        <Button onClick={() => setOpenDialog(true)} className='py-1'>
+                            <Expand className='w-4 h-4 text-gray-600' />
+                        </Button>
+                    }
+                </div>
             </CardHeader>
             <CardContent className="p-0 rounded-4 bg-white">
                 <ChartContainer
                     config={chartConfig}
-                    className="w-full h-[300px] max-w-[1200px]"
+                    className={`w-full h-[${openDialog ? '500px' : '300px'}] max-w-full`}
                 >
                     <>
                         {!isLoading &&
@@ -393,7 +400,7 @@ export function AllocationHistoryChart() {
                                         top: 0,
                                         right: 10,
                                         left: -10,
-                                        bottom: 10,
+                                        bottom: openDialog ? 45 : 10,
                                     }}
                                 >
                                     <CartesianGrid vertical={false} stroke="#E5E7EB" />
@@ -452,11 +459,22 @@ export function AllocationHistoryChart() {
                         }
                         {
                             isLoading &&
-                            <Skeleton className="w-full h-[300px] rounded-4 max-w-[1200px] bg-gray-300" />
+                            <Skeleton className={`w-full h-[${openDialog ? '500px' : '300px'}] rounded-4 max-w-[1200px] bg-gray-300`} />
                         }
                     </>
                 </ChartContainer>
             </CardContent>
         </Card>
+    )
+
+    return (
+        <>
+            {content}
+            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+                <DialogContent className='w-[90%] h-[85%] max-w-full max-h-full p-0'>
+                    {content}
+                </DialogContent>
+            </Dialog>
+        </>
     )
 }

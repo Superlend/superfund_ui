@@ -20,6 +20,17 @@ import { useHistoricalData } from '@/hooks/vault_hooks/useHistoricalDataHook'
 import { abbreviateNumber, extractTimeFromDate, formatDateAccordingToPeriod, shortNubers } from '@/lib/utils'
 import { ChartConfig } from './ui/chart'
 import { TimelineFilterTabs } from './tabs/timeline-filter-tabs'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Button } from './ui/button'
+import { Expand } from 'lucide-react'
+
 
 const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -97,7 +108,7 @@ const CustomYAxisTick = ({
             style={{ zIndex: 10, position: 'relative', color: 'hsl(var(--foreground-subtle))' }}
         >
             <text x={0} y={0} dy={6} dx={11} textAnchor="start" fontSize={12} fill="hsl(var(--foreground-subtle))">
-                {`${shortNubers(payload.value)}%`}
+                {`${abbreviateNumber(payload.value, 0)}%`}
             </text>
         </g>
     )
@@ -136,6 +147,7 @@ export default function PerformanceHistoryChart() {
     const { historicalData } = useHistoricalData(selectedRange)
     const [startIndex, setStartIndex] = useState(0)
     const [endIndex, setEndIndex] = useState(historicalData.length - 1)
+    const [openDialog, setOpenDialog] = useState(false)
 
     useEffect(() => {
         setStartIndex(0)
@@ -212,7 +224,7 @@ export default function PerformanceHistoryChart() {
             stroke="#8A2BE2"
             fill="rgba(138, 43, 226, 0.1)"
             travellerWidth={8}
-            y={245}
+            y={openDialog ? 450 : 295}
             strokeWidth={1.2}
             startIndex={startIndex}
             endIndex={endIndex}
@@ -234,21 +246,30 @@ export default function PerformanceHistoryChart() {
                 />
             </AreaChart>
         </Brush>
-    ), [startIndex, endIndex])
+    ), [startIndex, endIndex, openDialog])
 
-    return (
+    const content = (
         <Card>
             <style>{styles}</style>
             <div className="flex items-center justify-between p-6">
                 <h2 className="text-lg font-semibold">
                     Performance History
                 </h2>
-                <TimelineFilterTabs
-                    selectedRange={selectedRange}
-                    handleRangeChange={handleRangeChange}
-                />
+                <div className="flex items-center gap-2">
+                    <div className={`${openDialog ? 'mr-12' : ''}`}>
+                        <TimelineFilterTabs
+                            selectedRange={selectedRange}
+                            handleRangeChange={handleRangeChange}
+                        />
+                    </div>
+                    {!openDialog &&
+                        <Button onClick={() => setOpenDialog(true)} className='py-1'>
+                            <Expand className='w-4 h-4 text-gray-600' />
+                        </Button>
+                    }
+                </div>
             </div>
-            <div className="h-[300px] bg-white rounded-4">
+            <div className={`h-[${openDialog ? '500px' : '350px'}] bg-white rounded-4`}>
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                         data={chartData}
@@ -284,10 +305,10 @@ export default function PerformanceHistoryChart() {
                             fontSize={12}
                             tickLine={false}
                             axisLine={false}
-                            tickFormatter={(value) => `${shortNubers(value.toFixed(2))}%`}
+                            tickFormatter={(value) => `${shortNubers(value.toFixed(0))}%`}
                             padding={{ top: 10, bottom: 10 }}
                             domain={[
-                                minValue - (valueRange * 0.1),
+                                0,
                                 maxValue + (valueRange * 0.1)
                             ]}
                             allowDataOverflow={true}
@@ -302,5 +323,24 @@ export default function PerformanceHistoryChart() {
                 </ResponsiveContainer>
             </div>
         </Card>
+    )
+
+    return (
+        <>
+            {content}
+            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+                <DialogContent className='w-[90%] h-[85%] max-w-full max-h-full p-0'>
+                    {/* <DialogHeader>
+                        <DialogTitle>Are you absolutely sure?</DialogTitle>
+                        <DialogDescription>
+                            This action cannot be undone. This will permanently delete your account
+                            and remove your data from our servers.
+                        </DialogDescription>
+                    </DialogHeader> */}
+                    {content}
+                </DialogContent>
+            </Dialog>
+
+        </>
     )
 }
