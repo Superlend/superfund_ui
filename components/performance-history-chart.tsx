@@ -246,7 +246,7 @@ export function PerformanceHistoryChart() {
                 />
             </AreaChart>
         </Brush>
-    ), [startIndex, endIndex, chartData])
+    ), [startIndex, endIndex])
 
     // const content = (
     //     <Card>
@@ -334,7 +334,6 @@ export function PerformanceHistoryChart() {
                 </DialogContent>
             </Dialog> */}
             <Card>
-                {/* <style>{styles}</style> */}
                 <div className="flex items-center justify-between p-6">
                     <h2 className="text-lg font-semibold">
                         Performance History
@@ -356,7 +355,7 @@ export function PerformanceHistoryChart() {
                 {/* <div className={`h-[${false ? '500px' : '350px'}] bg-white rounded-4`}> */}
                 <ChartContainer
                     config={chartConfig}
-                    className={`w-full h-[${false ? '500px' : '350px'}] bg-white rounded-4`}
+                    className={`w-full h-[350px] bg-white rounded-4`}
                 >
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart

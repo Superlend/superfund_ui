@@ -15,7 +15,6 @@ import { DOCUMENTATION_LINK } from "@/constants"
 import React, { lazy, Suspense } from "react"
 import LazyLoad from '@/components/LazyLoad'
 import LoadingSectionSkeleton from '@/components/skeletons/LoadingSection'
-import { PerformanceHistoryChart } from '@/components/performance-history-chart'
 
 const AllocationHistoryChart = lazy(() =>
     import('@/components/allocation-history-chart').then(module => ({
@@ -23,11 +22,11 @@ const AllocationHistoryChart = lazy(() =>
     }))
 )
 
-// const PerformanceHistoryChart = lazy(() =>
-//     import('@/components/performance-history-chart').then(module => ({
-//         default: module.PerformanceHistoryChart
-//     }))
-// )
+const PerformanceHistoryChart = lazy(() =>
+    import('@/components/performance-history-chart').then(module => ({
+        default: module.PerformanceHistoryChart
+    }))
+)
 
 export default function FundOverview() {
     const { allocationPoints } = useVaultAllocationPoints()
@@ -125,11 +124,11 @@ export default function FundOverview() {
                     </CardContent>
                 </Card>
             </section>
-            {/* <LazyLoad>
-                <Suspense fallback={<LoadingSectionSkeleton className="h-[300px]" />}> */}
-            <PerformanceHistoryChart />
-            {/* </Suspense>
-            </LazyLoad> */}
+            <LazyLoad>
+                <Suspense fallback={<LoadingSectionSkeleton className="h-[300px]" />}>
+                    <PerformanceHistoryChart />
+                </Suspense>
+            </LazyLoad>
             <AllocationDetailsChart allocationPoints={allocationPoints} />
             <LazyLoad>
                 <Suspense fallback={<LoadingSectionSkeleton className="h-[300px]" />}>
