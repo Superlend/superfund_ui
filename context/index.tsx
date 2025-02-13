@@ -28,7 +28,7 @@ const appId = 'cm5o77rga039b99tzkjakb6ji'
 const metadata = {
     name: 'superlend',
     description: 'superlend',
-    url: 'https://beta.superlend.xyz.com', // origin must match your domain & subdomain
+    url: 'https://app.superlend.xyz.com', // origin must match your domain & subdomain
     icons: ['https://avatars.githubusercontent.com/u/179229932'],
 }
 
@@ -54,7 +54,7 @@ function ContextProvider({
                 appearance: {
                     theme: 'light',
                     accentColor: '#676FFF',
-                    logo: 'https://beta.superlend.xyz/images/logos/superlend-logo.webp',
+                    logo: 'https://app.superlend.xyz/images/logos/superlend-logo.webp',
                     landingHeader: 'Connect Wallet',
                     loginMessage: 'Select wallet to continue',
                     showWalletLoginFirst: true,
