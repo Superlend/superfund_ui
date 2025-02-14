@@ -215,6 +215,13 @@ export function AllocationHistoryChart() {
     const [endIndex, setEndIndex] = useState(rebalanceHistory.length - 1)
     const [openDialog, setOpenDialog] = useState(false)
 
+    const customTicks = {
+        [Period.oneDay]: 8,
+        [Period.oneWeek]: 50,
+        [Period.oneMonth]: 100,
+        [Period.allTime]: 100,
+    }
+
     useEffect(() => {
         setStartIndex(0)
         setEndIndex(rebalanceHistory.length - 1)
@@ -410,7 +417,7 @@ export function AllocationHistoryChart() {
                                         tickLine={true}
                                         axisLine={true}
                                         tickCount={4}
-                                        interval={100}
+                                        interval={customTicks[selectedRange]}
                                         tickFormatter={(value) =>
                                             formatDateAccordingToPeriod(value, selectedRange)
                                         }

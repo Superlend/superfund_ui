@@ -32,6 +32,7 @@ import {
 import { Button } from './ui/button'
 import { Expand } from 'lucide-react'
 import { BodyText, HeadingText } from './ui/typography'
+import { Skeleton } from './ui/skeleton'
 
 
 const CustomTooltip = ({ active, payload }: any) => {
@@ -161,10 +162,17 @@ const chartConfig = {
 
 export function PerformanceHistoryChart() {
     const [selectedRange, setSelectedRange] = useState<Period>(Period.oneMonth)
-    const { historicalData } = useHistoricalData(selectedRange)
+    const { historicalData, isLoading } = useHistoricalData(selectedRange)
     const [startIndex, setStartIndex] = useState(0)
     const [endIndex, setEndIndex] = useState(historicalData.length - 1)
     // const [openDialog, setOpenDialog] = useState(false)
+
+    const customTicks = {
+        [Period.oneDay]: 4,
+        [Period.oneWeek]: 50,
+        [Period.oneMonth]: 100,
+        [Period.allTime]: 100,
+    }
 
     useEffect(() => {
         setStartIndex(0)
@@ -374,64 +382,72 @@ export function PerformanceHistoryChart() {
                     config={chartConfig}
                     className={`w-full h-[350px] bg-white rounded-4`}
                 >
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart
-                            data={chartData}
-                            margin={{
-                                top: 0,
-                                right: 30,
-                                left: -15,
-                                bottom: 45
-                            }}
-                        >
-                            <CartesianGrid vertical={false} />
-                            <XAxis
-                                dataKey="date"
-                                stroke="hsl(var(--foreground-subtle))"
-                                fontSize={12}
-                                tickLine={true}
-                                axisLine={true}
-                                tickCount={4}
-                                interval={30}
-                                padding={{ left: 0, right: 10 }}
-                                tickFormatter={(value) =>
-                                    formatDateAccordingToPeriod(
-                                        value,
-                                        selectedRange
-                                    )
-                                }
-                                tick={({ x, y, payload, index }) => (
-                                    <CustomXAxisTick
-                                        payload={payload as { value: number }}
-                                        selectedRange={selectedRange}
-                                        x={x as number}
-                                        y={y as number}
-                                        index={index as number}
-                                        length={chartData.length}
+                    <>
+                        {!isLoading &&
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart
+                                    data={chartData}
+                                    margin={{
+                                        top: 0,
+                                        right: 30,
+                                        left: -15,
+                                        bottom: 45
+                                    }}
+                                >
+                                    <CartesianGrid vertical={false} />
+                                    <XAxis
+                                        dataKey="date"
+                                        stroke="hsl(var(--foreground-subtle))"
+                                        fontSize={12}
+                                        tickLine={true}
+                                        axisLine={true}
+                                        tickCount={4}
+                                        interval={customTicks[selectedRange]}
+                                        padding={{ left: 0, right: 10 }}
+                                        tickFormatter={(value) =>
+                                            formatDateAccordingToPeriod(
+                                                value,
+                                                selectedRange
+                                            )
+                                        }
+                                        tick={({ x, y, payload, index }) => (
+                                            <CustomXAxisTick
+                                                payload={payload as { value: number }}
+                                                selectedRange={selectedRange}
+                                                x={x as number}
+                                                y={y as number}
+                                                index={index as number}
+                                                length={chartData.length}
+                                            />
+                                        )}
                                     />
-                                )}
-                            />
-                            <YAxis
-                                stroke="hsl(var(--foreground-subtle))"
-                                fontSize={12}
-                                tickLine={true}
-                                axisLine={true}
-                                tickFormatter={(value) => `${shortNubers(value.toFixed(0))}%`}
-                                padding={{ top: 10, bottom: 10 }}
-                                domain={[
-                                    0,
-                                    maxValue + (valueRange * 0.1)
-                                ]}
-                                allowDataOverflow={true}
-                            />
-                            <Tooltip
-                                content={<CustomTooltip />}
-                                cursor={{ stroke: 'hsl(var(--foreground-disabled))', strokeWidth: 1 }}
-                            />
-                            {memoizedLines}
-                            {memoizedBrush}
-                        </LineChart>
-                    </ResponsiveContainer>
+                                    <YAxis
+                                        stroke="hsl(var(--foreground-subtle))"
+                                        fontSize={12}
+                                        tickLine={true}
+                                        axisLine={true}
+                                        tickFormatter={(value) => `${shortNubers(value.toFixed(0))}%`}
+                                        padding={{ top: 10, bottom: 10 }}
+                                        domain={[
+                                            0,
+                                            maxValue + (valueRange * 0.1)
+                                        ]}
+                                        allowDataOverflow={true}
+                                    />
+                                    <Tooltip
+                                        content={<CustomTooltip />}
+                                        cursor={{ stroke: 'hsl(var(--foreground-disabled))', strokeWidth: 1 }}
+                                    />
+                                    {memoizedLines}
+                                    {memoizedBrush}
+                                </LineChart>
+                            </ResponsiveContainer>
+                        }
+                        {
+                            isLoading &&
+                            <Skeleton className={`w-full h-[350px] rounded-4 max-w-[1200px] bg-gray-300`} />
+                        }
+                    </>
                 </ChartContainer>
                 {/* </div> */}
             </Card>
