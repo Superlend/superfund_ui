@@ -42,7 +42,7 @@ export default function FundOverview() {
                 className="block flex flex-col gap-2"
                 id="fund-information"
             >
-                <HeadingText level="h4" weight="medium">
+                <HeadingText level="h4" weight="medium" className="text-gray-800">
                     Fund Information
                 </HeadingText>
                 <BodyText
@@ -59,7 +59,7 @@ export default function FundOverview() {
                 </BodyText>
             </section>
             <section className="block flex flex-col gap-4" id="tokens-supported">
-                <HeadingText level="h4" weight="medium">
+                <HeadingText level="h4" weight="medium" className="text-gray-800">
                     Tokens Suported
                 </HeadingText>
                 <Card>
@@ -91,7 +91,7 @@ export default function FundOverview() {
                 className="block flex flex-col gap-4"
                 id="rebalanced-across"
             >
-                <HeadingText level="h4" weight="medium">
+                <HeadingText level="h4" weight="medium" className="text-gray-800">
                     Rebalanced Across
                 </HeadingText>
                 <Card>
@@ -136,7 +136,7 @@ export default function FundOverview() {
                 </Suspense>
             </LazyLoad>
             <section className="block flex flex-col gap-4">
-                <HeadingText level="h4" weight="medium">
+                <HeadingText level="h4" weight="medium" className="text-gray-800">
                     Additional Information
                 </HeadingText>
                 <Card>
@@ -167,7 +167,7 @@ export default function FundOverview() {
                         </div> */}
                         <div className="row flex max-lg:flex-col flex-wrap gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
                             <div className="col flex-1 flex items-center gap-2">
-                                <BodyText level="body1" weight="medium">
+                                <BodyText level="body1" weight="medium" className="text-gray-800">
                                     Documentation
                                 </BodyText>
                             </div>
@@ -210,7 +210,7 @@ export default function FundOverview() {
                                 </BodyText>
                             </div>
                             <div className="col flex-1 flex justify-end">
-                                <BodyText level="body1" weight="medium">
+                                <BodyText level="body1" weight="medium" className="text-gray-800">
                                     10% of earnings
                                 </BodyText>
                             </div>

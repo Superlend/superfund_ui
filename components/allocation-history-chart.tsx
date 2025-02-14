@@ -26,7 +26,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useRebalanceHistory } from '@/hooks/vault_hooks/useHistoricalDataHook'
 import { abbreviateNumber, extractTimeFromDate, formatDateAccordingToPeriod, shortNubers } from '@/lib/utils'
 import { VAULT_STRATEGIES_COLORS } from '@/lib/constants'
-import { BodyText, Label } from './ui/typography'
+import { BodyText, HeadingText, Label } from './ui/typography'
 import { Skeleton } from './ui/skeleton'
 import { Expand } from 'lucide-react'
 import {
@@ -61,11 +61,11 @@ const CustomYAxisTick = ({
     index,
     length,
 }: CustomYAxisTickProps) => {
-    if (index === 0 || index === length - 1) return null
+    // if (index === 0 || index === length - 1) return null
 
     return (
         <g
-            transform={`translate(${x - 35},${y + 5})`}
+            transform={`translate(${x - 35},${y - 3})`}
             style={{ zIndex: 20, position: 'relative', color: '#000000' }}
         >
             <text x={0} y={0} dy={6} dx={11} textAnchor="start" fill="#000000">
@@ -94,9 +94,9 @@ const CustomXAxisTick = ({
     index,
     length,
 }: CustomXAxisTickProps) => {
-    if (index % 2) return null
+    // if (index % 2) return null
     return (
-        <g transform={`translate(${x},${y - 5})`} style={{ zIndex: 10 }}>
+        <g transform={`translate(${x + 10},${y})`} style={{ zIndex: 10 }}>
             <text x={0} y={0} dy={16} textAnchor="middle" fill="#000000">
                 {formatDateAccordingToPeriod(
                     payload.value.toString(),
@@ -121,25 +121,25 @@ function CustomChartTooltipContent({
 
     return (
         <div className="flex flex-col gap-2 px-1.5">
-            <Label size="small" weight="medium" className="text-gray-600">
+            <Label size="small" weight="normal" className="text-gray-600">
                 {caption}
             </Label>
             <div className="flex flex-col space-y-1">
                 {
                     allocations.map((allocation: any, index: number) => (
-                        <div key={index} className="flex items-center justify-between gap-1">
-                            <Label size="small" weight="medium" className="text-gray-600 max-w-[300px] truncate">
+                        <div key={index} className="flex items-center justify-between gap-2">
+                            <Label size="small" weight="normal" className="text-gray-800 max-w-[300px] truncate">
                                 {allocation.name}
                             </Label>
-                            <BodyText level="body3" weight="medium">
+                            <BodyText level="body3" weight="medium" className="text-gray-800">
                                 ${abbreviateNumber(allocation.value)}
                             </BodyText>
                         </div>
                     ))
                 }
             </div>
-            <Label size="small" weight="medium" className="flex items-center justify-between text-gray-600 border-t border-gray-400 pt-1">
-                Total Assets: <span className="text-black">${payload[0].payload.totalAssets}</span>
+            <Label size="small" weight="normal" className="flex items-center justify-between text-gray-800 border-t border-gray-400 pt-1">
+                Total Assets: <span className="text-gray-800 font-medium">${payload[0].payload.totalAssets}</span>
             </Label>
         </div>
     )
@@ -350,10 +350,10 @@ export function AllocationHistoryChart() {
         <Brush
             dataKey="date"
             height={35}
-            stroke="hsl(var(--pulse-color))"
-            fill="hsl(var(--accent-cream))"
+            stroke="#cacaca"
+            fill="#fafafa"
             travellerWidth={8}
-            y={openDialog ? 430 :255}
+            y={openDialog ? 430 : 310}
             strokeWidth={1.2}
             startIndex={startIndex}
             // endIndex={endIndex}
@@ -367,11 +367,11 @@ export function AllocationHistoryChart() {
     ), [startIndex, endIndex, memoizedAreasForChart, openDialog])
 
     const content = (
-        <Card className="w-full">
+        <Card className="w-full" id="allocation-history">
             <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-xl font-semibold">
+                <HeadingText level="h4" weight="medium" className="text-gray-800">
                     Allocation History
-                </CardTitle>
+                </HeadingText>
                 <div className="flex items-center gap-2">
                     <div className={`${openDialog ? 'mr-12' : ''}`}>
                         <TimelineFilterTabs
@@ -386,18 +386,19 @@ export function AllocationHistoryChart() {
                     } */}
                 </div>
             </CardHeader>
-            <CardContent className="p-0 rounded-4 bg-white">
+            <CardContent className="p-0 pb-2 rounded-4 bg-white">
                 <ChartContainer
                     config={chartConfig}
-                    className={`w-full h-[${openDialog ? '500px' : '300px'}] max-w-full`}
+                    className={`w-full h-[${openDialog ? '500px' : '350px'}] max-w-full`}
                 >
                     <>
                         {!isLoading &&
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart
+                                    accessibilityLayer
                                     data={chartData}
                                     margin={{
-                                        top: 0,
+                                        top: 20,
                                         right: 10,
                                         left: -10,
                                         bottom: openDialog ? 45 : 10,
@@ -406,13 +407,14 @@ export function AllocationHistoryChart() {
                                     <CartesianGrid vertical={false} stroke="#E5E7EB" />
                                     <XAxis
                                         dataKey="date"
-                                        tickLine={false}
-                                        axisLine={false}
-                                        tickCount={5}
+                                        tickLine={true}
+                                        axisLine={true}
+                                        tickCount={4}
+                                        interval={100}
                                         tickFormatter={(value) =>
                                             formatDateAccordingToPeriod(value, selectedRange)
                                         }
-                                        dx={-10}
+                                        padding={{ left: 0, right: 10 }}
                                         tick={({ x, y, payload, index }) => (
                                             <CustomXAxisTick
                                                 payload={payload as { value: number }}
@@ -425,8 +427,8 @@ export function AllocationHistoryChart() {
                                         )}
                                     />
                                     <YAxis
-                                        tickLine={false}
-                                        axisLine={false}
+                                        tickLine={true}
+                                        axisLine={true}
                                         tickMargin={5}
                                         tick={({ x, y, payload, index }) => (
                                             <CustomYAxisTick

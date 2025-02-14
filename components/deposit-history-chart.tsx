@@ -50,16 +50,13 @@ export default function DepositHistoryChart({
     return (
         <Card>
             <div className="flex items-center justify-between p-6 pb-4">
-                <HeadingText level="h4" weight="medium">
+                <HeadingText level="h4" weight="medium" className="text-gray-800">
                     Deposit History
                 </HeadingText>
                 <div className="flex items-center gap-2">
                     <BodyText level="body1" weight="normal" className="text-muted-foreground">
                         Historical Growth
                     </BodyText>
-                    {/* <HeadingText level="h4" weight="medium">
-                        $142.37
-                    </HeadingText> */}
                 </div>
             </div>
             <div className="relative h-[300px] bg-white rounded-4">

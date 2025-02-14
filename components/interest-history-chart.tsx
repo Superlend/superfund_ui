@@ -50,14 +50,14 @@ export default function InterestHistoryChart({
     return (
         <Card>
             <div className="flex items-center justify-between p-6 pb-4">
-                <HeadingText level="h4" weight="medium">
+                <HeadingText level="h4" weight="medium" className="text-gray-800">
                     Interest History
                 </HeadingText>
                 <div className="flex items-center gap-2">
                     <BodyText level="body1" weight="normal" className="text-muted-foreground">
                         Earned till date
                     </BodyText>
-                    <HeadingText level="h4" weight="medium">
+                    <HeadingText level="h4" weight="medium" className="text-gray-800">
                         $142.37
                     </HeadingText>
                 </div>

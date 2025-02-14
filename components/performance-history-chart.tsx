@@ -6,6 +6,7 @@ import {
     Area,
     AreaChart,
     Brush,
+    CartesianGrid,
     Line,
     LineChart,
     ResponsiveContainer,
@@ -30,26 +31,42 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from './ui/button'
 import { Expand } from 'lucide-react'
+import { BodyText, HeadingText } from './ui/typography'
 
 
 const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-card border border-border rounded-lg shadow-lg p-3 text-sm">
-                <p className="font-medium text-foreground-subtle mb-1">{payload[0]?.payload.timestamp}</p>
+            <div className="flex flex-col gap-2 bg-card border border-border rounded-lg shadow-lg p-3 text-sm">
+                <BodyText level='body3' className="text-gray-600">
+                    {payload[0]?.payload.timestamp}
+                </BodyText>
                 <div className="space-y-1">
-                    <p className="font-medium flex items-center">
-                        <span className="w-2 h-2 rounded-full bg-[#3366CC] mr-2" />
-                        Base APY: {payload[0]?.payload.baseApy}%
-                    </p>
-                    <p className="font-medium flex items-center">
-                        <span className="w-2 h-2 rounded-full bg-[#8A2BE2] mr-2" />
-                        Total APY: {payload[0]?.payload.totalApy}%
-                    </p>
-                    <p className="font-medium flex items-center">
-                        Total Assets: ${payload[0]?.payload.totalAssets}
-                    </p>
+                    <BodyText level='body3' className="flex items-center justify-between gap-1">
+                        <div className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-[#3366CC]" />
+                            Base APY:
+                        </div>
+                        <span className="font-medium">
+                            {payload[0]?.payload.baseApy}%
+                        </span>
+                    </BodyText>
+                    <BodyText level='body3' className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-[#8A2BE2]" />
+                            Total APY:
+                        </div>
+                        <span className="font-medium">
+                            {payload[0]?.payload.totalApy}%
+                        </span>
+                    </BodyText>
                 </div>
+                <BodyText level='body3' className="flex items-center justify-between gap-2 border-t border-gray-400 pt-1">
+                    Total Assets:
+                    <span className="font-medium">
+                        ${payload[0]?.payload.totalAssets}
+                    </span>
+                </BodyText>
             </div>
         )
     }
@@ -122,7 +139,7 @@ const CustomXAxisTick = ({
     index,
     length,
 }: CustomXAxisTickProps) => {
-    if (index % 2) return null
+    // if (index % 2) return null
     return (
         <g transform={`translate(${x + 10},${y})`} style={{ zIndex: 10 }}>
             <text x={0} y={0} dy={16} textAnchor="middle" fontSize={12} fill="hsl(var(--foreground-subtle))">
@@ -221,8 +238,8 @@ export function PerformanceHistoryChart() {
         <Brush
             dataKey="date"
             height={35}
-            stroke="#8A2BE2"
-            fill="rgba(138, 43, 226, 0.1)"
+            stroke="#cacaca"
+            fill="#fafafa"
             travellerWidth={8}
             y={295}
             strokeWidth={1.2}
@@ -335,9 +352,9 @@ export function PerformanceHistoryChart() {
             </Dialog> */}
             <Card>
                 <div className="flex items-center justify-between p-6">
-                    <h2 className="text-lg font-semibold">
+                    <HeadingText level="h4" weight="medium" className='text-gray-800'>
                         Performance History
-                    </h2>
+                    </HeadingText>
                     <div className="flex items-center gap-2">
                         <div className={`${false ? 'mr-12' : ''}`}>
                             <TimelineFilterTabs
@@ -361,21 +378,28 @@ export function PerformanceHistoryChart() {
                         <LineChart
                             data={chartData}
                             margin={{
-                                top: 10,
+                                top: 0,
                                 right: 30,
-                                left: 0,
+                                left: -15,
                                 bottom: 45
                             }}
                         >
+                            <CartesianGrid vertical={false} />
                             <XAxis
                                 dataKey="date"
                                 stroke="hsl(var(--foreground-subtle))"
                                 fontSize={12}
-                                tickLine={false}
+                                tickLine={true}
+                                axisLine={true}
                                 tickCount={4}
-                                axisLine={false}
-                                padding={{ left: 10, right: 10 }}
-                                dy={10}
+                                interval={30}
+                                padding={{ left: 0, right: 10 }}
+                                tickFormatter={(value) =>
+                                    formatDateAccordingToPeriod(
+                                        value,
+                                        selectedRange
+                                    )
+                                }
                                 tick={({ x, y, payload, index }) => (
                                     <CustomXAxisTick
                                         payload={payload as { value: number }}
@@ -390,8 +414,8 @@ export function PerformanceHistoryChart() {
                             <YAxis
                                 stroke="hsl(var(--foreground-subtle))"
                                 fontSize={12}
-                                tickLine={false}
-                                axisLine={false}
+                                tickLine={true}
+                                axisLine={true}
                                 tickFormatter={(value) => `${shortNubers(value.toFixed(0))}%`}
                                 padding={{ top: 10, bottom: 10 }}
                                 domain={[
