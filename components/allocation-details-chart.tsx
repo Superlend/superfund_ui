@@ -3,7 +3,7 @@
 import { Card } from "./ui/card";
 import { motion } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Label, Sector } from "recharts";
-import { BodyText } from "./ui/typography";
+import { BodyText, HeadingText } from "./ui/typography";
 import { PieSectorDataItem } from "recharts/types/polar/Pie";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 import { VAULT_STRATEGIES_COLORS } from "@/lib/constants";
@@ -75,7 +75,9 @@ export default function AllocationDetailsChart({
         >
             <Card>
                 <div className="flex justify-between items-center mb-4 p-6 pb-0">
-                    <h2 className="text-lg font-semibold">Allocation Details</h2>
+                    <HeadingText level="h4" weight="medium" className="text-gray-800">
+                        Allocation Details
+                    </HeadingText>
                     {/* <BodyText level="body2" weight="medium" className="text-muted-foreground">
                         Last Rebalance: <span className="text-gray-700">2 hrs 34 mins ago</span>
                     </BodyText> */}
