@@ -1,11 +1,14 @@
 'use client'
 
 import { Card } from './ui/card'
-import { motion } from 'framer-motion'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
     Area,
     AreaChart,
+    Brush,
+    CartesianGrid,
+    Line,
+    LineChart,
     ResponsiveContainer,
     Tooltip,
     XAxis,
@@ -13,129 +16,441 @@ import {
 } from 'recharts'
 import { Period } from '@/types/periodButtons'
 import { PERIOD_LIST } from '@/constants'
+import { useEffect, useState, useMemo, useCallback } from 'react'
+import { useHistoricalData } from '@/hooks/vault_hooks/useHistoricalDataHook'
+import { abbreviateNumber, extractTimeFromDate, formatDateAccordingToPeriod, shortNubers } from '@/lib/utils'
+import { ChartConfig, ChartContainer } from './ui/chart'
+import { TimelineFilterTabs } from './tabs/timeline-filter-tabs'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Button } from './ui/button'
+import { Expand } from 'lucide-react'
+import { BodyText, HeadingText } from './ui/typography'
+import { Skeleton } from './ui/skeleton'
 
-const data = [
-    { date: '11/07', value: 14 },
-    { date: '12/07', value: 16 },
-    { date: '13/07', value: 13 },
-    { date: '14/07', value: 15 },
-    { date: '15/07', value: 16 },
-    { date: '16/07', value: 14 },
-    { date: '17/07', value: 18 },
-    { date: '18/07', value: 19 },
-    { date: '19/07', value: 21 },
-    { date: '20/07', value: 22 },
-]
 
 const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-white p-2 rounded-lg shadow-lg border">
-                <p className="text-sm font-medium">{`${payload[0].value}%`}</p>
+            <div className="flex flex-col gap-2 bg-card border border-border rounded-lg shadow-lg p-3 text-sm">
+                <BodyText level='body3' className="text-gray-600">
+                    {payload[0]?.payload.timestamp}
+                </BodyText>
+                <div className="space-y-1">
+                    <BodyText level='body3' className="flex items-center justify-between gap-1">
+                        <div className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-[#3366CC]" />
+                            Base APY:
+                        </div>
+                        <span className="font-medium">
+                            {payload[0]?.payload.baseApy}%
+                        </span>
+                    </BodyText>
+                    <BodyText level='body3' className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-[#8A2BE2]" />
+                            Total APY:
+                        </div>
+                        <span className="font-medium">
+                            {payload[0]?.payload.totalApy}%
+                        </span>
+                    </BodyText>
+                </div>
+                <BodyText level='body3' className="flex items-center justify-between gap-2 border-t border-gray-400 pt-1">
+                    Total Assets:
+                    <span className="font-medium">
+                        ${payload[0]?.payload.totalAssets}
+                    </span>
+                </BodyText>
             </div>
         )
     }
     return null
 }
 
-export default function PerformanceHistoryChart({
-    selectedRange,
-    handleRangeChange,
-    selectedFilter,
-    handleFilterChange,
-    chartData,
-}: any) {
+const styles = `
+    .recharts-brush .recharts-brush-traveller {
+        fill: hsl(var(--background));
+        stroke: #8A2BE2;
+        stroke-width: 1.5;
+        rx: 4;
+        ry: 4;
+    }
+    .recharts-brush .recharts-brush-slide {
+        fill: rgba(138, 43, 226, 0.05);
+        stroke: none;
+    }
+    .recharts-brush text {
+        fill: hsl(var(--foreground)) !important;
+        font-weight: 500;
+    }
+`
+
+interface CustomXAxisTickProps {
+    x: number
+    y: number
+    selectedRange: Period
+    payload: {
+        value: number
+    }
+    index: number
+    length: number
+}
+
+interface CustomYAxisTickProps {
+    x: number
+    y: number
+    payload: {
+        value: number
+    }
+    index: number
+    length: number
+}
+
+const CustomYAxisTick = ({
+    x,
+    y,
+    payload,
+    index,
+    length,
+}: CustomYAxisTickProps) => {
     return (
-        <Card>
-            <div className="flex items-center justify-between p-6">
-                <h2 className="text-lg font-semibold">
-                    Performance History
-                </h2>
-                {/* Timeline Filters Tab */}
-                <Tabs
-                    defaultValue={Period.oneMonth}
-                    value={selectedRange}
-                    onValueChange={handleRangeChange}
-                    className="w-fit"
+        <g
+            transform={`translate(${x},${y})`}
+            style={{ zIndex: 10, position: 'relative', color: 'hsl(var(--foreground-subtle))' }}
+        >
+            <text x={0} y={0} dy={6} dx={11} textAnchor="start" fontSize={12} fill="hsl(var(--foreground-subtle))">
+                {`${abbreviateNumber(payload.value, 0)}%`}
+            </text>
+        </g>
+    )
+}
+
+const CustomXAxisTick = ({
+    x,
+    y,
+    selectedRange,
+    payload,
+    index,
+    length,
+}: CustomXAxisTickProps) => {
+    // if (index % 2) return null
+    return (
+        <g transform={`translate(${x + 10},${y})`} style={{ zIndex: 10 }}>
+            <text x={0} y={0} dy={16} textAnchor="middle" fontSize={12} fill="hsl(var(--foreground-subtle))">
+                {formatDateAccordingToPeriod(
+                    payload.value.toString(),
+                    selectedRange
+                )}
+            </text>
+        </g>
+    )
+}
+
+const chartConfig = {
+    platformHistory: {
+        label: 'History',
+        color: 'hsl(var(--chart-2))',
+    },
+} satisfies ChartConfig
+
+export function PerformanceHistoryChart() {
+    const [selectedRange, setSelectedRange] = useState<Period>(Period.oneMonth)
+    const { historicalData, isLoading } = useHistoricalData(selectedRange)
+    const [startIndex, setStartIndex] = useState(0)
+    const [endIndex, setEndIndex] = useState(historicalData.length - 1)
+    // const [openDialog, setOpenDialog] = useState(false)
+
+    const customTicks = {
+        [Period.oneDay]: 4,
+        [Period.oneWeek]: 50,
+        [Period.oneMonth]: 100,
+        [Period.allTime]: 100,
+    }
+
+    useEffect(() => {
+        setStartIndex(0)
+        setEndIndex(historicalData.length - 1)
+    }, [historicalData])
+
+    const handleRangeChange = useCallback((value: string) => {
+        setSelectedRange(value as Period)
+    }, [])
+
+    const chartData = useMemo(() => {
+        return historicalData.map((item: any) => {
+            const date = new Date(item.timestamp * 1000)
+            const dateOptions: any = {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+            }
+            const formattedDate = new Intl.DateTimeFormat(
+                'en-US',
+                dateOptions
+            ).format(date)
+            const time = extractTimeFromDate(date, { exclude: ['seconds'] })
+
+            return {
+                timestamp: `${formattedDate} ${time}`,
+                date: formattedDate.split(',')[0],
+                time: time,
+                baseApy: abbreviateNumber(item.baseApy),
+                totalApy: abbreviateNumber(item.totalApy),
+                totalAssets: abbreviateNumber(item.totalAssets),
+            }
+        })
+    }, [historicalData])
+
+    const { minValue, maxValue, valueRange } = useMemo(() => {
+        const allValues = chartData.flatMap(d => [Number(d.baseApy), Number(d.totalApy)])
+        const min = Math.min(...allValues)
+        const max = Math.max(...allValues)
+        return {
+            minValue: min,
+            maxValue: max,
+            valueRange: max - min
+        }
+    }, [chartData])
+
+    const memoizedLines = useMemo(() => (
+        <>
+            <Line
+                type="monotone"
+                dataKey="baseApy"
+                stroke="#3366CC"
+                strokeWidth={2}
+                fill="url(#baseApyGradient)"
+                isAnimationActive={true}
+                dot={false}
+            />
+            <Line
+                type="monotone"
+                dataKey="totalApy"
+                stroke="#8A2BE2"
+                strokeWidth={2}
+                fill="url(#totalApyGradient)"
+                isAnimationActive={true}
+                dot={false}
+            />
+        </>
+    ), [chartData])
+
+    const memoizedBrush = useMemo(() => (
+        <Brush
+            dataKey="date"
+            height={35}
+            stroke="#cacaca"
+            fill="#fafafa"
+            travellerWidth={8}
+            y={285}
+            strokeWidth={1.2}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            className="recharts-brush"
+            alwaysShowText={false}
+        >
+            <AreaChart>
+                <Area
+                    type="monotone"
+                    dataKey="baseApy"
+                    stroke="#3366CC"
+                    strokeWidth={1}
+                />
+                <Area
+                    type="monotone"
+                    dataKey="totalApy"
+                    stroke="#8A2BE2"
+                    strokeWidth={1}
+                />
+            </AreaChart>
+        </Brush>
+    ), [startIndex, endIndex])
+
+    // const content = (
+    //     <Card>
+    //         {/* <style>{styles}</style> */}
+    //         <div className="flex items-center justify-between p-6">
+    //             <h2 className="text-lg font-semibold">
+    //                 Performance History
+    //             </h2>
+    //             <div className="flex items-center gap-2">
+    //                 <div className={`${openDialog ? 'mr-12' : ''}`}>
+    //                     <TimelineFilterTabs
+    //                         selectedRange={selectedRange}
+    //                         handleRangeChange={handleRangeChange}
+    //                     />
+    //                 </div>
+    //                 {!openDialog &&
+    //                     <Button onClick={() => setOpenDialog(true)} className='py-1'>
+    //                         <Expand className='w-4 h-4 text-gray-600' />
+    //                     </Button>
+    //                 }
+    //             </div>
+    //         </div>
+    //         <div className={`h-[${openDialog ? '500px' : '350px'}] bg-white rounded-4`}>
+    //             <ResponsiveContainer width="100%" height="100%">
+    //                 <LineChart
+    //                     data={chartData}
+    //                     margin={{
+    //                         top: 10,
+    //                         right: 30,
+    //                         left: 0,
+    //                         bottom: 45
+    //                     }}
+    //                 >
+    //                     <XAxis
+    //                         dataKey="date"
+    //                         stroke="hsl(var(--foreground-subtle))"
+    //                         fontSize={12}
+    //                         tickLine={false}
+    //                         tickCount={4}
+    //                         axisLine={false}
+    //                         padding={{ left: 10, right: 10 }}
+    //                         dy={10}
+    //                         tick={({ x, y, payload, index }) => (
+    //                             <CustomXAxisTick
+    //                                 payload={payload as { value: number }}
+    //                                 selectedRange={selectedRange}
+    //                                 x={x as number}
+    //                                 y={y as number}
+    //                                 index={index as number}
+    //                                 length={chartData.length}
+    //                             />
+    //                         )}
+    //                     />
+    //                     <YAxis
+    //                         stroke="hsl(var(--foreground-subtle))"
+    //                         fontSize={12}
+    //                         tickLine={false}
+    //                         axisLine={false}
+    //                         tickFormatter={(value) => `${shortNubers(value.toFixed(0))}%`}
+    //                         padding={{ top: 10, bottom: 10 }}
+    //                         domain={[
+    //                             0,
+    //                             maxValue + (valueRange * 0.1)
+    //                         ]}
+    //                         allowDataOverflow={true}
+    //                     />
+    //                     <Tooltip
+    //                         content={<CustomTooltip />}
+    //                         cursor={{ stroke: 'hsl(var(--foreground-disabled))', strokeWidth: 1 }}
+    //                     />
+    //                     {memoizedLines}
+    //                     {memoizedBrush}
+    //                 </LineChart>
+    //             </ResponsiveContainer>
+    //         </div>
+    //     </Card>
+    // )
+
+    return (
+        <>
+            {/* {content}
+            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+                <DialogContent className='w-[90%] h-[85%] max-w-full max-h-full p-0'>
+                    {content}
+                </DialogContent>
+            </Dialog> */}
+            <Card>
+                <div className="flex items-center justify-between p-6">
+                    <HeadingText level="h4" weight="medium" className='text-gray-800'>
+                        Performance History
+                    </HeadingText>
+                    <div className="flex items-center gap-2">
+                        <div className={`${false ? 'mr-12' : ''}`}>
+                            <TimelineFilterTabs
+                                selectedRange={selectedRange}
+                                handleRangeChange={handleRangeChange}
+                            />
+                        </div>
+                        {/* {!openDialog &&
+                            <Button onClick={() => setOpenDialog(true)} className='py-1'>
+                                <Expand className='w-4 h-4 text-gray-600' />
+                            </Button>
+                        } */}
+                    </div>
+                </div>
+                {/* <div className={`h-[${false ? '500px' : '350px'}] bg-white rounded-4`}> */}
+                <ChartContainer
+                    config={chartConfig}
+                    className={`w-full h-[350px] bg-white rounded-4`}
                 >
-                    <TabsList>
-                        {PERIOD_LIST.map((item) => (
-                            <TabsTrigger
-                                key={item.value}
-                                value={item.value}
-                                className="px-[12px] py-[2px]"
-                            >
-                                {item.label}
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
-                </Tabs>
-            </div>
-            <div className="h-[300px] bg-white rounded-4">
-                <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart
-                        data={data}
-                        margin={{
-                            top: 10,
-                            right: 10,
-                            left: -10,
-                            bottom: 0,
-                        }}
-                    >
-                        <defs>
-                            <linearGradient
-                                id="colorValue"
-                                x1="0"
-                                y1="0"
-                                x2="0"
-                                y2="1"
-                            >
-                                <stop
-                                    offset="5%"
-                                    stopColor="#22c55e"
-                                    stopOpacity={0.3}
-                                />
-                                <stop
-                                    offset="95%"
-                                    stopColor="#22c55e"
-                                    stopOpacity={0}
-                                />
-                            </linearGradient>
-                        </defs>
-                        <XAxis
-                            dataKey="date"
-                            stroke="#888888"
-                            fontSize={12}
-                            tickLine={false}
-                            axisLine={false}
-                            padding={{ left: 20, right: 10 }}
-                            allowDataOverflow={false}
-                            scale="auto"
-                            interval="preserveStartEnd"
-                        />
-                        <YAxis
-                            stroke="#888888"
-                            fontSize={12}
-                            tickLine={false}
-                            axisLine={false}
-                            tickFormatter={(value) => `${value}%`}
-                            padding={{ top: 10, bottom: 10 }}
-                            allowDataOverflow={false}
-                            scale="auto"
-                            interval="preserveStartEnd"
-                        />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Area
-                            type="monotone"
-                            dataKey="value"
-                            stroke="#22c55e"
-                            fillOpacity={1}
-                            fill="url(#colorValue)"
-                            isAnimationActive={true}
-                        />
-                    </AreaChart>
-                </ResponsiveContainer>
-            </div>
-        </Card>
+                    <>
+                        {!isLoading &&
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart
+                                    data={chartData}
+                                    margin={{
+                                        top: 0,
+                                        right: 30,
+                                        left: -15,
+                                        bottom: 45
+                                    }}
+                                >
+                                    <CartesianGrid vertical={false} />
+                                    <XAxis
+                                        dataKey="date"
+                                        stroke="hsl(var(--foreground-subtle))"
+                                        fontSize={12}
+                                        tickLine={true}
+                                        axisLine={true}
+                                        tickCount={4}
+                                        interval={customTicks[selectedRange]}
+                                        padding={{ left: 0, right: 10 }}
+                                        tickFormatter={(value) =>
+                                            formatDateAccordingToPeriod(
+                                                value,
+                                                selectedRange
+                                            )
+                                        }
+                                        tick={({ x, y, payload, index }) => (
+                                            <CustomXAxisTick
+                                                payload={payload as { value: number }}
+                                                selectedRange={selectedRange}
+                                                x={x as number}
+                                                y={y as number}
+                                                index={index as number}
+                                                length={chartData.length}
+                                            />
+                                        )}
+                                    />
+                                    <YAxis
+                                        stroke="hsl(var(--foreground-subtle))"
+                                        fontSize={12}
+                                        tickLine={true}
+                                        axisLine={true}
+                                        tickFormatter={(value) => `${shortNubers(value.toFixed(0))}%`}
+                                        padding={{ top: 10, bottom: 10 }}
+                                        domain={[
+                                            0,
+                                            maxValue + (valueRange * 0.1)
+                                        ]}
+                                        allowDataOverflow={true}
+                                    />
+                                    <Tooltip
+                                        content={<CustomTooltip />}
+                                        cursor={{ stroke: 'hsl(var(--foreground-disabled))', strokeWidth: 1 }}
+                                    />
+                                    {memoizedLines}
+                                    {memoizedBrush}
+                                </LineChart>
+                            </ResponsiveContainer>
+                        }
+                        {
+                            isLoading &&
+                            <Skeleton className={`w-full h-[350px] rounded-4 max-w-[1200px] bg-gray-300`} />
+                        }
+                    </>
+                </ChartContainer>
+                {/* </div> */}
+            </Card>
+        </>
     )
 }

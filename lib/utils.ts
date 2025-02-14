@@ -66,8 +66,9 @@ export function extractTimeFromDate(date: Date, options: TOptions = {}) {
     const hasHours = !exclude?.includes('hours') ? `${hours}` : ''
     const hasMinutes = !exclude?.includes('minutes') ? `:${minutes}` : ''
     const hasSeconds = !exclude?.includes('seconds') ? `:${seconds}` : ''
+    const hasAmpm = !exclude?.includes('ampm') ? ` ${ampm}` : ''
 
-    return `${hasHours}${hasMinutes}${hasSeconds} ${ampm}`
+    return `${hasHours}${hasMinutes}${hasSeconds}${hasAmpm}`
 }
 
 export function formatDateAccordingToPeriod(

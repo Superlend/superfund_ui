@@ -22,7 +22,7 @@ export default function PageHeader() {
                     width={28}
                     height={28}
                 />
-                <HeadingText level="h4" weight="medium" className="mr-1">
+                <HeadingText level="h4" weight="medium" className="mr-1 text-gray-800">
                     Bluechip Stable SuperFund
                 </HeadingText>
                 <Badge

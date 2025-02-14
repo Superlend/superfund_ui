@@ -1,27 +1,32 @@
 'use client'
 
 import { BodyText, HeadingText } from '@/components/ui/typography'
-import { getTokenLogo } from '@/lib/utils'
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
 } from "@/components/ui/card"
 import ImageWithDefault from "@/components/ImageWithDefault"
 import ExternalLink from "@/components/ExternalLink"
 import AllocationDetailsChart from "@/components/allocation-details-chart"
-import PerformanceHistoryChart from "@/components/performance-history-chart"
-import { Period } from "@/types/periodButtons"
-import { AllocationHistoryChart } from "@/components/allocation-history-chart"
 import { useVaultAllocationPoints } from "@/hooks/vault_hooks/vaultHook"
 import { motion } from "motion/react"
 import { rebalancedAssetsList, tokensSupportedList } from "@/data/abi/vault-data"
 import { DOCUMENTATION_LINK } from "@/constants"
-import React from "react"
-import DepositAndWithdrawAssets from "./deposit-and-withdraw"
+import React, { lazy, Suspense } from "react"
+import LazyLoad from '@/components/LazyLoad'
+import LoadingSectionSkeleton from '@/components/skeletons/LoadingSection'
+
+const AllocationHistoryChart = lazy(() =>
+    import('@/components/allocation-history-chart').then(module => ({
+        default: module.AllocationHistoryChart
+    }))
+)
+
+const PerformanceHistoryChart = lazy(() =>
+    import('@/components/performance-history-chart').then(module => ({
+        default: module.PerformanceHistoryChart
+    }))
+)
 
 export default function FundOverview() {
     const { allocationPoints } = useVaultAllocationPoints()
@@ -37,7 +42,7 @@ export default function FundOverview() {
                 className="block flex flex-col gap-2"
                 id="fund-information"
             >
-                <HeadingText level="h4" weight="medium">
+                <HeadingText level="h4" weight="medium" className="text-gray-800">
                     Fund Information
                 </HeadingText>
                 <BodyText
@@ -54,7 +59,7 @@ export default function FundOverview() {
                 </BodyText>
             </section>
             <section className="block flex flex-col gap-4" id="tokens-supported">
-                <HeadingText level="h4" weight="medium">
+                <HeadingText level="h4" weight="medium" className="text-gray-800">
                     Tokens Suported
                 </HeadingText>
                 <Card>
@@ -86,7 +91,7 @@ export default function FundOverview() {
                 className="block flex flex-col gap-4"
                 id="rebalanced-across"
             >
-                <HeadingText level="h4" weight="medium">
+                <HeadingText level="h4" weight="medium" className="text-gray-800">
                     Rebalanced Across
                 </HeadingText>
                 <Card>
@@ -119,18 +124,19 @@ export default function FundOverview() {
                     </CardContent>
                 </Card>
             </section>
-            {/* <PerformanceHistoryChart
-                selectedRange={Period.oneMonth}
-                handleRangeChange={() => { }}
-                selectedFilter={Period.oneMonth}
-                handleFilterChange={() => { }}
-                chartData={[]}
-                disableCategoryFilters={[]}
-            /> */}
+            <LazyLoad>
+                <Suspense fallback={<LoadingSectionSkeleton className="h-[300px]" />}>
+                    <PerformanceHistoryChart />
+                </Suspense>
+            </LazyLoad>
             <AllocationDetailsChart allocationPoints={allocationPoints} />
-            {/* <AllocationHistoryChart /> */}
+            <LazyLoad>
+                <Suspense fallback={<LoadingSectionSkeleton className="h-[300px]" />}>
+                    <AllocationHistoryChart />
+                </Suspense>
+            </LazyLoad>
             <section className="block flex flex-col gap-4">
-                <HeadingText level="h4" weight="medium">
+                <HeadingText level="h4" weight="medium" className="text-gray-800">
                     Additional Information
                 </HeadingText>
                 <Card>
@@ -161,7 +167,7 @@ export default function FundOverview() {
                         </div> */}
                         <div className="row flex max-lg:flex-col flex-wrap gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
                             <div className="col flex-1 flex items-center gap-2">
-                                <BodyText level="body1" weight="medium">
+                                <BodyText level="body1" weight="medium" className="text-gray-800">
                                     Documentation
                                 </BodyText>
                             </div>
@@ -204,7 +210,7 @@ export default function FundOverview() {
                                 </BodyText>
                             </div>
                             <div className="col flex-1 flex justify-end">
-                                <BodyText level="body1" weight="medium">
+                                <BodyText level="body1" weight="medium" className="text-gray-800">
                                     10% of earnings
                                 </BodyText>
                             </div>

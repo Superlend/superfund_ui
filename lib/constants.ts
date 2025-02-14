@@ -13,16 +13,16 @@ export const TOTAL_ALLOCATION_POINTS = 1_000_000
 export const CASH_RESERVE_POINTS = 10_000
 
 export const VAULT_STRATEGIES_COLORS = {
-    'Morpho Gauntlet USDC Prime': "#201CB0",
-    'Morpho Moonwell Flagship USDC': "#201CB0",
-    'Morpho Gauntlet USDC Core': "#201CB0",
-    'Morpho Steakhouse USDC': "#201CB0",
-    'Morpho Ionic Ecosystem USDC': "#201CB0",
-    'Morpho Re7 USDC': "#201CB0",
-    AaveV3: "#9293F7",
-    Fluid: "#753FFD",
-    'Euler Base USDC': "#17395e",
-    CASH_RESERVE: "#17395e",
+    'Morpho Gauntlet USDC Prime': "#3366CC",
+    'Morpho Moonwell Flagship USDC': "#8A2BE2",
+    'Morpho Gauntlet USDC Core': "#FF8C00",
+    'Morpho Steakhouse USDC': "#DEB887",
+    'Morpho Ionic Ecosystem USDC': "#4169E1",
+    'Morpho Re7 USDC': "#9370DB",
+    AaveV3: "#1E90FF",
+    Fluid: "#FFA500",
+    'Euler Base USDC': "#6A5ACD",
+    'Cash Reserve': "#F4A460",
 }
 
 export enum StrategiesType {
@@ -30,7 +30,7 @@ export enum StrategiesType {
     AaveV3 = 'AaveV3',
     Fluid = 'Fluid',
     EulerBaseUSDC = 'Euler Base USDC',
-    CASH_RESERVE = 'CASH_RESERVE',
+    CASH_RESERVE = 'Cash Reserve',
 }
 
 export const VAULT_STRATEGIES = {
@@ -70,8 +70,8 @@ export const VAULT_STRATEGIES = {
         address: '0x0A1a3b5f2041F33522C4efc754a7D096f880eE16',
         strategy_type: StrategiesType.EulerBaseUSDC,
     },
-    // CASH_RESERVE: {
-    //     address: '0x0000000000000000000000000000000000000000',
-    //     strategy_type: StrategiesType.CASH_RESERVE,
-    // },
+    'Cash Reserve': {
+        address: '0x0000000000000000000000000000000000000000',
+        strategy_type: StrategiesType.CASH_RESERVE,
+    },
 }

@@ -1,16 +1,14 @@
-# Superlend
+# Superfunds
 
-Level up your DeFi experience with best lending & borrowing aggregator with over 100+ markets.
-
-- Website: [Superlend](https://beta.superlend.xyz/)
+- Website: [Superfunds](https://funds.superlend.xyz)
 - Twitter: [@SuperlendHQ](https://x.com/SuperlendHQ)
 - Discord: [Superlend](https://discord.com/invite/superlend)
 
 ## Accessing the Superlend Interface
 
-To access the Superlend Interface, use link from the
-[latest release](https://github.com/Superlend/superlend-interface),
-or visit [Superlend](https://beta.superlend.xyz/).
+To access the Superfunds Interface, use link from the
+[latest release](https://github.com/Superlend/superfund_ui),
+or visit [Superfunds](https://funds.superlend.xyz).
 
 # Project setup
 

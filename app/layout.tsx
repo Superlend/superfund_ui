@@ -8,7 +8,7 @@ import { GoogleTagManager } from '@next/third-parties/google'
 import ScrollToTop from '@/components/ScrollToTop'
 
 export const metadata: Metadata = {
-    metadataBase: new URL('https://beta.superlend.xyz'),
+    metadataBase: new URL('https://app.superlend.xyz'),
     alternates: {
         canonical: '/',
         languages: {
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     ],
     openGraph: {
         type: 'website',
-        url: 'https://beta.superlend.xyz/',
+        url: 'https://app.superlend.xyz/',
         title: 'Superlend - Lend & Borrow Aggregator',
         description:
             'Lend, Borrow, Earn & level up your DeFi experience with best lending & borrowing aggregator with over 100+ markets .',
@@ -68,7 +68,7 @@ export default function RootLayout({
                 <ContextProvider cookies={cookies}>
                     <Header />
                     {children}
-                    <Footer />
+                    {/* <Footer /> */}
                 </ContextProvider>
             </body>
         </html>

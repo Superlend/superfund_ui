@@ -9,7 +9,7 @@ import {
 } from '@/lib/constants'
 import { TReward, TRewardAsset } from '@/types'
 import { usePrivy } from '@privy-io/react-auth'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { createPublicClient, http, formatUnits, parseAbi } from 'viem'
 import { base } from 'viem/chains'
 import { BASE_FLUID_LENDING_RESOLVER_ADDRESS } from '@/lib/constants'
@@ -29,7 +29,7 @@ const VAULT_ABI = parseAbi([
 // Create public client outside component to prevent recreation
 const publicClient = createPublicClient({
     chain: base,
-    transport: http(),
+    transport: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || ''),
     batch: {
         multicall: true,
     },
@@ -40,6 +40,8 @@ export function useVaultHook() {
     const [spotApy, setSpotApy] = useState<string>('0')
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+    const isMountedRef = useRef(true)
 
     async function fetchVaultData() {
         try {
@@ -69,24 +71,41 @@ export function useVaultHook() {
                     parseFloat(formatUnits(assets, USDC_DECIMALS))) *
                 100
 
-            const formattedAssets = formatUnits(assets, USDC_DECIMALS)
-            setTotalAssets(formattedAssets)
-            setSpotApy(convertAPRtoAPY(rate / 100).toFixed(2))
-            setError(null)
+            if (isMountedRef.current) {
+                const formattedAssets = formatUnits(assets, USDC_DECIMALS)
+                setTotalAssets(formattedAssets)
+                setSpotApy(convertAPRtoAPY(rate / 100).toFixed(2))
+                setError(null)
+            }
         } catch (err) {
             console.error('Error fetching vault data:', err)
-            setError('Failed to fetch vault data')
+            if (isMountedRef.current) {
+                setError('Failed to fetch vault data')
+            }
         } finally {
-            setIsLoading(false)
+            if (isMountedRef.current) {
+                setIsLoading(false)
+                // Schedule next update after completion
+                timeoutRef.current = setTimeout(() => {
+                    if (isMountedRef.current) {
+                        fetchVaultData()
+                    }
+                }, 5000)
+            }
         }
     }
 
     useEffect(() => {
+        isMountedRef.current = true
         // Initial fetch
         fetchVaultData()
-        // Refresh every 5 seconds
-        const interval = setInterval(fetchVaultData, 5000)
-        return () => clearInterval(interval)
+
+        return () => {
+            isMountedRef.current = false
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current)
+            }
+        }
     }, [])
 
     return { totalAssets, spotApy, isLoading, error }
@@ -182,25 +201,49 @@ export function useRewardsHook() {
     const [totalRewardApy, setTotalRewardApy] = useState<number>(0)
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+    const isMountedRef = useRef(true)
+
     async function fetchRewards() {
         if (isLoading) return
         try {
             setIsLoading(true)
             const rewards = await fetchRewardApyBasedOnAllocationPoints()
-            const totalRewardApy = rewards.reduce((acc, reward) => acc + reward.supply_apy, 0)
-            setRewards(rewards)
-            setTotalRewardApy(totalRewardApy)
-            setIsLoading(false)
+
+            if (isMountedRef.current) {
+                const totalRewardApy = rewards.reduce((acc, reward) => acc + reward.supply_apy, 0)
+                setRewards(rewards)
+                setTotalRewardApy(totalRewardApy)
+                setError(null)
+            }
         } catch (err) {
             console.error('Error fetching rewards:', err)
-            setError('Failed to fetch rewards')
+            if (isMountedRef.current) {
+                setError('Failed to fetch rewards')
+            }
+        } finally {
+            if (isMountedRef.current) {
+                setIsLoading(false)
+                // Schedule next update after completion
+                timeoutRef.current = setTimeout(() => {
+                    if (isMountedRef.current) {
+                        fetchRewards()
+                    }
+                }, 5000)
+            }
         }
     }
 
     useEffect(() => {
+        isMountedRef.current = true
         fetchRewards()
-        const interval = setInterval(fetchRewards, 5000)
-        return () => clearInterval(interval)
+
+        return () => {
+            isMountedRef.current = false
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current)
+            }
+        }
     }, [])
 
     return { rewards, totalRewardApy, isLoading, error }
