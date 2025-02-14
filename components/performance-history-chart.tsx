@@ -249,7 +249,7 @@ export function PerformanceHistoryChart() {
             stroke="#cacaca"
             fill="#fafafa"
             travellerWidth={8}
-            y={295}
+            y={285}
             strokeWidth={1.2}
             startIndex={startIndex}
             endIndex={endIndex}

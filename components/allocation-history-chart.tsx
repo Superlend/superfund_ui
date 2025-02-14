@@ -393,7 +393,7 @@ export function AllocationHistoryChart() {
                     } */}
                 </div>
             </CardHeader>
-            <CardContent className="p-0 pb-2 rounded-4 bg-white">
+            <CardContent className="p-0 pb-4 rounded-4 bg-white">
                 <ChartContainer
                     config={chartConfig}
                     className={`w-full h-[${openDialog ? '500px' : '350px'}] max-w-full`}
@@ -468,7 +468,7 @@ export function AllocationHistoryChart() {
                         }
                         {
                             isLoading &&
-                            <Skeleton className={`w-full h-[${openDialog ? '500px' : '300px'}] rounded-4 max-w-[1200px] bg-gray-300`} />
+                            <Skeleton className={`w-full h-[${openDialog ? '500px' : '350px'}] rounded-4 max-w-[1200px] bg-gray-300`} />
                         }
                     </>
                 </ChartContainer>
