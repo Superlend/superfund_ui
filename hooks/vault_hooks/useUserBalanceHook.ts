@@ -1,6 +1,6 @@
 import { USDC_ADDRESS, USDC_DECIMALS, VAULT_ADDRESS } from '@/lib/constants'
 import { usePrivy } from '@privy-io/react-auth'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createPublicClient, formatUnits, http, parseAbi } from 'viem'
 import { base } from 'viem/chains'
 
@@ -42,13 +42,11 @@ export function useUserBalance(walletAddress: `0x${string}`) {
     const [balance, setBalance] = useState<string>('0')
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [userMaxWithdrawAmount, setUserMaxWithdrawAmount] =
-        useState<string>('0')
+    const [userMaxWithdrawAmount, setUserMaxWithdrawAmount] = useState<string>('0')
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+    const isMountedRef = useRef(true)
 
-    async function getUserBalance(
-        walletAddress: string,
-        isFirstTimeCall: boolean
-    ) {
+    async function getUserBalance(walletAddress: string, isFirstTimeCall: boolean) {
         if (!walletAddress) return
 
         try {
@@ -73,30 +71,44 @@ export function useUserBalance(walletAddress: `0x${string}`) {
             const formattedBalance = formatUnits(balance, USDC_DECIMALS)
             const formattedMaxWithdraw = formatUnits(maxWithdraw, USDC_DECIMALS)
 
-            setUserMaxWithdrawAmount(formattedMaxWithdraw)
-
-            setBalance(formattedBalance)
-            setError(null)
+            if (isMountedRef.current) {
+                setUserMaxWithdrawAmount(formattedMaxWithdraw)
+                setBalance(formattedBalance)
+                setError(null)
+            }
         } catch (error) {
             console.error('Error fetching user balance:', error)
-            setError('Failed to fetch user balance')
+            if (isMountedRef.current) {
+                setError('Failed to fetch user balance')
+            }
         } finally {
-            if (isFirstTimeCall) {
+            if (isFirstTimeCall && isMountedRef.current) {
                 setIsLoading(false)
+            }
+
+            // Schedule next update after completion
+            if (isMountedRef.current) {
+                timeoutRef.current = setTimeout(() => {
+                    if (isMountedRef.current) {
+                        getUserBalance(walletAddress, false)
+                    }
+                }, 5000)
             }
         }
     }
 
     useEffect(() => {
+        isMountedRef.current = true
+
         // Initial fetch
         getUserBalance(walletAddress, true)
 
-        // Refresh every 5 seconds
-        const interval = setInterval(
-            () => getUserBalance(walletAddress, false),
-            5000
-        )
-        return () => clearInterval(interval)
+        return () => {
+            isMountedRef.current = false
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current)
+            }
+        }
     }, [walletAddress])
 
     return { balance, userMaxWithdrawAmount, isLoading, error }
