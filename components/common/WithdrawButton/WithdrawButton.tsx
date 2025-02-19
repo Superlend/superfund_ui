@@ -49,7 +49,7 @@ const WithdrawButton = ({
         confirming: 'Confirming...',
         success: 'Close',
         error: 'Close',
-        default: 'Withdraw',
+        default: 'Start withdrawing',
     }
 
     const { isLoading: isConfirming, isSuccess: isConfirmed } =
@@ -108,14 +108,7 @@ const WithdrawButton = ({
         ]
 
     const handleWithdrawSuperVault = useCallback(async () => {
-        // const { user } = usePrivy()
-        // const walletAddress = user?.wallet?.address
-
-        // console.log("walletAddress", walletAddress)
-
         const amountInWei = parseUnits(amount, USDC_DECIMALS)
-
-        console.log('amount', amountInWei.toBigInt())
 
         try {
             writeContractAsync({

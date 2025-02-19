@@ -70,6 +70,12 @@ const DepositButton = ({
 
     const { depositTx, setDepositTx } = useTxContext() as TTxContext
 
+    useEffect(() => {
+        if (depositTx.status === 'deposit') {
+            deposit()
+        }
+    }, [depositTx.status])
+
     const amountBN = useMemo(() => {
         return amount
             ? parseUnits(amount ?? '0', USDC_DECIMALS)
@@ -80,11 +86,10 @@ const DepositButton = ({
         pending:
             depositTx.status === 'approve'
                 ? 'Approving token...'
-                : 'Lending token...',
+                : 'Depositing token...',
         confirming: 'Confirming...',
         success: 'Close',
-        default:
-            depositTx.status === 'approve' ? 'Approve token' : 'Deposit token',
+        default: 'Start depositing',
     }
 
     const getTxButtonText = (
@@ -96,12 +101,12 @@ const DepositButton = ({
             isConfirming
                 ? 'confirming'
                 : isConfirmed
-                  ? depositTx.status === 'view'
-                      ? 'success'
-                      : 'default'
-                  : isPending
-                    ? 'pending'
-                    : 'default'
+                    ? depositTx.status === 'view'
+                        ? 'success'
+                        : 'default'
+                    : isPending
+                        ? 'pending'
+                        : 'default'
         ]
     }
 
@@ -242,7 +247,7 @@ const DepositButton = ({
 
     return (
         <div className="flex flex-col gap-2">
-            {depositTx.status === 'approve' && (
+            {/* {depositTx.status === 'approve' && (
                 <CustomAlert
                     variant="info"
                     hasPrefixIcon={false}
@@ -267,7 +272,7 @@ const DepositButton = ({
                         </BodyText>
                     }
                 />
-            )}
+            )} */}
             {error && (
                 <CustomAlert
                     description={
