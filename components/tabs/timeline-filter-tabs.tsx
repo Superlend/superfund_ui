@@ -2,14 +2,16 @@ import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Period } from '@/types/periodButtons'
 import { PERIOD_LIST } from '@/constants'
-import { BodyText } from '@/components/ui/typography'
+import { cn } from '@/lib/utils'
 
 export function TimelineFilterTabs({
     selectedRange,
     handleRangeChange,
+    className
 }: {
     selectedRange: string;
     handleRangeChange: (value: string) => void;
+    className?: string;
 }) {
     {/* Timeline Filters Tab */ }
     return (
@@ -17,7 +19,7 @@ export function TimelineFilterTabs({
             defaultValue={Period.oneMonth}
             value={selectedRange}
             onValueChange={handleRangeChange}
-            className="w-fit"
+            className={cn("w-fit", className)}
         >
             <TabsList className="bg-gray-200 rounded-2 p-0.5">
                 {PERIOD_LIST.map((item) => (

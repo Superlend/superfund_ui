@@ -63,6 +63,7 @@ export default function DepositHistoryChart({
                 <TimelineFilterTabs
                     selectedRange={selectedRange}
                     handleRangeChange={handleRangeChange}
+                    className="absolute top-3 left-16 z-10"
                 />
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart

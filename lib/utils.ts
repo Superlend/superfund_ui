@@ -1,4 +1,9 @@
-import { chainNamesBasedOnAaveMarkets, platformWebsiteLinks } from '@/constants'
+import {
+    chainNamesBasedOnAaveMarkets,
+    platformWebsiteLinks,
+    TX_EXPLORER_LINKS,
+} from '@/constants'
+import { ChainId } from '@/types/chain'
 import { Period } from '@/types/periodButtons'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
@@ -517,4 +522,19 @@ export function scientificToDecimal(scientificNum: number): number {
 export const validEmail = (email: string) => {
     const patt = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
     return patt.test(email)
+}
+
+export function getExplorerLink(hash: string, chainId: ChainId) {
+    return `${TX_EXPLORER_LINKS[chainId]}/tx/${hash}`
+}
+
+export function getTruncatedTxHash(hash: string) {
+    return `${hash.slice(0, 7)}...${hash.slice(-4)}`
+}
+
+export function getMaxDecimalsToDisplay(tokenSymbol: string): number {
+    return tokenSymbol?.toLowerCase().includes('btc') ||
+        tokenSymbol?.toLowerCase().includes('eth')
+        ? 4
+        : 2
 }

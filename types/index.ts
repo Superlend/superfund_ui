@@ -1,8 +1,31 @@
 import { WarningMessages } from '@/constants'
 import { Period } from './periodButtons'
 
-export type TPositionType = 'deposit' | 'withdraw'
-export type TActionType = 'lend' | 'borrow' | 'withdraw' | 'repay'
+export type TPositionType = 'deposit' | 'withdraw' | 'claim'
+export type TActionType = 'deposit' | 'withdraw' | 'claim'
+export type TAddress = `0x${string}`
+
+// Claim Rewards START =====================================
+export type TClaimRewardsParams = {
+    user_address: string
+    chain_id: number
+}
+
+export type TClaimRewardsResponse = {
+    token: {
+        address: TAddress
+        name: string
+        decimals: number
+        symbol: string
+    }
+    claimable: string
+    distributor: {
+        address: TAddress
+        chainId: number
+    }
+    proof: TAddress[]
+}
+// Claim Rewards END =====================================
 
 export type TToken = {
     address: string
@@ -50,14 +73,6 @@ export type TPostRefreshParams = {
 export type TRefreshResponse = TLoginResponse
 
 // Opportunities
-export type TGetOpportunitiesParams = {
-    type: 'lend' | 'borrow'
-    chain_ids?: number[]
-    tokens?: string[]
-    trend?: boolean
-    limit?: number
-}
-
 export type TRewardAsset = {
     symbol: string
     name: string
@@ -89,7 +104,6 @@ export type THistoricalDataPerformanceHistory = {
 
 export type THistoricalDataRebalanceHistory = {
     timestamp: number
-
 }
 
 export type TOpportunity = {
