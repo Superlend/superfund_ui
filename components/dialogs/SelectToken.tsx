@@ -43,7 +43,7 @@ interface TokenDetails {
     address: string
     amount: string
     price_usd: string
-    logo: string
+    logo?: string
     decimals: number
     chain_id?: number
     chain_logo?: string
