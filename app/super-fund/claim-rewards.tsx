@@ -19,18 +19,17 @@ import { abbreviateNumber } from "@/lib/utils"
 import { TClaimRewardsResponse } from "@/types"
 import { useWalletConnection } from "@/hooks/useWalletConnection"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useRewardsHook } from "../../hooks/vault_hooks/useRewardHook"
 
 const CHAIN_ID = 8453;
 export default function ClaimRewards() {
     const { walletAddress, isConnectingWallet } = useWalletConnection()
-    const { data: rewardsData, isLoading: isLoadingRewards, isError, refetch } = useGetClaimRewards({
-        user_address: walletAddress,
-        chain_id: CHAIN_ID,
-    })
+    
+    const { formattedClaimData: rewardsData, isLoading: isLoadingRewards, isError} = useRewardsHook();
     const [isTxDialogOpen, setIsTxDialogOpen] = useState(false)
     const [isSelectTokenDialogOpen, setIsSelectTokenDialogOpen] = useState(false)
     const [selectedReward, setSelectedReward] = useState<TClaimRewardsResponse | null>(null)
-
+    
     function handleSelectToken(token: any) {
         setSelectedReward(token)
         setIsSelectTokenDialogOpen(false)
@@ -61,7 +60,7 @@ export default function ClaimRewards() {
                                     </BodyText>
                                 </div>
                                 <BodyText level="body1" weight="medium">
-                                    {abbreviateNumber(Number(reward.claimable))}
+                                    {abbreviateNumber(Number(reward.availabeToClaimFormatted))}
                                 </BodyText>
                             </div>
                         ))}
@@ -93,7 +92,7 @@ export default function ClaimRewards() {
                 setOpen={setIsSelectTokenDialogOpen}
                 tokens={rewardsData?.map(reward => ({
                     ...reward.token,
-                    amount: reward.claimable,
+                    amount: reward.availabeToClaimFormatted,
                     price_usd: '0.5',
                 })) || []}
                 onSelectToken={handleSelectToken}

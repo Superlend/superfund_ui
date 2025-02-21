@@ -19,6 +19,9 @@ export type TClaimRewardsResponse = {
         symbol: string
     }
     claimable: string
+    claimed: string
+    availabeToClaim: string
+    availabeToClaimFormatted: string
     distributor: {
         address: TAddress
         chainId: number
