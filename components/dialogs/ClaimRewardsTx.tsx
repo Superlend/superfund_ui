@@ -249,7 +249,7 @@ export default function ClaimRewardsTxDialog({
                                     className="text-gray-800 flex items-center gap-1"
                                 >
                                     {Number(assetDetails?.asset?.token?.amount).toFixed(
-                                        decimalPlacesCount(assetDetails?.asset?.token?.amount)
+                                        decimalPlacesCount(assetDetails?.asset?.token?.amount || '0')
                                     )}
                                     <span className="inline-block truncate max-w-[150px]" title={assetDetails?.asset?.token?.symbol}>
                                         {assetDetails?.asset?.token?.symbol}
@@ -305,7 +305,7 @@ export default function ClaimRewardsTxDialog({
                                         className="text-gray-800"
                                     >
                                         {Number(assetDetails?.asset?.token?.amount).toFixed(
-                                            decimalPlacesCount(assetDetails?.asset?.token?.amount)
+                                            decimalPlacesCount(assetDetails?.asset?.token?.amount || '0')
                                         )}
                                     </HeadingText>
                                     <BodyText

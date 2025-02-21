@@ -49,7 +49,6 @@ const ClaimRewardsButton = ({
         error: 'Close',
         default: 'Start claiming',
     }
-
     const { isLoading: isConfirming, isSuccess: isConfirmed } =
         useWaitForTransactionReceipt({
             hash,
