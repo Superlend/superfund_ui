@@ -6,6 +6,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { TClaimRewardsResponse } from '../../types'
 import { BigNumber } from 'ethers'
 import { formatUnits } from 'ethers/lib/utils'
+import { useWriteContract } from 'wagmi'
 
 const REWARD_ABI = [
     {
@@ -41,6 +42,12 @@ const publicClient = createPublicClient({
 const CHAIN_ID = 8453
 
 export function useRewardsHook() {
+    const {
+        writeContractAsync,
+        isPending,
+        data: hash,
+        error,
+    } = useWriteContract()
     const { walletAddress } = useWalletConnection()
 
     const {
@@ -116,6 +123,21 @@ export function useRewardsHook() {
         }
     }, [walletAddress, rewardsData, isErrorRewards])
 
+    // TODO: Refactor this
+    const claimRewards = async (rewardDetails: TClaimRewardsResponse) => {
+        writeContractAsync({
+            address: rewardDetails.distributor.address,
+            abi: REWARD_ABI,
+            functionName: 'claim',
+            args: [
+                walletAddress,
+                rewardDetails.token.address,
+                rewardDetails.claimable,
+                rewardDetails.proof,
+            ],
+        })
+    }
+
     useEffect(() => {
         fetchFormattedClaimData()
     }, [fetchFormattedClaimData])
@@ -125,5 +147,6 @@ export function useRewardsHook() {
         isLoading,
         isError,
         fetchFormattedClaimData,
+        claimRewards
     }
 }

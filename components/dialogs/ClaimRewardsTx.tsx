@@ -60,6 +60,7 @@ export default function ClaimRewardsTxDialog({
     setOpen: (open: boolean) => void
     setActionType?: (actionType: TPositionType) => void
 }) {
+
     const { claimRewardsTx, setClaimRewardsTx } =
         useTxContext() as TTxContext
     const { isWalletConnected, handleSwitchChain } = useWalletConnection()
