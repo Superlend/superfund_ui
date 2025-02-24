@@ -18,6 +18,7 @@ export type TClaimRewardsResponse = {
         decimals: number
         symbol: string
     }
+    price_usd: string
     claimable: string
     claimed: string
     availabeToClaim: string

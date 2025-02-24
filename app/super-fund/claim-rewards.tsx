@@ -28,10 +28,12 @@ export default function ClaimRewards() {
     const { formattedClaimData: rewardsData, isLoading: isLoadingRewards, isError} = useRewardsHook();
     const [isTxDialogOpen, setIsTxDialogOpen] = useState(false)
     const [isSelectTokenDialogOpen, setIsSelectTokenDialogOpen] = useState(false)
-    const [selectedReward, setSelectedReward] = useState<TClaimRewardsResponse | null>(null)
+    const [selectedReward, setSelectedReward] = useState<TClaimRewardsResponse | undefined>(undefined)
     
     function handleSelectToken(token: any) {
-        setSelectedReward(token)
+        const tokenReward = rewardsData?.find(rd => rd.token.address === token.address);
+        if(tokenReward) tokenReward.price_usd = "0.5"; // TODO: Remove this
+        setSelectedReward(tokenReward)
         setIsSelectTokenDialogOpen(false)
         setIsTxDialogOpen(true)
     }
@@ -104,10 +106,8 @@ export default function ClaimRewards() {
                 disabled={false}
                 positionType="claim"
                 assetDetails={{
-                    asset: {
-                        token: {
-                            ...selectedReward
-                        },
+                    reward: {
+                        ...selectedReward
                     },
                     chain_id: CHAIN_ID,
                 }}

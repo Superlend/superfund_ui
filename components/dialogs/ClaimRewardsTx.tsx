@@ -106,7 +106,7 @@ export default function ClaimRewardsTxDialog({
         return status.claim
     }
 
-    const inputUsdAmount = Number(assetDetails?.asset?.token?.amount) * Number(assetDetails?.asset?.token?.price_usd)
+    const inputUsdAmount = Number(assetDetails?.reward?.availabeToClaimFormatted) * Number(assetDetails?.reward?.price_usd)
 
     function handleInputUsdAmount(amount: string) {
         const amountFormatted = hasExponent(amount)
@@ -232,9 +232,9 @@ export default function ClaimRewardsTxDialog({
                 }) && (
                         <div className="flex items-center gap-4 px-6 py-2 bg-gray-200 lg:bg-white rounded-5 w-full">
                             <ImageWithBadge
-                                mainImg={assetDetails?.asset?.token?.logo || ''}
+                                mainImg={assetDetails?.reward?.token?.logo || ''}
                                 badgeImg={'https://superlend-assets.s3.ap-south-1.amazonaws.com/base.svg'}
-                                mainImgAlt={assetDetails?.asset?.token?.symbol}
+                                mainImgAlt={assetDetails?.reward?.token?.symbol}
                                 badgeImgAlt={'Base'}
                                 mainImgWidth={'32'}
                                 mainImgHeight={'32'}
@@ -248,8 +248,8 @@ export default function ClaimRewardsTxDialog({
                                     weight="normal"
                                     className="text-gray-800 flex items-center gap-1"
                                 >
-                                    {Number(assetDetails?.asset?.token?.amount).toFixed(
-                                        decimalPlacesCount(assetDetails?.asset?.token?.amount || '0')
+                                    {Number(assetDetails?.reward?.availabeToClaimFormatted).toFixed(
+                                        decimalPlacesCount(assetDetails?.reward?.token?.amount || '0')
                                     )}
                                     <span className="inline-block truncate max-w-[150px]" title={assetDetails?.asset?.token?.symbol}>
                                         {assetDetails?.asset?.token?.symbol}
@@ -292,8 +292,8 @@ export default function ClaimRewardsTxDialog({
                     }) && (
                             <div className={`flex items-center justify-between w-full gap-1 py-4`}>
                                 <ImageWithDefault
-                                    src={assetDetails?.asset?.token?.logo}
-                                    alt={assetDetails?.asset?.token?.symbol}
+                                    src={assetDetails?.reward?.token?.logo}
+                                    alt={assetDetails?.reward?.token?.symbol}
                                     width={24}
                                     height={24}
                                     className="rounded-full max-w-[24px] max-h-[24px]"
@@ -304,8 +304,8 @@ export default function ClaimRewardsTxDialog({
                                         weight="medium"
                                         className="text-gray-800"
                                     >
-                                        {Number(assetDetails?.asset?.token?.amount).toFixed(
-                                            decimalPlacesCount(assetDetails?.asset?.token?.amount || '0')
+                                        {Number(assetDetails?.reward?.availabeToClaimFormatted).toFixed(
+                                            decimalPlacesCount(assetDetails?.reward?.availabeToClaimFormatted || '0')
                                         )}
                                     </HeadingText>
                                     <BodyText
@@ -374,7 +374,7 @@ export default function ClaimRewardsTxDialog({
                     disabled={false}
                     handleCloseModal={handleOpenChange}
                     asset={assetDetails}
-                    amount={assetDetails?.asset?.token?.amount}
+                    amount={assetDetails?.reward?.availabeToClaimFormatted}
                     setActionType={setActionType}
                     actionType={positionType}
                     walletAddress={walletAddress as `0x${string}`}
