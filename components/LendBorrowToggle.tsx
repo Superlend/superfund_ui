@@ -28,9 +28,10 @@ const showTabInitial = {
 }
 
 const LendBorrowToggle = ({ type, handleToggle, title, showTab }: TProps) => {
-    const positionType = {
+    const positionType: Record<TPositionType, TPositionType> = {
         deposit: 'deposit',
         withdraw: 'withdraw',
+        claim: 'claim',
     }
 
     function checkType(typeToMatch: TPositionType): boolean {
