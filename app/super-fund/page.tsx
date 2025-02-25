@@ -23,6 +23,7 @@ import FundOverview from './fund-overview'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useHistoricalData, useRebalanceHistory } from '@/hooks/vault_hooks/useHistoricalDataHook'
 import { Period } from '@/types/periodButtons'
+import ClaimRewards from './claim-rewards'
 
 export default function SuperVaultPage() {
     const { isClient } = useIsClient()
@@ -77,8 +78,9 @@ export default function SuperVaultPage() {
                         <div className="block lg:hidden">
                             <DepositAndWithdrawAssets />
                         </div>
-                        {/* <FundOverview /> */}
-                        {isConnectingWallet &&
+                        {isWalletConnected && <ClaimRewards />}
+                        <FundOverview />
+                        {/* {isConnectingWallet &&
                             <LoadingTabs />
                         }
                         {!isConnectingWallet &&
@@ -87,7 +89,7 @@ export default function SuperVaultPage() {
                                 activeTab={selectedTab}
                                 onTabChange={handleTabChange}
                             />
-                        }
+                        } */}
                     </div>
                     <div className="hidden lg:block">
                         <DepositAndWithdrawAssets />

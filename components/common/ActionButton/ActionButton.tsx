@@ -53,7 +53,7 @@ const ActionButton = ({
             <ClaimRewardsButton
                 disabled={disabled}
                 handleCloseModal={handleCloseModal}
-                asset={asset}
+                rewardDetails={asset}
             />
         )
     }

@@ -93,7 +93,7 @@ export default function SuperVaultTxDialog({
 }) {
     const { depositTx, setDepositTx, withdrawTx, setWithdrawTx } =
         useTxContext() as TTxContext
-    const { isWalletConnected, handleSwitchChain } = useWalletConnection()
+    const { walletAddress, isWalletConnected, handleSwitchChain } = useWalletConnection()
     const { width: screenWidth } = useDimensions()
     const isDesktop = screenWidth > 768
     const isDepositPositionType = positionType === 'deposit'
@@ -110,9 +110,6 @@ export default function SuperVaultTxDialog({
             handleSwitchChain(ChainId.Base)
         }
     }, [isWalletConnected])
-
-    const { user } = usePrivy()
-    const walletAddress = user?.wallet?.address
 
     function resetDepositWithdrawTx() {
         setDepositTx((prev: TDepositTx) => ({

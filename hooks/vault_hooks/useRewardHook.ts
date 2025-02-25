@@ -6,32 +6,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { TClaimRewardsResponse } from '../../types'
 import { BigNumber } from 'ethers'
 import { formatUnits } from 'ethers/lib/utils'
-import { useWriteContract } from 'wagmi'
-
-const REWARD_ABI = [
-    {
-        type: 'function',
-        name: 'claim',
-        inputs: [
-            { name: 'account', type: 'address' },
-            { name: 'reward', type: 'address' },
-            { name: 'claimable', type: 'uint256' },
-            { name: 'proof', type: 'bytes32[]' },
-        ],
-        outputs: [{ name: 'amount', type: 'uint256' }],
-        stateMutability: 'nonpayable',
-    },
-    {
-        type: 'function',
-        name: 'claimed',
-        inputs: [
-            { name: 'account', type: 'address' },
-            { name: 'reward', type: 'address' },
-        ],
-        outputs: [{ name: 'amount', type: 'uint256' }],
-        stateMutability: 'view',
-    },
-]
+import REWARD_ABI from '@/data/abi/rewardsABI.json'
 
 const publicClient = createPublicClient({
     chain: base,
@@ -42,18 +17,13 @@ const publicClient = createPublicClient({
 const CHAIN_ID = 8453
 
 export function useRewardsHook() {
-    const {
-        writeContractAsync,
-        isPending,
-        data: hash,
-        error,
-    } = useWriteContract()
     const { walletAddress } = useWalletConnection()
 
     const {
         data: rewardsData,
         isLoading: isLoadingRewards,
         isError: isErrorRewards,
+        refetch: refetchClaimRewardsData,
     } = useGetClaimRewards({
         user_address: walletAddress,
         chain_id: CHAIN_ID,
@@ -123,21 +93,6 @@ export function useRewardsHook() {
         }
     }, [walletAddress, rewardsData, isErrorRewards])
 
-    // TODO: Refactor this
-    const claimRewards = async (rewardDetails: TClaimRewardsResponse) => {
-        writeContractAsync({
-            address: rewardDetails.distributor.address,
-            abi: REWARD_ABI,
-            functionName: 'claim',
-            args: [
-                walletAddress,
-                rewardDetails.token.address,
-                rewardDetails.claimable,
-                rewardDetails.proof,
-            ],
-        })
-    }
-
     useEffect(() => {
         fetchFormattedClaimData()
     }, [fetchFormattedClaimData])
@@ -147,6 +102,7 @@ export function useRewardsHook() {
         isLoading,
         isError,
         fetchFormattedClaimData,
-        claimRewards
+        refetchClaimRewardsData,
+        // claimRewards
     }
 }

@@ -18,7 +18,9 @@ import {
 import { ArrowRightIcon } from 'lucide-react'
 import { USDC_DECIMALS, VAULT_ADDRESS } from '@/lib/constants'
 import { parseAbi } from 'viem'
-import { usePrivy } from '@privy-io/react-auth'
+import REWARD_ABI from '@/data/abi/rewardsABI.json'
+import { useWalletConnection } from '@/hooks/useWalletConnection'
+import { useRewardsHook } from '@/hooks/vault_hooks/useRewardHook'
 
 const VAULT_ABI = parseAbi([
     'function withdraw(uint256 _assets, address _receiver, address _owner) returns (uint256)',
@@ -26,13 +28,13 @@ const VAULT_ABI = parseAbi([
 
 interface IClaimRewardsButtonProps {
     disabled: boolean
-    asset: any
+    rewardDetails: any
     handleCloseModal: (isVisible: boolean) => void
 }
 
 const ClaimRewardsButton = ({
     disabled,
-    asset,
+    rewardDetails,
     handleCloseModal,
 }: IClaimRewardsButtonProps) => {
     const {
@@ -53,6 +55,8 @@ const ClaimRewardsButton = ({
         useWaitForTransactionReceipt({
             hash,
         })
+    const { walletAddress } = useWalletConnection()
+    const { refetchClaimRewardsData } = useRewardsHook();
 
     useEffect(() => {
         if (claimRewardsTx.status === 'view') return
@@ -72,6 +76,7 @@ const ClaimRewardsButton = ({
                 hash,
                 isConfirmed: isConfirmed,
             }))
+            refetchClaimRewardsData()
         }
     }, [hash, isConfirmed])
 
@@ -105,17 +110,18 @@ const ClaimRewardsButton = ({
         ]
 
     const handleClaimRewards = useCallback(async () => {
-
         try {
-            // writeContractAsync({
-            //     address: VAULT_ADDRESS as `0x${string}`,
-            //     abi: VAULT_ABI,
-            //     functionName: 'withdraw',
-            //     args: [
-            //         walletAddress as `0x${string}`,
-            //         walletAddress as `0x${string}`,
-            //     ],
-            // })
+            writeContractAsync({
+                address: rewardDetails.reward.distributor.address,
+                abi: REWARD_ABI,
+                functionName: 'claim',
+                args: [
+                    walletAddress,
+                    rewardDetails.reward.token.address,
+                    rewardDetails.reward.claimable,
+                    rewardDetails.reward.proof,
+                ],
+            })
         } catch (error) {
             error
         }

@@ -60,7 +60,6 @@ export default function ClaimRewardsTxDialog({
     setOpen: (open: boolean) => void
     setActionType?: (actionType: TPositionType) => void
 }) {
-
     const { claimRewardsTx, setClaimRewardsTx } =
         useTxContext() as TTxContext
     const { isWalletConnected, handleSwitchChain } = useWalletConnection()
@@ -107,7 +106,7 @@ export default function ClaimRewardsTxDialog({
         return status.claim
     }
 
-    const inputUsdAmount = Number(assetDetails?.reward?.availabeToClaimFormatted) * Number(assetDetails?.reward?.price_usd)
+    const inputUsdAmount = Number(assetDetails?.reward?.availabeToClaimFormatted) * Number(assetDetails?.reward?.token?.price_usd)
 
     function handleInputUsdAmount(amount: string) {
         const amountFormatted = hasExponent(amount)
@@ -291,33 +290,46 @@ export default function ClaimRewardsTxDialog({
                     {isShowBlock({
                         claim: true,
                     }) && (
-                            <div className={`flex items-center justify-between w-full gap-1 py-4`}>
+                            <div className={`flex items-center justify-between w-full gap-2 py-4`}>
                                 <ImageWithDefault
                                     src={assetDetails?.reward?.token?.logo}
                                     alt={assetDetails?.reward?.token?.symbol}
-                                    width={24}
-                                    height={24}
-                                    className="rounded-full max-w-[24px] max-h-[24px]"
+                                    width={32}
+                                    height={32}
+                                    className="rounded-full max-w-[32px] max-h-[32px]"
                                 />
-                                <div className="flex flex-wrap items-center justify-between gap-1 w-full">
+                                <div className="flex flex-col items-start gap-[0px] w-full">
                                     <HeadingText
                                         level="h4"
                                         weight="medium"
-                                        className="text-gray-800"
+                                        className="text-gray-800 leading-0 flex items-center gap-1"
                                     >
                                         {Number(assetDetails?.reward?.availabeToClaimFormatted).toFixed(
                                             decimalPlacesCount(assetDetails?.reward?.availabeToClaimFormatted || '0')
                                         )}
+                                        <span className="text-gray-600 max-w-[100px] truncate">
+                                            {assetDetails?.reward?.token?.symbol}
+                                        </span>
                                     </HeadingText>
-                                    <BodyText
-                                        level="body2"
-                                        weight="normal"
-                                        className="text-gray-600"
-                                    >
-                                        {handleInputUsdAmount(
-                                            inputUsdAmount.toString()
-                                        )}
-                                    </BodyText>
+                                    <div className="flex items-center justify-start gap-1">
+                                        <BodyText
+                                            level="body2"
+                                            weight="medium"
+                                            className="text-gray-600 leading-0"
+                                        >
+                                            {handleInputUsdAmount(
+                                                inputUsdAmount.toString()
+                                            )}
+                                        </BodyText>
+                                        <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
+                                        <BodyText
+                                            level="body2"
+                                            weight="medium"
+                                            className="text-gray-600 flex items-center gap-1"
+                                        >
+                                            Base
+                                        </BodyText>
+                                    </div>
                                 </div>
                             </div>
                         )}

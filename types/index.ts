@@ -17,8 +17,9 @@ export type TClaimRewardsResponse = {
         name: string
         decimals: number
         symbol: string
+        logo: string
+        price_usd: string
     }
-    price_usd: string
     claimable: string
     claimed: string
     availabeToClaim: string
