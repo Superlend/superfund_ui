@@ -98,7 +98,7 @@ export default function ClaimRewards() {
                                 onClick={() => setIsSelectTokenDialogOpen(true)}
                                 size={'lg'}
                                 variant="secondary"
-                                className="uppercase rounded-5"
+                                className="uppercase rounded-5 disabled:opacity-100 disabled:cursor-not-allowed"
                                 disabled={!hasUnclaimedRewards}
                             >
                                 <span className={`flex items-center gap-1 ${!hasUnclaimedRewards ? 'px-5' : 'px-10'}`}>
