@@ -23,6 +23,7 @@ import FundOverview from './fund-overview'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useHistoricalData, useRebalanceHistory } from '@/hooks/vault_hooks/useHistoricalDataHook'
 import { Period } from '@/types/periodButtons'
+import ClaimRewards from './claim-rewards'
 
 export default function SuperVaultPage() {
     const { isClient } = useIsClient()
@@ -59,31 +60,7 @@ export default function SuperVaultPage() {
 
     if (!isClient) {
         return (
-            <MainContainer>
-                <div className="flex flex-col gap-12">
-                    <Skeleton className='h-12 w-[80%] md:w-80 rounded-2xl' />
-                    <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-[16px]">
-                        <div className="flex flex-col gap-8">
-                            <div className="flex items-start justify-between gap-4">
-                                {[1, 2, 3, 4].map(item => (
-                                    <div className="flex flex-col items-start w-full max-w-[250px] gap-2" key={item}>
-                                        <Skeleton className='h-8 w-full rounded-2xl' />
-                                        <Skeleton className='h-6 w-[80%] rounded-2xl' />
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="flex flex-col items-start w-full gap-4">
-                                <Skeleton className='h-8 w-full md:w-48 rounded-2xl' />
-                                <Skeleton className='h-40 w-full rounded-2xl' />
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-4">
-                            <Skeleton className='h-[50px] w-full rounded-2xl' />
-                            <Skeleton className='h-[240px] w-full rounded-2xl' />
-                        </div>
-                    </div>
-                </div>
-            </MainContainer>
+            <LoadingPageSkeleton />
         )
     }
 
@@ -101,6 +78,7 @@ export default function SuperVaultPage() {
                         <div className="block lg:hidden">
                             <DepositAndWithdrawAssets />
                         </div>
+                        {isWalletConnected && <ClaimRewards />}
                         <FundOverview />
                         {/* {isConnectingWallet &&
                             <LoadingTabs />
@@ -158,5 +136,35 @@ function LoadingTabs() {
             <Skeleton className="h-12 w-full rounded-lg" />
             <Skeleton className="h-64 w-full rounded-2xl" />
         </div>
+    )
+}
+
+function LoadingPageSkeleton() {
+    return (
+        <MainContainer>
+            <div className="flex flex-col gap-12">
+                <Skeleton className='h-12 w-[80%] md:w-80 rounded-2xl' />
+                <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-[16px]">
+                    <div className="flex flex-col gap-8">
+                        <div className="flex items-start justify-between gap-4">
+                            {[1, 2, 3, 4].map(item => (
+                                <div className="flex flex-col items-start w-full max-w-[250px] gap-2" key={item}>
+                                    <Skeleton className='h-8 w-full rounded-2xl' />
+                                    <Skeleton className='h-6 w-[80%] rounded-2xl' />
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex flex-col items-start w-full gap-4">
+                            <Skeleton className='h-8 w-full md:w-48 rounded-2xl' />
+                            <Skeleton className='h-40 w-full rounded-2xl' />
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                        <Skeleton className='h-[50px] w-full rounded-2xl' />
+                        <Skeleton className='h-[240px] w-full rounded-2xl' />
+                    </div>
+                </div>
+            </div>
+        </MainContainer>
     )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { BodyText, HeadingText } from '@/components/ui/typography'
+import { BodyText, HeadingText, Label } from '@/components/ui/typography'
 import {
     Card,
     CardContent,
@@ -95,7 +95,7 @@ export default function FundOverview() {
                     Rebalanced Across
                 </HeadingText>
                 <Card>
-                    <CardContent className="p-5 flex flex-wrap items-center justify-between gap-6 sm:gap-4 sm:px-6 xl:px-24">
+                    <CardContent className="p-5 grid grid-cols-2 md:grid-cols-4 items-center justify-between gap-6 sm:gap-4 sm:px-6 xl:px-24">
                         {rebalancedAssetsList.map((token) => (
                             <div
                                 className="item flex items-center gap-2"
@@ -114,7 +114,7 @@ export default function FundOverview() {
                                         variant="ghost"
                                         iconSize={14}
                                     >
-                                        <BodyText level="body1" weight="medium">
+                                        <BodyText level="body1" weight="medium" className="uppercase">
                                             {token.title}
                                         </BodyText>
                                     </ExternalLink>
@@ -140,7 +140,7 @@ export default function FundOverview() {
                     Additional Information
                 </HeadingText>
                 <Card>
-                    <CardContent className="px-9 py-8 bg-gray-100/50 divide-y divide-gray-400">
+                    <CardContent className="px-4 md:px-9 py-8 bg-gray-100/50 divide-y divide-gray-400">
                         {/* <div className="row flex max-lg:flex-col flex-wrap gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
                             <div className="col flex-1 flex items-center gap-2">
                                 <BodyText level="body1" weight="medium">
@@ -165,8 +165,8 @@ export default function FundOverview() {
                                 </ExternalLink>
                             </div>
                         </div> */}
-                        <div className="row flex max-lg:flex-col flex-wrap gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
-                            <div className="col flex-1 flex items-center gap-2">
+                        <div className="row flex gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
+                            <div className="col flex-1 flex flex-col items-start gap-0">
                                 <BodyText level="body1" weight="medium" className="text-gray-800">
                                     Documentation
                                 </BodyText>
@@ -176,7 +176,7 @@ export default function FundOverview() {
                                 <BodyText
                                     level="body2"
                                     weight="medium"
-                                    className="text-gray-600 text-center"
+                                    className="hidden md:block text-gray-600 text-center"
                                 >
                                     Updated Recently
                                 </BodyText>
@@ -187,24 +187,31 @@ export default function FundOverview() {
                                     className="font-medium"
                                     variant="secondary"
                                 >
-                                    <BodyText level="body2" weight="medium" className="shrink-0">
-                                        View documentation
+                                    <BodyText level="body2" weight="medium" className="shrink-0 flex items-center gap-1">
+                                        View <span className="hidden md:block">documentation</span>
                                     </BodyText>
                                 </ExternalLink>
                             </div>
                         </div>
-                        <div className="row flex max-lg:flex-col flex-wrap gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
-                            <div className="col flex-1 flex items-center gap-2">
+                        <div className="row flex gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
+                            <div className="col flex-0 md:flex-1 flex flex-col items-start gap-0">
                                 <BodyText level="body1" weight="medium">
                                     Management Fees
                                 </BodyText>
+                                <Label
+                                    size='small'
+                                    weight="medium"
+                                    className="md:hidden text-gray-600 text-center"
+                                >
+                                    Every Rebalance
+                                </Label>
                             </div>
 
-                            <div className="col flex-1">
+                            <div className="col flex-0 md:flex-1">
                                 <BodyText
                                     level="body2"
                                     weight="medium"
-                                    className="text-gray-600 text-center"
+                                    className="hidden md:block text-gray-600 text-center"
                                 >
                                     Every Rebalance
                                 </BodyText>

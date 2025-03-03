@@ -37,11 +37,6 @@ export default function VaultStats({
 
     const vaultStats = [
         {
-            title: 'My Position',
-            value: isWalletConnected ? `$${Number(userMaxWithdrawAmount).toFixed(4)}` : 'N/A',
-            show: isWalletConnected,
-        },
-        {
             title: 'Spot APY',
             value: `${(Number(spotApy) + Number(totalRewardApy)).toFixed(2)}%`,
             show: true,
@@ -72,6 +67,11 @@ export default function VaultStats({
                 }],
                 apyCurrent: last_7_day_avg_total_apy,
             }),
+        },
+        {
+            title: 'My Position',
+            value: isWalletConnected ? `$${Number(userMaxWithdrawAmount).toFixed(4)}` : 'N/A',
+            show: isWalletConnected,
         },
     ]
 

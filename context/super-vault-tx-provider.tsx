@@ -14,7 +14,7 @@ const TxInitialState: TTxContext = {
         isConfirming: false,
         isConfirmed: false,
     },
-    setDepositTx: () => {},
+    setDepositTx: () => { },
     withdrawTx: {
         status: 'withdraw',
         hash: '',
@@ -23,7 +23,16 @@ const TxInitialState: TTxContext = {
         isConfirming: false,
         isConfirmed: false,
     },
-    setWithdrawTx: () => {},
+    setWithdrawTx: () => { },
+    claimRewardsTx: {
+        status: 'claim',
+        hash: '',
+        errorMessage: '',
+        isPending: false,
+        isConfirming: false,
+        isConfirmed: false,
+    },
+    setClaimRewardsTx: () => { },
 }
 
 export const TxContext = createContext<TTxContext>(TxInitialState)
@@ -48,11 +57,22 @@ export type TWithdrawTx = {
     isConfirmed: boolean
 }
 
+export type TClaimRewardsTx = {
+    status: 'claim' | 'view'
+    hash: string
+    errorMessage: string
+    isPending: boolean
+    isConfirming: boolean
+    isConfirmed: boolean
+}
+
 export type TTxContext = {
     depositTx: TDepositTx
     setDepositTx: any
     withdrawTx: TWithdrawTx
     setWithdrawTx: any
+    claimRewardsTx: TClaimRewardsTx
+    setClaimRewardsTx: any
 }
 
 export default function TxProvider({
@@ -80,6 +100,15 @@ export default function TxProvider({
         isConfirmed: false,
     })
 
+    const [claimRewardsTx, setClaimRewardsTx] = useState<TClaimRewardsTx>({
+        status: 'claim',
+        hash: '',
+        errorMessage: '',
+        isPending: false,
+        isConfirming: false,
+        isConfirmed: false,
+    })
+
     return (
         <TxContext.Provider
             value={{
@@ -87,6 +116,8 @@ export default function TxProvider({
                 setDepositTx,
                 withdrawTx,
                 setWithdrawTx,
+                claimRewardsTx,
+                setClaimRewardsTx,
             }}
         >
             {children}

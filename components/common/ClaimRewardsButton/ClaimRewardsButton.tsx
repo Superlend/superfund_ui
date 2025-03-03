@@ -13,55 +13,56 @@ import {
     TWithdrawTx,
     TTxContext,
     useTxContext,
+    TClaimRewardsTx,
 } from '@/context/super-vault-tx-provider'
 import { ArrowRightIcon } from 'lucide-react'
 import { USDC_DECIMALS, VAULT_ADDRESS } from '@/lib/constants'
 import { parseAbi } from 'viem'
-import { usePrivy } from '@privy-io/react-auth'
+import REWARD_ABI from '@/data/abi/rewardsABI.json'
+import { useWalletConnection } from '@/hooks/useWalletConnection'
+import { useRewardsHook } from '@/hooks/vault_hooks/useRewardHook'
 
 const VAULT_ABI = parseAbi([
     'function withdraw(uint256 _assets, address _receiver, address _owner) returns (uint256)',
 ])
 
-interface IWithdrawButtonProps {
+interface IClaimRewardsButtonProps {
     disabled: boolean
-    asset: any
-    amount: string
+    rewardDetails: any
     handleCloseModal: (isVisible: boolean) => void
 }
 
-const WithdrawButton = ({
+const ClaimRewardsButton = ({
     disabled,
-    asset,
-    amount,
+    rewardDetails,
     handleCloseModal,
-}: IWithdrawButtonProps) => {
+}: IClaimRewardsButtonProps) => {
     const {
         writeContractAsync,
         isPending,
         data: hash,
         error,
     } = useWriteContract()
-    const { withdrawTx, setWithdrawTx } = useTxContext() as TTxContext
-    const { address: walletAddress } = useAccount()
+    const { claimRewardsTx, setClaimRewardsTx } = useTxContext() as TTxContext
     const txBtnStatus: Record<string, string> = {
-        pending: 'Withdrawing...',
+        pending: 'Claiming...',
         confirming: 'Confirming...',
         success: 'Close',
         error: 'Close',
-        default: 'Start withdrawing',
+        default: 'Start claiming',
     }
-
     const { isLoading: isConfirming, isSuccess: isConfirmed } =
         useWaitForTransactionReceipt({
             hash,
         })
+    const { walletAddress } = useWalletConnection()
+    const { refetchClaimRewardsData } = useRewardsHook();
 
     useEffect(() => {
-        if (withdrawTx.status === 'view') return
+        if (claimRewardsTx.status === 'view') return
 
         if (hash) {
-            setWithdrawTx((prev: TWithdrawTx) => ({
+            setClaimRewardsTx((prev: TClaimRewardsTx) => ({
                 ...prev,
                 status: 'view',
                 hash,
@@ -69,18 +70,19 @@ const WithdrawButton = ({
         }
 
         if (hash && isConfirmed) {
-            setWithdrawTx((prev: TWithdrawTx) => ({
+            setClaimRewardsTx((prev: TClaimRewardsTx) => ({
                 ...prev,
                 status: 'view',
                 hash,
                 isConfirmed: isConfirmed,
             }))
+            refetchClaimRewardsData()
         }
     }, [hash, isConfirmed])
 
     // Update the status(Loading states) of the lendTx based on the isPending and isConfirming states
     useEffect(() => {
-        setWithdrawTx((prev: TWithdrawTx) => ({
+        setClaimRewardsTx((prev: TClaimRewardsTx) => ({
             ...prev,
             isPending: isPending,
             isConfirming: isConfirming,
@@ -91,34 +93,33 @@ const WithdrawButton = ({
 
     const txBtnText =
         txBtnStatus[
-            isConfirming
-                ? 'confirming'
-                : isConfirmed
-                  ? withdrawTx.status === 'view'
-                      ? 'success'
-                      : 'default'
-                  : isPending
+        isConfirming
+            ? 'confirming'
+            : isConfirmed
+                ? claimRewardsTx.status === 'view'
+                    ? 'success'
+                    : 'default'
+                : isPending
                     ? 'pending'
                     : !isPending &&
                         !isConfirming &&
                         !isConfirmed &&
-                        withdrawTx.status === 'view'
-                      ? 'error'
-                      : 'default'
+                        claimRewardsTx.status === 'view'
+                        ? 'error'
+                        : 'default'
         ]
 
-    const handleWithdrawSuperVault = useCallback(async () => {
-        const amountInWei = parseUnits(amount, USDC_DECIMALS)
-
+    const handleClaimRewards = useCallback(async () => {
         try {
             writeContractAsync({
-                address: VAULT_ADDRESS as `0x${string}`,
-                abi: VAULT_ABI,
-                functionName: 'withdraw',
+                address: rewardDetails.reward.distributor.address,
+                abi: REWARD_ABI,
+                functionName: 'claim',
                 args: [
-                    amountInWei.toBigInt(),
-                    walletAddress as `0x${string}`,
-                    walletAddress as `0x${string}`,
+                    walletAddress,
+                    rewardDetails.reward.token.address,
+                    rewardDetails.reward.claimable,
+                    rewardDetails.reward.proof,
                 ],
             })
         } catch (error) {
@@ -126,8 +127,8 @@ const WithdrawButton = ({
         }
     }, [])
 
-    const onWithdraw = async () => {
-        await handleWithdrawSuperVault()
+    const onClaimRewards = async () => {
+        await handleClaimRewards()
         return
     }
 
@@ -145,18 +146,18 @@ const WithdrawButton = ({
                 className="group flex items-center gap-[4px] py-3 w-full rounded-5 uppercase"
                 disabled={
                     (isPending || isConfirming || disabled) &&
-                    withdrawTx.status !== 'view'
+                    claimRewardsTx.status !== 'view'
                 }
                 onClick={() => {
-                    if (withdrawTx.status !== 'view') {
-                        onWithdraw()
+                    if (claimRewardsTx.status !== 'view') {
+                        onClaimRewards()
                     } else {
                         handleCloseModal(false)
                     }
                 }}
             >
                 {txBtnText}
-                {withdrawTx.status !== 'view' &&
+                {claimRewardsTx.status !== 'view' &&
                     !isPending &&
                     !isConfirming && (
                         <ArrowRightIcon
@@ -170,4 +171,4 @@ const WithdrawButton = ({
     )
 }
 
-export default WithdrawButton
+export default ClaimRewardsButton
