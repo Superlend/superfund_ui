@@ -55,9 +55,17 @@ const CustomXAxisTick = ({
 
 const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
+        const date = payload[0].payload.date;
+        const value = payload[0].value;
+
         return (
-            <div className="bg-white p-2 rounded-lg shadow-lg border">
-                <p className="text-sm font-medium">{`$${payload[0].value}`}</p>
+            <div className="bg-white flex flex-col gap-2 p-2 rounded-lg shadow-lg border">
+                <BodyText level="body2" weight="normal" className="text-muted-foreground">
+                    {`${date}`}
+                </BodyText>
+                <BodyText level="body2" weight="medium">
+                    {`$${value}`}
+                </BodyText>
             </div>
         )
     }
@@ -80,10 +88,10 @@ const chartConfig = {
 } satisfies ChartConfig
 
 const customTicks = {
-    [Period.oneDay]: 4,
-    [Period.oneWeek]: 7,
-    [Period.oneMonth]: 8,
-    [Period.allTime]: 8,
+    [Period.oneDay]: 5,
+    [Period.oneWeek]: 5,
+    [Period.oneMonth]: 5,
+    [Period.allTime]: 5,
 } satisfies Record<Period, number>
 
 export default function DailyEarningsHistoryChart(
@@ -139,11 +147,18 @@ export default function DailyEarningsHistoryChart(
         setSelectedRange(range)
     }
 
+    const totalEarningsSuffixText = {
+        [Period.oneDay]: 'today',
+        [Period.oneWeek]: 'this week',
+        [Period.oneMonth]: 'this month',
+        [Period.allTime]: 'till date',
+    } satisfies Record<Period, string>
+
     return (
         <Card>
             <div className="flex items-center justify-between p-6 pb-4">
                 <HeadingText level="h4" weight="medium" className="text-gray-800">
-                    Daily Earnings History
+                    Daily Earnings
                 </HeadingText>
                 <TimelineFilterTabs
                     selectedRange={selectedRange}
@@ -156,7 +171,7 @@ export default function DailyEarningsHistoryChart(
                     {!isLoadingDailyEarningsHistory &&
                         <>
                             <BodyText level="body2" weight="normal" className="text-muted-foreground">
-                                Earned till date
+                                Earned {totalEarningsSuffixText[selectedRange]}
                             </BodyText>
                             <HeadingText level="h5" weight="medium" className="text-green-800">
                                 ${abbreviateNumber(totalEarnings, 4)}
@@ -208,11 +223,12 @@ export default function DailyEarningsHistoryChart(
                                         fontSize={12}
                                         tickLine={true}
                                         axisLine={true}
-                                        tickCount={customTicks[selectedRange]}
+                                        tickCount={5}
                                         padding={{ left: 0, right: 0 }}
                                         allowDataOverflow={true}
-                                        scale="point"
-                                        interval={selectedRange === Period.oneMonth ? 3 : "preserveStartEnd"}
+                                        scale="band"
+                                        type="category"
+                                        interval={(chartData?.length || 0) > 5 ? Math.floor((chartData?.length || 0) / 5) : 0}
                                         tick={({ x, y, payload, index }) => (
                                             <CustomXAxisTick
                                                 payload={payload as { value: number }}
