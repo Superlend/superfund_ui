@@ -7,12 +7,17 @@ import { cn } from '@/lib/utils'
 export function TimelineFilterTabs({
     selectedRange,
     handleRangeChange,
-    className
+    filterPeriodList,
+    className,
 }: {
     selectedRange: string;
     handleRangeChange: (value: string) => void;
+    filterPeriodList?: (item: { value: Period }) => boolean;
     className?: string;
 }) {
+    function handleFilterPeriodList(item: { value: Period }) {
+        return filterPeriodList ? filterPeriodList(item) : true
+    }
     {/* Timeline Filters Tab */ }
     return (
         <Tabs
@@ -22,11 +27,13 @@ export function TimelineFilterTabs({
             className={cn("w-fit", className)}
         >
             <TabsList className="bg-gray-200 rounded-2 p-0.5">
-                {PERIOD_LIST.map((item) => (
-                    <TabsTrigger
-                        key={item.value}
-                        value={item.value}
-                        className="px-[12px] py-[2px] data-[state=active]:bg-white data-[state=active]:shadow-md rounded-2"
+                {PERIOD_LIST
+                    .filter(handleFilterPeriodList)
+                    .map((item) => (
+                        <TabsTrigger
+                            key={item.value}
+                            value={item.value}
+                            className="px-[12px] py-[2px] data-[state=active]:bg-white data-[state=active]:shadow-md rounded-2"
                     >
                         {item.label}
                     </TabsTrigger>

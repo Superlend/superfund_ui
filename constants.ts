@@ -30,7 +30,7 @@ export type TChainNamesBasedOnAaveMarkets = {
     bsc: 'bnb'
 }
 
-export const PERIOD_LIST = [
+export const PERIOD_LIST: { label: string, value: Period }[] = [
     {
         label: PeriodDisplay.oneDay,
         value: Period.oneDay,

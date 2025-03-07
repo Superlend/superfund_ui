@@ -538,3 +538,17 @@ export function getMaxDecimalsToDisplay(tokenSymbol: string): number {
         ? 4
         : 2
 }
+
+export function getStartTimestamp(period: Period) {
+    const currentTimestamp = Math.floor(Date.now() / 1000)
+    switch (period) {
+        case Period.allTime:
+            return 0
+        case Period.oneMonth:
+            return currentTimestamp - 86400 * 30
+        case Period.oneWeek:
+            return currentTimestamp - 86400 * 7
+        case Period.oneDay:
+            return currentTimestamp - 86400
+    }
+}
