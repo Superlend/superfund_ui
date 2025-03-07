@@ -1,4 +1,5 @@
 import { VAULT_ADDRESS, VAULT_STRATEGIES, VAULT_STRATEGIES_COLORS } from "@/lib/constants";
+import { getStartTimestamp } from "@/lib/utils";
 import { THistoricalDataPerformanceHistory, THistoricalDataRebalanceHistory } from "@/types";
 import { Period } from "@/types/periodButtons";
 import { useEffect, useState } from "react";
@@ -7,7 +8,7 @@ import { useEffect, useState } from "react";
 // }
 
 
-const INDEXER_API = 'https://api.funds.superlend.xyz'
+const INDEXER_API = process.env.NEXT_PUBLIC_INDEXER_API || 'https://api.funds.superlend.xyz'
 
 export function useHistoricalData(period: Period) {
     const [historicalData, setHistoricalData] = useState<THistoricalDataPerformanceHistory[]>([])
@@ -127,18 +128,4 @@ export function useRebalanceHistory(period: Period) {
         error
     }
 
-}
-
-function getStartTimestamp(period: Period) {
-    const currentTimestamp = Math.floor(Date.now() / 1000)
-    switch (period) {
-        case Period.allTime:
-            return 0
-        case Period.oneMonth:
-            return currentTimestamp - 86400 * 30
-        case Period.oneWeek:
-            return currentTimestamp - 86400 * 7
-        case Period.oneDay:
-            return currentTimestamp - 86400
-    }
 }

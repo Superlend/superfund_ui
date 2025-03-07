@@ -2,10 +2,11 @@
 
 import { Period } from "@/types/periodButtons"
 import { motion } from "motion/react"
-import React from "react"
-import InterestHistoryChart from '@/components/interest-history-chart'
+import React, { useState } from "react"
 import DepositHistoryChart from '@/components/deposit-history-chart'
 import ClaimRewards from "./claim-rewards"
+import { useWalletConnection } from "@/hooks/useWalletConnection"
+import DailyEarningsHistoryChart from "@/components/daily-earnings-history-chart"
 
 export default function PositionDetails() {
 
@@ -17,15 +18,8 @@ export default function PositionDetails() {
             className="flex flex-col gap-[40px]"
         >
             <ClaimRewards />
-            {/* <InterestHistoryChart
-                selectedRange={Period.oneMonth}
-                handleRangeChange={() => { }}
-                selectedFilter={Period.oneMonth}
-                handleFilterChange={() => { }}
-                chartData={[]}
-                disableCategoryFilters={[]}
-            />
-            <DepositHistoryChart
+            <DailyEarningsHistoryChart />
+            {/* <DepositHistoryChart
                 selectedRange={Period.oneMonth}
                 handleRangeChange={() => { }}
                 selectedFilter={Period.oneMonth}

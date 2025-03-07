@@ -78,9 +78,9 @@ export default function SuperVaultPage() {
                         <div className="block lg:hidden">
                             <DepositAndWithdrawAssets />
                         </div>
-                        {isWalletConnected && <ClaimRewards />}
-                        <FundOverview />
-                        {/* {isConnectingWallet &&
+                        {/* {isWalletConnected && <ClaimRewards />}
+                        <FundOverview /> */}
+                        {isConnectingWallet &&
                             <LoadingTabs />
                         }
                         {!isConnectingWallet &&
@@ -89,7 +89,7 @@ export default function SuperVaultPage() {
                                 activeTab={selectedTab}
                                 onTabChange={handleTabChange}
                             />
-                        } */}
+                        }
                     </div>
                     <div className="hidden lg:block">
                         <DepositAndWithdrawAssets />
