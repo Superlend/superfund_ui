@@ -112,7 +112,7 @@ export default function DailyEarningsHistoryChart(
         isError: isErrorDailyEarningsHistory
     } = useGetDailyEarningsHistory({
         vault_address: VAULT_ADDRESS,
-        user_address: "0x140c643f635b2840ddc8e0e9034c8cf08c9a6fad",
+        user_address: walletAddress.toLowerCase() as `0x${string}`,
         start_timestamp: startTimeStamp,
     })
 
