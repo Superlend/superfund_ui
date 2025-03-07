@@ -9,7 +9,6 @@ import { useWalletConnection } from "@/hooks/useWalletConnection"
 import DailyEarningsHistoryChart from "@/components/daily-earnings-history-chart"
 
 export default function PositionDetails() {
-    const { isWalletConnected, isConnectingWallet } = useWalletConnection()
 
     return (
         <motion.div
@@ -18,7 +17,7 @@ export default function PositionDetails() {
             transition={{ duration: 0.8, ease: 'easeOut' }}
             className="flex flex-col gap-[40px]"
         >
-            {isWalletConnected && <ClaimRewards />}
+            <ClaimRewards />
             <DailyEarningsHistoryChart />
             {/* <DepositHistoryChart
                 selectedRange={Period.oneMonth}
