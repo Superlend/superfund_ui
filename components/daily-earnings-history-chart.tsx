@@ -117,7 +117,7 @@ export default function DailyEarningsHistoryChart(
     })
 
     const totalEarnings = useMemo(() => {
-        return dailyEarningsHistoryData?.reduce((acc: number, item: any) => acc + item.earnings, 0)
+        return dailyEarningsHistoryData?.reduce((acc: number, item: any) => acc + item.earnings, 0) ?? 0
     }, [dailyEarningsHistoryData])
 
     const chartData = useMemo(() => {
@@ -173,7 +173,7 @@ export default function DailyEarningsHistoryChart(
                             <BodyText level="body2" weight="normal" className="text-muted-foreground">
                                 Earned {totalEarningsSuffixText[selectedRange]}
                             </BodyText>
-                            <HeadingText level="h5" weight="medium" className="text-green-800">
+                            <HeadingText level="h5" weight="medium" className={`${totalEarnings === 0 ? 'text-gray-800' : totalEarnings > 0 ? 'text-green-800' : 'text-red-800'}`}>
                                 ${abbreviateNumber(totalEarnings, 4)}
                             </HeadingText>
                         </>
