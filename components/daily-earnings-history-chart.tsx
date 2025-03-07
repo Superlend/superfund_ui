@@ -158,7 +158,7 @@ export default function DailyEarningsHistoryChart(
         <Card>
             <div className="flex items-center justify-between p-6 pb-4">
                 <HeadingText level="h4" weight="medium" className="text-gray-800">
-                    Daily Earnings
+                    Interest Earned
                 </HeadingText>
                 <TimelineFilterTabs
                     selectedRange={selectedRange}
@@ -247,7 +247,7 @@ export default function DailyEarningsHistoryChart(
                                         tickLine={true}
                                         axisLine={true}
                                         tickCount={4}
-                                        tickFormatter={(value) => `$${abbreviateNumber(value, 4)}`}
+                                        tickFormatter={(value) => `$${abbreviateNumber(value)}`}
                                         padding={{ top: 10, bottom: 10 }}
                                         allowDataOverflow={false}
                                         scale="auto"
