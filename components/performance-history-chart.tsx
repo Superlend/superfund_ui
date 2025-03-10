@@ -219,6 +219,12 @@ export function PerformanceHistoryChart() {
         }
     }, [chartData])
 
+    const yAxisTicks = useMemo(() => {
+        const maxTickValue = maxValue + (valueRange * 0.1);
+        const interval = maxTickValue / 3; // Divide by 3 to get 4 points (0 and 3 intervals)
+        return [0, interval, interval * 2, maxTickValue];
+    }, [maxValue, valueRange]);
+
     const memoizedLines = useMemo(() => (
         <>
             <Line
@@ -426,6 +432,7 @@ export function PerformanceHistoryChart() {
                                         fontSize={12}
                                         tickLine={true}
                                         axisLine={true}
+                                        ticks={yAxisTicks}
                                         tickFormatter={(value) => `${shortNubers(value.toFixed(0))}%`}
                                         padding={{ top: 10, bottom: 10 }}
                                         domain={[
