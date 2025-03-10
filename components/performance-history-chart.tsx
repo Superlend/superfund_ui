@@ -168,10 +168,10 @@ export function PerformanceHistoryChart() {
     // const [openDialog, setOpenDialog] = useState(false)
 
     const customTicks = {
-        [Period.oneDay]: 4,
-        [Period.oneWeek]: 50,
-        [Period.oneMonth]: 100,
-        [Period.allTime]: 100,
+        [Period.oneDay]: 5,
+        [Period.oneWeek]: 5,
+        [Period.oneMonth]: 5,
+        [Period.allTime]: 5,
     }
 
     useEffect(() => {
@@ -401,8 +401,8 @@ export function PerformanceHistoryChart() {
                                         fontSize={12}
                                         tickLine={true}
                                         axisLine={true}
-                                        tickCount={4}
-                                        interval={customTicks[selectedRange]}
+                                        tickCount={5}
+                                        interval={(chartData?.length || 0) > 5 ? Math.floor((chartData?.length || 0) / 5) : 0}
                                         padding={{ left: 0, right: 10 }}
                                         tickFormatter={(value) =>
                                             formatDateAccordingToPeriod(
