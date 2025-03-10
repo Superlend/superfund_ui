@@ -60,7 +60,7 @@ export default function FundOverview() {
             </section>
             <section className="block flex flex-col gap-4" id="tokens-supported">
                 <HeadingText level="h4" weight="medium" className="text-gray-800">
-                    Tokens Suported
+                    Tokens Supported
                 </HeadingText>
                 <Card>
                     <CardContent className="flex flex-col divide-y divide-gray-400 px-8 py-5">
@@ -217,7 +217,7 @@ export default function FundOverview() {
                                 </BodyText>
                             </div>
                             <div className="col flex-1 flex justify-end">
-                                <BodyText level="body1" weight="medium" className="text-gray-800">
+                                <BodyText level="body1" weight="medium" className="text-gray-800 text-right">
                                     10% of earnings
                                 </BodyText>
                             </div>

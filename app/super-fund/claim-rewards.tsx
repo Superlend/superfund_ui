@@ -22,6 +22,7 @@ import { useRewardsHook } from "../../hooks/vault_hooks/useRewardHook"
 import { Check, GiftIcon } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { motion } from "motion/react"
+import useDimensions from "@/hooks/useDimensions"
 
 const CHAIN_ID = 8453;
 export default function ClaimRewards({
@@ -40,6 +41,7 @@ export default function ClaimRewards({
     const [isTxDialogOpen, setIsTxDialogOpen] = useState(false)
     const [isSelectTokenDialogOpen, setIsSelectTokenDialogOpen] = useState(false)
     const [selectedReward, setSelectedReward] = useState<TClaimRewardsResponse | undefined>(undefined)
+    const { width: screenWidth } = useDimensions()
 
     function handleSelectToken(token: any) {
         const tokenReward = rewardsData?.find(rd => rd.token.address === token.address);
@@ -108,19 +110,19 @@ export default function ClaimRewards({
                         className="w-full h-full max-h-[120px] object-cover"
                         priority={true}
                     />
-                    <motion.div className="absolute right-2 lg:right-10 z-10"
+                    <motion.div className="absolute right-2 lg:right-10 z-[5]"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.3, ease: 'easeOut' }}
                     >
                         <Button
                             onClick={() => setIsSelectTokenDialogOpen(true)}
-                            size={'lg'}
+                            size={screenWidth > 1024 ? 'lg' : 'md'}
                             variant="primary"
                             className="uppercase bg-white shadow-lg hover:shadow-md active:shadow-sm hover:bg-gray-50 rounded-5 disabled:opacity-100 disabled:cursor-not-allowed transition-all duration-200"
                             disabled={!hasUnclaimedRewards}
                         >
-                            <span className={`flex items-center gap-1 tracking-wide text-white ${!hasUnclaimedRewards ? 'px-5' : 'px-10'}`}>
+                            <span className={`flex items-center gap-1 tracking-wide text-white ${!hasUnclaimedRewards ? 'px-5' : 'px-2 md:px-10'}`}>
                                 <GiftIcon className="w-4 h-4 text-inherit" />
                                 Claim{hasUnclaimedRewards ? '' : 'ed'}
                                 {!hasUnclaimedRewards && <Check strokeWidth={2.5} className="w-4 h-4 text-green-500" />}</span>

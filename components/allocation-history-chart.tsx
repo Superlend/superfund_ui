@@ -375,7 +375,7 @@ export function AllocationHistoryChart() {
 
     const content = (
         <Card className="w-full" id="allocation-history">
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between max-md:px-4">
                 <HeadingText level="h4" weight="medium" className="text-gray-800">
                     Allocation History
                 </HeadingText>

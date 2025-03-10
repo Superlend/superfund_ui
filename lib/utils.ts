@@ -552,3 +552,11 @@ export function getStartTimestamp(period: Period) {
             return currentTimestamp - 86400
     }
 }
+
+export function debounce(func: Function, wait: number) {
+    let timeout: NodeJS.Timeout
+    return (...args: any[]) => {
+        clearTimeout(timeout)
+        timeout = setTimeout(() => func(...args), wait)
+    }
+}

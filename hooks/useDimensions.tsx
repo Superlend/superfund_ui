@@ -1,5 +1,6 @@
 'use client'
 
+import { debounce } from '@/lib/utils'
 import { useLayoutEffect, useState } from 'react'
 
 type DimensionsType = {
@@ -19,18 +20,21 @@ export default function useDimensions() {
         const updateDimensions = function () {
             const { innerWidth, innerHeight } = window
 
-            setDimensions({
-                width: innerWidth,
-                height: innerHeight,
+            setDimensions((prev) => {
+                // Only update if dimensions actually changed
+                if (prev.width === innerWidth && prev.height === innerHeight) {
+                    return prev
+                }
+                return { width: innerWidth, height: innerHeight }
             })
         }
 
+        const debouncedUpdate = debounce(updateDimensions, 100)
         updateDimensions()
 
-        window.addEventListener('resize', updateDimensions)
-
+        window.addEventListener('resize', debouncedUpdate)
         return () => {
-            window.removeEventListener('resize', updateDimensions)
+            window.removeEventListener('resize', debouncedUpdate)
         }
     }, [])
 

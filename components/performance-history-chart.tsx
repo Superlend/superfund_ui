@@ -365,7 +365,7 @@ export function PerformanceHistoryChart() {
                 </DialogContent>
             </Dialog> */}
             <Card>
-                <div className="flex items-center justify-between p-6">
+                <div className="flex items-center justify-between max-md:px-4 p-6">
                     <HeadingText level="h4" weight="medium" className='text-gray-800'>
                         Performance History
                     </HeadingText>
