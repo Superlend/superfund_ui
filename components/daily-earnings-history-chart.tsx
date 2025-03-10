@@ -21,6 +21,7 @@ import { VAULT_ADDRESS } from '@/lib/constants'
 import { abbreviateNumber, extractTimeFromDate, formatDateAccordingToPeriod, getStartTimestamp } from '@/lib/utils'
 import { ChartConfig, ChartContainer } from './ui/chart'
 import { Skeleton } from './ui/skeleton'
+import { TDailyEarningsHistoryResponse } from '@/types'
 
 interface CustomXAxisTickProps {
     x: number
@@ -74,10 +75,12 @@ const CustomTooltip = ({ active, payload }: any) => {
 
 type TDailyEarningsHistoryChartProps = {
     selectedRange: Period
-    handleRangeChange: (range: Period) => void
-    selectedFilter: Period
-    handleFilterChange: (filter: Period) => void
-    chartData: any[]
+    setSelectedRange: (range: Period) => void
+    dailyEarningsHistoryData: TDailyEarningsHistoryResponse[] | undefined
+    isLoadingDailyEarningsHistory: boolean
+    isErrorDailyEarningsHistory: boolean
+    noDataUI: React.ReactNode
+    earningsSuffixText: Record<Period, string>
 }
 
 const chartConfig = {
@@ -94,28 +97,15 @@ const customTicks = {
     [Period.allTime]: 5,
 } satisfies Record<Period, number>
 
-export default function DailyEarningsHistoryChart(
-    //     {
-    //     selectedRange,
-    //     handleRangeChange,
-    //     selectedFilter,
-    //     handleFilterChange,
-    //     chartData,
-    // }: TDailyEarningsHistoryChartProps
-) {
-    const [selectedRange, setSelectedRange] = useState(Period.oneMonth)
-    const { walletAddress } = useWalletConnection()
-    const startTimeStamp = getStartTimestamp(selectedRange)
-    const {
-        data: dailyEarningsHistoryData,
-        isLoading: isLoadingDailyEarningsHistory,
-        isError: isErrorDailyEarningsHistory
-    } = useGetDailyEarningsHistory({
-        vault_address: VAULT_ADDRESS,
-        user_address: walletAddress.toLowerCase() as `0x${string}`,
-        start_timestamp: startTimeStamp,
-    })
-
+export default function DailyEarningsHistoryChart({
+    selectedRange,
+    setSelectedRange,
+    dailyEarningsHistoryData,
+    isLoadingDailyEarningsHistory,
+    isErrorDailyEarningsHistory,
+    noDataUI,
+    earningsSuffixText
+}: TDailyEarningsHistoryChartProps) {
     const totalEarnings = useMemo(() => {
         return dailyEarningsHistoryData?.reduce((acc: number, item: any) => acc + item.earnings, 0) ?? 0
     }, [dailyEarningsHistoryData])
@@ -147,13 +137,6 @@ export default function DailyEarningsHistoryChart(
         setSelectedRange(range)
     }
 
-    const totalEarningsSuffixText = {
-        [Period.oneDay]: 'today',
-        [Period.oneWeek]: 'this week',
-        [Period.oneMonth]: 'this month',
-        [Period.allTime]: 'till date',
-    } satisfies Record<Period, string>
-
     return (
         <Card>
             <div className="flex items-center justify-between p-6 pb-4">
@@ -167,11 +150,16 @@ export default function DailyEarningsHistoryChart(
                 />
             </div>
             <div className="relative h-[300px] bg-white rounded-4 pb-2">
+                <div className="flex items-center gap-2 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+                    {(isErrorDailyEarningsHistory || (dailyEarningsHistoryData?.length === 0 && !isLoadingDailyEarningsHistory)) &&
+                        noDataUI
+                    }
+                </div>
                 <div className="flex items-center gap-2 absolute top-3 right-8 z-10">
                     {!isLoadingDailyEarningsHistory &&
                         <>
                             <BodyText level="body2" weight="normal" className="text-muted-foreground">
-                                Earned {totalEarningsSuffixText[selectedRange]}
+                                Earned {earningsSuffixText[selectedRange]}
                             </BodyText>
                             <HeadingText level="h5" weight="medium" className={`${totalEarnings === 0 ? 'text-gray-800' : totalEarnings > 0 ? 'text-green-800' : 'text-red-800'}`}>
                                 ${abbreviateNumber(totalEarnings, 4)}

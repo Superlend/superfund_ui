@@ -50,9 +50,9 @@ export default function SuperVaultPage() {
         },
     ]
 
-    useEffect(() => {
-        setSelectedTab(tabs.filter(tab => tab.show)[0].value)
-    }, [isWalletConnected])
+    // useEffect(() => {
+    //     setSelectedTab(tabs.filter(tab => tab.show)[0].value)
+    // }, [isWalletConnected])
 
     const handleTabChange = (tab: string) => {
         setSelectedTab(tab)
@@ -78,14 +78,12 @@ export default function SuperVaultPage() {
                         <div className="block lg:hidden">
                             <DepositAndWithdrawAssets />
                         </div>
-                        {/* {isWalletConnected && <ClaimRewards />}
-                        <FundOverview /> */}
                         {isConnectingWallet &&
                             <LoadingTabs />
                         }
                         {!isConnectingWallet &&
                             <FlatTabs
-                                tabs={tabs.filter(tab => tab.show)}
+                                tabs={tabs}
                                 activeTab={selectedTab}
                                 onTabChange={handleTabChange}
                             />

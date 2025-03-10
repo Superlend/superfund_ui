@@ -32,7 +32,7 @@ export function useRewardsHook() {
     const [formattedClaimData, setFormattedClaimData] = useState<
         TClaimRewardsResponse[]
     >([])
-    const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [isLoading, setIsLoading] = useState<boolean>(true)
     const [isError, setIsError] = useState<boolean>(false)
 
     const fetchFormattedClaimData = useCallback(async () => {
@@ -42,6 +42,7 @@ export function useRewardsHook() {
             rewardsData.length === 0 ||
             isErrorRewards
         ) {
+            setIsLoading(false)
             return
         }
 
