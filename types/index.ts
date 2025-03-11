@@ -9,6 +9,7 @@ export type TAddress = `0x${string}`
 export type TClaimRewardsParams = {
     user_address: string
     chain_id: number
+    refetchClaimRewards?: boolean
 }
 
 export type TClaimRewardsResponse = {

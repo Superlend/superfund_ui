@@ -16,7 +16,11 @@ const publicClient = createPublicClient({
 
 const CHAIN_ID = 8453
 
-export function useRewardsHook() {
+export function useRewardsHook({
+    refetchClaimRewards = false,
+}: {
+    refetchClaimRewards?: boolean
+} = {}) {
     const { walletAddress } = useWalletConnection()
 
     const {
@@ -27,6 +31,7 @@ export function useRewardsHook() {
     } = useGetClaimRewards({
         user_address: walletAddress,
         chain_id: CHAIN_ID,
+        refetchClaimRewards,
     })
 
     const [formattedClaimData, setFormattedClaimData] = useState<

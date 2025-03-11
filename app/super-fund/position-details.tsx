@@ -2,7 +2,7 @@
 
 import { Period } from "@/types/periodButtons"
 import { motion } from "motion/react"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import DepositHistoryChart from '@/components/deposit-history-chart'
 import ClaimRewards from "./claim-rewards"
 import { useWalletConnection } from "@/hooks/useWalletConnection"
@@ -14,6 +14,8 @@ import useGetDailyEarningsHistory from "@/hooks/useGetDailyEarningsHistory"
 import { VAULT_ADDRESS } from "@/lib/constants"
 import { getStartTimestamp } from "@/lib/utils"
 import { TAddress } from "@/types"
+import { useTxContext } from "@/context/super-vault-tx-provider"
+import { TTxContext } from "@/context/super-vault-tx-provider"
 
 const variants = {
     hidden: { opacity: 0, y: 30 },
@@ -89,8 +91,12 @@ function NoActivePositionUI({
 }
 
 function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddress }) {
+    const { claimRewardsTx } = useTxContext() as TTxContext
+    const [refetchClaimRewards, setrefetchClaimRewards] = useState(false)
     // Claim Rewards
-    const { formattedClaimData: rewardsData, isLoading: isLoadingRewards, isError: isErrorRewards, refetchClaimRewardsData } = useRewardsHook();
+    const { formattedClaimData: rewardsData, isLoading: isLoadingRewards, isError: isErrorRewards, refetchClaimRewardsData } = useRewardsHook({
+        refetchClaimRewards: refetchClaimRewards,
+    });
     // Daily Earnings History
     const [selectedRangeForDailyEarningsHistory, setSelectedRangeForDailyEarningsHistory] = useState(Period.oneMonth)
     const startTimeStamp = getStartTimestamp(selectedRangeForDailyEarningsHistory)
@@ -110,6 +116,16 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
         [Period.allTime]: 'till date',
     } satisfies Record<Period, string>
 
+    useEffect(() => {
+        const shouldRefetchClaimRewards = claimRewardsTx.status === 'view' && claimRewardsTx.isConfirmed && claimRewardsTx.hash
+        if (shouldRefetchClaimRewards) {
+            setrefetchClaimRewards(true)
+            setTimeout(() => {
+                setrefetchClaimRewards(false)
+            }, 7000)
+        }
+    }, [claimRewardsTx.status, claimRewardsTx.isConfirmed, claimRewardsTx.hash])
+
     return (
         <motion.div
             initial="hidden"
@@ -122,7 +138,6 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                 rewardsData={rewardsData}
                 isLoadingRewards={isLoadingRewards}
                 isErrorRewards={isErrorRewards}
-                refetchClaimRewardsData={refetchClaimRewardsData}
                 noDataUI={null}
             />
             <DailyEarningsHistoryChart

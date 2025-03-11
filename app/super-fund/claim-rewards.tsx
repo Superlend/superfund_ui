@@ -29,13 +29,11 @@ export default function ClaimRewards({
     rewardsData,
     isLoadingRewards,
     isErrorRewards,
-    refetchClaimRewardsData,
     noDataUI
 }: {
     rewardsData: TClaimRewardsResponse[],
     isLoadingRewards: boolean,
     isErrorRewards: boolean,
-    refetchClaimRewardsData: () => void,
     noDataUI: React.ReactNode
 }) {
     const [isTxDialogOpen, setIsTxDialogOpen] = useState(false)
