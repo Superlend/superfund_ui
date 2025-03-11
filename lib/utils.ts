@@ -560,3 +560,43 @@ export function debounce(func: Function, wait: number) {
         timeout = setTimeout(() => func(...args), wait)
     }
 }
+
+interface StoredWalletData {
+    address: string;
+    expiresAt: number;
+}
+
+export const WALLET_STORAGE_KEY = 'approvedWalletAddress';
+const EXPIRATION_DAYS = 7; // Wallet approval expires after 7 days
+
+export function storeApprovedWallet(walletAddress: string) {
+    const data: StoredWalletData = {
+        address: walletAddress.toLowerCase(),
+        expiresAt: Date.now() + (EXPIRATION_DAYS * 24 * 60 * 60 * 1000) // 7 days from now
+    };
+    localStorage.setItem(WALLET_STORAGE_KEY, JSON.stringify(data));
+}
+
+export function getApprovedWallet(): string | null {
+    try {
+        const storedData = localStorage.getItem(WALLET_STORAGE_KEY);
+        if (!storedData) return null;
+
+        const data: StoredWalletData = JSON.parse(storedData);
+        
+        // Check if expired
+        if (Date.now() > data.expiresAt) {
+            localStorage.removeItem(WALLET_STORAGE_KEY);
+            return null;
+        }
+
+        return data.address;
+    } catch (error) {
+        console.error('Error reading wallet from storage:', error);
+        return null;
+    }
+}
+
+export function clearApprovedWallet() {
+    localStorage.removeItem(WALLET_STORAGE_KEY);
+}
