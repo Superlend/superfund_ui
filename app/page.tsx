@@ -10,6 +10,7 @@ import { usePrivy } from '@privy-io/react-auth'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import AccessDialog from '@/components/AccessDialog'
+import Image from 'next/image'
 
 export default function HomePage() {
     const { ready, authenticated } = usePrivy()
@@ -56,6 +57,24 @@ export default function HomePage() {
         }
     }
 
+    const imageVariants = {
+        hidden: { opacity: 0, scale: 0.8 },
+        visible: {
+            opacity: 0.25,
+            scale: 1,
+            transition: { duration: 0.8, ease: "easeOut" }
+        }
+    }
+
+    const smallImageVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 0.15,
+            y: 0,
+            transition: { duration: 0.5, ease: "easeOut" }
+        }
+    }
+
     return (
         <MainContainer className="flex items-center justify-center min-h-[calc(100vh-200px)] my-0">
             <motion.div
@@ -64,8 +83,84 @@ export default function HomePage() {
                 variants={containerVariants}
                 className="w-full"
             >
-                <Card className="max-w-3xl w-full mx-auto bg-white/75 backdrop-blur-sm hover:shadow-lg transition-shadow duration-300">
-                    <CardContent className="p-8 space-y-8">
+                <Card className="max-w-3xl w-full mx-auto bg-white/75 backdrop-blur-sm hover:shadow-lg transition-shadow duration-300 relative overflow-hidden">
+                    {/* Main Decorative Background Images */}
+                    <motion.div
+                        variants={imageVariants}
+                        className="absolute -left-10 -top-10 w-40 h-40 pointer-events-none"
+                    >
+                        <Image
+                            src="/images/logos/superlend-letter.png"
+                            alt=""
+                            width={160}
+                            height={160}
+                            style={{ objectFit: 'contain' }}
+                        />
+                    </motion.div>
+                    <motion.div
+                        variants={imageVariants}
+                        className="absolute -right-8 -top-8 w-32 h-32 pointer-events-none"
+                    >
+                        <Image
+                            src="/images/logos/superlend-blue-circle.png"
+                            alt=""
+                            width={128}
+                            height={128}
+                            style={{ objectFit: 'contain' }}
+                        />
+                    </motion.div>
+                    <motion.div
+                        variants={imageVariants}
+                        className="absolute -bottom-12 right-8 w-36 h-36 pointer-events-none"
+                    >
+                        <Image
+                            src="/images/logos/superlend-orange-circle.png"
+                            alt=""
+                            width={144}
+                            height={144}
+                            style={{ objectFit: 'contain' }}
+                        />
+                    </motion.div>
+
+                    {/* Small Decorative Elements */}
+                    <motion.div
+                        variants={smallImageVariants}
+                        className="absolute left-1/4 top-8 w-8 h-8 pointer-events-none"
+                    >
+                        <Image
+                            src="/images/logos/superlend-letter.png"
+                            alt=""
+                            width={32}
+                            height={32}
+                            style={{ objectFit: 'contain' }}
+                        />
+                    </motion.div>
+                    <motion.div
+                        variants={smallImageVariants}
+                        className="absolute right-1/4 bottom-12 w-7 h-7 pointer-events-none"
+                    >
+                        <Image
+                            src="/images/logos/superlend-blue-circle.png"
+                            alt=""
+                            width={28}
+                            height={28}
+                            style={{ objectFit: 'contain' }}
+                        />
+                    </motion.div>
+                    <motion.div
+                        variants={smallImageVariants}
+                        className="absolute left-1/3 bottom-16 w-8 h-8 pointer-events-none"
+                    >
+                        <Image
+                            src="/images/logos/superlend-orange-circle.png"
+                            alt=""
+                            width={32}
+                            height={32}
+                            style={{ objectFit: 'contain' }}
+                        />
+                    </motion.div>
+                    
+                    <CardContent className="p-8 space-y-8 relative z-10">
                         <motion.div variants={childVariants}>
                             <HeadingText level="h1" weight="bold" className="text-center">
                                 Exclusive Beta Access
