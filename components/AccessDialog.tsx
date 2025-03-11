@@ -102,6 +102,7 @@ export default function AccessDialog({ open, setOpen, onError }: AccessDialogPro
             setOpen(false)
         } finally {
             setIsLoading(false)
+            setOpen(false)
         }
     }
 
@@ -131,7 +132,7 @@ export default function AccessDialog({ open, setOpen, onError }: AccessDialogPro
     const contentBody = (
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
             {isLoading && (
-                <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-50">
+                <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-3 z-50">
                     <div className="flex flex-col items-center space-y-4">
                         <LoaderCircle className="w-8 h-8 animate-spin text-primary" />
                         <BodyText level="body2">Adding to allowlist...</BodyText>
