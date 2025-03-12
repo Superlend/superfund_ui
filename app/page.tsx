@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import AccessDialog from '@/components/AccessDialog'
 import Image from 'next/image'
+import { Asterisk } from 'lucide-react'
 
 export default function HomePage() {
     const { ready, authenticated } = usePrivy()
@@ -159,12 +160,21 @@ export default function HomePage() {
                             style={{ objectFit: 'contain' }}
                         />
                     </motion.div>
-                    
+
                     <CardContent className="p-8 space-y-8 relative z-10">
                         <motion.div variants={childVariants}>
-                            <HeadingText level="h1" weight="bold" className="text-center">
-                                Exclusive Beta Access
+                            <HeadingText level="h1" weight="bold" className="text-center capitalize">
+                                SuperFund exlusive beta access
                             </HeadingText>
+                        </motion.div>
+
+                        <motion.div className="space-y-4 max-w-lg mx-auto" variants={childVariants}>
+                            <div className="flex items-start justify-start">
+                                <Asterisk className="w-12 h-6 text-primary" />
+                                <BodyText level="body1" weight="medium" className="text-gray-800 text-center">
+                                    SuperFund optimally allocates your USDC across trusted lending protocols such as Aave, Morpho, Euler, & Fluid to generate consistent and competitive returns.
+                                </BodyText>
+                            </div>
                         </motion.div>
 
                         <motion.div className="space-y-4 max-w-xs mx-auto" variants={childVariants}>
@@ -207,9 +217,9 @@ export default function HomePage() {
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
                                 >
-                                    <Button 
-                                        variant="primary" 
-                                        size="lg" 
+                                    <Button
+                                        variant="primary"
+                                        size="lg"
                                         className="w-full"
                                         onClick={() => setDialogOpen(true)}
                                     >
@@ -221,9 +231,9 @@ export default function HomePage() {
                     </CardContent>
                 </Card>
             </motion.div>
-            <AccessDialog 
-                open={dialogOpen} 
-                setOpen={setDialogOpen} 
+            <AccessDialog
+                open={dialogOpen}
+                setOpen={setDialogOpen}
                 onError={handleError}
             />
         </MainContainer>

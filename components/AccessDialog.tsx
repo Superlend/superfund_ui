@@ -34,6 +34,7 @@ export default function AccessDialog({ open, setOpen, onError }: AccessDialogPro
     const [walletAddress, setWalletAddress] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [validationError, setValidationError] = useState('')
+    const [apiError, setApiError] = useState('')
     const router = useRouter()
     const { width: screenWidth } = useDimensions()
     const isDesktop = screenWidth > 768
@@ -42,6 +43,9 @@ export default function AccessDialog({ open, setOpen, onError }: AccessDialogPro
         // Only allow closing if not in loading state
         if (!isLoading) {
             setOpen(open)
+            // Clear errors when dialog is closed
+            setValidationError('')
+            setApiError('')
         }
     }
 
@@ -59,6 +63,7 @@ export default function AccessDialog({ open, setOpen, onError }: AccessDialogPro
     const handleWalletAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value
         setWalletAddress(value)
+        setApiError('') // Clear API error when input changes
         if (value) {
             validateWalletAddress(value)
         } else {
@@ -74,6 +79,7 @@ export default function AccessDialog({ open, setOpen, onError }: AccessDialogPro
         }
 
         setIsLoading(true)
+        setApiError('') // Clear any previous API errors
 
         try {
             // Call the allowlist API
@@ -85,24 +91,31 @@ export default function AccessDialog({ open, setOpen, onError }: AccessDialogPro
                 body: JSON.stringify({ walletAddress }),
             })
 
-            if (!response.ok) {
-                throw new Error('Failed to add to allowlist')
-            }
-
             const data = await response.json()
+
+            if (!response.ok) {
+                if (data.code === 'MAX_LIMIT_REACHED') {
+                    setApiError(data.error)
+                    setIsLoading(false)
+                    return
+                }
+                throw new Error(data.error || 'Failed to add to allowlist')
+            }
             
             // Store the approved wallet address with expiration
             storeApprovedWallet(walletAddress)
             
             // If successful, redirect to super-fund page
             router.push('/super-fund')
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error)
+            setApiError(error.message || 'Failed to add wallet to allowlist')
             onError()
-            setOpen(false)
         } finally {
             setIsLoading(false)
-            setOpen(false)
+            if (!apiError) {
+                setOpen(false)
+            }
         }
     }
 
@@ -130,7 +143,7 @@ export default function AccessDialog({ open, setOpen, onError }: AccessDialogPro
 
     // Content body component
     const contentBody = (
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
             {isLoading && (
                 <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-3 z-50">
                     <div className="flex flex-col items-center space-y-4">
@@ -146,11 +159,16 @@ export default function AccessDialog({ open, setOpen, onError }: AccessDialogPro
                     value={walletAddress}
                     onChange={handleWalletAddressChange}
                     required
-                    className={validationError ? 'border-destructive' : ''}
+                    className={`rounded-3 ${validationError || apiError ? 'border-destructive' : ''}`}
                 />
                 {validationError && (
-                    <BodyText level="body2" className="text-red-700 text-sm font-medium">
+                    <BodyText level="body2" className="text-destructive text-sm font-medium">
                         {validationError}
+                    </BodyText>
+                )}
+                {apiError && (
+                    <BodyText level="body2" className="text-destructive text-sm font-medium">
+                        {apiError}
                     </BodyText>
                 )}
             </div>
@@ -159,7 +177,7 @@ export default function AccessDialog({ open, setOpen, onError }: AccessDialogPro
                     type="button"
                     variant="secondary"
                     size="lg"
-                    onClick={() => setOpen(false)}
+                    onClick={() => handleOpenChange(false)}
                 >
                     Cancel
                 </Button>

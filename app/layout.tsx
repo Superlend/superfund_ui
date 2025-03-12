@@ -23,9 +23,9 @@ export const metadata: Metadata = {
         'Earn in DeFi',
         'Earn USDC',
     ],
-    title: 'Superfund',
-    // description:
-    //     'Lend, Borrow, Earn & level up your DeFi experience with best lending & borrowing aggregator with over 100+ markets .',
+    title: 'SuperFund',
+    description:
+        'SuperFund optimally allocates your USDC across trusted lending protocols such as Aave, Morpho, Euler, & Fluid to generate consistent and competitive returns.',
     icons: [
         { url: '/images/logos/favicon-16x16.png', sizes: '16x16' },
         { url: '/images/logos/favicon-32x32.png', sizes: '32x32' },
@@ -35,16 +35,16 @@ export const metadata: Metadata = {
     openGraph: {
         type: 'website',
         url: 'https://funds.superlend.xyz',
-        title: 'Superfund',
-        // description:
-        //     'Lend, Borrow, Earn & level up your DeFi experience with best lending & borrowing aggregator with over 100+ markets .',
+        title: 'SuperFund',
+        description:
+            'SuperFund optimally allocates your USDC across trusted lending protocols such as Aave, Morpho, Euler, & Fluid to generate consistent and competitive returns.',
         siteName: 'Superfund',
         images: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png',
     },
     twitter: {
-        title: 'Superfund',
-        // description:
-        //     'Lend, Borrow, Earn & level up your DeFi experience with best lending & borrowing aggregator with over 100+ markets .',
+        title: 'SuperFund',
+        description:
+            'SuperFund optimally allocates your USDC across trusted lending protocols such as Aave, Morpho, Euler, & Fluid to generate consistent and competitive returns.',
         images: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png',
     },
 }

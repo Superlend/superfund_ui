@@ -6,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
     Area,
     AreaChart,
+    Bar,
+    BarChart,
     ResponsiveContainer,
     Tooltip,
     XAxis,
@@ -22,6 +24,8 @@ import { abbreviateNumber, extractTimeFromDate, formatDateAccordingToPeriod, get
 import { ChartConfig, ChartContainer } from './ui/chart'
 import { Skeleton } from './ui/skeleton'
 import { TDailyEarningsHistoryResponse } from '@/types'
+import { Button } from './ui/button'
+import { AlignEndHorizontal, ChartBar, ChartBarIncreasing, ChartLine } from 'lucide-react'
 
 interface CustomXAxisTickProps {
     x: number
@@ -97,6 +101,11 @@ const customTicks = {
     [Period.allTime]: 5,
 } satisfies Record<Period, number>
 
+enum ChartType {
+    Area = 'area',
+    Bar = 'bar'
+}
+
 export default function DailyEarningsHistoryChart({
     selectedRange,
     setSelectedRange,
@@ -106,6 +115,8 @@ export default function DailyEarningsHistoryChart({
     noDataUI,
     earningsSuffixText
 }: TDailyEarningsHistoryChartProps) {
+    const [chartType, setChartType] = useState<ChartType>(ChartType.Area)
+
     const totalEarnings = useMemo(() => {
         return dailyEarningsHistoryData?.reduce((acc: number, item: any) => acc + item.earnings, 0) ?? 0
     }, [dailyEarningsHistoryData])
@@ -140,9 +151,31 @@ export default function DailyEarningsHistoryChart({
     return (
         <Card>
             <div className="flex items-center justify-between p-6 pb-4">
-                <HeadingText level="h4" weight="medium" className="text-gray-800">
-                    Interest Earned
-                </HeadingText>
+                <div className="flex items-center gap-4">
+                    <HeadingText level="h4" weight="medium" className="text-gray-800">
+                        Interest Earned
+                    </HeadingText>
+                    <div className="flex gap-1 items-center w-auto p-1 tracking-normal leading-tight uppercase whitespace-nowrap rounded-4 text-stone-800 bg-white bg-opacity-40 shadow-[0px_2px_2px_rgba(0,0,0,0.02)]">
+                        <Button
+                            variant={chartType === ChartType.Area ? 'primary' : 'ghost'}
+                            size="sm"
+                            onClick={() => setChartType(ChartType.Area)}
+                            className={`flex items-center justify-center py-1 grow-1 min-w-[50px] w-full flex-1 h-full my-auto hover:bg-white/45 uppercase font-semibold rounded-3 ${chartType === ChartType.Area ? 'shadow bg-[linear-gradient(180deg,#FF5B00_0%,#F55700_100%)]' : ''
+                                }`}
+                        >
+                            <ChartLine className={`h-4 w-4 ${chartType !== ChartType.Area ? 'stroke-gray-600' : ''}`} />
+                        </Button>
+                        <Button
+                            variant={chartType === ChartType.Bar ? 'primary' : 'ghost'}
+                            size="sm"
+                            onClick={() => setChartType(ChartType.Bar)}
+                            className={`flex items-center justify-center py-1 grow-1 min-w-[50px] w-full flex-1 h-full my-auto hover:bg-white/45 uppercase font-semibold rounded-3 ${chartType === ChartType.Bar ? 'shadow bg-[linear-gradient(180deg,#FF5B00_0%,#F55700_100%)]' : ''
+                                }`}
+                        >
+                            <AlignEndHorizontal className={`h-4 w-4 rotate-180 scale-[-1] ${chartType !== ChartType.Bar ? 'stroke-gray-600' : ''}`} />
+                        </Button>
+                    </div>
+                </div>
                 <TimelineFilterTabs
                     selectedRange={selectedRange}
                     handleRangeChange={(value) => handleRangeChange(value as Period)}
@@ -176,88 +209,143 @@ export default function DailyEarningsHistoryChart({
                             <ChartContainer
                                 config={chartConfig}
                             >
-                                <AreaChart
-                                    data={chartData}
-                                    margin={{
-                                        top: 10,
-                                        right: 10,
-                                        left: 10,
-                                        bottom: 0,
-                                    }}
-                                >
-                                    <defs>
-                                        <linearGradient
-                                            id="colorValue"
-                                            x1="0"
-                                            y1="0"
-                                            x2="0"
-                                            y2="1"
-                                        >
-                                            <stop
-                                                offset="5%"
-                                                stopColor="#FF5B0033"
-                                                stopOpacity={0.3}
-                                            />
-                                            <stop
-                                                offset="95%"
-                                                stopColor="#FF5B0033"
-                                                stopOpacity={0}
-                                            />
-                                        </linearGradient>
-                                    </defs>
-                                    <XAxis
-                                        dataKey="date"
-                                        stroke="#888888"
-                                        fontSize={12}
-                                        tickLine={true}
-                                        axisLine={true}
-                                        tickCount={5}
-                                        padding={{ left: 0, right: 0 }}
-                                        allowDataOverflow={true}
-                                        scale="band"
-                                        type="category"
-                                        interval={(chartData?.length || 0) > 5 ? Math.floor((chartData?.length || 0) / 5) : 0}
-                                        tick={({ x, y, payload, index }) => (
-                                            <CustomXAxisTick
-                                                payload={payload as { value: number }}
-                                                selectedRange={selectedRange}
-                                                x={x as number}
-                                                y={y as number}
-                                                index={index as number}
-                                                length={chartData?.length || 0}
-                                            />
-                                        )}
-                                    />
-                                    <YAxis
-                                        dataKey="earnings"
-                                        stroke="#888888"
-                                        fontSize={12}
-                                        tickLine={true}
-                                        axisLine={true}
-                                        tickCount={4}
-                                        tickFormatter={(value) => `$${abbreviateNumber(value)}`}
-                                        padding={{ top: 10, bottom: 10 }}
-                                        allowDataOverflow={false}
-                                        scale="auto"
-                                        interval="preserveStartEnd"
-                                    />
-                                    <Tooltip content={<CustomTooltip />} />
-                                    <Area
-                                        type="monotone"
-                                        dataKey="earnings"
-                                        stroke="#FF5B00"
-                                        fillOpacity={1}
-                                        fill="url(#colorValue)"
-                                        isAnimationActive={true}
-                                        strokeWidth={2}
-                                        dot={false}
-                                    />
-                                </AreaChart>
+                                {chartType === ChartType.Area ? (
+                                    <AreaChart
+                                        data={chartData}
+                                        margin={{
+                                            top: 10,
+                                            right: 10,
+                                            left: 10,
+                                            bottom: 0,
+                                        }}
+                                    >
+                                        <defs>
+                                            <linearGradient
+                                                id="colorValue"
+                                                x1="0"
+                                                y1="0"
+                                                x2="0"
+                                                y2="1"
+                                            >
+                                                <stop
+                                                    offset="5%"
+                                                    stopColor="#FF5B0033"
+                                                    stopOpacity={0.3}
+                                                />
+                                                <stop
+                                                    offset="95%"
+                                                    stopColor="#FF5B0033"
+                                                    stopOpacity={0}
+                                                />
+                                            </linearGradient>
+                                        </defs>
+                                        <XAxis
+                                            dataKey="date"
+                                            stroke="#888888"
+                                            fontSize={12}
+                                            tickLine={true}
+                                            axisLine={true}
+                                            tickCount={5}
+                                            padding={{ left: 0, right: 0 }}
+                                            allowDataOverflow={true}
+                                            // scale="band"
+                                            type="category"
+                                            interval={(chartData?.length || 0) > 5 ? Math.floor((chartData?.length || 0) / 5) : 0}
+                                            tick={({ x, y, payload, index }) => (
+                                                <CustomXAxisTick
+                                                    payload={payload as { value: number }}
+                                                    selectedRange={selectedRange}
+                                                    x={x as number}
+                                                    y={y as number}
+                                                    index={index as number}
+                                                    length={chartData?.length || 0}
+                                                />
+                                            )}
+                                        />
+                                        <YAxis
+                                            dataKey="earnings"
+                                            stroke="#888888"
+                                            fontSize={12}
+                                            tickLine={true}
+                                            axisLine={true}
+                                            tickCount={4}
+                                            tickFormatter={(value) => `$${abbreviateNumber(value)}`}
+                                            padding={{ top: 10, bottom: 10 }}
+                                            allowDataOverflow={false}
+                                            scale="auto"
+                                            interval="preserveStartEnd"
+                                        />
+                                        <Tooltip content={<CustomTooltip />} />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="earnings"
+                                            stroke="#FF5B00"
+                                            fillOpacity={1}
+                                            fill="url(#colorValue)"
+                                            isAnimationActive={true}
+                                            strokeWidth={2}
+                                            dot={false}
+                                        />
+                                    </AreaChart>
+                                ) : (
+                                    <BarChart
+                                        data={chartData}
+                                        margin={{
+                                            top: 10,
+                                            right: 10,
+                                            left: 10,
+                                            bottom: 0,
+                                        }}
+                                    >
+                                        <XAxis
+                                            dataKey="date"
+                                            stroke="#888888"
+                                            fontSize={12}
+                                            tickLine={true}
+                                            axisLine={true}
+                                            tickCount={5}
+                                            padding={{ left: 0, right: 0 }}
+                                            allowDataOverflow={true}
+                                            // scale="band"
+                                            type="category"
+                                            interval={(chartData?.length || 0) > 5 ? Math.floor((chartData?.length || 0) / 5) : 0}
+                                            tick={({ x, y, payload, index }) => (
+                                                <CustomXAxisTick
+                                                    payload={payload as { value: number }}
+                                                    selectedRange={selectedRange}
+                                                    x={x as number}
+                                                    y={y as number}
+                                                    index={index as number}
+                                                    length={chartData?.length || 0}
+                                                />
+                                            )}
+                                        />
+                                        <YAxis
+                                            dataKey="earnings"
+                                            stroke="#888888"
+                                            fontSize={12}
+                                            tickLine={true}
+                                            axisLine={true}
+                                            tickCount={4}
+                                            tickFormatter={(value) => `$${abbreviateNumber(value)}`}
+                                            padding={{ top: 10, bottom: 10 }}
+                                            allowDataOverflow={false}
+                                            scale="auto"
+                                            interval="preserveStartEnd"
+                                        />
+                                        <Tooltip content={<CustomTooltip />} />
+                                        <Bar
+                                            dataKey="earnings"
+                                            fill="#FF5B00"
+                                            radius={[4, 4, 0, 0]}
+                                            maxBarSize={50}
+                                        />
+                                    </BarChart>
+                                )}
                             </ChartContainer>
                         </ResponsiveContainer>
                     }
-                    {
-                        isLoadingDailyEarningsHistory &&
+                    {isLoadingDailyEarningsHistory &&
                         <Skeleton className={`w-full h-[350px] rounded-4 max-w-[1200px] bg-gray-300`} />
                     }
                 </>
