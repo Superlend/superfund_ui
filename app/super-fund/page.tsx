@@ -49,11 +49,16 @@ export default function SuperVaultPage() {
                 
                 if (!approvedWallet) {
                     console.log('No approved wallet found in localStorage')
-                    router.push('/')
+                    router.replace('/')
                     return
                 }
 
-                console.log('Checking access for approved wallet:', approvedWallet)
+                // If connected wallet doesn't match approved wallet, redirect to home
+                if (walletAddress && walletAddress.toLowerCase() !== approvedWallet.toLowerCase()) {
+                    console.warn('Connected wallet does not match approved wallet')
+                    router.replace('/')
+                    return
+                }
 
                 // Verify the approved wallet is still in allowlist
                 const response = await fetch('/api/allowlist/check', {
@@ -74,20 +79,15 @@ export default function SuperVaultPage() {
                 if (!hasAccess) {
                     console.log('No access, redirecting to home')
                     clearApprovedWallet()
-                    router.push('/')
+                    router.replace('/')
                     return
-                }
-
-                // If connected wallet doesn't match approved wallet, show warning
-                if (walletAddress && walletAddress.toLowerCase() !== approvedWallet.toLowerCase()) {
-                    console.warn('Connected wallet does not match approved wallet')
                 }
 
                 setAccessChecked(true)
             } catch (error) {
                 console.error('Error checking access:', error)
                 clearApprovedWallet()
-                router.push('/')
+                router.replace('/')
             } finally {
                 setIsCheckingAccess(false)
             }
