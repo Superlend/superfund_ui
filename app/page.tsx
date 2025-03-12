@@ -22,6 +22,11 @@ export default function HomePage() {
     // Handle successful authentication
     React.useEffect(() => {
         if (ready && authenticated) {
+            const approvedWallet = localStorage.getItem('approved_wallet')
+            if (!approvedWallet) {
+                return // Don't redirect if no approved wallet
+            }
+            
             const timer = setTimeout(() => {
                 router.push('/super-fund')
             }, 1000)
@@ -188,19 +193,7 @@ export default function HomePage() {
                             variants={childVariants}
                         >
                             <AnimatePresence mode="wait">
-                                {authenticated ? (
-                                    <motion.div
-                                        key="success"
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.8 }}
-                                        className="bg-success-background text-success-foreground p-4 rounded-lg text-center"
-                                    >
-                                        <BodyText level="body2">
-                                            Successfully connected! Redirecting...
-                                        </BodyText>
-                                    </motion.div>
-                                ) : connectionError ? (
+                                {connectionError ? (
                                     <motion.div
                                         key="error"
                                         initial={{ opacity: 0, scale: 0.8 }}
