@@ -9,6 +9,7 @@ export type TAddress = `0x${string}`
 export type TClaimRewardsParams = {
     user_address: string
     chain_id: number
+    refetchClaimRewards?: boolean
 }
 
 export type TClaimRewardsResponse = {
@@ -109,40 +110,6 @@ export type THistoricalDataPerformanceHistory = {
 
 export type THistoricalDataRebalanceHistory = {
     timestamp: number
-}
-
-export type TOpportunity = {
-    token: {
-        address: string
-        decimals: number
-        logo: string
-        name: string
-        price_usd: number
-        symbol: string
-    }
-    chain_id: number
-    platform: {
-        name: string
-        platform_name: string
-        protocol_identifier: string
-        logo: string
-        additional_rewards: boolean
-        max_ltv: number
-        liquidity: string
-        borrows: string
-        utilization_rate: string
-        apy: {
-            current: string
-            avg_7days: string
-            avg_30days: string
-        }
-        rewards: TReward[]
-        isVault?: boolean
-    }
-    trend: {
-        value: string
-        type: string
-    }
 }
 
 export type TOpportunityTable = {
@@ -259,6 +226,18 @@ export type TPlatformHistory = {
 export type TGetTokensParams = {
     chain_id?: string[]
     token?: string[]
+}
+
+// Daily Earnings History
+export type TDailyEarningsHistoryParams = {
+    vault_address: TAddress
+    user_address: TAddress
+    start_timestamp?: number
+}
+
+export type TDailyEarningsHistoryResponse = {
+    earnings: number
+    timestamp: number
 }
 
 // Queries END =====================================

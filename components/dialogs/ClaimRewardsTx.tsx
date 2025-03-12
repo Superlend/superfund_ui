@@ -8,7 +8,7 @@ import {
     LoaderCircle,
     X,
 } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
     abbreviateNumber,
     decimalPlacesCount,
@@ -39,7 +39,6 @@ import {
     DrawerTrigger,
 } from '@/components/ui/drawer'
 import { ChainId } from '@/types/chain'
-import { usePrivy } from '@privy-io/react-auth'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import ImageWithBadge from '@/components/ImageWithBadge'
 import ExternalLink from '@/components/ExternalLink'
@@ -62,7 +61,7 @@ export default function ClaimRewardsTxDialog({
 }) {
     const { claimRewardsTx, setClaimRewardsTx } =
         useTxContext() as TTxContext
-    const { isWalletConnected, handleSwitchChain } = useWalletConnection()
+    const { isWalletConnected, handleSwitchChain, walletAddress } = useWalletConnection()
     const { width: screenWidth } = useDimensions()
     const isDesktop = screenWidth > 768
 
@@ -78,9 +77,6 @@ export default function ClaimRewardsTxDialog({
             handleSwitchChain(ChainId.Base)
         }
     }, [isWalletConnected])
-
-    const { user } = usePrivy()
-    const walletAddress = user?.wallet?.address
 
     function resetClaimRewardsTx() {
         setClaimRewardsTx((prev: TClaimRewardsTx) => ({

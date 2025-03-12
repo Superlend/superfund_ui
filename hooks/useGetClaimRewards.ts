@@ -5,12 +5,12 @@ import { TClaimRewardsResponse } from '@/types'
 import { TClaimRewardsParams } from '@/types'
 import { useQuery } from '@tanstack/react-query'
 
-export default function useGetClaimRewards(params: TClaimRewardsParams) {
+export default function useGetClaimRewards(params: TClaimRewardsParams, refetchClaimRewards = false) {
     const { data, isLoading, isError, refetch } = useQuery<
         TClaimRewardsResponse[],
         Error
     >({
-        queryKey: ['claim-rewards', params.user_address, params.chain_id],
+        queryKey: ['claim-rewards', params.user_address, params.chain_id, refetchClaimRewards],
         queryFn: async () => {
             try {
                 const responseData = await getClaimRewards(params)
@@ -20,7 +20,7 @@ export default function useGetClaimRewards(params: TClaimRewardsParams) {
             }
         },
         staleTime: Infinity,
-        refetchInterval: false,
+        refetchInterval: refetchClaimRewards ? 1000 : false,
         enabled: !!params.user_address && !!params.chain_id,
     })
 

@@ -58,6 +58,15 @@ function ContextProvider({
                     landingHeader: 'Connect Wallet',
                     loginMessage: 'Select wallet to continue',
                     showWalletLoginFirst: true,
+                    walletList: [
+                        'metamask',
+                        'coinbase_wallet',
+                        'okx_wallet',
+                        'rainbow',
+                        'rabby_wallet',
+                        'phantom',
+                        'wallet_connect',
+                    ]
                 },
                 supportedChains: [base],
             }}

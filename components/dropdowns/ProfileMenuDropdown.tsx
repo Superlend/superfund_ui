@@ -23,12 +23,13 @@ import useDimensions from '@/hooks/useDimensions'
 import { BodyText, HeadingText, Label } from '../ui/typography'
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden'
 import { ScrollArea, ScrollBar } from '../ui/scroll-area'
-import { copyToClipboard, hasLowestDisplayValuePrefix } from '@/lib/utils'
+import { copyToClipboard, hasLowestDisplayValuePrefix, clearApprovedWallet } from '@/lib/utils'
 import { getLowestDisplayValue } from '@/lib/utils'
 import { isLowestValue } from '@/lib/utils'
 import { abbreviateNumber } from '@/lib/utils'
 import { Button } from '../ui/button'
 import { Check, Copy, LoaderCircle, LogOut, X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 interface ProfileMenuDropdownProps {
     open: boolean
@@ -49,6 +50,7 @@ export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
     const isDesktop = screenWidth > 768
     const [addressIsCopied, setAddressIsCopied] = useState(false)
     const [isLoggingOut, setIsLoggingOut] = useState(false)
+    const router = useRouter()
 
     function handleAddressCopy() {
         copyToClipboard(walletAddress)
@@ -58,7 +60,8 @@ export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
         }, 1000)
     }
 
-    function handleLogout() {
+    const handleLogout = async () => {
+        clearApprovedWallet()
         setIsLoggingOut(true)
         logout()
             .then(() => {
@@ -66,6 +69,7 @@ export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
             })
             .finally(() => {
                 setIsLoggingOut(false)
+                router.push('/')
             })
     }
 

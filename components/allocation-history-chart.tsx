@@ -216,10 +216,10 @@ export function AllocationHistoryChart() {
     const [openDialog, setOpenDialog] = useState(false)
 
     const customTicks = {
-        [Period.oneDay]: 8,
-        [Period.oneWeek]: 50,
-        [Period.oneMonth]: 100,
-        [Period.allTime]: 100,
+        [Period.oneDay]: 5,
+        [Period.oneWeek]: 5,
+        [Period.oneMonth]: 5,
+        [Period.allTime]: 5,
     }
 
     useEffect(() => {
@@ -375,7 +375,7 @@ export function AllocationHistoryChart() {
 
     const content = (
         <Card className="w-full" id="allocation-history">
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between max-md:px-4">
                 <HeadingText level="h4" weight="medium" className="text-gray-800">
                     Allocation History
                 </HeadingText>
@@ -416,8 +416,8 @@ export function AllocationHistoryChart() {
                                         dataKey="date"
                                         tickLine={true}
                                         axisLine={true}
-                                        tickCount={4}
-                                        interval={customTicks[selectedRange]}
+                                        tickCount={5}
+                                        interval={(chartData?.length || 0) > 5 ? Math.floor((chartData?.length || 0) / 5) : 0}
                                         tickFormatter={(value) =>
                                             formatDateAccordingToPeriod(value, selectedRange)
                                         }

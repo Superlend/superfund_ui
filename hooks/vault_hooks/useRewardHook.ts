@@ -16,7 +16,11 @@ const publicClient = createPublicClient({
 
 const CHAIN_ID = 8453
 
-export function useRewardsHook() {
+export function useRewardsHook({
+    refetchClaimRewards = false,
+}: {
+    refetchClaimRewards?: boolean
+} = {}) {
     const { walletAddress } = useWalletConnection()
 
     const {
@@ -27,12 +31,13 @@ export function useRewardsHook() {
     } = useGetClaimRewards({
         user_address: walletAddress,
         chain_id: CHAIN_ID,
+        refetchClaimRewards,
     })
 
     const [formattedClaimData, setFormattedClaimData] = useState<
         TClaimRewardsResponse[]
     >([])
-    const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [isLoading, setIsLoading] = useState<boolean>(true)
     const [isError, setIsError] = useState<boolean>(false)
 
     const fetchFormattedClaimData = useCallback(async () => {
@@ -42,6 +47,7 @@ export function useRewardsHook() {
             rewardsData.length === 0 ||
             isErrorRewards
         ) {
+            setIsLoading(false)
             return
         }
 

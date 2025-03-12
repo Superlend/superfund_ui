@@ -8,7 +8,7 @@ import { GoogleTagManager } from '@next/third-parties/google'
 import ScrollToTop from '@/components/ScrollToTop'
 
 export const metadata: Metadata = {
-    metadataBase: new URL('https://app.superlend.xyz'),
+    metadataBase: new URL('https://funds.superlend.xyz'),
     alternates: {
         canonical: '/',
         languages: {
@@ -17,18 +17,15 @@ export const metadata: Metadata = {
     },
     keywords: [
         'DeFi',
-        'Lend',
-        'Borrow',
-        'Money Markets',
-        'Aggregator',
+        'Deposit',
+        'Withdraw',
         'DeFi rates',
         'Earn in DeFi',
-        'Borrow USDC',
         'Earn USDC',
     ],
-    title: 'Superlend - Lend & Borrow Aggregator',
+    title: 'SuperFund',
     description:
-        'Lend, Borrow, Earn & level up your DeFi experience with best lending & borrowing aggregator with over 100+ markets .',
+        'SuperFund optimally allocates your USDC across trusted lending protocols such as Aave, Morpho, Euler, & Fluid to generate consistent and competitive returns.',
     icons: [
         { url: '/images/logos/favicon-16x16.png', sizes: '16x16' },
         { url: '/images/logos/favicon-32x32.png', sizes: '32x32' },
@@ -37,17 +34,17 @@ export const metadata: Metadata = {
     ],
     openGraph: {
         type: 'website',
-        url: 'https://app.superlend.xyz/',
-        title: 'Superlend - Lend & Borrow Aggregator',
+        url: 'https://funds.superlend.xyz',
+        title: 'SuperFund',
         description:
-            'Lend, Borrow, Earn & level up your DeFi experience with best lending & borrowing aggregator with over 100+ markets .',
-        siteName: 'Superlend - Lend & Borrow Aggregator',
+            'SuperFund optimally allocates your USDC across trusted lending protocols such as Aave, Morpho, Euler, & Fluid to generate consistent and competitive returns.',
+        siteName: 'Superfund',
         images: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png',
     },
     twitter: {
-        title: 'Superlend - Lend & Borrow Aggregator',
+        title: 'SuperFund',
         description:
-            'Lend, Borrow, Earn & level up your DeFi experience with best lending & borrowing aggregator with over 100+ markets .',
+            'SuperFund optimally allocates your USDC across trusted lending protocols such as Aave, Morpho, Euler, & Fluid to generate consistent and competitive returns.',
         images: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png',
     },
 }

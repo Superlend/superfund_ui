@@ -344,9 +344,9 @@ export default function SuperVaultTxDialog({
                                         {assetDetails?.asset?.token?.symbol}
                                     </span>
                                 </HeadingText>
-                                <div className="flex items-center justify-start gap-1">
+                                <div className="flex items-center justify-start gap-1.5">
                                     <BodyText
-                                        level="body3"
+                                        level="body2"
                                         weight="medium"
                                         className="text-gray-600"
                                     >
@@ -356,7 +356,7 @@ export default function SuperVaultTxDialog({
                                     </BodyText>
                                     <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
                                     <BodyText
-                                        level="body3"
+                                        level="body2"
                                         weight="medium"
                                         className="text-gray-600 flex items-center gap-1"
                                     >
@@ -388,7 +388,7 @@ export default function SuperVaultTxDialog({
                                 >
                                     Spot APY
                                 </BodyText>
-                                <Badge variant="green">
+                                <Badge variant="green" size="lg">
                                     {abbreviateNumber(
                                         Number(assetDetails?.asset?.spot_apy) ?? 0
                                     )}
