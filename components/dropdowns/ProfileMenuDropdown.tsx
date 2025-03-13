@@ -30,6 +30,7 @@ import { abbreviateNumber } from '@/lib/utils'
 import { Button } from '../ui/button'
 import { Check, Copy, LoaderCircle, LogOut, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import AccessDialog from '../AccessDialog'
 
 interface ProfileMenuDropdownProps {
     open: boolean
@@ -51,6 +52,8 @@ export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
     const [addressIsCopied, setAddressIsCopied] = useState(false)
     const [isLoggingOut, setIsLoggingOut] = useState(false)
     const router = useRouter()
+    const [dialogOpen, setDialogOpen] = useState(false)
+    const [connectionError, setConnectionError] = useState(false)
 
     function handleAddressCopy() {
         copyToClipboard(walletAddress)
@@ -70,6 +73,18 @@ export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
             .finally(() => {
                 setIsLoggingOut(false)
             })
+    }
+
+    const handleError = () => {
+        setConnectionError(true)
+        setTimeout(() => {
+            setConnectionError(false)
+        }, 3000)
+    }
+
+    const handleAddWalletClick = () => {
+        setOpen(false)
+        setDialogOpen(true)
     }
 
     const triggerButton = (
@@ -185,55 +200,79 @@ export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
                     )}
                 </Button>
             </div>
-            <Button
-                variant="outline"
-                size="lg"
-                className="rounded-4 py-3 md:py-2 capitalize w-full flex items-center justify-center gap-2 hover:border-red-500 hover:text-red-500"
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-            >
-                {isLoggingOut ? 'Disconnecting...' : 'Disconnect'}
-                {isLoggingOut ? (
-                    <LoaderCircle className="text-primary w-4 h-4 animate-spin" />
-                ) : (
-                    <LogOut className="w-4 h-4" />
-                )}
-            </Button>
+            <div className="flex flex-col gap-3">
+                <Button
+                    variant="secondaryOutline"
+                    size="lg"
+                    className="w-full capitalize rounded-4"
+                    onClick={handleAddWalletClick}
+                >
+                    Add new wallet
+                </Button>
+                <Button
+                    variant="outline"
+                    size="lg"
+                    className="rounded-4 py-3 md:py-2 capitalize w-full flex items-center justify-center gap-2 hover:border-red-500 hover:text-red-500"
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                >
+                    {isLoggingOut ? 'Disconnecting...' : 'Disconnect'}
+                    {isLoggingOut ? (
+                        <LoaderCircle className="text-primary w-4 h-4 animate-spin" />
+                    ) : (
+                        <LogOut className="w-4 h-4" />
+                    )}
+                </Button>
+            </div>
         </div>
     )
 
     if (isDesktop) {
         return (
-            <DropdownMenu open={open} onOpenChange={setOpen}>
-                <DropdownMenuTrigger asChild>
-                    {triggerButton}
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                    align="end"
-                    className="w-full rounded-7 p-4 bg-opacity-40 min-w-[300px]"
-                >
-                    {content}
-                </DropdownMenuContent>
-            </DropdownMenu>
+            <>
+                <DropdownMenu open={open} onOpenChange={setOpen}>
+                    <DropdownMenuTrigger asChild>
+                        {triggerButton}
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                        align="end"
+                        className="w-full rounded-7 p-4 bg-opacity-40 min-w-[300px]"
+                    >
+                        {content}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                <AccessDialog
+                    open={dialogOpen}
+                    setOpen={setDialogOpen}
+                    onError={handleError}
+                />
+            </>
         )
     }
 
     return (
-        <Drawer open={open} onOpenChange={setOpen}>
-            <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
-            <DrawerContent className="w-full p-4 dismissible-false">
-                <DrawerHeader>
-                    {/* <DrawerTitle>Token Balances</DrawerTitle> */}
-                    {closeButton}
-                    <DrawerDescription>
-                        <VisuallyHidden.Root asChild>
-                            View connected wallet details
-                        </VisuallyHidden.Root>
-                    </DrawerDescription>
-                </DrawerHeader>
-                {content}
-            </DrawerContent>
-        </Drawer>
+        <>
+            <Drawer open={open} onOpenChange={setOpen}>
+                <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
+                <DrawerContent className="w-full p-4 dismissible-false">
+                    <DrawerHeader>
+                        {/* <DrawerTitle>Token Balances</DrawerTitle> */}
+                        {closeButton}
+                        <DrawerDescription>
+                            <VisuallyHidden.Root asChild>
+                                View connected wallet details
+                            </VisuallyHidden.Root>
+                        </DrawerDescription>
+                    </DrawerHeader>
+                    {content}
+                </DrawerContent>
+            </Drawer>
+            <AccessDialog
+                open={dialogOpen}
+                setOpen={setDialogOpen}
+                onError={handleError}
+            />
+        </>
     )
 }
 
