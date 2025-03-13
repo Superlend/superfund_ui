@@ -105,16 +105,16 @@ export default function SuperVaultPage() {
 
     const tabs = [
         {
-            label: 'Position Details',
-            value: 'position-details',
-            content: <PositionDetails />,
-            show: isWalletConnected,
-        },
-        {
             label: 'Fund Overview',
             value: 'fund-overview',
             content: <FundOverview />,
             show: true,
+        },
+        {
+            label: 'Position Details',
+            value: 'position-details',
+            content: <PositionDetails />,
+            show: isWalletConnected,
         },
     ]
 
