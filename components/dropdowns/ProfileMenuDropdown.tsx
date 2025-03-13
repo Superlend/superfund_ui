@@ -69,7 +69,6 @@ export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
             })
             .finally(() => {
                 setIsLoggingOut(false)
-                router.push('/')
             })
     }
 
