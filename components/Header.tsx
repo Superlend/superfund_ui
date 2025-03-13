@@ -12,6 +12,7 @@ import { motion } from 'framer-motion'
 import ConnectWalletButton from './ConnectWalletButton'
 import Link from 'next/link'
 import { Badge } from './ui/badge'
+import AccessDialog from './AccessDialog'
 
 type TTab = {
     id: number
