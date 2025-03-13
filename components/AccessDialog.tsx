@@ -111,11 +111,6 @@ export default function AccessDialog({ open, setOpen, onError }: AccessDialogPro
             console.error('Error:', error)
             setApiError(error.message || 'Failed to add wallet to allowlist')
             onError()
-        } finally {
-            setIsLoading(false)
-            if (!apiError) {
-                setOpen(false)
-            }
         }
     }
 
