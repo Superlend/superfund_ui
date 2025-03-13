@@ -30,7 +30,7 @@ import { getApprovedWallet, clearApprovedWallet } from '@/lib/utils'
 export default function SuperVaultPage() {
     const { isClient } = useIsClient()
     const { isWalletConnected, isConnectingWallet, walletAddress } = useWalletConnection()
-    const [selectedTab, setSelectedTab] = useState('position-details')
+    const [selectedTab, setSelectedTab] = useState('fund-overview')
     const router = useRouter()
     const [isCheckingAccess, setIsCheckingAccess] = useState(true)
     const [accessChecked, setAccessChecked] = useState(false)
