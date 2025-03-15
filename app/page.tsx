@@ -12,25 +12,70 @@ import { Button } from '@/components/ui/button'
 import AccessDialog from '@/components/AccessDialog'
 import Image from 'next/image'
 import { Asterisk } from 'lucide-react'
+import { LoaderCircle } from 'lucide-react'
 
 export default function HomePage() {
     const { ready, authenticated } = usePrivy()
     const router = useRouter()
     const [connectionError, setConnectionError] = useState(false)
     const [dialogOpen, setDialogOpen] = useState(false)
+    const [isCheckingAccess, setIsCheckingAccess] = useState(true)
+    const [accessStatus, setAccessStatus] = useState<'checking' | 'verified' | 'denied'>('checking')
 
-    // Handle successful authentication
+    // Handle initial access check and authentication
     React.useEffect(() => {
-        if (ready && authenticated) {
-            const approvedWallet = localStorage.getItem('approved_wallet')
+        const checkAccess = async () => {
+            setIsCheckingAccess(true)
+            setAccessStatus('checking')
+
+            const approvedWallet = localStorage.getItem('approvedWalletAddress')
             if (!approvedWallet) {
-                return // Don't redirect if no approved wallet
+                setIsCheckingAccess(false)
+                setAccessStatus('denied')
+                return
             }
-            
-            const timer = setTimeout(() => {
+
+            // If we have an approved wallet but not authenticated, keep checking
+            if (!authenticated) {
+                setIsCheckingAccess(false)
+                // Redirect to super-fund page since we have an approved wallet
                 router.push('/super-fund')
-            }, 1000)
-            return () => clearTimeout(timer)
+                return
+            }
+
+            try {
+                const response = await fetch('/api/allowlist/check', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ walletAddress: approvedWallet }),
+                })
+
+                const data = await response.json()
+                
+                if (data.hasAccess) {
+                    setAccessStatus('verified')
+                    // Wait for 1.5 seconds to show the success message
+                    setTimeout(() => {
+                        router.push('/super-fund')
+                    }, 1500)
+                } else {
+                    // If API says no access, clear localStorage and show invite
+                    localStorage.removeItem('approvedWalletAddress')
+                    setAccessStatus('denied')
+                }
+            } catch (error) {
+                console.error('Error checking access:', error)
+                setAccessStatus('denied')
+            } finally {
+                setIsCheckingAccess(false)
+            }
+        }
+
+        // Always check access when component mounts and ready
+        if (ready) {
+            checkAccess()
         }
     }, [ready, authenticated, router])
 
@@ -167,60 +212,81 @@ export default function HomePage() {
                     </motion.div>
 
                     <CardContent className="p-8 space-y-8 relative z-10">
-                        <motion.div variants={childVariants}>
-                            <HeadingText level="h1" weight="bold" className="text-center capitalize">
-                                SuperFund exlusive beta access
-                            </HeadingText>
-                        </motion.div>
-
-                        <motion.div className="space-y-4 max-w-lg mx-auto" variants={childVariants}>
-                            <div className="flex items-start justify-start">
-                                <Asterisk className="w-12 h-6 text-primary" />
-                                <BodyText level="body1" weight="medium" className="text-gray-800 text-center">
-                                    SuperFund optimally allocates your USDC across trusted lending protocols such as Aave, Morpho, Euler, & Fluid to generate consistent and competitive returns.
-                                </BodyText>
-                            </div>
-                        </motion.div>
-
-                        <motion.div className="space-y-4 max-w-xs mx-auto" variants={childVariants}>
-                            <BodyText level="body1" className="text-gray-800 text-center">
-                                This beta is exclusive invite-only. Drop your wallet address for exclusive access!
-                            </BodyText>
-                        </motion.div>
-
-                        <motion.div
-                            className="max-w-xs mx-auto"
-                            variants={childVariants}
-                        >
-                            <AnimatePresence mode="wait">
-                                {connectionError ? (
-                                    <motion.div
-                                        key="error"
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.8 }}
-                                        className="bg-destructive-background text-destructive-foreground p-4 rounded-lg text-center mb-4"
-                                    >
-                                        <BodyText level="body2">
-                                            Access denied. Please try with a different wallet.
-                                        </BodyText>
-                                    </motion.div>
-                                ) : null}
+                        {isCheckingAccess || accessStatus === 'verified' ? (
+                            <div className="flex flex-col items-center justify-center space-y-4 py-8">
+                                <div className="w-12 h-12">
+                                    <LoaderCircle className="w-full h-full text-primary animate-spin" />
+                                </div>
                                 <motion.div
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ duration: 0.3 }}
                                 >
-                                    <Button
-                                        variant="primary"
-                                        size="lg"
-                                        className="w-full"
-                                        onClick={() => setDialogOpen(true)}
-                                    >
-                                        Share wallet address
-                                    </Button>
+                                    <HeadingText level="h2" className="text-center">
+                                        {accessStatus === 'verified' 
+                                            ? 'Access verified! Redirecting to SuperFund...'
+                                            : 'Checking access status...'}
+                                    </HeadingText>
                                 </motion.div>
-                            </AnimatePresence>
-                        </motion.div>
+                            </div>
+                        ) : (
+                            <>
+                                <motion.div variants={childVariants}>
+                                    <HeadingText level="h1" weight="bold" className="text-center capitalize">
+                                        SuperFund exclusive beta access
+                                    </HeadingText>
+                                </motion.div>
+
+                                <motion.div className="space-y-4 max-w-lg mx-auto" variants={childVariants}>
+                                    <div className="flex items-start justify-start">
+                                        <Asterisk className="w-12 h-6 text-primary" />
+                                        <BodyText level="body1" weight="medium" className="text-gray-800 text-center">
+                                            SuperFund optimally allocates your USDC across trusted lending protocols such as Aave, Morpho, Euler, & Fluid to generate consistent and competitive returns.
+                                        </BodyText>
+                                    </div>
+                                </motion.div>
+
+                                <motion.div className="space-y-4 max-w-xs mx-auto" variants={childVariants}>
+                                    <BodyText level="body1" className="text-gray-800 text-center">
+                                        This beta is exclusive invite-only. Drop your wallet address for exclusive access!
+                                    </BodyText>
+                                </motion.div>
+
+                                <motion.div
+                                    className="max-w-xs mx-auto"
+                                    variants={childVariants}
+                                >
+                                    <AnimatePresence mode="wait">
+                                        {connectionError ? (
+                                            <motion.div
+                                                key="error"
+                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.8 }}
+                                                className="bg-destructive-background text-destructive-foreground p-4 rounded-lg text-center mb-4"
+                                            >
+                                                <BodyText level="body2">
+                                                    Access denied. Please try with a different wallet.
+                                                </BodyText>
+                                            </motion.div>
+                                        ) : null}
+                                        <motion.div
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                        >
+                                            <Button
+                                                variant="primary"
+                                                size="lg"
+                                                className="w-full"
+                                                onClick={() => setDialogOpen(true)}
+                                            >
+                                                Share wallet address
+                                            </Button>
+                                        </motion.div>
+                                    </AnimatePresence>
+                                </motion.div>
+                            </>
+                        )}
                     </CardContent>
                 </Card>
             </motion.div>
