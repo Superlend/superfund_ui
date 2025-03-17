@@ -201,14 +201,14 @@ export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
                 </Button>
             </div>
             <div className="flex flex-col gap-3">
-                <Button
+                {/* <Button
                     variant="secondaryOutline"
                     size="lg"
                     className="w-full capitalize rounded-4"
                     onClick={handleAddWalletClick}
                 >
                     Add new wallet
-                </Button>
+                </Button> */}
                 <Button
                     variant="outline"
                     size="lg"

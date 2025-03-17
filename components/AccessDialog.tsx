@@ -10,13 +10,11 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useRouter, usePathname } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { BodyText } from '@/components/ui/typography'
-import { usePrivy } from '@privy-io/react-auth'
 import { LoaderCircle, X, Wallet, Check } from 'lucide-react'
-import { storeApprovedWallet } from '@/lib/utils'
 import useDimensions from '@/hooks/useDimensions'
+import ConnectWalletButton from '@/components/ConnectWalletButton'
 import {
     Drawer,
     DrawerContent,
@@ -39,11 +37,8 @@ export default function AccessDialog({ open, setOpen, onError }: AccessDialogPro
     const [isWarning, setIsWarning] = useState(false)
     const [errorMessage, setErrorMessage] = useState('')
     const [warningMessage, setWarningMessage] = useState('')
-    const router = useRouter()
-    const pathname = usePathname()
     const { width: screenWidth } = useDimensions()
     const isDesktop = screenWidth > 768
-    const isOnSuperFundPage = pathname === '/super-fund'
 
     const handleOpenChange = (open: boolean) => {
         // Only allow closing if not in loading state
@@ -113,17 +108,6 @@ export default function AccessDialog({ open, setOpen, onError }: AccessDialogPro
         setIsWarning(false) // Reset warning state
 
         try {
-            // Check if wallet is already whitelisted when on super-fund page
-            if (isOnSuperFundPage) {
-                const isWhitelisted = await checkIfWalletIsWhitelisted(walletAddress)
-                if (isWhitelisted) {
-                    setIsWarning(true)
-                    setWarningMessage('This wallet address is already whitelisted. You can close this dialog or try a different address.')
-                    setIsLoading(false)
-                    return
-                }
-            }
-
             // Call the allowlist API
             const response = await fetch('/api/allowlist', {
                 method: 'POST',
@@ -145,19 +129,9 @@ export default function AccessDialog({ open, setOpen, onError }: AccessDialogPro
                 throw new Error(data.error || 'Failed to add to allowlist')
             }
 
-            // Store the approved wallet address with expiration
-            storeApprovedWallet(walletAddress)
-
             // Show success state
             setIsLoading(false)
             setIsSuccess(true)
-
-            // Redirect after a short delay if not on super-fund page
-            if (!isOnSuperFundPage) {
-                setTimeout(() => {
-                    router.push('/super-fund')
-                }, 2000)
-            }
         } catch (error: any) {
             console.error('Error:', error)
             setIsError(true)
@@ -172,7 +146,7 @@ export default function AccessDialog({ open, setOpen, onError }: AccessDialogPro
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center space-y-4 py-8"
+            className="flex flex-col items-center justify-center space-y-4"
         >
             <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
                 <svg
@@ -270,31 +244,21 @@ export default function AccessDialog({ open, setOpen, onError }: AccessDialogPro
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center space-y-4 py-8"
+            className="flex flex-col items-center justify-center space-y-4"
         >
             <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                <svg
-                    className="w-8 h-8 text-green-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                    />
-                </svg>
+                <Check className="w-8 h-8 text-green-600" />
             </div>
             <DialogTitle className="text-center">Success!</DialogTitle>
             <DialogDescription className="text-center">
                 Your wallet has been successfully added to the allowlist.
-                {!isOnSuperFundPage && " Redirecting..."}
             </DialogDescription>
             <div className="w-full max-w-md bg-green-50/50 border border-green-200 rounded-lg p-3 font-mono text-sm break-all flex items-center gap-2">
                 <Wallet className="w-4 h-4 text-green-500 shrink-0" />
                 {walletAddress}
+            </div>
+            <div className="w-full pt-4">
+                <ConnectWalletButton />
             </div>
         </motion.div>
     )

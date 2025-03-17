@@ -1,7 +1,7 @@
 // components/ConnectWalletButton.tsx
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from './ui/button'
 import useIsClient from '@/hooks/useIsClient'
@@ -12,10 +12,12 @@ import useIsClient from '@/hooks/useIsClient'
 // } from '@reown/appkit/react'
 import { usePrivy } from '@privy-io/react-auth'
 import { ProfileMenuDropdown } from './dropdowns/ProfileMenuDropdown'
+import { useRouter } from 'next/navigation'
 
 export default function ConnectWalletButton() {
     const { isClient } = useIsClient()
     const { ready, authenticated, login, logout, user } = usePrivy()
+    const router = useRouter()
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
     const walletAddress = user?.wallet?.address
     const disableLogin = !ready || (ready && authenticated)
@@ -24,6 +26,19 @@ export default function ConnectWalletButton() {
     const displayText = walletAddress
         ? `${walletAddress?.slice(0, 5)}...${walletAddress?.slice(-5)}`
         : 'Connect Wallet'
+
+    // Handle redirection after successful connection
+    useEffect(() => {
+        if (authenticated && walletAddress) {
+            router.push('/super-fund')
+        }
+    }, [authenticated, walletAddress, router])
+
+    // Handle logout with redirection
+    const handleLogout = async () => {
+        await logout()
+        router.push('/')
+    }
 
     return (
         <>
@@ -42,7 +57,7 @@ export default function ConnectWalletButton() {
                             setOpen={setIsProfileMenuOpen}
                             displayText={displayText}
                             walletAddress={walletAddress}
-                            logout={logout}
+                            logout={handleLogout}
                         />
                     )}
                     {!walletAddress && (
