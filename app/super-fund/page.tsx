@@ -23,80 +23,13 @@ import FundOverview from './fund-overview'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useHistoricalData, useRebalanceHistory } from '@/hooks/vault_hooks/useHistoricalDataHook'
 import { Period } from '@/types/periodButtons'
-import ClaimRewards from './claim-rewards'
 import { useRouter } from 'next/navigation'
-import { getApprovedWallet, clearApprovedWallet } from '@/lib/utils'
 
 export default function SuperVaultPage() {
     const { isClient } = useIsClient()
     const { isWalletConnected, isConnectingWallet, walletAddress } = useWalletConnection()
     const [selectedTab, setSelectedTab] = useState('fund-overview')
     const router = useRouter()
-    const [isCheckingAccess, setIsCheckingAccess] = useState(true)
-    const [accessChecked, setAccessChecked] = useState(false)
-
-    useEffect(() => {
-        const checkAccess = async () => {
-            if (accessChecked) {
-                return
-            }
-
-            setIsCheckingAccess(true)
-
-            try {
-                // Check localStorage for approved wallet using new utility
-                const approvedWallet = getApprovedWallet()
-                
-                if (!approvedWallet) {
-                    console.log('No approved wallet found in localStorage')
-                    router.replace('/')
-                    return
-                }
-
-                // If connected wallet doesn't match approved wallet, redirect to home
-                if (walletAddress && walletAddress.toLowerCase() !== approvedWallet.toLowerCase()) {
-                    console.warn('Connected wallet does not match approved wallet')
-                    router.replace('/')
-                    return
-                }
-
-                // Verify the approved wallet is still in allowlist
-                const response = await fetch('/api/allowlist/check', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ walletAddress: approvedWallet }),
-                })
-
-                if (!response.ok) {
-                    throw new Error('Failed to check access')
-                }
-
-                const { hasAccess } = await response.json()
-                console.log('Access check result:', hasAccess)
-
-                if (!hasAccess) {
-                    console.log('No access, redirecting to home')
-                    clearApprovedWallet()
-                    router.replace('/')
-                    return
-                }
-
-                setAccessChecked(true)
-            } catch (error) {
-                console.error('Error checking access:', error)
-                clearApprovedWallet()
-                router.replace('/')
-            } finally {
-                setIsCheckingAccess(false)
-            }
-        }
-
-        if (isClient) {
-            checkAccess()
-        }
-    }, [isClient, router, accessChecked, walletAddress])
 
     const { historicalData, days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading, error } = useHistoricalData(Period.oneDay)
 
@@ -122,7 +55,13 @@ export default function SuperVaultPage() {
         setSelectedTab(tab)
     }
 
-    if (!isClient || isCheckingAccess) {
+    useEffect(() => {
+        if (!walletAddress && isClient && !isConnectingWallet) {
+            router.push('/')
+        }
+    }, [walletAddress, isClient, isConnectingWallet, router])
+
+    if (!isClient) {
         return <LoadingPageSkeleton />
     }
 
