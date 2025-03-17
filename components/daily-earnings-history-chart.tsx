@@ -150,8 +150,8 @@ export default function DailyEarningsHistoryChart({
 
     return (
         <Card>
-            <div className="flex items-center justify-between p-6 pb-4">
-                <div className="flex items-center gap-4">
+            <div className="flex items-start sm:items-center justify-between max-sm:px-4 p-6 pb-4">
+                <div className="flex flex-wrap items-center gap-4">
                     <HeadingText level="h4" weight="medium" className="text-gray-800">
                         Interest Earned
                     </HeadingText>
