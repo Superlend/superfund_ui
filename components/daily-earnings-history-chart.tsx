@@ -141,7 +141,7 @@ export default function DailyEarningsHistoryChart({
                 time: time,
                 earnings: abbreviateNumber(item.earnings, 4),
             }
-        })
+        }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     }, [dailyEarningsHistoryData])
 
     const handleRangeChange = (range: Period) => {
