@@ -173,7 +173,7 @@ export default function HomePage() {
                                     <Button
                                         variant="secondaryOutline"
                                         size="lg"
-                                        className="w-full rounded-4"
+                                        className="w-full rounded-4 capitalize"
                                         onClick={() => setDialogOpen(true)}
                                     >
                                         Request access
