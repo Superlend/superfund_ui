@@ -31,6 +31,8 @@ export default function ConnectWalletButton() {
     useEffect(() => {
         if (authenticated && walletAddress) {
             router.push('/super-fund')
+        } else if (ready && !walletAddress) {
+            router.push('/')
         }
     }, [authenticated, walletAddress, router])
 

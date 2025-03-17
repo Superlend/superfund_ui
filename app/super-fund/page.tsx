@@ -23,11 +23,13 @@ import FundOverview from './fund-overview'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useHistoricalData, useRebalanceHistory } from '@/hooks/vault_hooks/useHistoricalDataHook'
 import { Period } from '@/types/periodButtons'
+import { useRouter } from 'next/navigation'
 
 export default function SuperVaultPage() {
     const { isClient } = useIsClient()
     const { isWalletConnected, isConnectingWallet, walletAddress } = useWalletConnection()
     const [selectedTab, setSelectedTab] = useState('fund-overview')
+    const router = useRouter()
 
     const { historicalData, days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading, error } = useHistoricalData(Period.oneDay)
 
@@ -52,6 +54,12 @@ export default function SuperVaultPage() {
     const handleTabChange = (tab: string) => {
         setSelectedTab(tab)
     }
+
+    useEffect(() => {
+        if (!walletAddress && isClient && !isConnectingWallet) {
+            router.push('/')
+        }
+    }, [walletAddress, isClient, isConnectingWallet, router])
 
     if (!isClient) {
         return <LoadingPageSkeleton />
