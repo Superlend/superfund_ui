@@ -205,7 +205,7 @@ export function PerformanceHistoryChart() {
                 totalApy: abbreviateNumber(item.totalApy),
                 totalAssets: abbreviateNumber(item.totalAssets),
             }
-        })
+        }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     }, [historicalData])
 
     const { minValue, maxValue, valueRange } = useMemo(() => {
