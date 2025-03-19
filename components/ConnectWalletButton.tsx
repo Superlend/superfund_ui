@@ -12,20 +12,25 @@ import useIsClient from '@/hooks/useIsClient'
 // } from '@reown/appkit/react'
 import { usePrivy } from '@privy-io/react-auth'
 import { ProfileMenuDropdown } from './dropdowns/ProfileMenuDropdown'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { useWalletConnection } from '@/hooks/useWalletConnection'
 
 export default function ConnectWalletButton() {
     const { isClient } = useIsClient()
+    const { walletAddress, isConnectingWallet } = useWalletConnection()
     const { ready, authenticated, login, logout, user } = usePrivy()
     const router = useRouter()
+    const pathname = usePathname()
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
-    const walletAddress = user?.wallet?.address
     const disableLogin = !ready || (ready && authenticated)
     const disableLogout = !ready || (ready && !authenticated)
     const isDisabled = walletAddress ? disableLogout : disableLogin
-    const displayText = walletAddress
-        ? `${walletAddress?.slice(0, 5)}...${walletAddress?.slice(-5)}`
-        : 'Connect Wallet'
+    const displayText =
+        isConnectingWallet
+            ? 'Connecting...'
+            : walletAddress
+                ? `${walletAddress?.slice(0, 5)}...${walletAddress?.slice(-5)}`
+                : 'Connect Wallet'
 
     // Handle redirection after successful connection
     useEffect(() => {

@@ -52,7 +52,7 @@ export default function PageHeader() {
                             target="_blank"
                         >
                             <span className="uppercase text-secondary-500 font-medium text-[11px] leading-[1]">
-                                vault
+                                Contract
                             </span>
                             <ArrowRightIcon
                                 height={14}
