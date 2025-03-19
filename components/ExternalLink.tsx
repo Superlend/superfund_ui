@@ -9,7 +9,7 @@ export default function ExternalLink({
     iconSize = 16,
 }: {
     href: string
-    children: React.ReactNode
+    children?: React.ReactNode
     className?: string
     variant?: 'primary' | 'secondary' | 'ghost'
     iconSize?: number
@@ -33,7 +33,7 @@ export default function ExternalLink({
             rel="noopener noreferrer"
             className={`w-fit shrink-0 inline-flex items-center gap-1 ${getColor()} leading-[0.5] ${className || ''}`}
         >
-            {children}
+            {children && children}
             <ArrowRightIcon
                 weight="2.5"
                 className={`${getStrokeColor()} -rotate-45 translate-y-[1px] shrink-0`}

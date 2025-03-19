@@ -183,17 +183,16 @@ export default function AllocationDetailsChart({
                                             className="w-4 h-4 rounded-2"
                                             style={{ backgroundColor: VAULT_STRATEGIES_COLORS[item.name as keyof typeof VAULT_STRATEGIES_COLORS] }}
                                         />
-                                        <div className="flex items-center justify-between gap-1 w-full">
+                                        <div className="flex items-center gap-1 w-full">
                                             <InfoTooltip
                                                 label={
-                                                    <BodyText level="body2" weight="medium" className="truncate max-w-[150px]">
+                                                    <BodyText level="body2" weight="medium" className="truncate max-w-full">
                                                         {item.name}
                                                     </BodyText>
                                                 }
                                                 content={item.name}
                                             />
-                                            <ExternalLink href={`https://basescan.org/address/${VAULT_STRATEGIES[item.name as keyof typeof VAULT_STRATEGIES].address}`} className="text-xs text-muted-foreground">
-                                                Contract
+                                            <ExternalLink href={VAULT_STRATEGIES[item.name as keyof typeof VAULT_STRATEGIES].details_url} className="text-xs text-muted-foreground">
                                             </ExternalLink>
                                         </div>
                                     </div>
