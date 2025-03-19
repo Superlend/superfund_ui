@@ -29,7 +29,6 @@ import { isLowestValue } from '@/lib/utils'
 import { abbreviateNumber } from '@/lib/utils'
 import { Button } from '../ui/button'
 import { Check, Copy, LoaderCircle, LogOut, X } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import AccessDialog from '../AccessDialog'
 
 interface ProfileMenuDropdownProps {
@@ -51,7 +50,6 @@ export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
     const isDesktop = screenWidth > 768
     const [addressIsCopied, setAddressIsCopied] = useState(false)
     const [isLoggingOut, setIsLoggingOut] = useState(false)
-    const router = useRouter()
     const [dialogOpen, setDialogOpen] = useState(false)
     const [connectionError, setConnectionError] = useState(false)
 
