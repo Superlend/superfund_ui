@@ -15,6 +15,8 @@ import { DOCUMENTATION_LINK } from "@/constants"
 import React, { lazy, Suspense } from "react"
 import LazyLoad from '@/components/LazyLoad'
 import LoadingSectionSkeleton from '@/components/skeletons/LoadingSection'
+import InfoTooltip from '@/components/tooltips/InfoTooltip'
+import TooltipText from '@/components/tooltips/TooltipText'
 
 const AllocationHistoryChart = lazy(() =>
     import('@/components/allocation-history-chart').then(module => ({
@@ -217,9 +219,16 @@ export default function FundOverview() {
                                 </BodyText>
                             </div>
                             <div className="col flex-1 flex justify-end">
-                                <BodyText level="body1" weight="medium" className="text-gray-800 text-right">
-                                    10% of earnings
-                                </BodyText>
+                                <InfoTooltip
+                                    label={
+                                        <BodyText level="body1" weight="medium" className="text-gray-800 text-right">
+                                            <TooltipText>
+                                                10% of earnings
+                                            </TooltipText>
+                                        </BodyText>
+                                    }
+                                    content="Performance fees are applied only to the interest earned, not your initial deposit."
+                                />
                             </div>
                         </div>
                     </CardContent>
