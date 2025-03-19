@@ -16,7 +16,7 @@ export const rebalancedAssetsList = [
     {
         title: 'FLUID',
         logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/fluid_logo.png',
-        link: 'https://fluid.instadapp.io/',
+        link: 'https://fluid.io/',
     },
     {
         title: 'Euler',
