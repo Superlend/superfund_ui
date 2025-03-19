@@ -269,6 +269,7 @@ export function AllocationHistoryChart() {
 
             // Add the main data point
             const dataPoint = {
+                rawTimestamp: item.timestamp,
                 timestamp: `${formattedDate} ${time}`,
                 date: formattedDate.split(',')[0],
                 time: time,
@@ -303,7 +304,7 @@ export function AllocationHistoryChart() {
                         return acc
                     }, {} as Record<string, number>)
 
-                    nextAllocationsWithValues.forEach((allocation) => {
+                    nextAllocationsWithValues.forEach((allocation: any) => {
                         nextDefaultAllocations[allocation.address] = allocation.value
                     })
 
@@ -320,7 +321,7 @@ export function AllocationHistoryChart() {
             }
         })
 
-        return transformedData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        return transformedData.sort((a, b) => new Date(a.rawTimestamp).getTime() - new Date(b.rawTimestamp).getTime())
     }, [rebalanceHistory])
 
     const memoizedAreasForChart = useMemo(() => {
