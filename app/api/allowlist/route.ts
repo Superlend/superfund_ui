@@ -7,7 +7,7 @@ const privy = new PrivyClient(
     process.env.PRIVY_APP_SECRET!
 )
 
-const MAX_ALLOWLIST_ENTRIES = 20;
+const MAX_ALLOWLIST_ENTRIES = 30;
 
 export async function POST(request: Request) {
     try {
@@ -35,10 +35,10 @@ export async function POST(request: Request) {
         }
 
         // Check if allowlist limit is reached (only for new entries)
-        if (!isWalletInAllowlist && currentAllowlist.length >= MAX_ALLOWLIST_ENTRIES) {
+        if (!isWalletInAllowlist && currentAllowlist.length > MAX_ALLOWLIST_ENTRIES) {
             return NextResponse.json(
                 { 
-                    error: 'Maximum allowlist capacity reached. The beta is currently limited to 20 participants.',
+                    error: 'Maximum allowlist capacity reached. The beta is currently limited to 30 participants.',
                     code: 'MAX_LIMIT_REACHED'
                 },
                 { status: 403 }
