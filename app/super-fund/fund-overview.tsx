@@ -219,7 +219,7 @@ export default function FundOverview() {
                                 </BodyText>
                             </div>
                             <div className="col flex-1 flex justify-end">
-                                <InfoTooltip
+                                {/* <InfoTooltip
                                     label={
                                         <BodyText level="body1" weight="medium" className="text-gray-800 text-right">
                                             <TooltipText>
@@ -228,7 +228,10 @@ export default function FundOverview() {
                                         </BodyText>
                                     }
                                     content="Performance fees are applied only to the interest earned, not your initial deposit."
-                                />
+                                /> */}
+                                <BodyText level="body1" weight="medium" className="text-gray-800 text-right">
+                                    10% of earnings
+                                </BodyText>
                             </div>
                         </div>
                     </CardContent>
