@@ -136,12 +136,13 @@ export default function DailyEarningsHistoryChart({
             const time = extractTimeFromDate(date, { exclude: ['seconds'] })
 
             return {
+                rawTimestamp: item.timestamp,
                 timestamp: `${formattedDate} ${time}`,
                 date: formattedDate.split(',')[0],
                 time: time,
                 earnings: abbreviateNumber(item.earnings, 4),
             }
-        }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        }).sort((a, b) => new Date(a.rawTimestamp).getTime() - new Date(b.rawTimestamp).getTime())
     }, [dailyEarningsHistoryData])
 
     const handleRangeChange = (range: Period) => {

@@ -198,6 +198,7 @@ export function PerformanceHistoryChart() {
             const time = extractTimeFromDate(date, { exclude: ['seconds'] })
 
             return {
+                rawTimestamp: item.timestamp,
                 timestamp: `${formattedDate} ${time}`,
                 date: formattedDate.split(',')[0],
                 time: time,
@@ -205,7 +206,7 @@ export function PerformanceHistoryChart() {
                 totalApy: abbreviateNumber(item.totalApy),
                 totalAssets: abbreviateNumber(item.totalAssets),
             }
-        }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        }).sort((a, b) => new Date(a.rawTimestamp).getTime() - new Date(b.rawTimestamp).getTime())
     }, [historicalData])
 
     const { minValue, maxValue, valueRange } = useMemo(() => {
