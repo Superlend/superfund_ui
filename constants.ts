@@ -275,4 +275,4 @@ export const MORPHO_WEBSITE_LINK = 'https://morpho.org/'
 export const EIP_20_SIGNED_APPROVALS_LINK =
     'https://eips.ethereum.org/EIPS/eip-2612'
 
-export const DOCUMENTATION_LINK = 'https://docs.superlend.xyz/super-funds'
+export const DOCUMENTATION_LINK = 'https://docs.superlend.xyz/superlend-vaults/superfunds'

@@ -196,7 +196,7 @@ export default function FundOverview() {
                         <div className="row flex gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
                             <div className="col flex-0 md:flex-1 flex flex-col items-start gap-0">
                                 <BodyText level="body1" weight="medium">
-                                    Management Fees
+                                    Performance Fees
                                 </BodyText>
                                 <Label
                                     size='small'

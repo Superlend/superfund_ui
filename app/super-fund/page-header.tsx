@@ -7,6 +7,7 @@ import useIsClient from '@/hooks/useIsClient'
 import { Skeleton } from '@/components/ui/skeleton'
 import ImageWithDefault from '@/components/ImageWithDefault'
 import { Badge } from '@/components/ui/badge'
+import { ArrowRightIcon } from 'lucide-react'
 
 export default function PageHeader() {
     return (
@@ -45,6 +46,20 @@ export default function PageHeader() {
                         >
                             Base
                         </Label>
+                        <a
+                            className="inline-flex w-fit h-full rounded-2 ring-1 ring-gray-300 items-center gap-1 hover:bg-secondary-100/15 py-1 px-2"
+                            href={"https://basescan.org/address/0x10076ed296571cE4Fde5b1FDF0eB9014a880e47B"}
+                            target="_blank"
+                        >
+                            <span className="uppercase text-secondary-500 font-medium text-[11px] leading-[1]">
+                                vault
+                            </span>
+                            <ArrowRightIcon
+                                height={14}
+                                width={14}
+                                className="stroke-secondary-500 -rotate-45"
+                            />
+                        </a>
                     </div>
                 </Badge>
             </div>
