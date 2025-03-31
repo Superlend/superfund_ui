@@ -31,7 +31,7 @@ export default function SuperVaultPage() {
     const [selectedTab, setSelectedTab] = useState('fund-overview')
     const router = useRouter()
 
-    const { historicalData, days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading, error } = useHistoricalData(Period.oneDay)
+    // const { historicalData, days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading, error } = useHistoricalData(Period.oneDay)
 
     // const { rebalanceHistory, isLoading: isLoading2, error: error2 } = useRebalanceHistory(Period.oneDay)
 
@@ -71,11 +71,7 @@ export default function SuperVaultPage() {
                 <PageHeader />
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-[16px]">
                     <div className="flex flex-col gap-10">
-                        <VaultStats
-                            last_7_day_avg_total_apy={days_7_avg_total_apy}
-                            days_7_avg_base_apy={days_7_avg_base_apy}
-                            days_7_avg_rewards_apy={days_7_avg_rewards_apy}
-                        />
+                        <VaultStats />
                         <div className="block lg:hidden">
                             <DepositAndWithdrawAssets />
                         </div>

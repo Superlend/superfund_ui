@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 
 const INDEXER_API = process.env.NEXT_PUBLIC_INDEXER_API || 'https://api.funds.superlend.xyz'
 
-export function useHistoricalData(period: Period) {
+export function useHistoricalData(period?: Period) {
     const [historicalData, setHistoricalData] = useState<THistoricalDataPerformanceHistory[]>([])
     const [days_7_avg_base_apy, setDays_7_avg_base_apy] = useState<number>(0)
     const [days_7_avg_rewards_apy, setDays_7_avg_rewards_apy] = useState<number>(0)
@@ -18,7 +18,7 @@ export function useHistoricalData(period: Period) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
-    async function fetchHistoricalData(startTimestamp: number) {
+    async function fetchHistoricalData(startTimestamp?: number) {
         if (isLoading) return
         setIsLoading(true)
         const response = await fetch(`${INDEXER_API}/vaults/history_apy`, {
@@ -26,14 +26,17 @@ export function useHistoricalData(period: Period) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ vault_address: VAULT_ADDRESS, start_timestamp: startTimestamp })
+            body: JSON.stringify({
+                vault_address: VAULT_ADDRESS,
+                ...(startTimestamp && { start_timestamp: startTimestamp })
+            })
         });
         setIsLoading(false)
         return response.json();
     }
 
     useEffect(() => {
-        let startTimeStamp = getStartTimestamp(period)
+        let startTimeStamp = period ? getStartTimestamp(period) : undefined
         fetchHistoricalData(startTimeStamp).then((response) => {
             if (response.success && response.data) {
                 const formattedData = response.data.history.map((item: any) => ({

@@ -7,17 +7,21 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { BodyText, HeadingText } from '@/components/ui/typography'
 import useIsClient from '@/hooks/useIsClient'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
+import { useHistoricalData } from '@/hooks/vault_hooks/useHistoricalDataHook'
 import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
+import { useHistoricalDataCompat } from '@/hooks/vault_hooks/useVaultCompat'
 import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import { useRewardsHook } from '@/hooks/vault_hooks/vaultHook'
 import { VAULT_ADDRESS } from '@/lib/constants'
 import { getRewardsTooltipContent } from '@/lib/ui/getRewardsTooltipContent'
 import { abbreviateNumber } from '@/lib/utils'
+import { Period } from '@/types/periodButtons'
 import { Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
+import { useEffect } from 'react'
 
 type VaultStatsProps = {
-    last_7_day_avg_total_apy: number
+    days_7_avg_total_apy: number
     days_7_avg_base_apy: number
     days_7_avg_rewards_apy: number
 }
@@ -54,11 +58,7 @@ const starVariants = {
     }
 }
 
-export default function VaultStats({
-    last_7_day_avg_total_apy,
-    days_7_avg_base_apy,
-    days_7_avg_rewards_apy,
-}: VaultStatsProps) {
+export default function VaultStats() {
     const { walletAddress, isWalletConnected } = useWalletConnection()
     const { totalAssets, spotApy, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
     const { rewards, totalRewardApy, isLoading: isLoadingRewards, error: errorRewards } = useRewardsHook()
@@ -67,6 +67,7 @@ export default function VaultStats({
     )
     const { isClient } = useIsClient()
     const isLoadingSection = !isClient;
+    const { days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading, error } = useHistoricalData()
 
     const vaultStats = [
         {
@@ -88,7 +89,7 @@ export default function VaultStats({
         },
         {
             title: '7D APY',
-            value: `${last_7_day_avg_total_apy.toFixed(2)}%`,
+            value: `${abbreviateNumber(days_7_avg_total_apy)}%`,
             show: true,
             hasRewards: true,
             rewardsTooltip: getRewardsTooltipContent({
@@ -98,7 +99,7 @@ export default function VaultStats({
                     key_name: 'Rewards APY',
                     value: days_7_avg_rewards_apy.toFixed(2),
                 }],
-                apyCurrent: last_7_day_avg_total_apy,
+                apyCurrent: days_7_avg_total_apy,
             }),
         },
         {
