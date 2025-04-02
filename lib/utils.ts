@@ -600,3 +600,11 @@ export function getApprovedWallet(): string | null {
 export function clearApprovedWallet() {
     localStorage.removeItem(WALLET_STORAGE_KEY);
 }
+
+export function formatAmountToDisplay(amount: string) {
+    if (isLowestValue(Number(amount ?? 0))) {
+        return getLowestDisplayValue(Number(amount ?? 0))
+    } else {
+        return abbreviateNumber(Number(amount ?? 0))
+    }
+}

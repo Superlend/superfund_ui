@@ -14,7 +14,7 @@ import ImageWithDefault from "@/components/ImageWithDefault"
 import { Button } from "@/components/ui/button"
 import ClaimRewardsTxDialog from "@/components/dialogs/ClaimRewardsTx"
 import { SelectTokenDialog } from "@/components/dialogs/SelectToken"
-import { abbreviateNumber } from "@/lib/utils"
+import { abbreviateNumber, formatAmountToDisplay, hasLowestDisplayValuePrefix } from "@/lib/utils"
 import { TClaimRewardsResponse } from "@/types"
 import { useWalletConnection } from "@/hooks/useWalletConnection"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -87,7 +87,7 @@ export default function ClaimRewards({
                                     </BodyText>
                                 </div>
                                 <BodyText level="body1" weight="medium">
-                                    {abbreviateNumber(Number(reward.availabeToClaimFormatted))}
+                                    {`${hasLowestDisplayValuePrefix(Number(reward.availabeToClaimFormatted))} ${formatAmountToDisplay(reward.availabeToClaimFormatted)}`}
                                 </BodyText>
                             </div>
                         ))}
