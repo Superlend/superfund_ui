@@ -49,7 +49,7 @@ export async function requestIndexer<TResponse = void>(config: IRequestConfig) {
     }
     try {
         const response = await axiosIndexerInstance(axiosConfig)
-        return response.data.data.history as TResponse
+        return response.data.data as TResponse
     } catch (error) {
         throw new Error('HTTP request has been failed', {
             cause: error,

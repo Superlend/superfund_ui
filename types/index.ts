@@ -235,9 +235,13 @@ export type TDailyEarningsHistoryParams = {
     start_timestamp?: number
 }
 
-export type TDailyEarningsHistoryResponse = {
+export type TDailyEarningsHistory = {
     earnings: number
     timestamp: number
+}
+
+export type TDailyEarningsHistoryResponse = {
+    history: TDailyEarningsHistory[]
 }
 
 // Queries END =====================================

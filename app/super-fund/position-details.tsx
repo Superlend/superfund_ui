@@ -143,7 +143,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
             <DailyEarningsHistoryChart
                 selectedRange={selectedRangeForDailyEarningsHistory}
                 setSelectedRange={setSelectedRangeForDailyEarningsHistory}
-                dailyEarningsHistoryData={dailyEarningsHistoryData}
+                dailyEarningsHistoryData={dailyEarningsHistoryData || []}
                 isLoadingDailyEarningsHistory={isLoadingDailyEarningsHistory}
                 isErrorDailyEarningsHistory={isErrorDailyEarningsHistory}
                 earningsSuffixText={earningsSuffixText}

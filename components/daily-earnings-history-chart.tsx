@@ -17,15 +17,12 @@ import { Period } from '@/types/periodButtons'
 import { BodyText, HeadingText } from './ui/typography'
 import { TimelineFilterTabs } from './tabs/timeline-filter-tabs'
 import { useMemo, useState } from 'react'
-import useGetDailyEarningsHistory from '@/hooks/useGetDailyEarningsHistory'
-import { useWalletConnection } from '@/hooks/useWalletConnection'
-import { VAULT_ADDRESS } from '@/lib/constants'
 import { abbreviateNumber, extractTimeFromDate, formatDateAccordingToPeriod, getStartTimestamp } from '@/lib/utils'
 import { ChartConfig, ChartContainer } from './ui/chart'
 import { Skeleton } from './ui/skeleton'
-import { TDailyEarningsHistoryResponse } from '@/types'
+import { TDailyEarningsHistory } from '@/types'
 import { Button } from './ui/button'
-import { AlignEndHorizontal, ChartBar, ChartBarIncreasing, ChartLine } from 'lucide-react'
+import { AlignEndHorizontal, ChartLine } from 'lucide-react'
 
 interface CustomXAxisTickProps {
     x: number
@@ -80,7 +77,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 type TDailyEarningsHistoryChartProps = {
     selectedRange: Period
     setSelectedRange: (range: Period) => void
-    dailyEarningsHistoryData: TDailyEarningsHistoryResponse[] | undefined
+    dailyEarningsHistoryData: TDailyEarningsHistory[]
     isLoadingDailyEarningsHistory: boolean
     isErrorDailyEarningsHistory: boolean
     noDataUI: React.ReactNode

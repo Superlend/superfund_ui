@@ -6,7 +6,7 @@ export async function getDailyEarningsHistory({
     user_address,
     start_timestamp,
 }: TDailyEarningsHistoryParams) {
-    return requestIndexer<TDailyEarningsHistoryResponse[]>({
+    return requestIndexer<TDailyEarningsHistoryResponse>({
         method: 'POST',
         path: `/vaults/history_daily_earnings`,
         body: {

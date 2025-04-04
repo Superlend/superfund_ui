@@ -23,7 +23,7 @@ import useDimensions from '@/hooks/useDimensions'
 import { BodyText, HeadingText, Label } from '../ui/typography'
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden'
 import { ScrollArea, ScrollBar } from '../ui/scroll-area'
-import { hasLowestDisplayValuePrefix } from '@/lib/utils'
+import { formatAmountToDisplay, hasLowestDisplayValuePrefix } from '@/lib/utils'
 import { getLowestDisplayValue } from '@/lib/utils'
 import { isLowestValue } from '@/lib/utils'
 import { abbreviateNumber } from '@/lib/utils'
@@ -313,14 +313,6 @@ export const SelectTokenDialog: FC<SelectTokenDialogProps> = ({
             </DrawerContent>
         </Drawer>
     )
-}
-
-function formatAmountToDisplay(amount: string) {
-    if (isLowestValue(Number(amount ?? 0))) {
-        return getLowestDisplayValue(Number(amount ?? 0))
-    } else {
-        return abbreviateNumber(Number(amount ?? 0))
-    }
 }
 
 function LoadingBalanceItemSkeleton() {
