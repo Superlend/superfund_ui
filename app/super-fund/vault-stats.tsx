@@ -3,6 +3,7 @@
 import { AnimatedNumber } from '@/components/animations/animated_number'
 import ImageWithDefault from '@/components/ImageWithDefault'
 import InfoTooltip from '@/components/tooltips/InfoTooltip'
+import TooltipText from '@/components/tooltips/TooltipText'
 import { Skeleton } from '@/components/ui/skeleton'
 import { BodyText, HeadingText } from '@/components/ui/typography'
 import useIsClient from '@/hooks/useIsClient'
@@ -79,6 +80,7 @@ export default function VaultStats() {
         },
         {
             title: 'Effective APY',
+            titleTooltipContent: 'Actual annual interest received after the vault\'s 7-day interest distribution period.',
             value: `${effectiveApyData?.total_apy.toFixed(2)}%`,
             show: true,
             hasRewards: true,
@@ -97,6 +99,7 @@ export default function VaultStats() {
         },
         {
             title: 'Spot APY',
+            titleTooltipContent: 'The current interest rate earned by users.',
             value: `${(Number(spotApy) + Number(totalRewardApy)).toFixed(2)}%`,
             show: true,
             hasRewards: true,
@@ -114,6 +117,7 @@ export default function VaultStats() {
         },
         {
             title: '7D APY',
+            titleTooltipContent: 'Average Spot APY over the past 7 days.',
             value: `${abbreviateNumber(days_7_avg_total_apy)}%`,
             show: true,
             hasRewards: true,
@@ -161,13 +165,31 @@ export default function VaultStats() {
                             ease: 'easeOut',
                         }}
                     >
-                        <BodyText
-                            level="body1"
-                            weight="normal"
-                            className="text-gray-600"
-                        >
-                            {item.title}
-                        </BodyText>
+                        {item.titleTooltipContent &&
+                            <InfoTooltip
+                                label={
+                                    <BodyText
+                                        level="body1"
+                                        weight="normal"
+                                        className="text-gray-600"
+                                    >
+                                        <TooltipText>
+                                            {item.title}
+                                        </TooltipText>
+                                    </BodyText>
+                                }
+                                content={item.titleTooltipContent}
+                            />
+                        }
+                        {!item.titleTooltipContent &&
+                            <BodyText
+                                level="body1"
+                                weight="normal"
+                                className="text-gray-600"
+                            >
+                                {item.title}
+                            </BodyText>
+                        }
                         {item.hasRewards &&
                             <div className="flex items-center gap-2">
                                 <HeadingText level="h1" weight="medium">
@@ -223,13 +245,31 @@ export default function VaultStats() {
                             ease: 'easeOut',
                         }}
                     >
-                        <BodyText
-                            level="body1"
-                            weight="normal"
-                            className="text-gray-600"
-                        >
-                            {item.title}
-                        </BodyText>
+                        {item.titleTooltipContent &&
+                            <InfoTooltip
+                                label={
+                                    <BodyText
+                                        level="body1"
+                                        weight="normal"
+                                        className="text-gray-600"
+                                    >
+                                        <TooltipText>
+                                            {item.title}
+                                        </TooltipText>
+                                    </BodyText>
+                                }
+                                content={item.titleTooltipContent}
+                            />
+                        }
+                        {!item.titleTooltipContent &&
+                            <BodyText
+                                level="body1"
+                                weight="normal"
+                                className="text-gray-600"
+                            >
+                                {item.title}
+                            </BodyText>
+                        }
                         {item.hasRewards &&
                             <div className="flex items-center gap-2">
                                 <HeadingText level="h3" weight="medium">
