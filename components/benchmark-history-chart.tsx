@@ -39,6 +39,8 @@ import useGetBenchmarkHistory from '@/hooks/useGetBenchmarkHistory'
 
 const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
+        const isAaveApproximated = payload[0]?.payload.isAaveApproximated;
+
         return (
             <div className="flex flex-col gap-2 bg-card border border-border rounded-lg shadow-lg p-3 text-sm">
                 <BodyText level='body3' className="text-gray-600">
@@ -48,16 +50,19 @@ const CustomTooltip = ({ active, payload }: any) => {
                     <BodyText level='body3' className="flex items-center justify-between gap-1">
                         <div className="flex items-center gap-1">
                             <span className="w-2 h-2 rounded-full bg-[#fb5900]" />
-                            Superlend:
+                            Superfund:
                         </div>
                         <span className="font-medium">
-                            {payload[0]?.payload.superlendDisplay}%
+                            {payload[0]?.payload.superfundDisplay}%
                         </span>
                     </BodyText>
                     <BodyText level='body3' className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1">
                             <span className="w-2 h-2 rounded-full bg-[#1E90FF]" />
                             Aave:
+                            {/* {isAaveApproximated && (
+                                <span className="text-xs text-muted-foreground ml-1">(approx.)</span>
+                            )} */}
                         </div>
                         <span className="font-medium">
                             {payload[0]?.payload.aaveDisplay}%
@@ -151,8 +156,8 @@ const CustomXAxisTick = ({
 }
 
 const chartConfig = {
-    superlend: {
-        label: 'Superlend',
+    superfund: {
+        label: 'Superfund',
         color: '#fb5900',
     },
     aave: {
@@ -163,26 +168,27 @@ const chartConfig = {
 
 export function BenchmarkHistoryChart() {
     const [selectedRange, setSelectedRange] = useState<Period>(Period.oneMonth)
-    const [apiPeriod, setApiPeriod] = useState<Period>(Period.oneMonth)
-    const { data: SuperlendHistoryData, isLoading: isSuperlendLoading } = useGetBenchmarkHistory({
-        protocol_identifier: '0xd68cf3aa73c75811ca1665efe01a10524ed5adcba0f412df44d78f04f1c902bf',
-        token: '0x796ea11fa2dd751ed01b53c372ffdb4aaa8f00f9',
-        period: apiPeriod,
-    })
+    const [apiPeriod, setApiPeriod] = useState<Period | 'YEAR'>(Period.oneMonth)
+    // const { data: SuperfundHistoryData, isLoading: isSuperfundLoading } = useGetBenchmarkHistory({
+    //     protocol_identifier: '0xd68cf3aa73c75811ca1665efe01a10524ed5adcba0f412df44d78f04f1c902bf',
+    //     token: '0x796ea11fa2dd751ed01b53c372ffdb4aaa8f00f9',
+    //     period: apiPeriod,
+    // })
+    const { historicalData: SuperfundHistoryData, isLoading: isSuperfundLoading } = useHistoricalData(selectedRange)
     const { data: AaveHistoryData, isLoading: isAaveLoading } = useGetBenchmarkHistory({
         protocol_identifier: '0x8ef0fa7f46a36d852953f0b6ea02f9a92a8a2b1b9a39f38654bee0792c4b4304',
         token: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
         period: apiPeriod,
     })
-    const [historicalData, setHistoricalData] = useState<Array<{ timestamp: number; aave: number; superlend: number }>>([])
-    
+    const [historicalData, setHistoricalData] = useState<Array<{ timestamp: number; aave: number; superfund: number }>>([])
+
     // New approach - use domain values for zoom
     const [isProcessing, setIsProcessing] = useState(false)
-    const prevSuperlendData = useRef<any>(null);
+    const prevSuperfundData = useRef<any>(null);
     const prevAaveData = useRef<any>(null);
-    
+
     // Determine if we're loading data
-    const isLoading = isSuperlendLoading || isAaveLoading || isProcessing;
+    const isLoading = isSuperfundLoading || isAaveLoading;
 
     // Reset zoom when period changes
     useEffect(() => {
@@ -192,60 +198,177 @@ export function BenchmarkHistoryChart() {
     // Combine both data sources
     useEffect(() => {
         // Skip if API is still loading
-        if (isSuperlendLoading || isAaveLoading) return;
+        if (isSuperfundLoading || isAaveLoading) return;
 
-        // Skip if the data hasn't actually changed
-        const superlendChanged = prevSuperlendData.current !== SuperlendHistoryData;
-        const aaveChanged = prevAaveData.current !== AaveHistoryData;
+        console.log('API data loaded, processing...');
+        console.log('Data available:',
+            'Superfund:', SuperfundHistoryData?.length,
+            'Aave:', AaveHistoryData?.processMap?.length
+        );
 
-        if (superlendChanged || aaveChanged) {
-            setIsProcessing(true);
-
-            if (SuperlendHistoryData && AaveHistoryData) {
-                // Create maps for faster lookups
-                const superlendMap = new Map<number, number>();
-                if (SuperlendHistoryData?.processMap && Array.isArray(SuperlendHistoryData.processMap)) {
-                    SuperlendHistoryData.processMap.forEach((item: any) => {
-                        if (item && item.timestamp && item.data && item.data.depositRate) {
-                            superlendMap.set(item.timestamp, item.data.depositRate);
-                        }
-                    });
-                }
-
-                const aaveMap = new Map<number, number>();
-                if (AaveHistoryData?.processMap && Array.isArray(AaveHistoryData.processMap)) {
-                    AaveHistoryData.processMap.forEach((item: any) => {
-                        if (item && item.timestamp && item.data && item.data.depositRate) {
-                            aaveMap.set(item.timestamp, item.data.depositRate);
-                        }
-                    });
-                }
-
-                // Get all unique timestamps
-                const superlendTimestamps = (SuperlendHistoryData?.processMap && Array.isArray(SuperlendHistoryData.processMap))
-                    ? SuperlendHistoryData.processMap.map((item: any) => item.timestamp)
-                    : [];
-                const aaveTimestamps = (AaveHistoryData?.processMap && Array.isArray(AaveHistoryData.processMap))
-                    ? AaveHistoryData.processMap.map((item: any) => item.timestamp)
-                    : [];
-                const allTimestamps = Array.from(new Set([...superlendTimestamps, ...aaveTimestamps])).sort((a, b) => a - b);
-
-                // Create combined dataset
-                const combined = allTimestamps.map(timestamp => ({
-                    timestamp,
-                    aave: aaveMap.get(timestamp) || 0,
-                    superlend: superlendMap.get(timestamp) || 0
-                }));
-
-                setHistoricalData(combined);
-
-                // Update refs
-                prevSuperlendData.current = SuperlendHistoryData;
-                prevAaveData.current = AaveHistoryData;
-            }
-            setIsProcessing(false);
+        // Check if we have both datasets
+        if (!SuperfundHistoryData || !AaveHistoryData?.processMap) {
+            console.log('One or both datasets missing');
+            return;
         }
-    }, [SuperlendHistoryData, AaveHistoryData, isSuperlendLoading, isAaveLoading]);
+
+        // Process the data regardless of reference equality
+        setIsProcessing(true);
+
+        // Create maps for faster lookups
+        const superfundMap = new Map<number, number>();
+        if (SuperfundHistoryData && Array.isArray(SuperfundHistoryData)) {
+            SuperfundHistoryData.forEach((item: any) => {
+                if (item && item.timestamp && item.totalApy) {
+                    superfundMap.set(item.timestamp, item.totalApy);
+                }
+            });
+        }
+        console.log('Superfund map size:', superfundMap.size);
+        // Log some sample timestamps if available
+        if (superfundMap.size > 0) {
+            console.log('Sample Superfund timestamps:',
+                Array.from(superfundMap.keys()).slice(0, 3)
+            );
+        }
+
+        const aaveMap = new Map<number, number>();
+        if (AaveHistoryData?.processMap && Array.isArray(AaveHistoryData.processMap)) {
+            AaveHistoryData.processMap.forEach((item: any) => {
+                if (item && item.timestamp && item.data && item.data.depositRate) {
+                    aaveMap.set(item.timestamp, item.data.depositRate);
+                }
+            });
+        }
+        console.log('Aave map size:', aaveMap.size);
+        // Log some sample timestamps if available
+        if (aaveMap.size > 0) {
+            console.log('Sample Aave timestamps:',
+                Array.from(aaveMap.keys()).slice(0, 3)
+            );
+        }
+
+        // Get all timestamps
+        const superfundTimestamps = Array.from(superfundMap.keys());
+        const aaveTimestamps = Array.from(aaveMap.keys());
+
+        console.log('Attempting to find timestamp matches between datasets');
+
+        // Check if timestamps are in different formats (e.g., milliseconds vs seconds)
+        const superfundFirstTimestamp = superfundTimestamps[0];
+        const aaveFirstTimestamp = aaveTimestamps[0];
+
+        // Log timestamp formats
+        if (superfundFirstTimestamp && aaveFirstTimestamp) {
+            console.log('Timestamp format check:', {
+                superfundTimestamp: superfundFirstTimestamp,
+                superfundDigits: superfundFirstTimestamp.toString().length,
+                aaveTimestamp: aaveFirstTimestamp,
+                aaveDigits: aaveFirstTimestamp.toString().length
+            });
+
+            // Normalize timestamps to milliseconds if needed
+            let normalizedSuperfundTimestamps = superfundTimestamps;
+            let normalizedSuperfundMap = superfundMap;
+            let normalizedAaveTimestamps = aaveTimestamps;
+            let normalizedAaveMap = aaveMap;
+
+            // Convert seconds to milliseconds if needed
+            if (superfundFirstTimestamp.toString().length === 10 && aaveFirstTimestamp.toString().length === 13) {
+                // Superfund in seconds, Aave in milliseconds
+                normalizedSuperfundMap = new Map();
+                normalizedSuperfundTimestamps = superfundTimestamps.map(ts => ts * 1000);
+                superfundMap.forEach((value, key) => {
+                    normalizedSuperfundMap.set(key * 1000, value);
+                });
+                console.log('Normalized: Superfund seconds -> milliseconds');
+            } else if (superfundFirstTimestamp.toString().length === 13 && aaveFirstTimestamp.toString().length === 10) {
+                // Superfund in milliseconds, Aave in seconds
+                normalizedAaveMap = new Map();
+                normalizedAaveTimestamps = aaveTimestamps.map(ts => ts * 1000);
+                aaveMap.forEach((value, key) => {
+                    normalizedAaveMap.set(key * 1000, value);
+                });
+                console.log('Normalized: Aave seconds -> milliseconds');
+            }
+
+            // NEW APPROACH: Superfund leads, prioritize all Superfund data points
+            console.log('Using Superfund-led approach with', normalizedSuperfundTimestamps.length, 'data points');
+
+            // Helper function to find closest timestamp in a set
+            const findClosestTimestamp = (target: number, timestamps: number[]): number | null => {
+                if (timestamps.length === 0) return null;
+
+                let closest = timestamps[0];
+                let minDistance = Math.abs(target - closest);
+
+                for (let i = 1; i < timestamps.length; i++) {
+                    const distance = Math.abs(target - timestamps[i]);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closest = timestamps[i];
+                    }
+                }
+
+                // Only return if within reasonable time range (e.g., 1 day)
+                const maxDistance = 24 * 60 * 60 * 1000; // 1 day in milliseconds
+                return minDistance <= maxDistance ? closest : null;
+            };
+
+            // Sort Superfund timestamps chronologically
+            normalizedSuperfundTimestamps.sort((a, b) => a - b);
+
+            // For each Superfund timestamp, find exact or nearest Aave value
+            const sortedAaveTimestamps = Array.from(normalizedAaveTimestamps).sort((a, b) => a - b);
+
+            const combined = normalizedSuperfundTimestamps.map(timestamp => {
+                // Get Superfund value
+                const superfundValue = normalizedSuperfundMap.get(timestamp);
+
+                // Try exact match for Aave first
+                if (normalizedAaveMap.has(timestamp)) {
+                    return {
+                        timestamp,
+                        superfund: superfundValue as number,
+                        aave: normalizedAaveMap.get(timestamp) as number
+                    };
+                }
+
+                // If no exact match, find closest Aave timestamp
+                const closestAaveTimestamp = findClosestTimestamp(timestamp, sortedAaveTimestamps);
+
+                if (closestAaveTimestamp !== null) {
+                    return {
+                        timestamp,
+                        superfund: superfundValue as number,
+                        aave: normalizedAaveMap.get(closestAaveTimestamp) as number,
+                        isAaveApproximated: true // Flag to indicate approximated value
+                    };
+                }
+
+                // If no reasonable Aave match found
+                return {
+                    timestamp,
+                    superfund: superfundValue as number,
+                    aave: null // Will be handled in rendering
+                };
+            });
+
+            console.log('Combined dataset created with', combined.length, 'Superfund-led points');
+            console.log('Approximated Aave values:', combined.filter(d => d.isAaveApproximated).length);
+
+            setHistoricalData(combined.filter(d => d.aave !== null) as any);
+        } else {
+            console.log('Missing timestamp data in one or both datasets');
+            setHistoricalData([]);
+        }
+
+        // Update refs
+        prevSuperfundData.current = SuperfundHistoryData;
+        prevAaveData.current = AaveHistoryData;
+
+        setIsProcessing(false);
+    }, [SuperfundHistoryData, AaveHistoryData, isSuperfundLoading, isAaveLoading]);
 
     const customTicks = {
         [Period.oneDay]: 5,
@@ -255,7 +378,13 @@ export function BenchmarkHistoryChart() {
     }
 
     const chartData = useMemo(() => {
-        return historicalData.map((item: any) => {
+        console.log('historicalData length:', historicalData.length);
+
+        if (historicalData.length === 0) {
+            return [];
+        }
+
+        const formatted = historicalData.map((item: any) => {
             const date = new Date(item.timestamp)
             const dateOptions: any = {
                 year: 'numeric',
@@ -281,16 +410,20 @@ export function BenchmarkHistoryChart() {
                 monthDay,
                 timestamp: `${formattedDate} ${time}`,
                 timeValue: time,
-                superlend: item.superlend,
+                superfund: item.superfund,
                 aave: item.aave,
-                superlendDisplay: abbreviateNumber(item.superlend),
+                isAaveApproximated: item.isAaveApproximated || false,
+                superfundDisplay: abbreviateNumber(item.superfund),
                 aaveDisplay: abbreviateNumber(item.aave),
             }
-        }).sort((a: any, b: any) => a.rawTimestamp - b.rawTimestamp)
+        }).sort((a: any, b: any) => a.rawTimestamp - b.rawTimestamp);
+
+        console.log('Formatted chartData length:', formatted.length);
+        return formatted;
     }, [historicalData])
 
     const { minValue, maxValue, valueRange } = useMemo(() => {
-        const allValues = chartData.flatMap((d: any) => [Number(d.superlend), Number(d.aave)])
+        const allValues = chartData.flatMap((d: any) => [Number(d.superfund), Number(d.aave)])
         const min = Math.min(...allValues)
         const max = Math.max(...allValues)
         return {
@@ -344,7 +477,7 @@ export function BenchmarkHistoryChart() {
         // We'll no longer set zoom domain on brush change
         // Instead, let Recharts handle the zooming behavior naturally
     }, []);
-    
+
     // Get domain values for x-axis
     const xAxisDomain = useMemo(() => {
         return ['dataMin', 'dataMax'];
@@ -354,7 +487,7 @@ export function BenchmarkHistoryChart() {
         // For the "All" filter, use one year period instead for API calls
         if (value === Period.allTime) {
             setSelectedRange(Period.allTime); // For UI display
-            setApiPeriod(Period.oneMonth); // Use one month data for API calls
+            setApiPeriod("YEAR"); // Use one month data for API calls
         } else {
             setSelectedRange(value as Period);
             setApiPeriod(value as Period);
@@ -425,7 +558,7 @@ export function BenchmarkHistoryChart() {
                     className={`w-full h-[350px] bg-white rounded-4`}
                 >
                     <>
-                        {!isLoading && chartData.length > 0 ? (
+                        {chartData.length > 0 ? (
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart
                                     accessibilityLayer
@@ -471,9 +604,9 @@ export function BenchmarkHistoryChart() {
                                         cursor={{ stroke: 'hsl(var(--foreground-disabled))', strokeWidth: 1 }}
                                     />
                                     <Line
-                                        dataKey="superlend"
+                                        dataKey="superfund"
                                         type="monotone"
-                                        stroke="var(--color-superlend)"
+                                        stroke="var(--color-superfund)"
                                         strokeWidth={2}
                                         dot={false}
                                         activeDot={{ r: 5, strokeWidth: 1 }}
@@ -505,8 +638,8 @@ export function BenchmarkHistoryChart() {
                                         <AreaChart data={processedChartData}>
                                             <Area
                                                 type="monotone"
-                                                dataKey="superlend"
-                                                stroke="var(--color-superlend)"
+                                                dataKey="superfund"
+                                                stroke="var(--color-superfund)"
                                                 strokeWidth={1}
                                                 fill="rgba(251, 89, 0, 0.2)"
                                                 connectNulls={true}

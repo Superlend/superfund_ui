@@ -5,7 +5,7 @@ import { TAddress } from '@/types'
 export type TBenchmarkHistoryParams = {
     protocol_identifier: TAddress
     token: TAddress
-    period: Period
+    period: Period | 'YEAR'
 }
 
 export type TBenchmarkHistoryResponse = {
