@@ -16,4 +16,5 @@ export enum ChainId {
     Arbitrum = 42161,
     Metis = 1088,
     Etherlink = 42793,
+    Sonic = 146
 }

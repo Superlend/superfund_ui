@@ -15,9 +15,9 @@ import {
     useTxContext,
 } from '@/context/super-vault-tx-provider'
 import { ArrowRightIcon } from 'lucide-react'
-import { USDC_DECIMALS, VAULT_ADDRESS } from '@/lib/constants'
+import { USDC_DECIMALS, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { parseAbi } from 'viem'
-import { usePrivy } from '@privy-io/react-auth'
+import { useChain } from '@/context/chain-context'
 
 const VAULT_ABI = parseAbi([
     'function withdraw(uint256 _assets, address _receiver, address _owner) returns (uint256)',
@@ -42,6 +42,7 @@ const WithdrawButton = ({
         data: hash,
         error,
     } = useWriteContract()
+    const { selectedChain } = useChain()
     const { withdrawTx, setWithdrawTx } = useTxContext() as TTxContext
     const { address: walletAddress } = useAccount()
     const txBtnStatus: Record<string, string> = {
@@ -112,7 +113,7 @@ const WithdrawButton = ({
 
         try {
             writeContractAsync({
-                address: VAULT_ADDRESS as `0x${string}`,
+                address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
                 abi: VAULT_ABI,
                 functionName: 'withdraw',
                 args: [

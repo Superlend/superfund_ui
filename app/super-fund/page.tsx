@@ -24,6 +24,8 @@ import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useHistoricalData, useRebalanceHistory } from '@/hooks/vault_hooks/useHistoricalDataHook'
 import { Period } from '@/types/periodButtons'
 import { useRouter } from 'next/navigation'
+import { ChainProvider } from '@/context/chain-context'
+import { ChainId } from '@/types/chain'
 
 export default function SuperVaultPage() {
     const { isClient } = useIsClient()
@@ -31,10 +33,12 @@ export default function SuperVaultPage() {
     const [selectedTab, setSelectedTab] = useState('fund-overview')
     const router = useRouter()
 
+    // Define supported chains for SuperFund
+    const supportedChains = [ChainId.Base, ChainId.Sonic]
+
     // const { historicalData, days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading, error } = useHistoricalData(Period.oneDay)
 
     // const { rebalanceHistory, isLoading: isLoading2, error: error2 } = useRebalanceHistory(Period.oneDay)
-
 
     const tabs = [
         {
@@ -66,32 +70,34 @@ export default function SuperVaultPage() {
     }
 
     return (
-        <TxProvider>
-            <MainContainer className="flex flex-col flex-wrap gap-[40px] w-full mx-auto my-14">
-                <PageHeader />
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-[16px]">
-                    <div className="flex flex-col gap-10">
-                        <VaultStats />
-                        <div className="block lg:hidden">
+        <ChainProvider supportedChains={supportedChains}>
+            <TxProvider>
+                <MainContainer className="flex flex-col flex-wrap gap-[40px] w-full mx-auto my-14">
+                    <PageHeader />
+                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-[16px]">
+                        <div className="flex flex-col gap-10">
+                            <VaultStats />
+                            <div className="block lg:hidden">
+                                <DepositAndWithdrawAssets />
+                            </div>
+                            {isConnectingWallet &&
+                                <LoadingTabs />
+                            }
+                            {!isConnectingWallet &&
+                                <FlatTabs
+                                    tabs={tabs}
+                                    activeTab={selectedTab}
+                                    onTabChange={handleTabChange}
+                                />
+                            }
+                        </div>
+                        <div className="hidden lg:block">
                             <DepositAndWithdrawAssets />
                         </div>
-                        {isConnectingWallet &&
-                            <LoadingTabs />
-                        }
-                        {!isConnectingWallet &&
-                            <FlatTabs
-                                tabs={tabs}
-                                activeTab={selectedTab}
-                                onTabChange={handleTabChange}
-                            />
-                        }
                     </div>
-                    <div className="hidden lg:block">
-                        <DepositAndWithdrawAssets />
-                    </div>
-                </div>
-            </MainContainer>
-        </TxProvider>
+                </MainContainer>
+            </TxProvider>
+        </ChainProvider>
     )
 }
 

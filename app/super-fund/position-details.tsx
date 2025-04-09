@@ -11,11 +11,13 @@ import { BodyText } from "@/components/ui/typography"
 import ConnectWalletButton from "@/components/ConnectWalletButton"
 import { useRewardsHook } from "@/hooks/vault_hooks/useRewardHook"
 import useGetDailyEarningsHistory from "@/hooks/useGetDailyEarningsHistory"
-import { VAULT_ADDRESS } from "@/lib/constants"
+import { VAULT_ADDRESS, VAULT_ADDRESS_MAP } from "@/lib/constants"
 import { getStartTimestamp } from "@/lib/utils"
 import { TAddress } from "@/types"
 import { useTxContext } from "@/context/super-vault-tx-provider"
 import { TTxContext } from "@/context/super-vault-tx-provider"
+import { useChain } from "@/context/chain-context"
+import { ChainId } from "@/types/chain"
 
 const variants = {
     hidden: { opacity: 0, y: 30 },
@@ -92,6 +94,7 @@ function NoActivePositionUI({
 
 function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddress }) {
     const { claimRewardsTx } = useTxContext() as TTxContext
+    const { selectedChain } = useChain()
     const [refetchClaimRewards, setrefetchClaimRewards] = useState(false)
     // Claim Rewards
     const { formattedClaimData: rewardsData, isLoading: isLoadingRewards, isError: isErrorRewards, refetchClaimRewardsData } = useRewardsHook({
@@ -105,7 +108,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
         isLoading: isLoadingDailyEarningsHistory,
         isError: isErrorDailyEarningsHistory
     } = useGetDailyEarningsHistory({
-        vault_address: VAULT_ADDRESS,
+        vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
         user_address: walletAddress.toLowerCase() as `0x${string}`,
         start_timestamp: startTimeStamp,
     })
@@ -134,12 +137,17 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
             transition={transition}
             className="flex flex-col gap-[40px]"
         >
-            <ClaimRewards
-                rewardsData={rewardsData}
-                isLoadingRewards={isLoadingRewards}
-                isErrorRewards={isErrorRewards}
-                noDataUI={null}
-            />
+            {(selectedChain !== ChainId.Sonic) &&
+                <ClaimRewards
+                    rewardsData={rewardsData}
+                    isLoadingRewards={isLoadingRewards}
+                    isErrorRewards={isErrorRewards}
+                    noDataUI={
+                        <NoActivePositionUI
+                            description={`You have no rewards to claim`}
+                        />
+                    }
+                />}
             <DailyEarningsHistoryChart
                 selectedRange={selectedRangeForDailyEarningsHistory}
                 setSelectedRange={setSelectedRangeForDailyEarningsHistory}
@@ -147,7 +155,11 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                 isLoadingDailyEarningsHistory={isLoadingDailyEarningsHistory}
                 isErrorDailyEarningsHistory={isErrorDailyEarningsHistory}
                 earningsSuffixText={earningsSuffixText}
-                noDataUI={<NoActivePositionUI description={`You have no interest earnings ${earningsSuffixText[selectedRangeForDailyEarningsHistory]}`} />}
+                noDataUI={
+                    <NoActivePositionUI
+                        description={`You have no interest earnings ${earningsSuffixText[selectedRangeForDailyEarningsHistory]}`}
+                    />
+                }
             />
             {/* <DepositHistoryChart
                 selectedRange={Period.oneMonth}

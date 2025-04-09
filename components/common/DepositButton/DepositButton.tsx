@@ -24,9 +24,10 @@ import { ArrowRightIcon } from 'lucide-react'
 import { BigNumber } from 'ethers'
 import { getErrorText } from '@/lib/getErrorText'
 import { BodyText } from '@/components/ui/typography'
-import { USDC_ADDRESS, USDC_DECIMALS, VAULT_ADDRESS } from '@/lib/constants'
+import { USDC_ADDRESS_MAP, USDC_DECIMALS, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { parseAbi } from 'viem'
+import { useChain } from '@/context/chain-context'
 
 interface IDepositButtonProps {
     disabled: boolean
@@ -61,6 +62,7 @@ const DepositButton = ({
         data: hash,
         error,
     } = useWriteContract()
+    const { selectedChain } = useChain()
 
     const { isLoading: isConfirming, isSuccess: isConfirmed } =
         useWaitForTransactionReceipt({
@@ -124,7 +126,7 @@ const DepositButton = ({
             const amountInWei = parseUnits(amount, USDC_DECIMALS)
 
             writeContractAsync({
-                address: VAULT_ADDRESS,
+                address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
                 abi: VAULT_ABI,
                 functionName: 'deposit',
                 args: [amountInWei.toBigInt(), walletAddress],
@@ -221,10 +223,10 @@ const DepositButton = ({
 
             const amountInWei = parseUnits(amount, USDC_DECIMALS)
             writeContractAsync({
-                address: USDC_ADDRESS,
+                address:  USDC_ADDRESS_MAP[selectedChain as keyof typeof USDC_ADDRESS_MAP] as `0x${string}`,
                 abi: USDC_ABI,
                 functionName: 'approve',
-                args: [VAULT_ADDRESS, amountInWei.toBigInt()],
+                args: [VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`, amountInWei.toBigInt()],
             }).catch((error) => {
                 setDepositTx((prev: TDepositTx) => ({
                     ...prev,

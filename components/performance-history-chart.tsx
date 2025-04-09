@@ -43,27 +43,27 @@ const CustomTooltip = ({ active, payload }: any) => {
                     {payload[0]?.payload.timestamp}
                 </BodyText>
                 <div className="space-y-1">
-                    <BodyText level='body3' className="flex items-center justify-between gap-1">
+                    <BodyText level='body3' className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-1">
                             <span className="w-2 h-2 rounded-full bg-[#3366CC]" />
-                            Base APY:
+                            Base APY
                         </div>
                         <span className="font-medium">
                             {payload[0]?.payload.baseApy}%
                         </span>
                     </BodyText>
-                    <BodyText level='body3' className="flex items-center justify-between gap-2">
+                    <BodyText level='body3' className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-1">
                             <span className="w-2 h-2 rounded-full bg-[#8A2BE2]" />
-                            Total APY:
+                            Total APY
                         </div>
                         <span className="font-medium">
                             {payload[0]?.payload.totalApy}%
                         </span>
                     </BodyText>
                 </div>
-                <BodyText level='body3' className="flex items-center justify-between gap-2 border-t border-gray-400 pt-1">
-                    Total Assets:
+                <BodyText level='body3' className="flex items-center justify-between gap-4 border-t border-gray-400 pt-1">
+                    Total Assets
                     <span className="font-medium">
                         ${payload[0]?.payload.totalAssets}
                     </span>

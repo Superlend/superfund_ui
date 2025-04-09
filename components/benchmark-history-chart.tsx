@@ -35,6 +35,9 @@ import { Expand } from 'lucide-react'
 import { BodyText, HeadingText } from './ui/typography'
 import { Skeleton } from './ui/skeleton'
 import useGetBenchmarkHistory from '@/hooks/useGetBenchmarkHistory'
+import { useChain } from '@/context/chain-context'
+import { ChainId } from '@/types/chain'
+import { SONIC_USDC_ADDRESS, USDC_ADDRESS } from '@/lib/constants'
 
 
 const CustomTooltip = ({ active, payload }: any) => {
@@ -47,25 +50,25 @@ const CustomTooltip = ({ active, payload }: any) => {
                     {payload[0]?.payload.timestamp}
                 </BodyText>
                 <div className="space-y-1">
-                    <BodyText level='body3' className="flex items-center justify-between gap-1">
+                    <BodyText level='body3' className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-1">
                             <span className="w-2 h-2 rounded-full bg-[#fb5900]" />
-                            Superfund:
+                            Superfund
                         </div>
                         <span className="font-medium">
-                            {payload[0]?.payload.superfundDisplay}%
+                            {payload[0]?.payload.superfundDisplay}% APY
                         </span>
                     </BodyText>
-                    <BodyText level='body3' className="flex items-center justify-between gap-2">
+                    <BodyText level='body3' className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-1">
                             <span className="w-2 h-2 rounded-full bg-[#1E90FF]" />
-                            Aave:
+                            Aave
                             {/* {isAaveApproximated && (
                                 <span className="text-xs text-muted-foreground ml-1">(approx.)</span>
                             )} */}
                         </div>
                         <span className="font-medium">
-                            {payload[0]?.payload.aaveDisplay}%
+                            {payload[0]?.payload.aaveDisplay}% APY
                         </span>
                     </BodyText>
                 </div>
@@ -169,15 +172,15 @@ const chartConfig = {
 export function BenchmarkHistoryChart() {
     const [selectedRange, setSelectedRange] = useState<Period>(Period.oneMonth)
     const [apiPeriod, setApiPeriod] = useState<Period | 'YEAR'>(Period.oneMonth)
-    // const { data: SuperfundHistoryData, isLoading: isSuperfundLoading } = useGetBenchmarkHistory({
-    //     protocol_identifier: '0xd68cf3aa73c75811ca1665efe01a10524ed5adcba0f412df44d78f04f1c902bf',
-    //     token: '0x796ea11fa2dd751ed01b53c372ffdb4aaa8f00f9',
-    //     period: apiPeriod,
-    // })
+
+    const { selectedChain } = useChain()
+    const SONIC_PROTOCOL_IDENTIFIER = '0x0b1d26d64c197f8644f6f24ef29af869793188f521c37dc35052c5aebf1e1b1e'
+    const BASE_PROTOCOL_IDENTIFIER = '0x8ef0fa7f46a36d852953f0b6ea02f9a92a8a2b1b9a39f38654bee0792c4b4304'
+    
     const { historicalData: SuperfundHistoryData, isLoading: isSuperfundLoading } = useHistoricalData(selectedRange)
     const { data: AaveHistoryData, isLoading: isAaveLoading } = useGetBenchmarkHistory({
-        protocol_identifier: '0x8ef0fa7f46a36d852953f0b6ea02f9a92a8a2b1b9a39f38654bee0792c4b4304',
-        token: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        protocol_identifier: selectedChain === ChainId.Sonic ? SONIC_PROTOCOL_IDENTIFIER : BASE_PROTOCOL_IDENTIFIER,
+        token: selectedChain === ChainId.Sonic ? SONIC_USDC_ADDRESS : USDC_ADDRESS,
         period: apiPeriod,
     })
     const [historicalData, setHistoricalData] = useState<Array<{ timestamp: number; aave: number; superfund: number }>>([])
@@ -536,7 +539,7 @@ export function BenchmarkHistoryChart() {
                 <style>{styles}</style>
                 <div className="flex items-center justify-between max-md:px-4 p-6">
                     <HeadingText level="h4" weight="medium" className='text-gray-800'>
-                        Benchmark History
+                        Performance vs Peers
                     </HeadingText>
                     <div className="flex items-center gap-2">
                         <div>

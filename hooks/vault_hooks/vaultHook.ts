@@ -1,20 +1,27 @@
 'use client'
 
 import {
+    // SONIC_FLUID_LENDING_RESOLVER_ADDRESS,
+    SONIC_VAULT_ADDRESS,
+    SONIC_VAULT_STRATEGIES,
     StrategiesType,
     TOTAL_ALLOCATION_POINTS,
     USDC_DECIMALS,
     VAULT_ADDRESS,
     VAULT_STRATEGIES,
+    VAULT_STRATEGIES_MAP,
+    type SonicStrategy,
 } from '@/lib/constants'
 import { TReward, TRewardAsset } from '@/types'
 import { usePrivy } from '@privy-io/react-auth'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { createPublicClient, http, formatUnits, parseAbi } from 'viem'
-import { base } from 'viem/chains'
+import { base, sonic } from 'viem/chains'
 import { BASE_FLUID_LENDING_RESOLVER_ADDRESS } from '@/lib/constants'
 import FLUID_LENDING_RESOLVER_ABI from './abis/FluidLendingResolver.json'
 import { BigNumber } from 'ethers'
+import { useChain } from '@/context/chain-context'
+import { ChainId } from '@/types/chain'
 
 const VAULT_ABI = parseAbi([
     'function totalAssets() view returns (uint256)',
@@ -26,14 +33,35 @@ const VAULT_ABI = parseAbi([
     'function getStrategy(address _strategy) view returns (uint120, uint96, uint160, uint8)',
 ])
 
-// Create public client outside component to prevent recreation
-const publicClient = createPublicClient({
-    chain: base,
-    transport: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || ''),
-    batch: {
-        multicall: true,
+// Chain-specific configuration
+const CHAIN_CONFIGS = {
+    [ChainId.Base]: {
+        chain: base,
+        rpcUrl: process.env.NEXT_PUBLIC_BASE_RPC_URL || '',
+        vaultAddress: VAULT_ADDRESS,
+        fluidLendingResolverAddress: BASE_FLUID_LENDING_RESOLVER_ADDRESS,
     },
-})
+    [ChainId.Sonic]: {
+        chain: sonic,
+        rpcUrl: process.env.NEXT_PUBLIC_SONIC_RPC_URL || 'https://rpc.soniclabs.com',
+        vaultAddress: SONIC_VAULT_ADDRESS,
+        // fluidLendingResolverAddress: SONIC_FLUID_LENDING_RESOLVER_ADDRESS,
+    }
+}
+
+// Create public clients for each chain
+const publicClients = {
+    [ChainId.Base]: createPublicClient({
+        chain: base,
+        transport: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || ''),
+        batch: { multicall: true },
+    }),
+    [ChainId.Sonic]: createPublicClient({
+        chain: sonic,
+        transport: http(process.env.NEXT_PUBLIC_SONIC_RPC_URL || 'https://rpc.soniclabs.com'),
+        batch: { multicall: true },
+    })
+}
 
 export function useVaultHook() {
     const [totalAssets, setTotalAssets] = useState<string>('0')
@@ -42,18 +70,31 @@ export function useVaultHook() {
     const [error, setError] = useState<string | null>(null)
     const timeoutRef = useRef<NodeJS.Timeout | null>(null)
     const isMountedRef = useRef(true)
+    const { selectedChain } = useChain()
 
     async function fetchVaultData() {
         try {
             setIsLoading(true)
+
+            // Get chain-specific config
+            const config = CHAIN_CONFIGS[selectedChain as keyof typeof CHAIN_CONFIGS]
+            if (!config) {
+                throw new Error(`Configuration not found for chain ID ${selectedChain}`)
+            }
+
+            const client = publicClients[selectedChain as keyof typeof publicClients]
+            if (!client) {
+                throw new Error(`Public client not found for chain ID ${selectedChain}`)
+            }
+
             const [assets, eulerEarnSavingRate] = await Promise.all([
-                publicClient.readContract({
-                    address: VAULT_ADDRESS,
+                client.readContract({
+                    address: config.vaultAddress as `0x${string}`,
                     abi: VAULT_ABI,
                     functionName: 'totalAssets',
                 }),
-                publicClient.readContract({
-                    address: VAULT_ADDRESS,
+                client.readContract({
+                    address: config.vaultAddress as `0x${string}`,
                     abi: VAULT_ABI,
                     functionName: 'getEulerEarnSavingRate',
                 }),
@@ -85,6 +126,10 @@ export function useVaultHook() {
         } finally {
             if (isMountedRef.current) {
                 setIsLoading(false)
+                // Clear any existing timeout before setting a new one
+                if (timeoutRef.current) {
+                    clearTimeout(timeoutRef.current)
+                }
                 // Schedule next update after completion
                 timeoutRef.current = setTimeout(() => {
                     if (isMountedRef.current) {
@@ -97,6 +142,11 @@ export function useVaultHook() {
 
     useEffect(() => {
         isMountedRef.current = true
+        // Clear any existing timeout when chain changes
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current)
+            timeoutRef.current = null
+        }
         // Initial fetch
         fetchVaultData()
 
@@ -104,9 +154,10 @@ export function useVaultHook() {
             isMountedRef.current = false
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current)
+                timeoutRef.current = null
             }
         }
-    }, [])
+    }, [selectedChain]) // Add selectedChain as a dependency
 
     return { totalAssets, spotApy, isLoading, error }
 }
@@ -124,35 +175,51 @@ export function useVaultAllocationPoints() {
     const [allocationPoints, setAllocationPoints] = useState<
         { name: string; value: number }[]
     >([])
+    const { selectedChain } = useChain()
 
     async function fetchAllocationPoints() {
         let local_allocationPoints: { name: string; value: number }[] = []
-        const strategies = VAULT_STRATEGIES
+        const stratergiesMap = {
+            [ChainId.Base]: VAULT_STRATEGIES,
+            [ChainId.Sonic]: SONIC_VAULT_STRATEGIES,
+        }
+        const strategies = stratergiesMap[selectedChain as keyof typeof stratergiesMap]
         const keys = Object.keys(strategies)
+
+        // Get chain-specific client
+        const config = CHAIN_CONFIGS[selectedChain as keyof typeof CHAIN_CONFIGS]
+        if (!config) {
+            console.error(`Configuration not found for chain ID ${selectedChain}`)
+            return
+        }
+
+        const client = publicClients[selectedChain as keyof typeof publicClients]
+        if (!client) {
+            console.error(`Public client not found for chain ID ${selectedChain}`)
+            return
+        }
 
         let calls = []
         for (const key of keys) {
-            const strategies_internal =
+            const strategies_internal: any =
                 strategies[key as keyof typeof strategies]
 
             const address = strategies_internal.address
 
             calls.push(
-                publicClient
-                    .readContract({
-                        address: VAULT_ADDRESS,
-                        abi: VAULT_ABI,
-                        functionName: 'getStrategy',
-                        args: [address as `0x${string}`],
-                    })
-                    .then((res) => {
+                client.readContract({
+                    address: config.vaultAddress as `0x${string}`,
+                    abi: VAULT_ABI,
+                    functionName: 'getStrategy',
+                    args: [address as `0x${string}`],
+                })
+                    .then((res: any) => {
                         local_allocationPoints.push({
                             name: key,
                             value: Number(res[1].toString()),
                         })
                     })
             )
-
         }
 
         await Promise.all(calls)
@@ -191,7 +258,7 @@ export function useVaultAllocationPoints() {
 
     useEffect(() => {
         fetchAllocationPoints()
-    }, [])
+    }, [selectedChain])
 
     return { allocationPoints }
 }
@@ -203,12 +270,14 @@ export function useRewardsHook() {
     const [error, setError] = useState<string | null>(null)
     const timeoutRef = useRef<NodeJS.Timeout | null>(null)
     const isMountedRef = useRef(true)
+    const { selectedChain } = useChain()
+
 
     async function fetchRewards() {
         if (isLoading) return
         try {
             setIsLoading(true)
-            const rewards = await fetchRewardApyBasedOnAllocationPoints()
+            const rewards = await fetchRewardApyBasedOnAllocationPoints(selectedChain)
 
             if (isMountedRef.current) {
                 const totalRewardApy = rewards.reduce((acc, reward) => acc + reward.supply_apy, 0)
@@ -249,11 +318,14 @@ export function useRewardsHook() {
     return { rewards, totalRewardApy, isLoading, error }
 }
 
-export async function fetchRewardApyBasedOnAllocationPoints(): Promise<TReward[]> {
+export async function fetchRewardApyBasedOnAllocationPoints(selectedChain: ChainId): Promise<TReward[]> {
     try {
-        let localAllocations: { name: string; address: string; strategy_type: StrategiesType; value: number }[] = []
-        const strategies = VAULT_STRATEGIES
+        let localAllocations: { name: string; address: string; strategy_type: StrategiesType; value: number; vault_address?: string }[] = []
+        const strategies = VAULT_STRATEGIES_MAP[selectedChain as keyof typeof VAULT_STRATEGIES_MAP]
         const keys = Object.keys(strategies)
+
+        const client = publicClients[selectedChain as keyof typeof publicClients]
+        const config = CHAIN_CONFIGS[selectedChain as keyof typeof CHAIN_CONFIGS]
 
         let calls = []
         for (const key of keys) {
@@ -261,19 +333,21 @@ export async function fetchRewardApyBasedOnAllocationPoints(): Promise<TReward[]
 
             const address = strategiesInternal.address
             const strategy_type = strategiesInternal.strategy_type
+            const vault_address = selectedChain === ChainId.Sonic ? (strategiesInternal as SonicStrategy).vault_address : ''
 
             calls.push(
-                publicClient
+                client
                     .readContract({
-                        address: VAULT_ADDRESS,
+                        address: config.vaultAddress as `0x${string}`,
                         abi: VAULT_ABI,
                         functionName: 'getStrategy',
                         args: [address as `0x${string}`],
                     })
-                    .then((res) => {
+                    .then((res: any) => {
                         localAllocations.push({
                             name: key,
                             address: address,
+                            vault_address: vault_address,
                             strategy_type: strategy_type,
                             value: Number(res[1].toString()),
                         })
@@ -283,19 +357,20 @@ export async function fetchRewardApyBasedOnAllocationPoints(): Promise<TReward[]
 
         // push cash reserve to calls
         calls.push(
-            publicClient
+            client
                 .readContract({
-                    address: VAULT_ADDRESS,
+                    address: config.vaultAddress as `0x${string}`,
                     abi: VAULT_ABI,
                     functionName: 'getStrategy',
                     args: ['0x0000000000000000000000000000000000000000' as `0x${string}`],
                 })
-                .then((res) => {
+                .then((res: any) => {
                     localAllocations.push({
                         name: 'CASH_RESERVE',
                         address: '0x0000000000000000000000000000000000000000',
                         strategy_type: StrategiesType.CASH_RESERVE,
                         value: Number(res[1].toString()),
+                        vault_address: config.vaultAddress as `0x${string}`,
                     })
                 })
         )
@@ -315,6 +390,7 @@ export async function fetchRewardApyBasedOnAllocationPoints(): Promise<TReward[]
                         ).toFixed(2)
                     )
                     : 0,
+            vault_address: item.vault_address,
         }))
 
         // console.log(localAllocations)
@@ -326,7 +402,7 @@ export async function fetchRewardApyBasedOnAllocationPoints(): Promise<TReward[]
                 continue
             }
 
-            let [rewardApyCurrent, asset] = await fetchRewardApyStrategy(item.address, item.strategy_type)
+            let [rewardApyCurrent, asset] = await fetchRewardApyStrategy(item.address, item.strategy_type, item.vault_address, selectedChain)
             let rewardApy = rewardApyCurrent * (item.value / 100)
 
             if (asset) {
@@ -375,7 +451,13 @@ const EULER_BASE_USDC_ASSET = {
     logo: 'https://raw.githubusercontent.com/AngleProtocol/angle-token-list/main/src/assets/tokens/EUL.svg',
 }
 
-async function fetchRewardApyStrategy(address: string, strategy_type: StrategiesType): Promise<[number, TRewardAsset | null]> {
+const AAVE_USDC_ASSET = {
+    symbol: 'awS',
+    name: 'awS',
+    logo: 'https://app.aave.com/icons/tokens/ws.svg',
+}
+
+async function fetchRewardApyStrategy(address: string, strategy_type: StrategiesType, vault_address: string = '', selectedChain: ChainId): Promise<[number, TRewardAsset | null]> {
     let rewardApyCurrent = 0
 
     if (strategy_type === StrategiesType.Fluid) {
@@ -392,21 +474,31 @@ async function fetchRewardApyStrategy(address: string, strategy_type: Strategies
 
         return [rewardApyCurrent, MORPHO_ASSET as TRewardAsset]
     } else if (strategy_type === StrategiesType.EulerBaseUSDC) {
-        let rewardApy = await fetchRewardApyEulerBaseUSDC(address)
-        // console.log("EulerBaseUSDC rewardApy", rewardApy)
+        const ADDRESS = selectedChain === ChainId.Sonic ? vault_address : address
+        let rewardApy = await fetchRewardApyEulerBaseUSDC(ADDRESS, selectedChain)
+        console.log("EulerBaseUSDC rewardApy", rewardApy)
         rewardApyCurrent = rewardApy
 
         return [rewardApyCurrent, EULER_BASE_USDC_ASSET as TRewardAsset]
-    }
-    else {
+    } else if (strategy_type === StrategiesType.AaveV3) {
+        let rewardApy = await fetchRewardApyAaveV3(address)
+        // console.log("AaveV3 rewardApy", rewardApy)
+        rewardApyCurrent = rewardApy
+
+        return [rewardApyCurrent, AAVE_USDC_ASSET as TRewardAsset]
+    } else {
         return [0, null]
     }
 }
 
 
 async function fetchRewardApyFluid(address: string): Promise<number> {
-    let rewardApy = await publicClient.readContract({
-        address: BASE_FLUID_LENDING_RESOLVER_ADDRESS,
+    // Using the Base chain client as fallback
+    const client = publicClients[ChainId.Base]
+    const config = CHAIN_CONFIGS[ChainId.Base]
+
+    let rewardApy = await client.readContract({
+        address: config.fluidLendingResolverAddress as `0x${string}`,
         abi: FLUID_LENDING_RESOLVER_ABI,
         functionName: 'getFTokenRewards',
         args: [address as `0x${string}`],
@@ -459,9 +551,9 @@ async function fetchRewardApyMorpho(address: string): Promise<number> {
 
 const EULER_REWARDS_API_URL = "/api/euler/rewards"; // Local API endpoint
 
-async function fetchRewardApyEulerBaseUSDC(address: string): Promise<number> {
+async function fetchRewardApyEulerBaseUSDC(address: string, selectedChain: ChainId): Promise<number> {
     try {
-        let response = await fetch(`${EULER_REWARDS_API_URL}?address=${address}`, {
+        let response = await fetch(`${EULER_REWARDS_API_URL}?address=${address}&chainId=${selectedChain}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json'
@@ -490,6 +582,24 @@ async function fetchRewardApyEulerBaseUSDC(address: string): Promise<number> {
         }
 
         return totalApy; // Convert to percentage
+    } catch (error) {
+        console.error("Error fetching Euler rewards:", error);
+        return 0;
+    }
+}
+
+async function fetchRewardApyAaveV3(address: string): Promise<number> {
+    try {
+        let response = await fetch(`https://apps.aavechan.com/api/merit/aprs`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        let data = await response.json();
+
+        return data.currentAPR.actionsAPR["sonic-supply-usdce"];
     } catch (error) {
         console.error("Error fetching Euler rewards:", error);
         return 0;
