@@ -63,7 +63,7 @@ function ContextProvider({
             })
 
             // Login to Frame with Privy automatically
-            if (ready && !authenticated && context) {
+            if (ready && !authenticated) {
                 console.log('running')
 
                 const login = async () => {
