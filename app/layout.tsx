@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     ],
     title: 'SuperFunds - Earn Maximum Yield on USDC',
     description:
-        'SuperFund optimally allocates your USDC across trusted lending protocols such as Aave, Morpho, Euler, & Fluid to generate consistent and competitive returns.',
+        'Earn smarter with SuperFund — an automated DeFi fund that allocates USDC across Aave, Morpho, Euler & more for optimized returns.',
     icons: [
         { url: '/images/logos/favicon-16x16.png', sizes: '16x16' },
         { url: '/images/logos/favicon-32x32.png', sizes: '32x32' },
@@ -35,16 +35,16 @@ export const metadata: Metadata = {
     openGraph: {
         type: 'website',
         url: 'https://funds.superlend.xyz',
-        title: 'SuperFund',
+        title: 'SuperFunds - Earn Maximum Yield on USDC',
         description:
-            'SuperFund optimally allocates your USDC across trusted lending protocols such as Aave, Morpho, Euler, & Fluid to generate consistent and competitive returns.',
+            'Earn smarter with SuperFund — an automated DeFi fund that allocates USDC across Aave, Morpho, Euler & more for optimized returns.',
         siteName: 'Superfund',
         images: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png',
     },
     twitter: {
         title: 'SuperFunds - Earn Maximum Yield on USDC',
         description:
-            'SuperFund optimally allocates your USDC across trusted lending protocols such as Aave, Morpho, Euler, & Fluid to generate consistent and competitive returns.',
+            'Earn smarter with SuperFund — an automated DeFi fund that allocates USDC across Aave, Morpho, Euler & more for optimized returns.',
         images: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png',
     },
 }
