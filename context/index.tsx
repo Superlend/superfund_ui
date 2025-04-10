@@ -46,6 +46,7 @@ function ContextProvider({
         const initializeConfig = async () => {
             await FrameSDK.actions.ready()
             const context = await FrameSDK.context
+            console.log(context)
 
             const newConfig = createConfig({
                 chains: [base],
@@ -63,6 +64,8 @@ function ContextProvider({
 
             // Login to Frame with Privy automatically
             if (ready && !authenticated && context) {
+                console.log('running')
+
                 const login = async () => {
                     const { nonce } = await initLoginToFrame()
                     const result = await sdk.actions.signIn({
