@@ -80,7 +80,7 @@ export default function VaultStats() {
         },
         {
             title: 'Effective APY',
-            titleTooltipContent: 'Actual annual interest received after the vault\'s 7-day interest distribution period.',
+            titleTooltipContent: 'Actual APY received after adjusting the vault\'s 7-day interest distribution period. It reflects how much your money is truly growing over time, after accounting for the vault\s yield distribution schedule.',
             value: `${effectiveApyData?.total_apy.toFixed(2)}%`,
             show: true,
             hasRewards: true,
