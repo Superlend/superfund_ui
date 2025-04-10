@@ -177,7 +177,9 @@ export function BenchmarkHistoryChart() {
     const SONIC_PROTOCOL_IDENTIFIER = '0x0b1d26d64c197f8644f6f24ef29af869793188f521c37dc35052c5aebf1e1b1e'
     const BASE_PROTOCOL_IDENTIFIER = '0x8ef0fa7f46a36d852953f0b6ea02f9a92a8a2b1b9a39f38654bee0792c4b4304'
     
-    const { historicalData: SuperfundHistoryData, isLoading: isSuperfundLoading } = useHistoricalData(selectedRange)
+    const { historicalData: SuperfundHistoryData, isLoading: isSuperfundLoading } = useHistoricalData({
+        period: selectedRange,
+    })
     const { data: AaveHistoryData, isLoading: isAaveLoading } = useGetBenchmarkHistory({
         protocol_identifier: selectedChain === ChainId.Sonic ? SONIC_PROTOCOL_IDENTIFIER : BASE_PROTOCOL_IDENTIFIER,
         token: selectedChain === ChainId.Sonic ? SONIC_USDC_ADDRESS : USDC_ADDRESS,

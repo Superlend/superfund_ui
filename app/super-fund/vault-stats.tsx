@@ -6,6 +6,7 @@ import InfoTooltip from '@/components/tooltips/InfoTooltip'
 import TooltipText from '@/components/tooltips/TooltipText'
 import { Skeleton } from '@/components/ui/skeleton'
 import { BodyText, HeadingText } from '@/components/ui/typography'
+import { useChain } from '@/context/chain-context'
 import useIsClient from '@/hooks/useIsClient'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
@@ -14,7 +15,7 @@ import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
 import { useHistoricalDataCompat } from '@/hooks/vault_hooks/useVaultCompat'
 import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import { useRewardsHook } from '@/hooks/vault_hooks/vaultHook'
-import { VAULT_ADDRESS } from '@/lib/constants'
+import { VAULT_ADDRESS, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { getRewardsTooltipContent } from '@/lib/ui/getRewardsTooltipContent'
 import { abbreviateNumber } from '@/lib/utils'
 import { Period } from '@/types/periodButtons'
@@ -64,24 +65,32 @@ export default function VaultStats() {
     const { walletAddress, isWalletConnected } = useWalletConnection()
     const { totalAssets, spotApy, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
     const { rewards, totalRewardApy, isLoading: isLoadingRewards, error: errorRewards } = useRewardsHook()
-    const { userMaxWithdrawAmount } = useUserBalance(
+    const { userMaxWithdrawAmount, isLoading: isLoadingUserMaxWithdrawAmount, error: errorUserMaxWithdrawAmount } = useUserBalance(
         walletAddress as `0x${string}`
     )
-    const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy()
+    const { selectedChain } = useChain()
+    const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
+        vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        chain_id: selectedChain
+    })
     const { isClient } = useIsClient()
     const isLoadingSection = !isClient;
-    const { days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading, error } = useHistoricalData()
+    const { days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading: isLoading7DayAvg, error: error7DayAvg } = useHistoricalData({
+        chain_id: selectedChain
+    })
 
     const vaultStats = [
         {
             title: 'My Position',
             value: isWalletConnected ? `$${Number(userMaxWithdrawAmount).toFixed(4)}` : 'N/A',
             show: isWalletConnected,
+            isLoading: isLoadingUserMaxWithdrawAmount,
+            error: errorUserMaxWithdrawAmount,
         },
         {
             title: 'Effective APY',
             titleTooltipContent: 'Actual APY received after adjusting the vault\'s 7-day interest distribution period. It reflects how much your money is truly growing over time, after accounting for the vault\s yield distribution schedule.',
-            value: `${effectiveApyData?.total_apy.toFixed(2)}%`,
+            value: `${(effectiveApyData?.total_apy ?? 0).toFixed(2)}%`,
             show: true,
             hasRewards: true,
             rewardsTooltip: getRewardsTooltipContent({
@@ -96,6 +105,8 @@ export default function VaultStats() {
                 apyCurrent: Number(effectiveApyData?.total_apy),
                 positionTypeParam: 'lend',
             }),
+            isLoading: isLoadingEffectiveApy,
+            error: isErrorEffectiveApy,
         },
         {
             title: 'Spot APY',
@@ -109,11 +120,15 @@ export default function VaultStats() {
                 apyCurrent: Number(spotApy) + Number(totalRewardApy),
                 positionTypeParam: 'lend',
             }),
+            // isLoading: isLoadingVault || isLoadingRewards,
+            error: !!errorVault || !!errorRewards,
         },
         {
             title: 'TVL',
             value: '$' + Number(totalAssets).toFixed(4),
             show: true,
+            // isLoading: isLoadingVault,
+            error: !!errorVault,
         },
         {
             title: '7D APY',
@@ -130,6 +145,8 @@ export default function VaultStats() {
                 }],
                 apyCurrent: days_7_avg_total_apy,
             }),
+            isLoading: isLoading7DayAvg,
+            error: error7DayAvg,
         },
     ]
 
@@ -193,7 +210,12 @@ export default function VaultStats() {
                         {item.hasRewards &&
                             <div className="flex items-center gap-2">
                                 <HeadingText level="h1" weight="medium">
-                                    <AnimatedNumber value={item.value} />
+                                    {!item.isLoading &&
+                                        <AnimatedNumber value={item.value} />
+                                    }
+                                    {item.isLoading &&
+                                        <Skeleton className="h-10 w-full rounded-4" />
+                                    }
                                 </HeadingText>
                                 <InfoTooltip
                                     label={
@@ -224,7 +246,12 @@ export default function VaultStats() {
                         }
                         {!item.hasRewards &&
                             <HeadingText level="h1" weight="medium">
-                                <AnimatedNumber value={item.value} />
+                                {!item.isLoading &&
+                                    <AnimatedNumber value={item.value} />
+                                }
+                                {item.isLoading &&
+                                    <Skeleton className="h-10 w-full rounded-4" />
+                                }
                             </HeadingText>
                         }
                     </motion.div>
@@ -273,7 +300,12 @@ export default function VaultStats() {
                         {item.hasRewards &&
                             <div className="flex items-center gap-2">
                                 <HeadingText level="h3" weight="medium">
-                                    <AnimatedNumber value={item.value} />
+                                    {!item.isLoading &&
+                                        <AnimatedNumber value={item.value} />
+                                    }
+                                    {item.isLoading &&
+                                        <Skeleton className="h-7 w-full min-w-[60px] rounded-4 mt-1" />
+                                    }
                                 </HeadingText>
                                 <InfoTooltip
                                     label={
@@ -304,7 +336,12 @@ export default function VaultStats() {
                         }
                         {!item.hasRewards &&
                             <HeadingText level="h3" weight="medium">
-                                <AnimatedNumber value={item.value} />
+                                {!item.isLoading &&
+                                    <AnimatedNumber value={item.value} />
+                                }
+                                {item.isLoading &&
+                                    <Skeleton className="h-7 w-full min-w-[60px] rounded-4 mt-1" />
+                                }
                             </HeadingText>
                         }
                     </motion.div>

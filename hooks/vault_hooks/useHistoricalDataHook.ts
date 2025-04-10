@@ -11,7 +11,13 @@ import { useEffect, useState } from "react";
 
 const INDEXER_API = process.env.NEXT_PUBLIC_INDEXER_API || 'https://api.funds.superlend.xyz'
 
-export function useHistoricalData(period?: Period) {
+export function useHistoricalData({
+    period,
+    chain_id
+}: {
+    period?: Period
+    chain_id?: number
+}) {
     const [historicalData, setHistoricalData] = useState<THistoricalDataPerformanceHistory[]>([])
     const [days_7_avg_base_apy, setDays_7_avg_base_apy] = useState<number>(0)
     const [days_7_avg_rewards_apy, setDays_7_avg_rewards_apy] = useState<number>(0)
@@ -61,7 +67,7 @@ export function useHistoricalData(period?: Period) {
         }).catch((error) => {
             setError(error.message || 'Failed to fetch data');
         })
-    }, [period])
+    }, [period, chain_id])
 
     return {
         historicalData,

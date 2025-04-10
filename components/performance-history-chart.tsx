@@ -162,7 +162,9 @@ const chartConfig = {
 
 export function PerformanceHistoryChart() {
     const [selectedRange, setSelectedRange] = useState<Period>(Period.oneMonth)
-    const { historicalData, isLoading } = useHistoricalData(selectedRange)
+    const { historicalData, isLoading } = useHistoricalData({
+        period: selectedRange,
+    })
     const [startIndex, setStartIndex] = useState(0)
     const [endIndex, setEndIndex] = useState(historicalData.length - 1)
     // const [openDialog, setOpenDialog] = useState(false)
