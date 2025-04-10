@@ -79,7 +79,7 @@ export default function DepositAndWithdrawAssets() {
                 isConfirming: true,
             }))
 
-            checkAllowance(walletAddress as `0x${string}`).then((allowance) => {
+            checkAllowance(walletAddress as `0x${string}`, selectedChain).then((allowance) => {
                 if (
                     Number(allowance) > 0 &&
                     Number(allowance) >= Number(userEnteredDepositAmount)

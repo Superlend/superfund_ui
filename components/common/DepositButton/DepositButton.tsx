@@ -165,8 +165,18 @@ const DepositButton = ({
             isConfirmed: isConfirmed,
             isRefreshingAllowance: isConfirmed,
         }))
+        
+        // If approval transaction is confirmed, move to deposit state
+        if (isConfirmed && !isPending && !isConfirming && depositTx.status === 'approve') {
+            setDepositTx((prev: TDepositTx) => ({
+                ...prev,
+                status: 'deposit',
+                allowanceBN: amountBN, // Set the allowance to the amount we just approved
+            }))
+        }
     }, [isPending, isConfirming, isConfirmed])
 
+    // Check allowance for initial state
     useEffect(() => {
         if (depositTx.status === 'view') return
 
@@ -237,13 +247,14 @@ const DepositButton = ({
         } catch (error) {
             error
         } finally {
-            // TODO: Add check for allowance
-            // setDepositTx((prev: TDepositTx) => ({
-            //     ...prev,
-            //     status: 'deposit',
-            //     hash: '',
-            //     errorMessage: '',
-            // }))
+            // After approval is completed and confirmed, set the allowanceBN
+            if (isConfirmed && !isPending && !isConfirming) {
+                // Update the allowanceBN to reflect the new approval amount
+                setDepositTx((prev: TDepositTx) => ({
+                    ...prev,
+                    allowanceBN: amountBN,
+                }))
+            }
         }
     }
 
