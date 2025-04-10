@@ -112,8 +112,7 @@ export default function FundOverview() {
                 <Card>
                     <CardContent className={
                         clsx(
-                            'p-5 grid grid-cols-2 place-items-center gap-6 sm:gap-4 sm:px-6 xl:px-24',
-                            gridColsClass
+                            'p-5 flex items-center justify-center flex-wrap gap-6 sm:gap-8 lg:gap-12 sm:px-6 xl:px-24',
                         )
                     }>
                         {rebalancedAssetsListFiltered.map((token) => (
