@@ -137,6 +137,11 @@ export function useUserBalance(walletAddress: `0x${string}`) {
 
             // Schedule next update after completion
             if (isMountedRef.current) {
+                // Clear any existing timeout before setting a new one
+                if (timeoutRef.current) {
+                    clearTimeout(timeoutRef.current)
+                }
+                
                 timeoutRef.current = setTimeout(() => {
                     if (isMountedRef.current) {
                         getUserBalance(walletAddress, false)
@@ -148,13 +153,23 @@ export function useUserBalance(walletAddress: `0x${string}`) {
 
     useEffect(() => {
         isMountedRef.current = true
+        
+        // Clear any existing timeout when dependencies change (chain changes)
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current)
+            timeoutRef.current = null
+        }
 
+        // Reset states when chain changes
+        setIsLoading(true)
+        
         getUserBalance(walletAddress, true)
 
         return () => {
             isMountedRef.current = false
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current)
+                timeoutRef.current = null
             }
         }
     }, [walletAddress, selectedChain])

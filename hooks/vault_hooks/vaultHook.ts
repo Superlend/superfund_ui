@@ -293,6 +293,10 @@ export function useRewardsHook() {
         } finally {
             if (isMountedRef.current) {
                 setIsLoading(false)
+                // Clear any existing timeout before setting a new one
+                if (timeoutRef.current) {
+                    clearTimeout(timeoutRef.current)
+                }
                 // Schedule next update after completion
                 timeoutRef.current = setTimeout(() => {
                     if (isMountedRef.current) {
@@ -305,15 +309,23 @@ export function useRewardsHook() {
 
     useEffect(() => {
         isMountedRef.current = true
+        
+        // Clear any existing timeout when chain changes
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current)
+            timeoutRef.current = null
+        }
+        
         fetchRewards()
 
         return () => {
             isMountedRef.current = false
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current)
+                timeoutRef.current = null
             }
         }
-    }, [])
+    }, [selectedChain])
 
     return { rewards, totalRewardApy, isLoading, error }
 }
