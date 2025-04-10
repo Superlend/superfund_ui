@@ -7,11 +7,11 @@
     "frame": {
         "version": "1",
         "name": "Superfund",
-        "iconUrl": "https://superfund-mini-app.vercel.app/images/favicon-32x32.png",
+        "iconUrl": "https://superfund-mini-app.vercel.app/images/logos/favicon-32x32.png",
         "homeUrl": "https://superfund-mini-app.vercel.app",
         "imageUrl": "https://superfund-mini-app.vercel.app/og.png",
         "buttonTitle": "Try this out",
-        "splashImageUrl": "https://superfund-mini-app.vercel.app/images/favicon-32x32.png",
+        "splashImageUrl": "https://superfund-mini-app.vercel.app/images/logos/favicon-32x32.png",
         "splashBackgroundColor": "#B4E2FB",
         "webhookUrl": "https://superfund-mini-app.vercel.app/api/webhook"
     }
