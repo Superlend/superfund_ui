@@ -1,0 +1,18 @@
+{
+    "accountAssociation": {
+        "header": "eyJmaWQiOjM4ODQxNiwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDUyYzk5ZjU2NEQ4MDQxODQ3NzFGYzI5Q2U0MTI3ODdmMjg0YWRjOGEifQ",
+        "payload": "eyJkb21haW4iOiJzdXBlcmZ1bmQtbWluaS1hcHAudmVyY2VsLmFwcCJ9",
+        "signature": "MHhiNjFlZjhhZWRlMTNkZGU0YjZhOWEwMDQ0N2U5NTlkZTg4NTcxMzlmZWI3ZTQzOTY4YWFkN2I1MWI1YzBiZGJhNjI0NjlmOTZhZTdkYTVhYTJhZTg0YmUzNzVhM2ZmYjI1OTMwMjNmNTA0ZmRlZjBkMDZlZTk2NTRiMTU3NjVlNDFi"
+    },
+    "frame": {
+        "version": "1",
+        "name": "Superfund",
+        "iconUrl": "https://superfund-mini-app.vercel.app/images/favicon-32x32.png",
+        "homeUrl": "https://superfund-mini-app.vercel.app",
+        "imageUrl": "https://superfund-mini-app.vercel.app/og.png",
+        "buttonTitle": "Try this out",
+        "splashImageUrl": "https://superfund-mini-app.vercel.app/images/favicon-32x32.png",
+        "splashBackgroundColor": "#B4E2FB",
+        "webhookUrl": "https://superfund-mini-app.vercel.app/api/webhook"
+    }
+}

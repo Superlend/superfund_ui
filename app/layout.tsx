@@ -7,6 +7,23 @@ import Footer from '@/components/Footer'
 import { GoogleTagManager } from '@next/third-parties/google'
 import ScrollToTop from '@/components/ScrollToTop'
 
+const frame = {
+    version: 'next',
+    imageUrl:
+        'https://superlend-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png',
+    button: {
+        title: 'Check This Out',
+        action: {
+            type: 'launch_frame',
+            name: 'SuperFund',
+            url: 'https://funds.superlend.xyz/',
+            splashImageUrl:
+                'https://funds.superlend.xyz/images/logos/favicon-32x32.png',
+            splashBackgroundColor: '#edf8fe',
+        },
+    },
+}
+
 export const metadata: Metadata = {
     metadataBase: new URL('https://funds.superlend.xyz'),
     alternates: {
@@ -46,6 +63,9 @@ export const metadata: Metadata = {
         description:
             'SuperFund optimally allocates your USDC across trusted lending protocols such as Aave, Morpho, Euler, & Fluid to generate consistent and competitive returns.',
         images: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png',
+    },
+    other: {
+        'fc:frame': JSON.stringify(frame),
     },
 }
 
