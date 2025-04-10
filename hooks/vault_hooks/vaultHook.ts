@@ -488,7 +488,7 @@ async function fetchRewardApyStrategy(address: string, strategy_type: Strategies
     } else if (strategy_type === StrategiesType.EulerBaseUSDC) {
         const ADDRESS = selectedChain === ChainId.Sonic ? vault_address : address
         let rewardApy = await fetchRewardApyEulerBaseUSDC(ADDRESS, selectedChain)
-        console.log("EulerBaseUSDC rewardApy", rewardApy)
+        // console.log("EulerBaseUSDC rewardApy", rewardApy)
         rewardApyCurrent = rewardApy
 
         return [rewardApyCurrent, EULER_BASE_USDC_ASSET as TRewardAsset]
