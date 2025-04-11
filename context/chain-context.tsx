@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import React, { createContext, useContext, useState, ReactNode } from 'react'
 import { ChainId } from '@/types/chain'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 
@@ -22,7 +22,7 @@ export const CHAIN_DETAILS = {
 
 interface ChainContextType {
     selectedChain: ChainId
-    setSelectedChain: (chain: ChainId) => Promise<void>
+    setSelectedChain: (chain: ChainId) => void
     isChangingChain: boolean
     supportedChains: ChainId[]
     chainDetails: typeof CHAIN_DETAILS
@@ -32,36 +32,29 @@ const ChainContext = createContext<ChainContextType | undefined>(undefined)
 
 export function ChainProvider({
     children,
-    supportedChains = [ChainId.Base, ChainId.Sonic]
+    supportedChains = [ChainId.Base, ChainId.Sonic],
+    initialChain = ChainId.Sonic
 }: {
     children: ReactNode,
-    supportedChains?: ChainId[]
+    supportedChains?: ChainId[],
+    initialChain?: ChainId
 }) {
-    const [selectedChain, setSelectedChainState] = useState<ChainId>(ChainId.Sonic)
+    // Use initialChain parameter for the initial state
+    const [selectedChain, setSelectedChainState] = useState<ChainId>(initialChain)
     const [isChangingChain, setIsChangingChain] = useState(false)
-    const { handleSwitchChain, isWalletConnected } = useWalletConnection()
+    const { handleSwitchChain } = useWalletConnection()
 
-    const setSelectedChain = async (chain: ChainId) => {
-        try {
-            setIsChangingChain(true)
-
-            if (isWalletConnected) {
-                await handleSwitchChain(chain)
-            }
-
-            setSelectedChainState(chain)
-        } catch (error) {
-            console.error('Error switching chain:', error)
-        } finally {
-            setIsChangingChain(false)
-        }
+    // Simple synchronous setter for chain selection
+    const setSelectedChain = (chain: ChainId) => {
+        console.log(`Chain context: setting chain to ${chain === ChainId.Base ? 'Base' : 'Sonic'}`)
+        setSelectedChainState(chain)
+        setIsChangingChain(true)
+        
+        // Switch chain in wallet if needed
+        handleSwitchChain(chain)
+            .catch(err => console.error('Error switching chain:', err))
+            .finally(() => setIsChangingChain(false))
     }
-
-    useEffect(() => {
-        if (isWalletConnected) {
-            handleSwitchChain(selectedChain)
-        }
-    }, [isWalletConnected])
 
     return (
         <ChainContext.Provider value={{
