@@ -16,6 +16,7 @@ import {
     bsc,
     scroll,
     metis,
+    sonic,
 } from 'viem/chains'
 import { http } from 'wagmi'
 
@@ -28,14 +29,15 @@ const appId = process.env.NEXT_PUBLIC_PRIVY_PROJECT_ID || ''
 const metadata = {
     name: 'superlend',
     description: 'superlend',
-    url: 'https://app.superlend.xyz.com', // origin must match your domain & subdomain
+    url: 'https://app.superlend.xyz.com',
     icons: ['https://avatars.githubusercontent.com/u/179229932'],
 }
 
 export const config = createConfig({
-    chains: [base], // Pass your required chains as an array
+    chains: [base, sonic],
     transports: {
         [base.id]: http(),
+        [sonic.id]: http(),
     },
 })
 
@@ -68,7 +70,7 @@ function ContextProvider({
                         'wallet_connect',
                     ]
                 },
-                supportedChains: [base],
+                supportedChains: [base, sonic],
             }}
         >
             <QueryClientProvider client={queryClient}>

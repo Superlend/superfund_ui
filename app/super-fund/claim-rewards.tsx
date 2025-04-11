@@ -23,8 +23,8 @@ import { Check, GiftIcon } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { motion } from "motion/react"
 import useDimensions from "@/hooks/useDimensions"
+import { useChain } from "@/context/chain-context"
 
-const CHAIN_ID = 8453;
 export default function ClaimRewards({
     rewardsData,
     isLoadingRewards,
@@ -40,6 +40,7 @@ export default function ClaimRewards({
     const [isSelectTokenDialogOpen, setIsSelectTokenDialogOpen] = useState(false)
     const [selectedReward, setSelectedReward] = useState<TClaimRewardsResponse | undefined>(undefined)
     const { width: screenWidth } = useDimensions()
+    const { selectedChain } = useChain()
 
     function handleSelectToken(token: any) {
         const tokenReward = rewardsData?.find(rd => rd.token.address === token.address);
@@ -59,9 +60,9 @@ export default function ClaimRewards({
         return <Skeleton className="w-full h-[250px] rounded-4" />
     }
 
-    if ((rewardsData.length === 0 && !isLoadingRewards) || (!hasUnclaimedRewards && !isLoadingRewards)) {
-        return noDataUI
-    }
+    // if ((rewardsData.length === 0 && !isLoadingRewards) || (!hasUnclaimedRewards && !isLoadingRewards)) {
+    //     return noDataUI
+    // }
 
     return (
         <>
@@ -150,7 +151,7 @@ export default function ClaimRewards({
                     reward: {
                         ...selectedReward
                     },
-                    chain_id: CHAIN_ID,
+                    chain_id: selectedChain,
                 }}
             />
         </>

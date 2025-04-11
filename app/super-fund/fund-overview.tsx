@@ -17,6 +17,8 @@ import LazyLoad from '@/components/LazyLoad'
 import LoadingSectionSkeleton from '@/components/skeletons/LoadingSection'
 import InfoTooltip from '@/components/tooltips/InfoTooltip'
 import TooltipText from '@/components/tooltips/TooltipText'
+import { useChain } from '@/context/chain-context'
+import clsx from 'clsx'
 
 const AllocationHistoryChart = lazy(() =>
     import('@/components/allocation-history-chart').then(module => ({
@@ -38,6 +40,9 @@ const BenchmarkHistoryChart = lazy(() =>
 
 export default function FundOverview() {
     const { allocationPoints } = useVaultAllocationPoints()
+    const { selectedChain } = useChain()
+    const rebalancedAssetsListFiltered = rebalancedAssetsList.filter((token) => token.chainIds.includes(selectedChain))
+    const gridColsClass = `md:grid-cols-${rebalancedAssetsListFiltered.length > 4 ? 4 : rebalancedAssetsListFiltered.length}`
 
     return (
         <motion.div
@@ -73,24 +78,26 @@ export default function FundOverview() {
                 <Card>
                     <CardContent className="flex flex-col divide-y divide-gray-400 px-8 py-5">
                         {
-                            tokensSupportedList.map((token) => (
-                                <div className="item flex items-center justify-between gap-[12px] py-6 first:pt-2 last:pb-2" key={token.title}>
-                                    <div className="flex items-center gap-2">
-                                        <ImageWithDefault
-                                            src={token.logo}
-                                            alt={token.title}
-                                            width={24}
-                                            height={24}
-                                        />
-                                        <BodyText level="body1" weight="medium">
-                                            {token.title}
-                                        </BodyText>
+                            tokensSupportedList
+                                .filter((token) => token.chainId === selectedChain)
+                                .map((token) => (
+                                    <div className="item flex items-center justify-between gap-[12px] py-6 first:pt-2 last:pb-2" key={token.title}>
+                                        <div className="flex items-center gap-2">
+                                            <ImageWithDefault
+                                                src={token.logo}
+                                                alt={token.title}
+                                                width={24}
+                                                height={24}
+                                            />
+                                            <BodyText level="body1" weight="medium">
+                                                {token.title}
+                                            </BodyText>
+                                        </div>
+                                        <ExternalLink href={token.link} className="font-medium">
+                                            Contract
+                                        </ExternalLink>
                                     </div>
-                                    <ExternalLink href={token.link} className="font-medium">
-                                        Contract
-                                    </ExternalLink>
-                                </div>
-                            ))
+                                ))
                         }
                     </CardContent>
                 </Card>
@@ -103,8 +110,12 @@ export default function FundOverview() {
                     Rebalanced Across
                 </HeadingText>
                 <Card>
-                    <CardContent className="p-5 grid grid-cols-2 md:grid-cols-4 items-center justify-between gap-6 sm:gap-4 sm:px-6 xl:px-24">
-                        {rebalancedAssetsList.map((token) => (
+                    <CardContent className={
+                        clsx(
+                            'p-5 flex items-center justify-center flex-wrap gap-6 sm:gap-8 lg:gap-12 sm:px-6 xl:px-24',
+                        )
+                    }>
+                        {rebalancedAssetsListFiltered.map((token) => (
                             <div
                                 className="item flex items-center gap-2"
                                 key={token.title}
@@ -134,12 +145,12 @@ export default function FundOverview() {
             </section>
             <LazyLoad>
                 <Suspense fallback={<LoadingSectionSkeleton className="h-[300px]" />}>
-                    <BenchmarkHistoryChart />
+                    <PerformanceHistoryChart />
                 </Suspense>
             </LazyLoad>
             <LazyLoad>
                 <Suspense fallback={<LoadingSectionSkeleton className="h-[300px]" />}>
-                    <PerformanceHistoryChart />
+                    <BenchmarkHistoryChart />
                 </Suspense>
             </LazyLoad>
             <AllocationDetailsChart allocationPoints={allocationPoints} />

@@ -6,9 +6,10 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Label, Sector } from
 import { BodyText, HeadingText } from "./ui/typography";
 import { PieSectorDataItem } from "recharts/types/polar/Pie";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
-import { VAULT_STRATEGIES, VAULT_STRATEGIES_COLORS } from "@/lib/constants";
+import { VAULT_STRATEGIES_MAP, VAULT_STRATEGIES_COLORS_MAP } from "@/lib/constants";
 import ExternalLink from "./ExternalLink";
 import InfoTooltip from "./tooltips/InfoTooltip";
+import { useChain } from "@/context/chain-context";
 
 const data = [
     { name: 'Morpho - MEV Capital Usual USDC', value: 35 },
@@ -54,6 +55,10 @@ export default function AllocationDetailsChart({
         name: 'Loading...',
         value: '0',
     }
+
+    const { selectedChain } = useChain()
+    const vaultStrategies = VAULT_STRATEGIES_MAP[selectedChain as keyof typeof VAULT_STRATEGIES_MAP]
+    const vaultStrategiesColors = VAULT_STRATEGIES_COLORS_MAP[selectedChain as keyof typeof VAULT_STRATEGIES_COLORS_MAP]
 
     const getHighestValueAssetDetails = allocationPoints?.length
         ? allocationPoints.reduce(
@@ -125,7 +130,7 @@ export default function AllocationDetailsChart({
                                         .map((entry, index) => (
                                             <Cell
                                                 key={`cell-${index}`}
-                                                fill={VAULT_STRATEGIES_COLORS[entry.name as keyof typeof VAULT_STRATEGIES_COLORS]}
+                                                fill={vaultStrategiesColors[entry.name as keyof typeof vaultStrategiesColors]}
                                             />
                                         ))}
                                     <Label
@@ -181,7 +186,7 @@ export default function AllocationDetailsChart({
                                     <div key={item.name} className="flex items-center space-x-2 hover:bg-gray-200 rounded-4 p-2">
                                         <div
                                             className="w-4 h-4 rounded-2"
-                                            style={{ backgroundColor: VAULT_STRATEGIES_COLORS[item.name as keyof typeof VAULT_STRATEGIES_COLORS] }}
+                                            style={{ backgroundColor: vaultStrategiesColors[item.name as keyof typeof vaultStrategiesColors] }}
                                         />
                                         <div className="flex items-center gap-1 w-full">
                                             <InfoTooltip
@@ -192,8 +197,13 @@ export default function AllocationDetailsChart({
                                                 }
                                                 content={item.name}
                                             />
-                                            <ExternalLink href={VAULT_STRATEGIES[item.name as keyof typeof VAULT_STRATEGIES].details_url} className="text-xs text-muted-foreground">
-                                            </ExternalLink>
+                                            {vaultStrategies && vaultStrategies[item.name as keyof typeof vaultStrategies] && (
+                                                <ExternalLink 
+                                                    href={vaultStrategies[item.name as keyof typeof vaultStrategies].details_url} 
+                                                    className="text-xs text-muted-foreground"
+                                                >
+                                                </ExternalLink>
+                                            )}
                                         </div>
                                     </div>
                                 ))}

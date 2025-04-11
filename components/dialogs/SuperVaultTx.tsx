@@ -69,6 +69,7 @@ import { usePrivy } from '@privy-io/react-auth'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import ImageWithBadge from '@/components/ImageWithBadge'
 import ExternalLink from '@/components/ExternalLink'
+import { useChain } from '@/context/chain-context'
 
 export default function SuperVaultTxDialog({
     disabled,
@@ -94,6 +95,7 @@ export default function SuperVaultTxDialog({
     const { depositTx, setDepositTx, withdrawTx, setWithdrawTx } =
         useTxContext() as TTxContext
     const { walletAddress, isWalletConnected, handleSwitchChain } = useWalletConnection()
+    const { selectedChain, chainDetails } = useChain()
     const { width: screenWidth } = useDimensions()
     const isDesktop = screenWidth > 768
     const isDepositPositionType = positionType === 'deposit'
@@ -107,9 +109,9 @@ export default function SuperVaultTxDialog({
 
     useEffect(() => {
         if (isWalletConnected) {
-            handleSwitchChain(ChainId.Base)
+            handleSwitchChain(selectedChain)
         }
-    }, [isWalletConnected])
+    }, [isWalletConnected, selectedChain, handleSwitchChain])
 
     function resetDepositWithdrawTx() {
         setDepositTx((prev: TDepositTx) => ({
@@ -322,9 +324,9 @@ export default function SuperVaultTxDialog({
                         <div className="flex items-center gap-4 px-6 py-2 bg-gray-200 lg:bg-white rounded-5 w-full">
                             <ImageWithBadge
                                 mainImg={assetDetails?.asset?.token?.logo || ''}
-                                badgeImg={'https://superlend-assets.s3.ap-south-1.amazonaws.com/base.svg'}
+                                badgeImg={chainDetails[selectedChain as keyof typeof chainDetails]?.logo}
                                 mainImgAlt={assetDetails?.asset?.token?.symbol}
-                                badgeImgAlt={'Base'}
+                                badgeImgAlt={chainDetails[selectedChain as keyof typeof chainDetails]?.name}
                                 mainImgWidth={'32'}
                                 mainImgHeight={'32'}
                                 badgeImgWidth={'12'}
@@ -360,7 +362,7 @@ export default function SuperVaultTxDialog({
                                         weight="medium"
                                         className="text-gray-600 flex items-center gap-1"
                                     >
-                                        Base
+                                        {chainDetails[selectedChain as keyof typeof chainDetails]?.name}
                                     </BodyText>
                                     {/* <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
                                     <BodyText
