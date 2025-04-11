@@ -73,10 +73,7 @@ export default function SuperVaultPage() {
     useEffect(() => {
         const login = async () => {
             const frameContext = await sdk.context
-            console.log(ready, authenticated, frameContext)
             if (ready && !authenticated && frameContext) {
-                console.log('running')
-
                 const { nonce } = await initLoginToFrame()
                 const result = await sdk.actions.signIn({
                     nonce: nonce,

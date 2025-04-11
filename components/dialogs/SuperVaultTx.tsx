@@ -636,7 +636,9 @@ export default function SuperVaultTxDialog({
                         {((!isDepositTxInProgress && depositTx.isConfirmed) ||
                             (depositTx.status === 'view' &&
                                 depositTx.isConfirmed)) && (
-                            <div className="flex items-center justify-between gap-2">
+                            <div
+                                className={`flex items-center ${miniappUser ? 'flex-col' : ' flex-row'} justify-between gap-2`}
+                            >
                                 <div className="flex items-center justify-start gap-2">
                                     <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
                                         <Check
@@ -824,7 +826,9 @@ export default function SuperVaultTxDialog({
                         )}
                         {withdrawTx.status === 'view' &&
                             withdrawTx.isConfirmed && (
-                                <div className="flex items-center justify-between gap-2">
+                                <div
+                                    className={`flex items-center ${miniappUser ? 'flex-col' : ' flex-row'} justify-between gap-2`}
+                                >
                                     <div className="flex items-center justify-start gap-2">
                                         <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
                                             <Check
