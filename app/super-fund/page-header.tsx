@@ -33,14 +33,15 @@ export default function PageHeader() {
                     </HeadingText>
                 </div>
 
-                <div className="network-controls inline-flex items-center bg-white rounded-3 border border-gray-200 shadow-sm h-8 gap-2 pr-1">
+                <div className="network-controls inline-flex items-center bg-white rounded-3 border border-gray-200 shadow-sm h-8 gap-1 pr-1 w-fit">
                     <ChainSelector />
                     <Badge variant="outline" size="sm" className="flex items-center gap-1">
                         <ExternalLink
                             href={`${currentChainDetails?.explorerUrl}${currentChainDetails?.contractAddress}`}
                             className="leading-none"
+                            iconSize={14}
                         >
-                            Contract
+                            <span className="-mb-0.5">Contract</span>
                         </ExternalLink>
                     </Badge>
                 </div>

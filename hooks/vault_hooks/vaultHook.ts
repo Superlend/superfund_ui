@@ -493,7 +493,7 @@ async function fetchRewardApyStrategy(address: string, strategy_type: Strategies
 
         return [rewardApyCurrent, EULER_BASE_USDC_ASSET as TRewardAsset]
     } else if (strategy_type === StrategiesType.AaveV3) {
-        let rewardApy = await fetchRewardApyAaveV3(address)
+        let rewardApy = await fetchRewardApyAaveV3()
         // console.log("AaveV3 rewardApy", rewardApy)
         rewardApyCurrent = rewardApy
 
@@ -600,7 +600,7 @@ async function fetchRewardApyEulerBaseUSDC(address: string, selectedChain: Chain
     }
 }
 
-async function fetchRewardApyAaveV3(address: string): Promise<number> {
+export async function fetchRewardApyAaveV3(): Promise<number> {
     try {
         let response = await fetch(`https://apps.aavechan.com/api/merit/aprs`, {
             method: 'GET',

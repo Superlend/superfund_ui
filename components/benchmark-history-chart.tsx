@@ -38,6 +38,7 @@ import useGetBenchmarkHistory from '@/hooks/useGetBenchmarkHistory'
 import { useChain } from '@/context/chain-context'
 import { ChainId } from '@/types/chain'
 import { SONIC_USDC_ADDRESS, USDC_ADDRESS } from '@/lib/constants'
+import { fetchRewardApyAaveV3 } from '@/hooks/vault_hooks/vaultHook'
 
 
 const CustomTooltip = ({ active, payload }: any) => {
@@ -172,53 +173,34 @@ const chartConfig = {
 export function BenchmarkHistoryChart() {
     const [selectedRange, setSelectedRange] = useState<Period>(Period.oneMonth)
     const [apiPeriod, setApiPeriod] = useState<Period | 'YEAR'>(Period.oneMonth)
-
+    const [aaveRewardApy, setAaveRewardApy] = useState<number>(0)
     const { selectedChain } = useChain()
     const SONIC_PROTOCOL_IDENTIFIER = '0x0b1d26d64c197f8644f6f24ef29af869793188f521c37dc35052c5aebf1e1b1e'
     const BASE_PROTOCOL_IDENTIFIER = '0x8ef0fa7f46a36d852953f0b6ea02f9a92a8a2b1b9a39f38654bee0792c4b4304'
-    
+
     const { historicalData: SuperfundHistoryData, isLoading: isSuperfundLoading } = useHistoricalData({
         period: selectedRange,
     })
+    fetchRewardApyAaveV3()
+        .then((apy) => {
+            setAaveRewardApy(apy)
+        })
+        .catch((error) => {
+            console.error('Error fetching Aave reward apy:', error)
+        })
     const { data: AaveHistoryData, isLoading: isAaveLoading } = useGetBenchmarkHistory({
         protocol_identifier: selectedChain === ChainId.Sonic ? SONIC_PROTOCOL_IDENTIFIER : BASE_PROTOCOL_IDENTIFIER,
         token: selectedChain === ChainId.Sonic ? SONIC_USDC_ADDRESS : USDC_ADDRESS,
         period: apiPeriod,
     })
     const [historicalData, setHistoricalData] = useState<Array<{ timestamp: number; aave: number; superfund: number }>>([])
-
-    // New approach - use domain values for zoom
-    const [isProcessing, setIsProcessing] = useState(false)
     const prevSuperfundData = useRef<any>(null);
     const prevAaveData = useRef<any>(null);
-
-    // Determine if we're loading data
-    const isLoading = isSuperfundLoading || isAaveLoading;
-
-    // Reset zoom when period changes
-    useEffect(() => {
-        // No longer needed as we're using default zoom behavior
-    }, [selectedRange]);
 
     // Combine both data sources
     useEffect(() => {
         // Skip if API is still loading
         if (isSuperfundLoading || isAaveLoading) return;
-
-        console.log('API data loaded, processing...');
-        console.log('Data available:',
-            'Superfund:', SuperfundHistoryData?.length,
-            'Aave:', AaveHistoryData?.processMap?.length
-        );
-
-        // Check if we have both datasets
-        if (!SuperfundHistoryData || !AaveHistoryData?.processMap) {
-            console.log('One or both datasets missing');
-            return;
-        }
-
-        // Process the data regardless of reference equality
-        setIsProcessing(true);
 
         // Create maps for faster lookups
         const superfundMap = new Map<number, number>();
@@ -229,13 +211,6 @@ export function BenchmarkHistoryChart() {
                 }
             });
         }
-        console.log('Superfund map size:', superfundMap.size);
-        // Log some sample timestamps if available
-        if (superfundMap.size > 0) {
-            console.log('Sample Superfund timestamps:',
-                Array.from(superfundMap.keys()).slice(0, 3)
-            );
-        }
 
         const aaveMap = new Map<number, number>();
         if (AaveHistoryData?.processMap && Array.isArray(AaveHistoryData.processMap)) {
@@ -245,19 +220,11 @@ export function BenchmarkHistoryChart() {
                 }
             });
         }
-        console.log('Aave map size:', aaveMap.size);
-        // Log some sample timestamps if available
-        if (aaveMap.size > 0) {
-            console.log('Sample Aave timestamps:',
-                Array.from(aaveMap.keys()).slice(0, 3)
-            );
-        }
 
         // Get all timestamps
         const superfundTimestamps = Array.from(superfundMap.keys());
         const aaveTimestamps = Array.from(aaveMap.keys());
 
-        console.log('Attempting to find timestamp matches between datasets');
 
         // Check if timestamps are in different formats (e.g., milliseconds vs seconds)
         const superfundFirstTimestamp = superfundTimestamps[0];
@@ -265,13 +232,6 @@ export function BenchmarkHistoryChart() {
 
         // Log timestamp formats
         if (superfundFirstTimestamp && aaveFirstTimestamp) {
-            console.log('Timestamp format check:', {
-                superfundTimestamp: superfundFirstTimestamp,
-                superfundDigits: superfundFirstTimestamp.toString().length,
-                aaveTimestamp: aaveFirstTimestamp,
-                aaveDigits: aaveFirstTimestamp.toString().length
-            });
-
             // Normalize timestamps to milliseconds if needed
             let normalizedSuperfundTimestamps = superfundTimestamps;
             let normalizedSuperfundMap = superfundMap;
@@ -286,7 +246,6 @@ export function BenchmarkHistoryChart() {
                 superfundMap.forEach((value, key) => {
                     normalizedSuperfundMap.set(key * 1000, value);
                 });
-                console.log('Normalized: Superfund seconds -> milliseconds');
             } else if (superfundFirstTimestamp.toString().length === 13 && aaveFirstTimestamp.toString().length === 10) {
                 // Superfund in milliseconds, Aave in seconds
                 normalizedAaveMap = new Map();
@@ -294,11 +253,7 @@ export function BenchmarkHistoryChart() {
                 aaveMap.forEach((value, key) => {
                     normalizedAaveMap.set(key * 1000, value);
                 });
-                console.log('Normalized: Aave seconds -> milliseconds');
             }
-
-            // NEW APPROACH: Superfund leads, prioritize all Superfund data points
-            console.log('Using Superfund-led approach with', normalizedSuperfundTimestamps.length, 'data points');
 
             // Helper function to find closest timestamp in a set
             const findClosestTimestamp = (target: number, timestamps: number[]): number | null => {
@@ -359,9 +314,6 @@ export function BenchmarkHistoryChart() {
                 };
             });
 
-            console.log('Combined dataset created with', combined.length, 'Superfund-led points');
-            console.log('Approximated Aave values:', combined.filter(d => d.isAaveApproximated).length);
-
             setHistoricalData(combined.filter(d => d.aave !== null) as any);
         } else {
             console.log('Missing timestamp data in one or both datasets');
@@ -372,18 +324,9 @@ export function BenchmarkHistoryChart() {
         prevSuperfundData.current = SuperfundHistoryData;
         prevAaveData.current = AaveHistoryData;
 
-        setIsProcessing(false);
     }, [SuperfundHistoryData, AaveHistoryData, isSuperfundLoading, isAaveLoading]);
 
-    const customTicks = {
-        [Period.oneDay]: 5,
-        [Period.oneWeek]: 5,
-        [Period.oneMonth]: 5,
-        [Period.allTime]: 5,
-    }
-
     const chartData = useMemo(() => {
-        console.log('historicalData length:', historicalData.length);
 
         if (historicalData.length === 0) {
             return [];
@@ -416,16 +359,15 @@ export function BenchmarkHistoryChart() {
                 timestamp: `${formattedDate} ${time}`,
                 timeValue: time,
                 superfund: item.superfund,
-                aave: item.aave,
+                aave: selectedChain === ChainId.Sonic ? (item.aave + aaveRewardApy) : item.aave,
                 isAaveApproximated: item.isAaveApproximated || false,
                 superfundDisplay: abbreviateNumber(item.superfund),
-                aaveDisplay: abbreviateNumber(item.aave),
+                aaveDisplay: abbreviateNumber(selectedChain === ChainId.Sonic ? (item.aave + aaveRewardApy) : item.aave),
             }
         }).sort((a: any, b: any) => a.rawTimestamp - b.rawTimestamp);
 
-        console.log('Formatted chartData length:', formatted.length);
         return formatted;
-    }, [historicalData])
+    }, [historicalData, aaveRewardApy])
 
     const { minValue, maxValue, valueRange } = useMemo(() => {
         const allValues = chartData.flatMap((d: any) => [Number(d.superfund), Number(d.aave)])
@@ -438,11 +380,24 @@ export function BenchmarkHistoryChart() {
         }
     }, [chartData])
 
+    const yAxisDomain = useMemo(() => {
+        // Calculate a minimum y-axis value that's proportionally lower than the minimum value
+        // This ensures the lines appear more centered vertically
+        const padding = valueRange * 0.5; // Adjust this factor to control vertical positioning
+        const minYValue = Math.max(0, minValue - padding); // Ensure we don't go below 0 for APY values
+        const maxYValue = maxValue + (valueRange * 0.1);
+        return [minYValue, maxYValue];
+    }, [minValue, maxValue, valueRange]);
+
     const yAxisTicks = useMemo(() => {
-        const maxTickValue = maxValue + (valueRange * 0.1);
-        const interval = maxTickValue / 3; // Divide by 3 to get 4 points (0 and 3 intervals)
-        return [0, interval, interval * 2, maxTickValue];
-    }, [maxValue, valueRange]);
+        const [minYValue, maxYValue] = yAxisDomain;
+        const range = maxYValue - minYValue;
+        const tickCount = 4;
+        const interval = range / (tickCount - 1);
+        
+        // Generate evenly spaced ticks between min and max
+        return Array.from({ length: tickCount }, (_, i) => minYValue + (interval * i));
+    }, [yAxisDomain]);
 
     // Implement smart downsampling to reduce visual noise
     const processedChartData = useMemo(() => {
@@ -595,12 +550,9 @@ export function BenchmarkHistoryChart() {
                                         tickLine={true}
                                         axisLine={true}
                                         ticks={yAxisTicks}
-                                        tickFormatter={(value) => `${shortNubers(value.toFixed(0))}%`}
+                                        tickFormatter={(value) => `${value.toFixed(1)}%`}
                                         padding={{ top: 10, bottom: 10 }}
-                                        domain={[
-                                            0,
-                                            maxValue + (valueRange * 0.1)
-                                        ]}
+                                        domain={yAxisDomain}
                                         allowDataOverflow={true}
                                     />
                                     <ReferenceLine y={0} stroke="hsl(var(--muted))" strokeDasharray="3 3" />
