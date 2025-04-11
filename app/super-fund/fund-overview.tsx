@@ -30,6 +30,12 @@ const PerformanceHistoryChart = lazy(() =>
     }))
 )
 
+const BenchmarkHistoryChart = lazy(() =>
+    import('@/components/benchmark-history-chart').then(module => ({
+        default: module.BenchmarkHistoryChart
+    }))
+)
+
 export default function FundOverview() {
     const { allocationPoints } = useVaultAllocationPoints()
 
@@ -126,6 +132,11 @@ export default function FundOverview() {
                     </CardContent>
                 </Card>
             </section>
+            <LazyLoad>
+                <Suspense fallback={<LoadingSectionSkeleton className="h-[300px]" />}>
+                    <BenchmarkHistoryChart />
+                </Suspense>
+            </LazyLoad>
             <LazyLoad>
                 <Suspense fallback={<LoadingSectionSkeleton className="h-[300px]" />}>
                     <PerformanceHistoryChart />

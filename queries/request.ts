@@ -23,6 +23,13 @@ const axiosIndexerInstance = axios.create({
     },
 })
 
+const axiosSuperlendInstance = axios.create({
+    baseURL: process.env.NEXT_PUBLIC_SUPERLEND_API as string,
+    headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+    },
+})
+
 export async function request<TResponse = void>(config: IRequestConfig) {
     const axiosConfig: AxiosRequestConfig = {
         url: config.path,
@@ -49,6 +56,23 @@ export async function requestIndexer<TResponse = void>(config: IRequestConfig) {
     }
     try {
         const response = await axiosIndexerInstance(axiosConfig)
+        return response.data.data as TResponse
+    } catch (error) {
+        throw new Error('HTTP request has been failed', {
+            cause: error,
+        })
+    }
+}
+
+export async function requestSuperlend<TResponse = void>(config: IRequestConfig) {
+    const axiosConfig: AxiosRequestConfig = {
+        url: config.path,
+        method: config.method,
+        params: config.query,
+        data: config.body,
+    }
+    try {
+        const response = await axiosSuperlendInstance(axiosConfig)
         return response.data.data as TResponse
     } catch (error) {
         throw new Error('HTTP request has been failed', {
