@@ -255,7 +255,7 @@ export default function SuperVaultTxDialog({
                 const text = `I just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} ${amount} USDC ${positionType === 'withdraw' ? 'from' : 'to'}  Superfund! Check it out here:`
                 sdk.actions.composeCast({
                     text,
-                    embeds: ['https://superfund-mini-app.vercel.app/'],
+                    embeds: ['https://funds.superlend.xyz/'],
                 })
             },
         },
@@ -266,7 +266,7 @@ export default function SuperVaultTxDialog({
             onClick: () => sdk.actions.openUrl('https://x.com/SuperlendHQ'),
         },
         {
-            tooltipText: 'Visit Website',
+            tooltipText: 'Explore More',
             imageSrc: '/icons/globe.svg',
             className: 'rounded-4 py-2 space-x-2 w-full',
             onClick: () =>

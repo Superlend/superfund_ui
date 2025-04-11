@@ -16,29 +16,13 @@ const frame = {
         action: {
             type: 'launch_frame',
             name: 'SuperFund',
-            url: 'https://superfund-mini-app.vercel.app/',
+            url: 'https://funds.superlend.xyz/',
             splashImageUrl:
-                'https://superfund-mini-app.vercel.app/images/logos/favicon-32x32.png',
-            splashBackgroundColor: '#edf8fe',
+                'https://funds.superlend.xyz/images/logos/favicon-32x32.png',
+            splashBackgroundColor: '#B4E2FB',
         },
     },
 }
-// const frame = {
-//     version: 'next',
-//     imageUrl:
-//         'https://superlend-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png',
-//     button: {
-//         title: 'Check This Out',
-//         action: {
-//             type: 'launch_frame',
-//             name: 'SuperFund',
-//             url: 'https://superfund-mini-app.vercel.app/',
-//             splashImageUrl:
-//                 'https://superfund-mini-app.vercel.app/images/logos/favicon-32x32.png',
-//             splashBackgroundColor: '#edf8fe',
-//         },
-//     },
-// }
 
 export const metadata: Metadata = {
     metadataBase: new URL('https://funds.superlend.xyz'),

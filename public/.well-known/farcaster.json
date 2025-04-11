@@ -1,18 +1,18 @@
 {
     "accountAssociation": {
-        "header": "eyJmaWQiOjM4ODQxNiwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDUyYzk5ZjU2NEQ4MDQxODQ3NzFGYzI5Q2U0MTI3ODdmMjg0YWRjOGEifQ",
-        "payload": "eyJkb21haW4iOiJzdXBlcmZ1bmQtbWluaS1hcHAudmVyY2VsLmFwcCJ9",
-        "signature": "MHhiNjFlZjhhZWRlMTNkZGU0YjZhOWEwMDQ0N2U5NTlkZTg4NTcxMzlmZWI3ZTQzOTY4YWFkN2I1MWI1YzBiZGJhNjI0NjlmOTZhZTdkYTVhYTJhZTg0YmUzNzVhM2ZmYjI1OTMwMjNmNTA0ZmRlZjBkMDZlZTk2NTRiMTU3NjVlNDFi"
+      "header": "eyJmaWQiOjgyMzUyMCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDZhN0QwZTYzODE0ZkM1NjUyOTkyQTE1MmM5MGM1MmRBYjAzM2UxMDMifQ",
+      "payload": "eyJkb21haW4iOiJmdW5kcy5zdXBlcmxlbmQueHl6In0",
+      "signature": "MHg3YmYxYjVkYmQ4MGMwYzk1YjU1MjdmM2QwOGI3NGM5NTMzNjNlOTc5NTMwNmRkOTc1NDA1NzUwOWE4NmNhMmVkMWVmODZlN2JhZDZkNThhMWZkY2IxOTY1MTI0MWY0MjYzMGI2NzZmNjk2NzY5OWFhMzc0MGZmYzU0YzQ2NmFiZDFj"
     },
     "frame": {
-        "version": "1",
-        "name": "Superfund",
-        "iconUrl": "https://superfund-mini-app.vercel.app/images/logos/favicon-32x32.png",
-        "homeUrl": "https://superfund-mini-app.vercel.app",
-        "imageUrl": "https://superfund-mini-app.vercel.app/og.png",
-        "buttonTitle": "Try this out",
-        "splashImageUrl": "https://superfund-mini-app.vercel.app/images/logos/favicon-32x32.png",
-        "splashBackgroundColor": "#B4E2FB",
-        "webhookUrl": "https://superfund-mini-app.vercel.app/api/webhook"
+      "version": "1",
+      "name": "SuperFund",
+      "iconUrl": "https://funds.superlend.xyz/images/logos/favicon-32x32.png",
+      "homeUrl": "https://funds.superlend.xyz",
+      "imageUrl": "https://funds.superlend.xyz/og.png",
+      "buttonTitle": "Check this out",
+      "splashImageUrl": "https://funds.superlend.xyz/images/logos/favicon-32x32.png",
+      "splashBackgroundColor": "#B4E2FB",
+      "webhookUrl": "https://funds.superlend.xyz/api/webhook"
     }
-}
+  }
