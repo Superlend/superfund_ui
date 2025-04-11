@@ -55,11 +55,11 @@ export default function SuperVaultPage() {
         setSelectedTab(tab)
     }
 
-    useEffect(() => {
-        if (!walletAddress && isClient && !isConnectingWallet) {
-            router.push('/')
-        }
-    }, [walletAddress, isClient, isConnectingWallet, router])
+    // useEffect(() => {
+    //     if (!walletAddress && isClient && !isConnectingWallet) {
+    //         router.push('/')
+    //     }
+    // }, [walletAddress, isClient, isConnectingWallet, router])
 
     if (!isClient) {
         return <LoadingPageSkeleton />
