@@ -145,12 +145,12 @@ export default function FundOverview() {
             </section>
             <LazyLoad>
                 <Suspense fallback={<LoadingSectionSkeleton className="h-[300px]" />}>
-                    <BenchmarkHistoryChart />
+                    <PerformanceHistoryChart />
                 </Suspense>
             </LazyLoad>
             <LazyLoad>
                 <Suspense fallback={<LoadingSectionSkeleton className="h-[300px]" />}>
-                    <PerformanceHistoryChart />
+                    <BenchmarkHistoryChart />
                 </Suspense>
             </LazyLoad>
             <AllocationDetailsChart allocationPoints={allocationPoints} />
