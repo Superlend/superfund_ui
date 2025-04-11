@@ -878,7 +878,7 @@ export default function SuperVaultTxDialog({
                                                         onClick={() =>
                                                             sdk.actions.openUrl(
                                                                 getExplorerLink(
-                                                                    depositTx.hash,
+                                                                    withdrawTx.hash,
                                                                     assetDetails?.chain_id ||
                                                                         assetDetails
                                                                             ?.platform
