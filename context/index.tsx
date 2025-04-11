@@ -2,13 +2,12 @@
 
 import React, { useEffect, useState, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { PrivyProvider, usePrivy } from '@privy-io/react-auth'
+import { PrivyProvider } from '@privy-io/react-auth'
 import { createConfig, WagmiProvider } from '@privy-io/wagmi'
 import { base } from 'viem/chains'
 import farcasterFrame from '@farcaster/frame-wagmi-connector'
 import FrameSDK, { sdk } from '@farcaster/frame-sdk'
 import { http } from 'viem'
-import { useLoginToFrame } from '@privy-io/react-auth/farcaster'
 
 // Set up queryClient
 const queryClient = new QueryClient()
@@ -39,15 +38,11 @@ function ContextProvider({
     cookies: string | null
 }) {
     const [config, setConfig] = useState<any>(null)
-    const { initLoginToFrame, loginToFrame } = useLoginToFrame()
-    const { ready, authenticated } = usePrivy()
 
     useEffect(() => {
         const initializeConfig = async () => {
             await FrameSDK.actions.ready()
             const context = await FrameSDK.context
-            console.log(context)
-
             const newConfig = createConfig({
                 chains: [base],
                 transports: {
@@ -62,28 +57,11 @@ function ContextProvider({
                 connectors: [farcasterFrame()],
             })
 
-            // Login to Frame with Privy automatically
-            if (ready && !authenticated) {
-                console.log('running')
-
-                const login = async () => {
-                    const { nonce } = await initLoginToFrame()
-                    const result = await sdk.actions.signIn({
-                        nonce: nonce,
-                    })
-                    await loginToFrame({
-                        message: result.message,
-                        signature: result.signature,
-                    })
-                }
-                login()
-            }
-
             setConfig(context ? newConfigForFarcaster : newConfig)
         }
 
         initializeConfig()
-    }, [ready, authenticated])
+    }, [])
 
     if (!config) return null
 
