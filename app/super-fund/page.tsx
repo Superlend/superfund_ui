@@ -8,15 +8,17 @@ import { CHAIN_DETAILS } from '@/context/chain-context'
 import { ChainId } from '@/types/chain'
 import { motion } from 'motion/react'
 import { useEffect } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 
 export default function ChainSelectionPage() {
   // Function to handle direct navigation using window.location
   // This bypasses Next.js client-side routing for more reliable navigation
-  const navigateToChain = (path: string) => {
-    console.log(`Navigating directly to: /super-fund/${path}`)
-    window.location.href = `/super-fund/${path}`
-  }
-  
+  // const navigateToChain = (path: string) => {
+  //   console.log(`Navigating directly to: /super-fund/${path}`)
+  //   window.location.href = `/super-fund/${path}`
+  // }
+  const router = useRouter();
+
   // Log when this page is mounted
   useEffect(() => {
     console.log('Chain selection page mounted')
@@ -49,7 +51,7 @@ export default function ChainSelectionPage() {
         <div className="space-y-4">
           <Button 
             className="w-full h-14"
-            onClick={() => navigateToChain('sonic')}
+            onClick={() => router.push('/super-fund/sonic')}
           >
             <div className="flex items-center justify-center gap-3">
               <ImageWithDefault
@@ -66,7 +68,7 @@ export default function ChainSelectionPage() {
           <Button 
             className="w-full h-14 bg-white hover:bg-gray-50 text-gray-800 border border-gray-200"
             variant="outline"
-            onClick={() => navigateToChain('base')}
+            onClick={() => router.push('/super-fund/base')}
           >
             <div className="flex items-center justify-center gap-3">
               <ImageWithDefault
