@@ -73,6 +73,12 @@ import ImageWithBadge from '@/components/ImageWithBadge'
 import ExternalLink from '@/components/ExternalLink'
 import sdk from '@farcaster/frame-sdk'
 import Image from 'next/image'
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 export default function SuperVaultTxDialog({
     disabled,
@@ -237,6 +243,45 @@ export default function SuperVaultTxDialog({
             <span className="sr-only">Close</span>
         </Button>
     ) : null
+
+    // SHARE SCREEN BUTTONS FOR MINI APP:
+    const shareScreenButtons = [
+        {
+            tooltipText: 'Share on Warpcast',
+            imageSrc: '/icons/share.svg',
+            className:
+                'rounded-[16px] py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]',
+            onClick: () => {
+                const text = `I just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} ${amount} USDC ${positionType === 'withdraw' ? 'from' : 'to'}  Superfund! Check it out here:`
+                sdk.actions.composeCast({
+                    text,
+                    embeds: ['https://superfund-mini-app.vercel.app/'],
+                })
+            },
+        },
+        {
+            tooltipText: 'Follow us on X',
+            imageSrc: '/icons/x.svg',
+            className: 'rounded-[16px] py-3 px-6',
+            onClick: () => sdk.actions.openUrl('https://x.com/SuperlendHQ'),
+        },
+        {
+            tooltipText: 'Visit Website',
+            imageSrc: '/icons/globe.svg',
+            className: 'rounded-4 py-2 space-x-2 w-full',
+            onClick: () =>
+                sdk.actions.openUrl('https://app.superlend.xyz/discover'),
+        },
+        {
+            tooltipText: 'Add Frame',
+            imageSrc: '/icons/x.svg',
+            className: 'rounded-4 py-2 space-x-2 w-full',
+            onClick: async () => {
+                await sdk.actions.addFrame()
+                return
+            },
+        },
+    ]
 
     // SUB_COMPONENT: Content header UI
     const contentHeader = (
@@ -637,142 +682,85 @@ export default function SuperVaultTxDialog({
                             (depositTx.status === 'view' &&
                                 depositTx.isConfirmed)) && (
                             <div
-                                className={`flex ${miniappUser ? 'flex-col items-start' : 'items-center  flex-row'} justify-between gap-2`}
+                                className={`flex flex-col items-start justify-between gap-2`}
                             >
-                                <div className="flex items-center justify-start gap-2">
-                                    <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
-                                        <Check
-                                            className="w-5 h-5 stroke-[#013220]/75"
-                                            strokeWidth={1.5}
-                                        />
+                                <div
+                                    className={`flex items-center flex-row justify-between gap-2`}
+                                >
+                                    <div className="flex items-center justify-start gap-2">
+                                        <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
+                                            <Check
+                                                className="w-5 h-5 stroke-[#013220]/75"
+                                                strokeWidth={1.5}
+                                            />
+                                        </div>
+                                        <BodyText
+                                            level="body2"
+                                            weight="medium"
+                                            className="text-gray-800"
+                                        >
+                                            Deposit successful
+                                        </BodyText>
                                     </div>
-                                    <BodyText
-                                        level="body2"
-                                        weight="medium"
-                                        className="text-gray-800"
-                                    >
-                                        Deposit successful
-                                    </BodyText>
-                                </div>
-                                {depositTx.hash &&
-                                    (depositTx.isConfirming ||
-                                        depositTx.isConfirmed) &&
-                                    !miniappUser && (
-                                        <ExternalLink
-                                            href={getExplorerLink(
-                                                depositTx.hash,
-                                                assetDetails?.chain_id ||
-                                                    assetDetails?.platform
-                                                        ?.chain_id
-                                            )}
-                                        >
-                                            <BodyText
-                                                level="body2"
-                                                weight="normal"
-                                                className="text-inherit"
+                                    {depositTx.hash &&
+                                        (depositTx.isConfirming ||
+                                            depositTx.isConfirmed) && (
+                                            <ExternalLink
+                                                href={getExplorerLink(
+                                                    depositTx.hash,
+                                                    assetDetails?.chain_id ||
+                                                        assetDetails?.platform
+                                                            ?.chain_id
+                                                )}
                                             >
-                                                View on explorer
-                                            </BodyText>
-                                        </ExternalLink>
-                                    )}
-                                {miniappUser && (
-                                    <div className="w-full flex flex-col items-center justify-center gap-2">
-                                        {depositTx.hash &&
-                                            (depositTx.isConfirming ||
-                                                depositTx.isConfirmed) && (
-                                                <Button
-                                                    variant="primary"
-                                                    size="lg"
-                                                    className="rounded-4 py-2 space-x-2 capitalize w-full"
-                                                    onClick={() =>
-                                                        sdk.actions.openUrl(
-                                                            getExplorerLink(
-                                                                depositTx.hash,
-                                                                assetDetails?.chain_id ||
-                                                                    assetDetails
-                                                                        ?.platform
-                                                                        ?.chain_id
-                                                            )
-                                                        )
-                                                    }
+                                                <BodyText
+                                                    level="body2"
+                                                    weight="normal"
+                                                    className="text-inherit"
                                                 >
-                                                    <Link className="w-4 h-4" />
-                                                    <BodyText
-                                                        level="body2"
-                                                        weight="normal"
-                                                        className="text-inherit"
+                                                    View on explorer
+                                                </BodyText>
+                                            </ExternalLink>
+                                        )}
+                                </div>
+                                {miniappUser && (
+                                    <div className="w-full flex items-center justify-between">
+                                        <TooltipProvider>
+                                            {shareScreenButtons.map(
+                                                (config, index) => (
+                                                    <Tooltip
+                                                        key={`button-${index}`}
                                                     >
-                                                        View on Explorer
-                                                    </BodyText>
-                                                </Button>
+                                                        <TooltipTrigger className="w-full max-w-[calc(100%/4-8px)]">
+                                                            <Button
+                                                                variant="primary"
+                                                                size="lg"
+                                                                className={`capitalize w-full ${config.className}`}
+                                                                onClick={
+                                                                    config.onClick
+                                                                }
+                                                            >
+                                                                <Image
+                                                                    src={
+                                                                        config.imageSrc
+                                                                    }
+                                                                    alt={''}
+                                                                    width={22}
+                                                                    height={22}
+                                                                />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>
+                                                                {
+                                                                    config.tooltipText
+                                                                }
+                                                            </p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                )
                                             )}
-
-                                        <Button
-                                            variant="primary"
-                                            size="lg"
-                                            className="rounded-4 py-2 space-x-2 capitalize w-full"
-                                            onClick={() =>
-                                                sdk.actions.openUrl(
-                                                    'https://x.com/SuperlendHQ'
-                                                )
-                                            }
-                                        >
-                                            <Image
-                                                src={'/icons/x.svg'}
-                                                alt=""
-                                                width={16}
-                                                height={16}
-                                            />
-                                            <BodyText
-                                                level="body2"
-                                                weight="normal"
-                                                className="text-inherit"
-                                            >
-                                                Follow on X
-                                            </BodyText>
-                                        </Button>
-                                        <Button
-                                            variant="primary"
-                                            size="lg"
-                                            className="rounded-4 py-2 space-x-2 capitalize w-full"
-                                            onClick={() =>
-                                                sdk.actions.openUrl(
-                                                    'https://app.superlend.xyz/discover'
-                                                )
-                                            }
-                                        >
-                                            <Earth className="w-4 h-4" />
-                                            <BodyText
-                                                level="body2"
-                                                weight="normal"
-                                                className="text-inherit"
-                                            >
-                                                Explore More
-                                            </BodyText>
-                                        </Button>
-                                        <Button
-                                            variant="primary"
-                                            size="lg"
-                                            className="rounded-4 py-2 space-x-2 capitalize w-full"
-                                            onClick={async () => {
-                                                await sdk.actions.addFrame()
-                                                return
-                                            }}
-                                        >
-                                            <Image
-                                                src={'/icons/warpcast.svg'}
-                                                alt=""
-                                                width={16}
-                                                height={16}
-                                            />
-                                            <BodyText
-                                                level="body2"
-                                                weight="normal"
-                                                className="text-inherit"
-                                            >
-                                                Add to Warpcast
-                                            </BodyText>
-                                        </Button>
+                                        </TooltipProvider>
                                     </div>
                                 )}
                             </div>
@@ -827,143 +815,90 @@ export default function SuperVaultTxDialog({
                         {withdrawTx.status === 'view' &&
                             withdrawTx.isConfirmed && (
                                 <div
-                                    className={`flex ${miniappUser ? 'flex-col items-start' : 'items-center  flex-row'} justify-between gap-2`}
+                                    className={`flex flex-col items-start justify-between gap-2`}
                                 >
-                                    <div className="flex items-center justify-start gap-2">
-                                        <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
-                                            <Check
-                                                className="w-5 h-5 stroke-[#013220]/75"
-                                                strokeWidth={1.5}
-                                            />
+                                    <div
+                                        className={`flex items-center flex-row justify-between gap-2`}
+                                    >
+                                        <div className="flex items-center justify-start gap-2">
+                                            <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
+                                                <Check
+                                                    className="w-5 h-5 stroke-[#013220]/75"
+                                                    strokeWidth={1.5}
+                                                />
+                                            </div>
+                                            <BodyText
+                                                level="body2"
+                                                weight="medium"
+                                                className="text-gray-800"
+                                            >
+                                                Withdraw successful
+                                            </BodyText>
                                         </div>
-                                        <BodyText
-                                            level="body2"
-                                            weight="medium"
-                                            className="text-gray-800"
-                                        >
-                                            Withdraw successful
-                                        </BodyText>
-                                    </div>
-                                    {withdrawTx.hash &&
-                                        (withdrawTx.isConfirming ||
-                                            withdrawTx.isConfirmed) &&
-                                        !miniappUser && (
-                                            <ExternalLink
-                                                href={getExplorerLink(
-                                                    withdrawTx.hash,
-                                                    assetDetails?.chain_id ||
-                                                        assetDetails?.platform
-                                                            ?.chain_id
-                                                )}
-                                            >
-                                                <BodyText
-                                                    level="body2"
-                                                    weight="normal"
-                                                    className="text-inherit"
+                                        {withdrawTx.hash &&
+                                            (withdrawTx.isConfirming ||
+                                                withdrawTx.isConfirmed) && (
+                                                <ExternalLink
+                                                    href={getExplorerLink(
+                                                        withdrawTx.hash,
+                                                        assetDetails?.chain_id ||
+                                                            assetDetails
+                                                                ?.platform
+                                                                ?.chain_id
+                                                    )}
                                                 >
-                                                    View on explorer
-                                                </BodyText>
-                                            </ExternalLink>
-                                        )}
-
-                                    {miniappUser && (
-                                        <div className="w-full flex flex-col items-center justify-center gap-2">
-                                            {withdrawTx.hash &&
-                                                (withdrawTx.isConfirming ||
-                                                    withdrawTx.isConfirmed) && (
-                                                    <Button
-                                                        variant="primary"
-                                                        size="lg"
-                                                        className="rounded-4 py-2 space-x-2 capitalize w-full"
-                                                        onClick={() =>
-                                                            sdk.actions.openUrl(
-                                                                getExplorerLink(
-                                                                    withdrawTx.hash,
-                                                                    assetDetails?.chain_id ||
-                                                                        assetDetails
-                                                                            ?.platform
-                                                                            ?.chain_id
-                                                                )
-                                                            )
-                                                        }
+                                                    <BodyText
+                                                        level="body2"
+                                                        weight="normal"
+                                                        className="text-inherit"
                                                     >
-                                                        <Link className="w-4 h-4" />
-                                                        <BodyText
-                                                            level="body2"
-                                                            weight="normal"
-                                                            className="text-inherit"
+                                                        View on explorer
+                                                    </BodyText>
+                                                </ExternalLink>
+                                            )}
+                                    </div>
+                                    {miniappUser && (
+                                        <div className="w-full flex items-center justify-between">
+                                            <TooltipProvider>
+                                                {shareScreenButtons.map(
+                                                    (config, index) => (
+                                                        <Tooltip
+                                                            key={`button-${index}`}
                                                         >
-                                                            View on Explorer
-                                                        </BodyText>
-                                                    </Button>
+                                                            <TooltipTrigger className="w-full max-w-[calc(100%/4-8px)]">
+                                                                <Button
+                                                                    variant="primary"
+                                                                    size="lg"
+                                                                    className={`capitalize w-full ${config.className}`}
+                                                                    onClick={
+                                                                        config.onClick
+                                                                    }
+                                                                >
+                                                                    <Image
+                                                                        src={
+                                                                            config.imageSrc
+                                                                        }
+                                                                        alt={''}
+                                                                        width={
+                                                                            22
+                                                                        }
+                                                                        height={
+                                                                            22
+                                                                        }
+                                                                    />
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>
+                                                                    {
+                                                                        config.tooltipText
+                                                                    }
+                                                                </p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    )
                                                 )}
-
-                                            <Button
-                                                variant="primary"
-                                                size="lg"
-                                                className="rounded-4 py-2 space-x-2 capitalize w-full"
-                                                onClick={() =>
-                                                    sdk.actions.openUrl(
-                                                        'https://x.com/SuperlendHQ'
-                                                    )
-                                                }
-                                            >
-                                                <Image
-                                                    src={'/icons/x.svg'}
-                                                    alt=""
-                                                    width={16}
-                                                    height={16}
-                                                />
-                                                <BodyText
-                                                    level="body2"
-                                                    weight="normal"
-                                                    className="text-inherit"
-                                                >
-                                                    Follow on X
-                                                </BodyText>
-                                            </Button>
-                                            <Button
-                                                variant="primary"
-                                                size="lg"
-                                                className="rounded-4 py-2 space-x-2 capitalize w-full"
-                                                onClick={() =>
-                                                    sdk.actions.openUrl(
-                                                        'https://app.superlend.xyz/discover'
-                                                    )
-                                                }
-                                            >
-                                                <Earth className="w-4 h-4" />
-                                                <BodyText
-                                                    level="body2"
-                                                    weight="normal"
-                                                    className="text-inherit"
-                                                >
-                                                    Explore More
-                                                </BodyText>
-                                            </Button>
-                                            <Button
-                                                variant="primary"
-                                                size="lg"
-                                                className="rounded-4 py-2 space-x-2 capitalize w-full"
-                                                onClick={async () => {
-                                                    await sdk.actions.addFrame()
-                                                    return
-                                                }}
-                                            >
-                                                <Image
-                                                    src={'/icons/warpcast.svg'}
-                                                    alt=""
-                                                    width={16}
-                                                    height={16}
-                                                />
-                                                <BodyText
-                                                    level="body2"
-                                                    weight="normal"
-                                                    className="text-inherit"
-                                                >
-                                                    Add to Warpcast
-                                                </BodyText>
-                                            </Button>
+                                            </TooltipProvider>
                                         </div>
                                     )}
                                 </div>
