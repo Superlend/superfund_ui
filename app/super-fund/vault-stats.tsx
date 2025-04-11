@@ -1,6 +1,7 @@
 'use client'
 
 import { AnimatedNumber } from '@/components/animations/animated_number'
+import ConnectWalletButton from '@/components/ConnectWalletButton'
 import ImageWithDefault from '@/components/ImageWithDefault'
 import InfoTooltip from '@/components/tooltips/InfoTooltip'
 import TooltipText from '@/components/tooltips/TooltipText'
@@ -22,7 +23,6 @@ import { Period } from '@/types/periodButtons'
 import { Lock } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useEffect } from 'react'
-import ConnectWalletButton from '@/components/ConnectWalletButton'
 
 type VaultStatsProps = {
     days_7_avg_total_apy: number
@@ -82,6 +82,7 @@ export default function VaultStats() {
 
     const vaultStats = [
         {
+            id: 'my-position',
             title: 'My Position',
             value: isWalletConnected ? `$${Number(userMaxWithdrawAmount).toFixed(4)}` : 'N/A',
             show: true,
@@ -89,6 +90,7 @@ export default function VaultStats() {
             error: errorUserMaxWithdrawAmount,
         },
         {
+            id: 'effective-apy',
             title: 'Effective APY',
             titleTooltipContent: 'Actual APY received after adjusting the vault\'s 7-day interest distribution period. It reflects how much your money is truly growing over time, after accounting for the vault\s yield distribution schedule.',
             value: `${(effectiveApyData?.total_apy ?? 0).toFixed(2)}%`,
@@ -110,6 +112,7 @@ export default function VaultStats() {
             error: isErrorEffectiveApy,
         },
         {
+            id: 'spot-apy',
             title: 'Spot APY',
             titleTooltipContent: 'The current interest rate earned by users.',
             value: `${(Number(spotApy) + Number(totalRewardApy)).toFixed(2)}%`,
@@ -125,6 +128,7 @@ export default function VaultStats() {
             error: !!errorVault || !!errorRewards,
         },
         {
+            id: 'tvl',
             title: 'TVL',
             value: '$' + Number(totalAssets).toFixed(4),
             show: true,
@@ -132,6 +136,7 @@ export default function VaultStats() {
             error: !!errorVault,
         },
         {
+            id: '7d-apy',
             title: '7D APY',
             titleTooltipContent: 'Average Spot APY over the past 7 days.',
             value: `${abbreviateNumber(days_7_avg_total_apy)}%`,
