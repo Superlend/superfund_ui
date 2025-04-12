@@ -38,11 +38,13 @@ function ContextProvider({
     cookies: string | null
 }) {
     const [config, setConfig] = useState<any>(null)
+    const [context, setContext] = useState<any>(null)
 
     useEffect(() => {
         const initializeConfig = async () => {
             await FrameSDK.actions.ready()
             const context = await FrameSDK.context
+            setContext(context)
             const newConfig = createConfig({
                 chains: [base],
                 transports: {
@@ -69,7 +71,7 @@ function ContextProvider({
         <PrivyProvider
             appId={appId}
             config={{
-                loginMethods: ['wallet', 'farcaster'],
+                loginMethods: ['wallet', context && 'farcaster'],
                 appearance: {
                     theme: 'light',
                     accentColor: '#676FFF',
