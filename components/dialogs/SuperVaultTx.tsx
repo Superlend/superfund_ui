@@ -249,8 +249,6 @@ export default function SuperVaultTxDialog({
         {
             tooltipText: 'Share on Warpcast',
             imageSrc: '/icons/share.svg',
-            className:
-                'rounded-[16px] py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]',
             onClick: () => {
                 const text = `I just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} ${amount} USDC ${positionType === 'withdraw' ? 'from' : 'to'}  Superfund! Check it out here:`
                 sdk.actions.composeCast({
@@ -262,20 +260,17 @@ export default function SuperVaultTxDialog({
         {
             tooltipText: 'Follow us on X',
             imageSrc: '/icons/x.svg',
-            className: 'rounded-[16px] py-3 px-6',
             onClick: () => sdk.actions.openUrl('https://x.com/SuperlendHQ'),
         },
         {
             tooltipText: 'Explore More',
             imageSrc: '/icons/globe.svg',
-            className: 'rounded-4 py-2 space-x-2 w-full',
             onClick: () =>
                 sdk.actions.openUrl('https://app.superlend.xyz/discover'),
         },
         {
             tooltipText: 'Add Frame',
-            imageSrc: '/icons/x.svg',
-            className: 'rounded-4 py-2 space-x-2 w-full',
+            imageSrc: '/icons/warpcast.svg',
             onClick: async () => {
                 await sdk.actions.addFrame()
                 return
@@ -682,10 +677,10 @@ export default function SuperVaultTxDialog({
                             (depositTx.status === 'view' &&
                                 depositTx.isConfirmed)) && (
                             <div
-                                className={`flex flex-col items-start justify-between gap-2`}
+                                className={`flex flex-col items-start justify-between gap-2 w-full`}
                             >
                                 <div
-                                    className={`flex items-center flex-row justify-between gap-2`}
+                                    className={`flex w-full items-center flex-row justify-between gap-2`}
                                 >
                                     <div className="flex items-center justify-start gap-2">
                                         <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
@@ -724,7 +719,7 @@ export default function SuperVaultTxDialog({
                                         )}
                                 </div>
                                 {miniappUser && (
-                                    <div className="w-full flex items-center justify-between">
+                                    <div className="w-full flex items-center justify-between my-3">
                                         <TooltipProvider>
                                             {shareScreenButtons.map(
                                                 (config, index) => (
@@ -735,7 +730,7 @@ export default function SuperVaultTxDialog({
                                                             <Button
                                                                 variant="primary"
                                                                 size="lg"
-                                                                className={`capitalize w-full ${config.className}`}
+                                                                className={`rounded-[16px] py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
                                                                 onClick={
                                                                     config.onClick
                                                                 }
@@ -815,10 +810,10 @@ export default function SuperVaultTxDialog({
                         {withdrawTx.status === 'view' &&
                             withdrawTx.isConfirmed && (
                                 <div
-                                    className={`flex flex-col items-start justify-between gap-2`}
+                                    className={`flex flex-col items-start justify-between gap-2 w-full`}
                                 >
                                     <div
-                                        className={`flex items-center flex-row justify-between gap-2`}
+                                        className={`flex items-center flex-row justify-between gap-2 w-full`}
                                     >
                                         <div className="flex items-center justify-start gap-2">
                                             <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
@@ -858,7 +853,7 @@ export default function SuperVaultTxDialog({
                                             )}
                                     </div>
                                     {miniappUser && (
-                                        <div className="w-full flex items-center justify-between">
+                                        <div className="w-full flex items-center justify-between my-3">
                                             <TooltipProvider>
                                                 {shareScreenButtons.map(
                                                     (config, index) => (
@@ -869,7 +864,7 @@ export default function SuperVaultTxDialog({
                                                                 <Button
                                                                     variant="primary"
                                                                     size="lg"
-                                                                    className={`capitalize w-full ${config.className}`}
+                                                                    className={`rounded-[16px] py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
                                                                     onClick={
                                                                         config.onClick
                                                                     }
