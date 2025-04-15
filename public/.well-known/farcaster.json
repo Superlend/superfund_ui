@@ -1,0 +1,18 @@
+{
+    "accountAssociation": {
+      "header": "eyJmaWQiOjgyMzUyMCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDZhN0QwZTYzODE0ZkM1NjUyOTkyQTE1MmM5MGM1MmRBYjAzM2UxMDMifQ",
+      "payload": "eyJkb21haW4iOiJmdW5kcy5zdXBlcmxlbmQueHl6In0",
+      "signature": "MHg3YmYxYjVkYmQ4MGMwYzk1YjU1MjdmM2QwOGI3NGM5NTMzNjNlOTc5NTMwNmRkOTc1NDA1NzUwOWE4NmNhMmVkMWVmODZlN2JhZDZkNThhMWZkY2IxOTY1MTI0MWY0MjYzMGI2NzZmNjk2NzY5OWFhMzc0MGZmYzU0YzQ2NmFiZDFj"
+    },
+    "frame": {
+      "version": "1",
+      "name": "SuperFund",
+      "iconUrl": "https://funds.superlend.xyz/images/logos/favicon-32x32.png",
+      "homeUrl": "https://funds.superlend.xyz",
+      "imageUrl": "https://funds.superlend.xyz/og.png",
+      "buttonTitle": "Check this out",
+      "splashImageUrl": "https://funds.superlend.xyz/images/logos/favicon-32x32.png",
+      "splashBackgroundColor": "#B4E2FB",
+      "webhookUrl": "https://funds.superlend.xyz/api/webhook"
+    }
+  }
