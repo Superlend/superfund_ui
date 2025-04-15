@@ -247,7 +247,7 @@ export default function SuperVaultTxDialog({
     // SHARE SCREEN BUTTONS FOR MINI APP:
     const shareScreenButtons = [
         {
-            tooltipText: 'Share on Warpcast',
+            buttonText: 'Share on Warpcast',
             imageSrc: '/icons/share.svg',
             onClick: () => {
                 const text = `I just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} ${amount} USDC ${positionType === 'withdraw' ? 'from' : 'to'}  Superfund! Check it out here:`
@@ -258,18 +258,18 @@ export default function SuperVaultTxDialog({
             },
         },
         {
-            tooltipText: 'Follow us on X',
+            buttonText: 'Follow us on X',
             imageSrc: '/icons/x.svg',
             onClick: () => sdk.actions.openUrl('https://x.com/SuperlendHQ'),
         },
         {
-            tooltipText: 'Explore More',
+            buttonText: 'Explore More',
             imageSrc: '/icons/globe.svg',
             onClick: () =>
                 sdk.actions.openUrl('https://app.superlend.xyz/discover'),
         },
         {
-            tooltipText: 'Add Frame',
+            buttonText: 'Add Frame',
             imageSrc: '/icons/warpcast.svg',
             onClick: async () => {
                 await sdk.actions.addFrame()
@@ -677,7 +677,7 @@ export default function SuperVaultTxDialog({
                             (depositTx.status === 'view' &&
                                 depositTx.isConfirmed)) && (
                             <div
-                                className={`flex flex-col items-start justify-between gap-2 w-full`}
+                                className={`flex flex-col items-center justify-start gap-3 w-full`}
                             >
                                 <div
                                     className={`flex w-full items-center flex-row justify-between gap-2`}
@@ -719,43 +719,26 @@ export default function SuperVaultTxDialog({
                                         )}
                                 </div>
                                 {miniappUser && (
-                                    <div className="w-full flex items-center justify-between my-3">
-                                        <TooltipProvider>
-                                            {shareScreenButtons.map(
-                                                (config, index) => (
-                                                    <Tooltip
-                                                        key={`button-${index}`}
-                                                    >
-                                                        <TooltipTrigger className="w-full max-w-[calc(100%/4-8px)]">
-                                                            <Button
-                                                                variant="primary"
-                                                                size="lg"
-                                                                className={`rounded-[16px] py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
-                                                                onClick={
-                                                                    config.onClick
-                                                                }
-                                                            >
-                                                                <Image
-                                                                    src={
-                                                                        config.imageSrc
-                                                                    }
-                                                                    alt={''}
-                                                                    width={22}
-                                                                    height={22}
-                                                                />
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>
-                                                                {
-                                                                    config.tooltipText
-                                                                }
-                                                            </p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                )
-                                            )}
-                                        </TooltipProvider>
+                                    <div className="w-full flex items-center flex-col justify-start gap-5 my-4 mb-8 ">
+                                        {shareScreenButtons.map(
+                                            (config, index) => (
+                                                <Button
+                                                    key={index}
+                                                    variant="primary"
+                                                    size="lg"
+                                                    className={`rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
+                                                    onClick={config.onClick}
+                                                >
+                                                    <Image
+                                                        src={config.imageSrc}
+                                                        alt={''}
+                                                        width={18}
+                                                        height={18}
+                                                    />
+                                                    {config.buttonText}
+                                                </Button>
+                                            )
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -810,7 +793,7 @@ export default function SuperVaultTxDialog({
                         {withdrawTx.status === 'view' &&
                             withdrawTx.isConfirmed && (
                                 <div
-                                    className={`flex flex-col items-start justify-between gap-2 w-full`}
+                                    className={`flex flex-col items-center justify-start gap-3 w-full`}
                                 >
                                     <div
                                         className={`flex items-center flex-row justify-between gap-2 w-full`}
@@ -853,47 +836,28 @@ export default function SuperVaultTxDialog({
                                             )}
                                     </div>
                                     {miniappUser && (
-                                        <div className="w-full flex items-center justify-between my-3">
-                                            <TooltipProvider>
-                                                {shareScreenButtons.map(
-                                                    (config, index) => (
-                                                        <Tooltip
-                                                            key={`button-${index}`}
-                                                        >
-                                                            <TooltipTrigger className="w-full max-w-[calc(100%/4-8px)]">
-                                                                <Button
-                                                                    variant="primary"
-                                                                    size="lg"
-                                                                    className={`rounded-[16px] py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
-                                                                    onClick={
-                                                                        config.onClick
-                                                                    }
-                                                                >
-                                                                    <Image
-                                                                        src={
-                                                                            config.imageSrc
-                                                                        }
-                                                                        alt={''}
-                                                                        width={
-                                                                            22
-                                                                        }
-                                                                        height={
-                                                                            22
-                                                                        }
-                                                                    />
-                                                                </Button>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p>
-                                                                    {
-                                                                        config.tooltipText
-                                                                    }
-                                                                </p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    )
-                                                )}
-                                            </TooltipProvider>
+                                        <div className="w-full flex items-center flex-col justify-start gap-5 my-4 mb-8 ">
+                                            {shareScreenButtons.map(
+                                                (config, index) => (
+                                                    <Button
+                                                        key={index}
+                                                        variant="primary"
+                                                        size="lg"
+                                                        className={`rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
+                                                        onClick={config.onClick}
+                                                    >
+                                                        <Image
+                                                            src={
+                                                                config.imageSrc
+                                                            }
+                                                            alt={''}
+                                                            width={18}
+                                                            height={18}
+                                                        />
+                                                        {config.buttonText}
+                                                    </Button>
+                                                )
+                                            )}
                                         </div>
                                     )}
                                 </div>
