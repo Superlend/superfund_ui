@@ -228,11 +228,11 @@ export default function VaultStats() {
             </div>
 
             {/* Second row - remaining items with original styles */}
-            <div className="flex flex-wrap items-center justify-between gap-6 pl-1 pr-6">
+            <div className="flex flex-wrap items-center justify-between gap-6">
                 {vaultStats.slice(1).map((item, index) => (
                     <motion.div
                         key={index}
-                        className="block shrink-0"
+                        className="block shrink-0 min-w-[110px] min-[418px]:min-w-[120px]"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{
