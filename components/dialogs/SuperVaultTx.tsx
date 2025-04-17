@@ -865,9 +865,10 @@ export default function SuperVaultTxDialog({
                     </div>
                 )}
                 {/* Block 4 */}
-                {(withdrawTx.status === 'view' && withdrawTx.isConfirmed) ||
-                (depositTx.status === 'view' &&
-                    depositTx.isConfirmed) ? null : (
+                {miniappUser &&
+                ((withdrawTx.status === 'view' && withdrawTx.isConfirmed) ||
+                    (depositTx.status === 'view' &&
+                        depositTx.isConfirmed)) ? null : (
                     <ActionButton
                         disabled={false}
                         handleCloseModal={handleOpenChange}
