@@ -79,6 +79,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
 
 export default function SuperVaultTxDialog({
     disabled,
@@ -109,6 +110,7 @@ export default function SuperVaultTxDialog({
     const isDesktop = screenWidth > 768
     const isDepositPositionType = positionType === 'deposit'
     const [miniappUser, setMiniAppUser] = useState<any>(null)
+    const { data: effectiveApyData } = useGetEffectiveApy()
 
     useEffect(() => {
         const initializeMiniappContext = async () => {
@@ -250,7 +252,8 @@ export default function SuperVaultTxDialog({
             buttonText: 'Share on Warpcast',
             imageSrc: '/icons/share.svg',
             onClick: () => {
-                const text = `I just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} ${amount} USDC ${positionType === 'withdraw' ? 'from' : 'to'}  Superfund! Check it out here:`
+                // I just deposited $10,
+                const text = `I just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} $${amount}, and it's earning a ${effectiveApyData?.total_apy.toFixed(2)}% return. Park your assets on Superlend and watch them grow!`
                 sdk.actions.composeCast({
                     text,
                     embeds: ['https://funds.superlend.xyz/'],
