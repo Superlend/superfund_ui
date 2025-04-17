@@ -865,15 +865,19 @@ export default function SuperVaultTxDialog({
                     </div>
                 )}
                 {/* Block 4 */}
-                <ActionButton
-                    disabled={false}
-                    handleCloseModal={handleOpenChange}
-                    asset={assetDetails}
-                    amount={amount}
-                    setActionType={setActionType}
-                    actionType={positionType}
-                    walletAddress={walletAddress as `0x${string}`}
-                />
+                {(withdrawTx.status === 'view' && withdrawTx.isConfirmed) ||
+                (depositTx.status === 'view' &&
+                    depositTx.isConfirmed) ? null : (
+                    <ActionButton
+                        disabled={false}
+                        handleCloseModal={handleOpenChange}
+                        asset={assetDetails}
+                        amount={amount}
+                        setActionType={setActionType}
+                        actionType={positionType}
+                        walletAddress={walletAddress as `0x${string}`}
+                    />
+                )}
             </div>
         </>
     )
