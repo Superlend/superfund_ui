@@ -12,6 +12,8 @@ import {
     Check,
     CircleCheckIcon,
     CircleXIcon,
+    Earth,
+    Link,
     LoaderCircle,
     X,
 } from 'lucide-react'
@@ -99,6 +101,22 @@ export default function SuperVaultTxDialog({
     const { width: screenWidth } = useDimensions()
     const isDesktop = screenWidth > 768
     const isDepositPositionType = positionType === 'deposit'
+    const [miniappUser, setMiniAppUser] = useState<any>(null)
+
+    // useEffect(() => {
+    //     const initializeMiniappContext = async () => {
+    //         await sdk.actions.ready()
+    //         const context = await sdk.context
+    //         if (context && context.user) {
+    //             const user = context.user
+    //             setMiniAppUser(user)
+    //         } else {
+    //             setMiniAppUser(null)
+    //         }
+    //     }
+
+    //     void initializeMiniappContext()
+    // }, [])
 
     useEffect(() => {
         // Reset the tx status when the dialog is closed
@@ -150,9 +168,7 @@ export default function SuperVaultTxDialog({
     }
 
     function isShowBlock(status: { deposit: boolean; withdraw: boolean }) {
-        return isDepositPositionType
-            ? status.deposit
-            : status.withdraw
+        return isDepositPositionType ? status.deposit : status.withdraw
     }
 
     const inputUsdAmount = Number(amount)
@@ -220,6 +236,40 @@ export default function SuperVaultTxDialog({
             <span className="sr-only">Close</span>
         </Button>
     ) : null
+
+    // SHARE SCREEN BUTTONS FOR MINI APP:
+    // const shareScreenButtons = [
+    //     {
+    //         buttonText: 'Share on Warpcast',
+    //         imageSrc: '/icons/share.svg',
+    //         onClick: () => {
+    //             const text = `I just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} ${amount} USDC ${positionType === 'withdraw' ? 'from' : 'to'}  Superfund! Check it out here:`
+    //             sdk.actions.composeCast({
+    //                 text,
+    //                 embeds: ['https://funds.superlend.xyz/'],
+    //             })
+    //         },
+    //     },
+    //     {
+    //         buttonText: 'Follow us on X',
+    //         imageSrc: '/icons/x.svg',
+    //         onClick: () => sdk.actions.openUrl('https://x.com/SuperlendHQ'),
+    //     },
+    //     {
+    //         buttonText: 'Explore More',
+    //         imageSrc: '/icons/globe.svg',
+    //         onClick: () =>
+    //             sdk.actions.openUrl('https://app.superlend.xyz/discover'),
+    //     },
+    //     {
+    //         buttonText: 'Add Frame',
+    //         imageSrc: '/icons/warpcast.svg',
+    //         onClick: async () => {
+    //             await sdk.actions.addFrame()
+    //             return
+    //         },
+    //     },
+    // ]
 
     // SUB_COMPONENT: Content header UI
     const contentHeader = (
@@ -382,7 +432,9 @@ export default function SuperVaultTxDialog({
                         deposit: true,
                         withdraw: true,
                     }) && (
-                            <div className={`flex items-center justify-between w-full py-4`}>
+                            <div
+                                className={`flex items-center justify-between w-full py-4`}
+                            >
                                 <BodyText
                                     level="body2"
                                     weight="normal"
@@ -418,7 +470,9 @@ export default function SuperVaultTxDialog({
                                     className="text-gray-800"
                                 >
                                     {handleSmallestValue(
-                                        (Number(balance) - Number(amount)).toString()
+                                        (
+                                            Number(balance) - Number(amount)
+                                        ).toString()
                                     )}{' '}
                                     {assetDetails?.asset?.token?.symbol}
                                 </BodyText>
@@ -471,56 +525,102 @@ export default function SuperVaultTxDialog({
                 </div>
                 {/* Block 3 - Deposit and withdraw loading state */}
                 {isShowBlock({
-                    deposit: ((depositTx.status === 'approve' && (isDepositTxInProgress || (!isDepositTxInProgress && depositTx.isConfirmed))) || depositTx.status === 'deposit' || depositTx.status === 'view'),
+                    deposit:
+                        (depositTx.status === 'approve' &&
+                            (isDepositTxInProgress ||
+                                (!isDepositTxInProgress &&
+                                    depositTx.isConfirmed))) ||
+                        depositTx.status === 'deposit' ||
+                        depositTx.status === 'view',
                     withdraw: false,
                 }) && (
                         <div className="py-1">
-                            {(isDepositTxInProgress && (depositTx.status === 'approve')) && (
-                                <div className="flex items-center justify-between gap-2">
-                                    <div className="flex items-center justify-start gap-2">
-                                        <LoaderCircle className="animate-spin w-8 h-8 text-secondary-500" />
-                                        <BodyText level="body2" weight="normal" className="text-gray-600">
-                                            {depositTx.isPending && (
-                                                'Waiting for confirmation...'
-                                            )}
-                                            {depositTx.isConfirming && (
-                                                'Approving...'
-                                            )}
-                                        </BodyText>
-                                    </div>
-                                    {(depositTx.hash && depositTx.status === 'approve') &&
-                                        <ExternalLink href={getExplorerLink(depositTx.hash, assetDetails?.chain_id || assetDetails?.platform?.chain_id)}>
-                                            <BodyText level="body2" weight="normal" className="text-inherit">
-                                                View on explorer
+                            {isDepositTxInProgress &&
+                                depositTx.status === 'approve' && (
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center justify-start gap-2">
+                                            <LoaderCircle className="animate-spin w-8 h-8 text-secondary-500" />
+                                            <BodyText
+                                                level="body2"
+                                                weight="normal"
+                                                className="text-gray-600"
+                                            >
+                                                {depositTx.isPending &&
+                                                    'Waiting for confirmation...'}
+                                                {depositTx.isConfirming &&
+                                                    'Approving...'}
                                             </BodyText>
-                                        </ExternalLink>
-                                    }
-                                </div>
-                            )}
-                            {((!isDepositTxInProgress && depositTx.isConfirmed) || (depositTx.status === 'deposit') || (depositTx.status === 'view')) && (
-                                <div className="flex items-center justify-between gap-2">
-                                    <div className="flex items-center justify-start gap-2">
-                                        <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
-                                            <Check className="w-5 h-5 stroke-[#013220]/75" strokeWidth={1.5} />
                                         </div>
-                                        <BodyText level="body2" weight="medium" className="text-gray-800">
-                                            Approval successful
-                                        </BodyText>
+                                        {depositTx.hash &&
+                                            depositTx.status === 'approve' && (
+                                                <ExternalLink
+                                                    href={getExplorerLink(
+                                                        depositTx.hash,
+                                                        assetDetails?.chain_id ||
+                                                        assetDetails?.platform
+                                                            ?.chain_id
+                                                    )}
+                                                >
+                                                    <BodyText
+                                                        level="body2"
+                                                        weight="normal"
+                                                        className="text-inherit"
+                                                    >
+                                                        View on explorer
+                                                    </BodyText>
+                                                </ExternalLink>
+                                            )}
                                     </div>
-                                    {(depositTx.hash && depositTx.status === 'approve') &&
-                                        <ExternalLink
-                                            href={getExplorerLink(depositTx.hash, assetDetails?.chain_id || assetDetails?.platform?.chain_id)}>
-                                            <BodyText level="body2" weight="normal" className="text-inherit">
-                                                View on explorer
+                                )}
+                            {((!isDepositTxInProgress && depositTx.isConfirmed) ||
+                                depositTx.status === 'deposit' ||
+                                depositTx.status === 'view') && (
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center justify-start gap-2">
+                                            <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
+                                                <Check
+                                                    className="w-5 h-5 stroke-[#013220]/75"
+                                                    strokeWidth={1.5}
+                                                />
+                                            </div>
+                                            <BodyText
+                                                level="body2"
+                                                weight="medium"
+                                                className="text-gray-800"
+                                            >
+                                                Approval successful
                                             </BodyText>
-                                        </ExternalLink>
-                                    }
-                                </div>
-                            )}
+                                        </div>
+                                        {depositTx.hash &&
+                                            depositTx.status === 'approve' && (
+                                                <ExternalLink
+                                                    href={getExplorerLink(
+                                                        depositTx.hash,
+                                                        assetDetails?.chain_id ||
+                                                        assetDetails?.platform
+                                                            ?.chain_id
+                                                    )}
+                                                >
+                                                    <BodyText
+                                                        level="body2"
+                                                        weight="normal"
+                                                        className="text-inherit"
+                                                    >
+                                                        View on explorer
+                                                    </BodyText>
+                                                </ExternalLink>
+                                            )}
+                                    </div>
+                                )}
                         </div>
                     )}
                 {isShowBlock({
-                    deposit: (depositTx.status === 'deposit' && (isDepositTxInProgress || (!isDepositTxInProgress && depositTx.isConfirmed))) || (depositTx.status === 'view'),
+                    deposit:
+                        (depositTx.status === 'deposit' &&
+                            (isDepositTxInProgress ||
+                                (!isDepositTxInProgress &&
+                                    depositTx.isConfirmed))) ||
+                        depositTx.status === 'view',
                     withdraw: false,
                 }) && (
                         <div className="py-1">
@@ -528,91 +628,228 @@ export default function SuperVaultTxDialog({
                                 <div className="flex items-center justify-between gap-2 w-full">
                                     <div className="flex items-center justify-start gap-2">
                                         <LoaderCircle className="animate-spin w-8 h-8 text-secondary-500" />
-                                        <BodyText level="body2" weight="normal" className="text-gray-600">
-                                            {depositTx.isPending && (
-                                                'Waiting for confirmation...'
-                                            )}
-                                            {depositTx.isConfirming && (
-                                                'Depositing...'
-                                            )}
+                                        <BodyText
+                                            level="body2"
+                                            weight="normal"
+                                            className="text-gray-600"
+                                        >
+                                            {depositTx.isPending &&
+                                                'Waiting for confirmation...'}
+                                            {depositTx.isConfirming &&
+                                                'Depositing...'}
                                         </BodyText>
                                     </div>
-                                    {(depositTx.hash && (depositTx.isConfirming || depositTx.isConfirmed)) &&
-                                        <ExternalLink href={getExplorerLink(depositTx.hash, assetDetails?.chain_id || assetDetails?.platform?.chain_id)}>
-                                            <BodyText level="body2" weight="normal" className="text-inherit">
-                                                View on explorer
-                                            </BodyText>
-                                        </ExternalLink>
-                                    }
+                                    {depositTx.hash &&
+                                        (depositTx.isConfirming ||
+                                            depositTx.isConfirmed) && (
+                                            <ExternalLink
+                                                href={getExplorerLink(
+                                                    depositTx.hash,
+                                                    assetDetails?.chain_id ||
+                                                    assetDetails?.platform
+                                                        ?.chain_id
+                                                )}
+                                            >
+                                                <BodyText
+                                                    level="body2"
+                                                    weight="normal"
+                                                    className="text-inherit"
+                                                >
+                                                    View on explorer
+                                                </BodyText>
+                                            </ExternalLink>
+                                        )}
                                 </div>
                             )}
-                            {((!isDepositTxInProgress && depositTx.isConfirmed) || (depositTx.status === 'view' && depositTx.isConfirmed)) && (
-                                <div className="flex items-center justify-between gap-2">
-                                    <div className="flex items-center justify-start gap-2">
-                                        <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
-                                            <Check className="w-5 h-5 stroke-[#013220]/75" strokeWidth={1.5} />
+                            {((!isDepositTxInProgress && depositTx.isConfirmed) ||
+                                (depositTx.status === 'view' &&
+                                    depositTx.isConfirmed)) && (
+                                    <div
+                                        className={`flex flex-col items-center justify-start gap-3 w-full`}
+                                    >
+                                        <div
+                                            className={`flex w-full items-center flex-row justify-between gap-2`}
+                                        >
+                                            <div className="flex items-center justify-start gap-2">
+                                                <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
+                                                    <Check
+                                                        className="w-5 h-5 stroke-[#013220]/75"
+                                                        strokeWidth={1.5}
+                                                    />
+                                                </div>
+                                                <BodyText
+                                                    level="body2"
+                                                    weight="medium"
+                                                    className="text-gray-800"
+                                                >
+                                                    Deposit successful
+                                                </BodyText>
+                                            </div>
+                                            {depositTx.hash &&
+                                                (depositTx.isConfirming ||
+                                                    depositTx.isConfirmed) && (
+                                                    <ExternalLink
+                                                        href={getExplorerLink(
+                                                            depositTx.hash,
+                                                            assetDetails?.chain_id ||
+                                                            assetDetails?.platform
+                                                                ?.chain_id
+                                                        )}
+                                                    >
+                                                        <BodyText
+                                                            level="body2"
+                                                            weight="normal"
+                                                            className="text-inherit"
+                                                        >
+                                                            View on explorer
+                                                        </BodyText>
+                                                    </ExternalLink>
+                                                )}
                                         </div>
-                                        <BodyText level="body2" weight="medium" className="text-gray-800">
-                                            Deposit successful
-                                        </BodyText>
+                                        {/* {miniappUser && (
+                                    <div className="w-full flex items-center flex-col justify-start gap-5 my-4 mb-8 ">
+                                        {shareScreenButtons.map(
+                                            (config, index) => (
+                                                <Button
+                                                    key={index}
+                                                    variant="primary"
+                                                    size="lg"
+                                                    className={`rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
+                                                    onClick={config.onClick}
+                                                >
+                                                    <Image
+                                                        src={config.imageSrc}
+                                                        alt={''}
+                                                        width={18}
+                                                        height={18}
+                                                    />
+                                                    {config.buttonText}
+                                                </Button>
+                                            )
+                                        )}
                                     </div>
-                                    {(depositTx.hash && (depositTx.isConfirming || depositTx.isConfirmed)) &&
-                                        <ExternalLink href={getExplorerLink(depositTx.hash, assetDetails?.chain_id || assetDetails?.platform?.chain_id)}>
-                                            <BodyText level="body2" weight="normal" className="text-inherit">
-                                                View on explorer
-                                            </BodyText>
-                                        </ExternalLink>
-                                    }
-                                </div>
-                            )}
+                                )} */}
+                                    </div>
+                                )}
                         </div>
                     )}
                 {isShowBlock({
                     deposit: false,
-                    withdraw: ((withdrawTx.status === 'view' && withdrawTx.isConfirmed) || isWithdrawTxInProgress),
+                    withdraw:
+                        (withdrawTx.status === 'view' &&
+                            withdrawTx.isConfirmed) ||
+                        isWithdrawTxInProgress,
                 }) && (
                         <div className="py-1">
                             {isWithdrawTxInProgress && (
                                 <div className="flex items-center justify-between gap-2">
                                     <div className="flex items-center justify-start gap-2">
                                         <LoaderCircle className="animate-spin w-8 h-8 text-secondary-500" />
-                                        <BodyText level="body2" weight="normal" className="text-gray-600">
-                                            {withdrawTx.isPending && (
-                                                'Waiting for confirmation...'
-                                            )}
-                                            {withdrawTx.isConfirming && (
-                                                'Withdrawing...'
-                                            )}
+                                        <BodyText
+                                            level="body2"
+                                            weight="normal"
+                                            className="text-gray-600"
+                                        >
+                                            {withdrawTx.isPending &&
+                                                'Waiting for confirmation...'}
+                                            {withdrawTx.isConfirming &&
+                                                'Withdrawing...'}
                                         </BodyText>
                                     </div>
-                                    {(withdrawTx.hash && (withdrawTx.isConfirming || withdrawTx.isConfirmed)) && (
-                                        <ExternalLink href={getExplorerLink(withdrawTx.hash, assetDetails?.chain_id || assetDetails?.platform?.chain_id)}>
-                                            <BodyText level="body2" weight="normal" className="text-inherit">
-                                                View on explorer
-                                            </BodyText>
-                                        </ExternalLink>
-                                    )}
+                                    {withdrawTx.hash &&
+                                        (withdrawTx.isConfirming ||
+                                            withdrawTx.isConfirmed) && (
+                                            <ExternalLink
+                                                href={getExplorerLink(
+                                                    withdrawTx.hash,
+                                                    assetDetails?.chain_id ||
+                                                    assetDetails?.platform
+                                                        ?.chain_id
+                                                )}
+                                            >
+                                                <BodyText
+                                                    level="body2"
+                                                    weight="normal"
+                                                    className="text-inherit"
+                                                >
+                                                    View on explorer
+                                                </BodyText>
+                                            </ExternalLink>
+                                        )}
                                 </div>
                             )}
-                            {(withdrawTx.status === 'view' && withdrawTx.isConfirmed) && (
-                                <div className="flex items-center justify-between gap-2">
-                                    <div className="flex items-center justify-start gap-2">
-                                        <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
-                                            <Check className="w-5 h-5 stroke-[#013220]/75" strokeWidth={1.5} />
+                            {withdrawTx.status === 'view' &&
+                                withdrawTx.isConfirmed && (
+                                    <div
+                                        className={`flex flex-col items-center justify-start gap-3 w-full`}
+                                    >
+                                        <div
+                                            className={`flex items-center flex-row justify-between gap-2 w-full`}
+                                        >
+                                            <div className="flex items-center justify-start gap-2">
+                                                <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
+                                                    <Check
+                                                        className="w-5 h-5 stroke-[#013220]/75"
+                                                        strokeWidth={1.5}
+                                                    />
+                                                </div>
+                                                <BodyText
+                                                    level="body2"
+                                                    weight="medium"
+                                                    className="text-gray-800"
+                                                >
+                                                    Withdraw successful
+                                                </BodyText>
+                                            </div>
+                                            {withdrawTx.hash &&
+                                                (withdrawTx.isConfirming ||
+                                                    withdrawTx.isConfirmed) && (
+                                                    <ExternalLink
+                                                        href={getExplorerLink(
+                                                            withdrawTx.hash,
+                                                            assetDetails?.chain_id ||
+                                                            assetDetails
+                                                                ?.platform
+                                                                ?.chain_id
+                                                        )}
+                                                    >
+                                                        <BodyText
+                                                            level="body2"
+                                                            weight="normal"
+                                                            className="text-inherit"
+                                                        >
+                                                            View on explorer
+                                                        </BodyText>
+                                                    </ExternalLink>
+                                                )}
                                         </div>
-                                        <BodyText level="body2" weight="medium" className="text-gray-800">
-                                            Withdraw successful
-                                        </BodyText>
+                                        {/* {miniappUser && (
+                                        <div className="w-full flex items-center flex-col justify-start gap-5 my-4 mb-8 ">
+                                            {shareScreenButtons.map(
+                                                (config, index) => (
+                                                    <Button
+                                                        key={index}
+                                                        variant="primary"
+                                                        size="lg"
+                                                        className={`rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
+                                                        onClick={config.onClick}
+                                                    >
+                                                        <Image
+                                                            src={
+                                                                config.imageSrc
+                                                            }
+                                                            alt={''}
+                                                            width={18}
+                                                            height={18}
+                                                        />
+                                                        {config.buttonText}
+                                                    </Button>
+                                                )
+                                            )}
+                                        </div>
+                                    )} */}
                                     </div>
-                                    {(withdrawTx.hash && (withdrawTx.isConfirming || withdrawTx.isConfirmed)) && (
-                                        <ExternalLink href={getExplorerLink(withdrawTx.hash, assetDetails?.chain_id || assetDetails?.platform?.chain_id)}>
-                                            <BodyText level="body2" weight="normal" className="text-inherit">
-                                                View on explorer
-                                            </BodyText>
-                                        </ExternalLink>
-                                    )}
-                                </div>
-                            )}
+                                )}
                         </div>
                     )}
                 {/* Block 4 */}

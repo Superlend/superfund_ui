@@ -1,21 +1,11 @@
 'use client'
 
-import React, { type ReactNode } from 'react'
+import React, { useEffect, useState, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { PrivyProvider } from '@privy-io/react-auth'
 import { createConfig, WagmiProvider } from '@privy-io/wagmi'
 import {
     base,
-    mainnet,
-    polygon,
-    avalanche,
-    optimism,
-    gnosis,
-    arbitrum,
-    etherlink,
-    bsc,
-    scroll,
-    metis,
     sonic,
 } from 'viem/chains'
 import { http } from 'wagmi'
@@ -48,11 +38,39 @@ function ContextProvider({
     children: ReactNode
     cookies: string | null
 }) {
+    const [localConfig, setLocalConfig] = useState<any>(null)
+    const [context, setContext] = useState<any>(null)
+
+    // useEffect(() => {
+    //     const initializeConfig = async () => {
+    //         await FrameSDK.actions.ready()
+    //         const context = await FrameSDK.context
+    //         setContext(context)
+    //         const newConfig = createConfig({
+    //             chains: [base],
+    //             transports: {
+    //                 [base.id]: http(),
+    //             },
+    //         })
+    //         const newConfigForFarcaster = createConfig({
+    //             chains: [base],
+    //             transports: {
+    //                 [base.id]: http(),
+    //             },
+    //             connectors: [farcasterFrame()],
+    //         })
+
+    //         setLocalConfig(context ? newConfigForFarcaster : newConfig)
+    //     }
+
+    //     initializeConfig()
+    // }, [])
+
     return (
         <PrivyProvider
             appId={appId}
             config={{
-                loginMethods: ['wallet'],
+                loginMethods: ['wallet', context && 'farcaster'],
                 appearance: {
                     theme: 'light',
                     accentColor: '#676FFF',
@@ -68,7 +86,7 @@ function ContextProvider({
                         'rabby_wallet',
                         'phantom',
                         'wallet_connect',
-                    ]
+                    ],
                 },
                 supportedChains: [base, sonic],
             }}

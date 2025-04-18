@@ -10,6 +10,8 @@
         "format": "prettier . --write"
     },
     "dependencies": {
+        "@farcaster/frame-sdk": "^0.0.34",
+        "@farcaster/frame-wagmi-connector": "^0.0.22",
         "@next/third-parties": "^14.2.15",
         "@privy-io/react-auth": "^2.4.2",
         "@privy-io/server-auth": "^1.18.12",
