@@ -6,30 +6,10 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Label, Sector } from
 import { BodyText, HeadingText } from "./ui/typography";
 import { PieSectorDataItem } from "recharts/types/polar/Pie";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
-import { VAULT_STRATEGIES, VAULT_STRATEGIES_COLORS } from "@/lib/constants";
+import { VAULT_STRATEGIES_MAP, VAULT_STRATEGIES_COLORS_MAP } from "@/lib/constants";
 import ExternalLink from "./ExternalLink";
 import InfoTooltip from "./tooltips/InfoTooltip";
-
-const data = [
-    { name: 'Morpho - MEV Capital Usual USDC', value: 35 },
-    { name: 'Euler Resolv Marketplace by Apostro', value: 15 },
-    { name: 'Aave v3 USDC Market', value: 38.41 },
-    { name: 'Fluid USDC Vault', value: 11.59 },
-]
-
-const totalCount = 34
-
-// const COLORS = [
-//     "#3b82f6",
-//     "#ef4444",
-//     "#8b5cf6",
-//     "#0891b2",
-//     "#10b981",
-//     "#f59e0b",
-//     "#0ea5e9",
-//     "#818cf8",
-//     "#a3a3a3",
-// ];
+import { useChain } from "@/context/chain-context";
 
 const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -54,6 +34,10 @@ export default function AllocationDetailsChart({
         name: 'Loading...',
         value: '0',
     }
+
+    const { selectedChain } = useChain()
+    const vaultStrategies = VAULT_STRATEGIES_MAP[selectedChain as keyof typeof VAULT_STRATEGIES_MAP]
+    const vaultStrategiesColors = VAULT_STRATEGIES_COLORS_MAP[selectedChain as keyof typeof VAULT_STRATEGIES_COLORS_MAP]
 
     const getHighestValueAssetDetails = allocationPoints?.length
         ? allocationPoints.reduce(
@@ -125,7 +109,7 @@ export default function AllocationDetailsChart({
                                         .map((entry, index) => (
                                             <Cell
                                                 key={`cell-${index}`}
-                                                fill={VAULT_STRATEGIES_COLORS[entry.name as keyof typeof VAULT_STRATEGIES_COLORS]}
+                                                fill={vaultStrategiesColors[entry.name as keyof typeof vaultStrategiesColors]}
                                             />
                                         ))}
                                     <Label
@@ -181,19 +165,24 @@ export default function AllocationDetailsChart({
                                     <div key={item.name} className="flex items-center space-x-2 hover:bg-gray-200 rounded-4 p-2">
                                         <div
                                             className="w-4 h-4 rounded-2"
-                                            style={{ backgroundColor: VAULT_STRATEGIES_COLORS[item.name as keyof typeof VAULT_STRATEGIES_COLORS] }}
+                                            style={{ backgroundColor: vaultStrategiesColors[item.name as keyof typeof vaultStrategiesColors] }}
                                         />
                                         <div className="flex items-center gap-1 w-full">
                                             <InfoTooltip
                                                 label={
-                                                    <BodyText level="body2" weight="medium" className="truncate max-w-full">
+                                                    <BodyText level="body2" weight="medium" className="truncate max-w-[200px]">
                                                         {item.name}
                                                     </BodyText>
                                                 }
                                                 content={item.name}
                                             />
-                                            <ExternalLink href={VAULT_STRATEGIES[item.name as keyof typeof VAULT_STRATEGIES].details_url} className="text-xs text-muted-foreground">
-                                            </ExternalLink>
+                                            {vaultStrategies && vaultStrategies[item.name as keyof typeof vaultStrategies] && (
+                                                <ExternalLink 
+                                                    href={vaultStrategies[item.name as keyof typeof vaultStrategies].details_url} 
+                                                    className="text-xs text-muted-foreground"
+                                                >
+                                                </ExternalLink>
+                                            )}
                                         </div>
                                     </div>
                                 ))}

@@ -7,6 +7,7 @@ import InfoTooltip from '@/components/tooltips/InfoTooltip'
 import TooltipText from '@/components/tooltips/TooltipText'
 import { Skeleton } from '@/components/ui/skeleton'
 import { BodyText, HeadingText } from '@/components/ui/typography'
+import { useChain } from '@/context/chain-context'
 import useIsClient from '@/hooks/useIsClient'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
@@ -15,11 +16,11 @@ import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
 import { useHistoricalDataCompat } from '@/hooks/vault_hooks/useVaultCompat'
 import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import { useRewardsHook } from '@/hooks/vault_hooks/vaultHook'
-import { VAULT_ADDRESS } from '@/lib/constants'
+import { VAULT_ADDRESS, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { getRewardsTooltipContent } from '@/lib/ui/getRewardsTooltipContent'
 import { abbreviateNumber } from '@/lib/utils'
 import { Period } from '@/types/periodButtons'
-import { Sparkles, Lock } from 'lucide-react'
+import { Lock } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useEffect } from 'react'
 
@@ -68,26 +69,31 @@ export default function VaultStats() {
     const { userMaxWithdrawAmount, isLoading: isLoadingUserMaxWithdrawAmount, error: errorUserMaxWithdrawAmount } = useUserBalance(
         walletAddress as `0x${string}`
     )
-    const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy()
+    const { selectedChain } = useChain()
+    const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
+        vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        chain_id: selectedChain
+    })
     const { isClient } = useIsClient()
     const isLoadingSection = !isClient;
-    const { days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading, error } = useHistoricalData()
+    const { days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading: isLoading7DayAvg, error: error7DayAvg } = useHistoricalData({
+        chain_id: selectedChain
+    })
 
     const vaultStats = [
         {
             id: 'my-position',
             title: 'My Position',
-            value: isWalletConnected ? `$${Number(userMaxWithdrawAmount).toFixed(4)}` : '$--',
+            value: isWalletConnected ? `$${Number(userMaxWithdrawAmount).toFixed(4)}` : 'N/A',
             show: true,
-            isLoading: isLoadingUserMaxWithdrawAmount && isWalletConnected,
-            error: errorUserMaxWithdrawAmount && isWalletConnected,
-            tooltipContent: !isWalletConnected ? 'Connect your wallet to view your position' : undefined,
+            isLoading: isWalletConnected && isLoadingUserMaxWithdrawAmount,
+            error: errorUserMaxWithdrawAmount,
         },
         {
             id: 'effective-apy',
             title: 'Effective APY',
             titleTooltipContent: 'Actual APY received after adjusting the vault\'s 7-day interest distribution period. It reflects how much your money is truly growing over time, after accounting for the vault\s yield distribution schedule.',
-            value: `${effectiveApyData?.total_apy.toFixed(2)}%`,
+            value: `${(effectiveApyData?.total_apy ?? 0).toFixed(2)}%`,
             show: true,
             hasRewards: true,
             rewardsTooltip: getRewardsTooltipContent({
@@ -102,6 +108,8 @@ export default function VaultStats() {
                 apyCurrent: Number(effectiveApyData?.total_apy),
                 positionTypeParam: 'lend',
             }),
+            isLoading: isLoadingEffectiveApy,
+            error: isErrorEffectiveApy,
         },
         {
             id: 'spot-apy',
@@ -116,12 +124,16 @@ export default function VaultStats() {
                 apyCurrent: Number(spotApy) + Number(totalRewardApy),
                 positionTypeParam: 'lend',
             }),
+            // isLoading: isLoadingVault || isLoadingRewards,
+            error: !!errorVault || !!errorRewards,
         },
         {
             id: 'tvl',
             title: 'TVL',
             value: '$' + Number(totalAssets).toFixed(4),
             show: true,
+            // isLoading: isLoadingVault,
+            error: !!errorVault,
         },
         {
             id: '7d-apy',
@@ -139,6 +151,8 @@ export default function VaultStats() {
                 }],
                 apyCurrent: days_7_avg_total_apy,
             }),
+            isLoading: isLoading7DayAvg,
+            error: error7DayAvg,
         },
     ]
 
@@ -199,27 +213,27 @@ export default function VaultStats() {
                                 {item.title}
                             </BodyText>
                         }
-
-                        {isWalletConnected && item.show && (
+                        {isWalletConnected ? (
                             <HeadingText level="h1" weight="medium">
-                                <AnimatedNumber value={item.value} />
+                                {!item.isLoading ? (
+                                    <AnimatedNumber value={item.value} />
+                                ) : (
+                                    <Skeleton className="h-10 w-full rounded-4" />
+                                )}
                             </HeadingText>
-                        )}
-
-                        {!isWalletConnected && (
-                            <div className="flex items-center gap-3">
+                        ) : (
+                            <div className="flex items-center gap-4">
                                 <InfoTooltip
                                     label={
-                                        <HeadingText level="h1" weight="medium" className="flex items-center text-gray-600/40">
-                                            $ <Lock size={24} className="ml-2 text-gray-600/40" strokeWidth={2.5} />
-                                        </HeadingText>
+                                        <div className="flex items-center gap-1">
+                                            <HeadingText level="h1" weight="medium" className="text-gray-600/40">$</HeadingText>
+                                            <Lock className="h-6 w-6 text-gray-600/40" />
+                                        </div>
                                     }
-                                    content={item.tooltipContent || ''}
+                                    content="Connect your wallet to view your position."
                                 />
                                 <div className="mt-1 transform transition-all duration-200 hover:translate-y-[-2px]">
-                                    <div className="bg-white/10 backdrop-blur-sm p-0.5 rounded-lg overflow-hidden">
-                                        <ConnectWalletButton />
-                                    </div>
+                                    <ConnectWalletButton />
                                 </div>
                             </div>
                         )}
@@ -269,7 +283,12 @@ export default function VaultStats() {
                         {item.hasRewards &&
                             <div className="flex items-center gap-2">
                                 <HeadingText level="h3" weight="medium">
-                                    <AnimatedNumber value={item.value} />
+                                    {!item.isLoading &&
+                                        <AnimatedNumber value={item.value} />
+                                    }
+                                    {item.isLoading &&
+                                        <Skeleton className="h-7 w-full min-w-[60px] rounded-4 mt-1" />
+                                    }
                                 </HeadingText>
                                 <InfoTooltip
                                     label={
@@ -300,7 +319,12 @@ export default function VaultStats() {
                         }
                         {!item.hasRewards &&
                             <HeadingText level="h3" weight="medium">
-                                <AnimatedNumber value={item.value} />
+                                {!item.isLoading &&
+                                    <AnimatedNumber value={item.value} />
+                                }
+                                {item.isLoading &&
+                                    <Skeleton className="h-7 w-full min-w-[60px] rounded-4 mt-1" />
+                                }
                             </HeadingText>
                         }
                     </motion.div>

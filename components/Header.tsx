@@ -38,7 +38,7 @@ const Header: React.FC = () => {
         activeTabInitialValue(pathname)
     )
     const [openMenu, setOpenMenu] = useState(false)
-    const isHomePage = pathname === '/'
+    const isHomePage = pathname === '/' || pathname === '/super-fund'
 
     useEffect(() => {
         setActiveTab(activeTabInitialValue(pathname))

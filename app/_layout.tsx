@@ -40,7 +40,7 @@ export const metadata: Metadata = {
         'Earn in DeFi',
         'Earn USDC',
     ],
-    title: 'SuperFund',
+    title: 'SuperFunds - Earn Maximum Yield on USDC',
     description:
         'Earn smarter with SuperFund — an automated DeFi fund that allocates USDC across Aave, Morpho, Euler & more for optimized returns.',
     icons: [
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
         images: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png',
     },
     twitter: {
-        title: 'SuperFund',
+        title: 'SuperFunds - Earn Maximum Yield on USDC',
         description:
             'Earn smarter with SuperFund — an automated DeFi fund that allocates USDC across Aave, Morpho, Euler & more for optimized returns.',
         images: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png',

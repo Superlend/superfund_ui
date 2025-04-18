@@ -5,6 +5,7 @@ const EULER_API = "https://app.euler.finance/api/v1/rewards/merkl"
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const address = searchParams.get('address')
+    const chainId = searchParams.get('chainId') || 8453
 
     if (!address) {
         return NextResponse.json({ error: 'Address is required' }, { status: 400 })
@@ -12,7 +13,7 @@ export async function GET(request: Request) {
 
     try {
         const response = await fetch(
-            `${EULER_API}?chainId=8453&vaults=${address}`,
+            `${EULER_API}?chainId=${chainId}&vaults=${address}`,
             {
                 headers: {
                     'Accept': 'application/json',

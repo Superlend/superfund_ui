@@ -10,6 +10,10 @@ const nextConfig = {
                 hostname: 'coin-images.coingecko.com',
                 protocol: 'https',
             },
+            {
+                hostname: 'v2.silo.finance',
+                protocol: 'https',
+            },
         ],
     },
     webpack: (config) => {
