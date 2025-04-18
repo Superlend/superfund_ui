@@ -319,7 +319,7 @@ export default function WaitlistPage() {
                                     Thank you for joining the waitlist!
                                 </BodyText>
                                 <BodyText level="body2" className="text-white/90 text-center">
-                                    We'll notify you when we launch.
+                                    We&apos;ll notify you when we launch.
                                 </BodyText>
                             </motion.div>
                         ) : (
