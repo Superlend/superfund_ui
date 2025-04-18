@@ -11,27 +11,6 @@ import ExternalLink from "./ExternalLink";
 import InfoTooltip from "./tooltips/InfoTooltip";
 import { useChain } from "@/context/chain-context";
 
-const data = [
-    { name: 'Morpho - MEV Capital Usual USDC', value: 35 },
-    { name: 'Euler Resolv Marketplace by Apostro', value: 15 },
-    { name: 'Aave v3 USDC Market', value: 38.41 },
-    { name: 'Fluid USDC Vault', value: 11.59 },
-]
-
-const totalCount = 34
-
-// const COLORS = [
-//     "#3b82f6",
-//     "#ef4444",
-//     "#8b5cf6",
-//     "#0891b2",
-//     "#10b981",
-//     "#f59e0b",
-//     "#0ea5e9",
-//     "#818cf8",
-//     "#a3a3a3",
-// ];
-
 const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
         return (
@@ -191,7 +170,7 @@ export default function AllocationDetailsChart({
                                         <div className="flex items-center gap-1 w-full">
                                             <InfoTooltip
                                                 label={
-                                                    <BodyText level="body2" weight="medium" className="truncate max-w-full">
+                                                    <BodyText level="body2" weight="medium" className="truncate max-w-[200px]">
                                                         {item.name}
                                                     </BodyText>
                                                 }
