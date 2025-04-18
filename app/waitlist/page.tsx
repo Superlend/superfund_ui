@@ -21,12 +21,12 @@ export default function WaitlistPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError(null)
+        setIsLoading(true)
         
         try {
             // Validate email
             emailSchema.parse(email)
             
-            setIsLoading(true)
             const response = await fetch('/api/waitlist', {
                 method: 'POST',
                 headers: {
@@ -357,31 +357,13 @@ export default function WaitlistPage() {
                                             className="absolute right-1 top-1/2 transform -translate-y-1/2 h-10 rounded-lg hover:shadow-md transition-all duration-300"
                                             disabled={isLoading}
                                         >
-                                            <AnimatePresence mode="wait">
-                                                {isLoading ? (
-                                                    <motion.div
-                                                        key="loading"
-                                                        initial={{ opacity: 0, rotate: 0 }}
-                                                        animate={{ opacity: 1, rotate: 360 }}
-                                                        exit={{ opacity: 0 }}
-                                                        transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                                                    >
-                                                        <Loader2 className="h-5 w-5" />
-                                                    </motion.div>
-                                                ) : (
-                                                    <motion.div
-                                                        key="join"
-                                                        className="flex items-center gap-1"
-                                                        initial={{ opacity: 0 }}
-                                                        animate={{ opacity: 1 }}
-                                                        exit={{ opacity: 0 }}
-                                                        whileHover={{ x: 3 }}
-                                                        transition={{ duration: 0.2 }}
-                                                    >
-                                                        Join <ArrowRight className="h-4 w-4 ml-1" />
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
+                                            {isLoading ? (
+                                                <Loader2 className="h-5 w-5 animate-spin" />
+                                            ) : (
+                                                <div className="flex items-center gap-1">
+                                                    Join <ArrowRight className="h-4 w-4 ml-1" />
+                                                </div>
+                                            )}
                                         </Button>
                                     </div>
                                     
