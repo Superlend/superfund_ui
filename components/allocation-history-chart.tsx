@@ -226,8 +226,15 @@ const SONIC_CHAIN_CONFIG = {
     '0x0000000000000000000000000000000000000000': {
         label: 'Cash Reserve',
         color: '#F4A460', // Sandy brown
+    },
+    '0x14886c2Fc03D1858e6d097d40EdF92B3bFEBA678': {
+        label: 'Silo Finance Borrowable USDC.e Deposit',
+        color: '#3f3f3f', // Dark gray
+    },
+    '0xa352A4851cc8ae0DA04220a92F4Ce4A0E06912dc': {
+        label: 'Silo Finance Borrowable USDC.e Deposit, SiloId: 49',
+        color: '#3f3f3f', // Dark gray
     }
-
 }
 
 const CHART_CONFIG_MAP = {
