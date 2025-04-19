@@ -27,6 +27,12 @@ export const rebalancedAssetsList = [
         link: 'https://euler.finance/',
         chainIds: [ChainId.Base, ChainId.Sonic],
     },
+    {
+        title: 'Silo V2',
+        logo: 'https://v2.silo.finance/favicon.ico',
+        link: 'https://v2.silo.finance',
+        chainIds: [ChainId.Sonic],
+    },
 ]
 
 export const tokensSupportedList = [
