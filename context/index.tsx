@@ -9,6 +9,7 @@ import {
     sonic,
 } from 'viem/chains'
 import { http } from 'wagmi'
+import { AuthProvider } from './auth-provider'
 
 // Set up queryClient
 const queryClient = new QueryClient()
@@ -92,7 +93,11 @@ function ContextProvider({
             }}
         >
             <QueryClientProvider client={queryClient}>
-                <WagmiProvider config={config}>{children}</WagmiProvider>
+                <WagmiProvider config={config}>
+                    <AuthProvider>
+                        {children}
+                    </AuthProvider>
+                </WagmiProvider>
             </QueryClientProvider>
         </PrivyProvider>
     )
