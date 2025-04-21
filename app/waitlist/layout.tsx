@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
-import '../globals.css' // Import global styles
-import Link from 'next/link' 
+import '../globals.css'
+import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
+import ContextProvider, { config, PRIVY_APP_ID } from '@/context'
+import { headers } from 'next/headers'
 
 export const metadata: Metadata = {
     title: 'Join SuperFund Waitlist - Earn Maximum Yield on USDC',
@@ -14,29 +16,33 @@ export default function Layout({
 }: Readonly<{
     children: React.ReactNode
 }>) {
+    const cookies = headers().get('cookie')
+
     return (
         <html lang="en">
             <body>
-                <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
-                    <div className="flex justify-center pt-8 pb-4">
-                        <div className="relative">
-                            <Link href="/" className="inline-block">
-                                <img
-                                    src="/images/logos/superlend-logo.webp"
-                                    alt="Superlend logo"
-                                    className="object-contain h-auto w-40"
-                                />
-                            </Link>
-                            <Badge
+                <ContextProvider cookies={cookies}>
+                    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
+                        <div className="flex justify-center pt-8 pb-4">
+                            <div className="relative">
+                                <Link href="https://www.superlend.xyz/" target="_blank" className="inline-block">
+                                    <img
+                                        src="/images/logos/superlend-logo.webp"
+                                        alt="Superlend logo"
+                                        className="object-contain h-auto w-40"
+                                    />
+                                </Link>
+                                {/* <Badge
                                 variant="blue"
                                 className="absolute top-1 -right-12 w-fit rounded-full px-2 py-0"
                             >
                                 Beta
-                            </Badge>
+                            </Badge> */}
+                            </div>
                         </div>
+                        {children}
                     </div>
-                    {children}
-                </div>
+                </ContextProvider>
             </body>
         </html>
     )

@@ -8,25 +8,83 @@ import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { HeadingText, BodyText } from '@/components/ui/typography'
 import { Input } from '@/components/ui/input'
-import { Loader2, Asterisk, CheckCircle, XCircle, ArrowRight } from 'lucide-react'
+import { Loader2, Asterisk, CheckCircle, XCircle, ArrowRight, Twitter, ExternalLink, Check, ArrowLeft } from 'lucide-react'
+import ConnectWalletButton from '@/components/ConnectWalletButton'
+import { useWalletConnection } from '@/hooks/useWalletConnection'
 
 const emailSchema = z.string().email('Please enter a valid email address')
+
+// Stepper component for tracking progress
+const Stepper = ({ currentStep, completedSteps, onStepClick }: { 
+    currentStep: number, 
+    completedSteps: number[],
+    onStepClick: (step: number) => void 
+}) => {
+    return (
+        <div className="flex justify-center items-center gap-0 mb-8">
+            {[1, 2].map((step) => (
+                <div key={step} className="flex items-center">
+                    <div 
+                        className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 ${
+                            completedSteps.includes(step) 
+                                ? 'bg-green-500 text-white cursor-pointer hover:bg-green-600' 
+                                : currentStep === step 
+                                    ? 'bg-primary text-white' 
+                                    : 'bg-gray-200 text-gray-500'
+                        }`}
+                        onClick={() => {
+                            if (completedSteps.includes(step) || currentStep === step) {
+                                onStepClick(step);
+                            }
+                        }}
+                    >
+                        {completedSteps.includes(step) ? (
+                            <Check className="h-5 w-5" />
+                        ) : (
+                            <span>{step}</span>
+                        )}
+                    </div>
+                    {step < 2 && (
+                        <div 
+                            className={`w-16 h-1 mx-1 ${
+                                completedSteps.includes(step) ? 'bg-green-500' : 'bg-gray-200'
+                            }`}
+                        />
+                    )}
+                </div>
+            ))}
+        </div>
+    )
+}
 
 export default function WaitlistPage() {
     const [email, setEmail] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
+    const [currentStep, setCurrentStep] = useState(1)
+    const [completedSteps, setCompletedSteps] = useState<number[]>([])
+    const [points, setPoints] = useState(0)
+    const [socialFollows, setSocialFollows] = useState<string[]>([])
+    const { walletAddress } = useWalletConnection()
+    const [submittedEmail, setSubmittedEmail] = useState<string | null>(null)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError(null)
         setIsLoading(true)
-        
+
         try {
             // Validate email
             emailSchema.parse(email)
-            
+
+            // If this is the same as previously submitted email, just go to step 2
+            if (email === submittedEmail) {
+                setCurrentStep(2)
+                setIsLoading(false)
+                return
+            }
+
             const response = await fetch('/api/waitlist', {
                 method: 'POST',
                 headers: {
@@ -34,15 +92,46 @@ export default function WaitlistPage() {
                 },
                 body: JSON.stringify({ email }),
             })
-            
+
             const data = await response.json()
-            
+
+            // Handle duplicate email case - if it's a 409 status
+            if (response.status === 409) {
+                // If the email exists but doesn't have a wallet address, we can still proceed
+                if (!data.has_wallet) {
+                    // Save the email for next steps
+                    setSubmittedEmail(email)
+                    
+                    // Mark step 1 as completed
+                    if (!completedSteps.includes(1)) {
+                        setCompletedSteps(prev => [...prev, 1])
+                        setPoints(prev => prev + 10) // Add points for email submission
+                    }
+                    
+                    // Move to step 2
+                    setCurrentStep(2)
+                    return
+                } else {
+                    // If email already exists AND has a wallet address, show error
+                    throw new Error('This email has already completed registration')
+                }
+            }
+
             if (!response.ok) {
                 throw new Error(data.message || 'Failed to join waitlist')
             }
+
+            // Save the email that was submitted
+            setSubmittedEmail(email)
             
-            setSuccess(true)
-            setEmail('')
+            // Mark step 1 as completed and advance to step 2
+            if (!completedSteps.includes(1)) {
+                setCompletedSteps(prev => [...prev, 1])
+                setPoints(prev => prev + 10) // Add points for email submission
+            }
+            
+            // Move to step 2
+            setCurrentStep(2)
         } catch (err) {
             if (err instanceof z.ZodError) {
                 setError(err.errors[0].message)
@@ -53,6 +142,77 @@ export default function WaitlistPage() {
             }
         } finally {
             setIsLoading(false)
+        }
+    }
+
+    const handleWalletConnected = async () => {
+        // Only proceed if wallet is connected
+        if (!walletAddress) {
+            setError("Please connect your wallet first")
+            return
+        }
+        
+        setIsLoading(true)
+        setError(null)
+        
+        try {
+            // Submit the wallet address to the API if we have an email
+            if (submittedEmail) {
+                const response = await fetch('/api/waitlist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        email: submittedEmail,
+                        wallet_address: walletAddress 
+                    }),
+                })
+                
+                const data = await response.json()
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to update wallet address')
+                }
+            }
+            
+            // Mark step 2 as completed and show success
+            if (!completedSteps.includes(2)) {
+                setCompletedSteps(prev => [...prev, 2])
+                setPoints(prev => prev + 50) // Add 50 points for wallet connection
+            }
+            
+            // Show success instead of going to step 3
+            setSuccess(true)
+        } catch (err) {
+            if (err instanceof Error) {
+                setError(err.message)
+            } else {
+                setError('An unexpected error occurred')
+            }
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const handleSocialFollow = (platform: string) => {
+        // Only track which platforms are followed without awarding points
+        if (!socialFollows.includes(platform)) {
+            setSocialFollows(prev => [...prev, platform])
+            // No points awarded for social follows
+        }
+        
+        // Add step 3 to completed steps if any social platform is followed and not already completed
+        if (!completedSteps.includes(3)) {
+            setCompletedSteps(prev => [...prev, 3])
+        }
+        
+        // If both platforms are followed, set success state
+        if (
+            (platform === 'twitter' && socialFollows.includes('discord')) || 
+            (platform === 'discord' && socialFollows.includes('twitter'))
+        ) {
+            setSuccess(true)
         }
     }
 
@@ -69,24 +229,24 @@ export default function WaitlistPage() {
 
     const itemVariants = {
         hidden: { opacity: 0, y: 30 },
-        visible: { 
-            opacity: 1, 
+        visible: {
+            opacity: 1,
             y: 0,
-            transition: { 
-                type: "spring", 
-                stiffness: 100, 
-                damping: 20 
+            transition: {
+                type: "spring",
+                stiffness: 100,
+                damping: 20
             }
         }
     }
 
     const successVariants = {
         hidden: { opacity: 0, scale: 0.8 },
-        visible: { 
-            opacity: 1, 
+        visible: {
+            opacity: 1,
             scale: 1,
-            transition: { 
-                type: "spring", 
+            transition: {
+                type: "spring",
                 stiffness: 200,
                 damping: 20
             }
@@ -113,7 +273,7 @@ export default function WaitlistPage() {
     }
 
     return (
-        <div className="min-h-screen -mt-24 w-full flex items-center justify-center relative overflow-hidden">
+        <div className="min-h-screen -mt-16 w-full flex items-center justify-center relative overflow-hidden">
             {/* Decorative background elements */}
             <div className="absolute inset-0 overflow-visible">
                 {/* Main Decorative Background Images */}
@@ -260,7 +420,7 @@ export default function WaitlistPage() {
                     />
                 </motion.div>
             </div>
-            
+
             {/* Main content */}
             <motion.div
                 initial="hidden"
@@ -268,28 +428,46 @@ export default function WaitlistPage() {
                 variants={containerVariants}
                 className="w-full max-w-3xl z-10 px-4 py-12 pt-24 md:pt-12"
             >
-                <motion.div 
+                <motion.div
                     variants={itemVariants}
                     className="mb-8"
                 >
                     <HeadingText level="h1" weight="bold" className="text-center text-3xl md:text-4xl lg:text-5xl capitalize bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-                        Join The SuperFund Waitlist
+                        Join SuperFund Sonic Waitlist
                     </HeadingText>
                 </motion.div>
 
-                <motion.div 
-                    variants={itemVariants} 
-                    className="mb-8 max-w-lg mx-auto backdrop-blur-sm bg-white/30 p-4 rounded-xl shadow-sm"
+                <motion.div
+                    variants={itemVariants}
+                    className="mb-8 max-w-2xl mx-auto backdrop-blur-sm bg-white/30 p-4 rounded-xl shadow-sm"
                 >
                     <div className="flex items-start gap-1">
                         <Asterisk className="w-5 h-5 text-primary/70 flex-shrink-0" />
-                        <BodyText level="body2" weight="medium" className="text-gray-700">
-                            SuperFund optimally allocates your USDC across trusted lending protocols such as Aave, Morpho, Euler, & Fluid to generate consistent and competitive returns.
+                        <BodyText level="body1" weight="medium" className="text-gray-700">
+                            SuperFund intelligently allocates your USDC across leading protocols such as Aave, Silo, and Euler.
+                            It continuously monitors rates and reallocates funds to ensure you earn the highest available APY at all times.
                         </BodyText>
                     </div>
                 </motion.div>
 
-                <motion.div 
+                {/* Points Display */}
+                <motion.div
+                    variants={itemVariants}
+                    className="mb-4 flex justify-center"
+                >
+                    <div className="px-4 py-2 bg-primary/10 rounded-full">
+                        <BodyText level="body2" weight="medium" className="text-primary">
+                            Your Points: {points}
+                        </BodyText>
+                    </div>
+                </motion.div>
+
+                {/* Stepper UI */}
+                <motion.div variants={itemVariants}>
+                    <Stepper currentStep={currentStep} completedSteps={completedSteps} onStepClick={(step) => setCurrentStep(step)} />
+                </motion.div>
+
+                <motion.div
                     variants={itemVariants}
                     className="w-full max-w-md mx-auto"
                 >
@@ -306,84 +484,218 @@ export default function WaitlistPage() {
                                 <motion.div
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
-                                    transition={{ 
-                                        type: "spring", 
-                                        stiffness: 200, 
+                                    transition={{
+                                        type: "spring",
+                                        stiffness: 200,
                                         damping: 20,
-                                        delay: 0.2 
+                                        delay: 0.2
                                     }}
                                 >
                                     <CheckCircle className="h-16 w-16 text-white" />
                                 </motion.div>
                                 <BodyText level="body1" weight="medium" className="text-white text-center">
-                                    Thank you for joining the waitlist!
+                                    Thank you for completing registration!
                                 </BodyText>
                                 <BodyText level="body2" className="text-white/90 text-center">
-                                    We&apos;ll notify you when we launch.
+                                    You've earned {points} points. We'll notify you when we launch.
                                 </BodyText>
+                                
+                                <div className="w-full mt-4 pt-4 border-t border-white/20">
+                                    <BodyText level="body2" weight="medium" className="text-white text-center mb-4">
+                                        To stay updated on the launch and your points:
+                                    </BodyText>
+                                    
+                                    <div className="flex flex-col sm:flex-row gap-4 w-full mb-2">
+                                        <Button 
+                                            variant="outline" 
+                                            className={`flex items-center justify-center gap-2 flex-1 bg-white/20 border-white/40 hover:bg-white/30 text-white`}
+                                            onClick={() => handleSocialFollow('twitter')}
+                                        >
+                                            <Twitter className="h-5 w-5" />
+                                            {socialFollows.includes('twitter') ? (
+                                                <span className="flex items-center">
+                                                    Following <Check className="h-4 w-4 ml-1" />
+                                                </span>
+                                            ) : 'Follow on X'}
+                                            <ExternalLink className="h-4 w-4 ml-1" />
+                                        </Button>
+                                        
+                                        <Button 
+                                            variant="outline" 
+                                            className={`flex items-center justify-center gap-2 flex-1 bg-white/20 border-white/40 hover:bg-white/30 text-white`}
+                                            onClick={() => handleSocialFollow('discord')}
+                                        >
+                                            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.127 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
+                                            </svg>
+                                            {socialFollows.includes('discord') ? (
+                                                <span className="flex items-center">
+                                                    Joined <Check className="h-4 w-4 ml-1" />
+                                                </span>
+                                            ) : 'Join Discord'}
+                                            <ExternalLink className="h-4 w-4 ml-1" />
+                                        </Button>
+                                    </div>
+                                </div>
+                                
+                                {/* <Button 
+                                    variant="secondary" 
+                                    className="bg-white/20 hover:bg-white/30 border-0 text-white mt-2"
+                                    onClick={() => {
+                                        setSuccess(false);
+                                        setCurrentStep(2);
+                                    }}
+                                >
+                                    Edit Registration
+                                </Button> */}
                             </motion.div>
                         ) : (
-                            <motion.form
-                                key="form"
-                                onSubmit={handleSubmit}
-                                className="space-y-6 backdrop-blur-sm bg-white/80 p-8 rounded-2xl shadow-lg border border-primary/20"
+                            <motion.div
+                                key="steps"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
+                                className="space-y-6 backdrop-blur-sm bg-white/40 p-8 rounded-2xl shadow-lg"
                                 whileHover={{ boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)" }}
                                 transition={{ duration: 0.2 }}
                             >
-                                <motion.div
-                                    initial={{ y: 20, opacity: 0 }}
-                                    animate={{ y: 0, opacity: 1 }}
-                                    transition={{ delay: 0.2 }}
-                                >
-                                    <BodyText level="body1" weight="medium" className="text-gray-800 mb-4">
-                                        Enter your email to join the waitlist
-                                    </BodyText>
-                                    <div className="relative">
-                                        <Input
-                                            type="email"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            placeholder="your.email@example.com"
-                                            className="w-full pr-12 border-primary/20 focus:border-primary text-md py-6 rounded-xl shadow-md bg-white/90 backdrop-blur-sm placeholder:text-md"
-                                            disabled={isLoading}
-                                        />
-                                        <Button 
-                                            type="submit"
-                                            variant="primary"
-                                            size="lg"
-                                            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-10 rounded-lg hover:shadow-md transition-all duration-300"
-                                            disabled={isLoading}
+                                <AnimatePresence mode="wait">
+                                    {currentStep === 1 && (
+                                        <motion.form
+                                            key="step1"
+                                            onSubmit={handleSubmit}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
+                                            transition={{ duration: 0.3 }}
                                         >
-                                            {isLoading ? (
-                                                <Loader2 className="h-5 w-5 animate-spin" />
-                                            ) : (
-                                                <div className="flex items-center gap-1">
-                                                    Join <ArrowRight className="h-4 w-4 ml-1" />
+                                            <BodyText level="body1" weight="medium" className="text-gray-800 mb-4">
+                                                Step 1: Enter your email to join the waitlist
+                                            </BodyText>
+                                            <div className="relative">
+                                                <Input
+                                                    type="email"
+                                                    value={email}
+                                                    onChange={(e) => setEmail(e.target.value)}
+                                                    placeholder="your.email@example.com"
+                                                    className="w-full pr-12 border border-primary/40 focus:border-primary text-md py-6 rounded-xl shadow-md bg-white/90 backdrop-blur-sm placeholder:text-md"
+                                                    disabled={isLoading}
+                                                />
+                                                <Button
+                                                    type="submit"
+                                                    variant="primary"
+                                                    size="lg"
+                                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-10 rounded-lg hover:shadow-md transition-all duration-300"
+                                                    disabled={isLoading}
+                                                >
+                                                    {isLoading ? (
+                                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                                    ) : (
+                                                        <div className="flex items-center gap-1">
+                                                            Continue <ArrowRight className="h-4 w-4 ml-1" />
+                                                        </div>
+                                                    )}
+                                                </Button>
+                                            </div>
+
+                                            <BodyText level="body3" className="mt-2 text-primary">
+                                                +10 points
+                                            </BodyText>
+
+                                            {/* Add navigation buttons if this is an edit of previously submitted email */}
+                                            {submittedEmail && (
+                                                <div className="flex justify-end mt-4">
+                                                    <Button 
+                                                        type="button"
+                                                        variant="outline" 
+                                                        onClick={() => setCurrentStep(2)}
+                                                        className="flex items-center"
+                                                    >
+                                                        Skip to next step <ArrowRight className="h-4 w-4 ml-1" />
+                                                    </Button>
                                                 </div>
                                             )}
-                                        </Button>
-                                    </div>
-                                    
-                                    <AnimatePresence>
-                                        {error && (
-                                            <motion.div 
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: -10 }}
-                                                className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2"
-                                            >
-                                                <XCircle className="h-4 w-4 text-red-500" />
-                                                <BodyText level="body3" className="text-red-700">
-                                                    {error}
-                                                </BodyText>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </motion.div>
-                            </motion.form>
+
+                                            <AnimatePresence>
+                                                {error && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        exit={{ opacity: 0, y: -10 }}
+                                                        className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2"
+                                                    >
+                                                        <XCircle className="h-4 w-4 text-red-500" />
+                                                        <BodyText level="body3" className="text-red-700">
+                                                            {error}
+                                                        </BodyText>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </motion.form>
+                                    )}
+
+                                    {currentStep === 2 && (
+                                        <motion.div
+                                            key="step2"
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
+                                            transition={{ duration: 0.3 }}
+                                            className="flex flex-col items-center"
+                                        >
+                                            <BodyText level="body1" weight="medium" className="text-gray-800 mb-4 text-center">
+                                                Step 2: Connect your wallet
+                                            </BodyText>
+                                            
+                                            <div className="w-full mb-4">
+                                                <ConnectWalletButton />
+                                            </div>
+                                            
+                                            <BodyText level="body3" className="text-primary mb-4">
+                                                +50 points
+                                            </BodyText>
+                                            
+                                            {error && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: -10 }}
+                                                    className="w-full mt-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2"
+                                                >
+                                                    <XCircle className="h-4 w-4 text-red-500" />
+                                                    <BodyText level="body3" className="text-red-700">
+                                                        {error}
+                                                    </BodyText>
+                                                </motion.div>
+                                            )}
+                                            
+                                            <div className="flex justify-between w-full mt-4">
+                                                <Button 
+                                                    variant="outline" 
+                                                    onClick={() => setCurrentStep(1)}
+                                                    className="flex items-center"
+                                                >
+                                                    <ArrowLeft className="h-4 w-4 mr-1" /> Back
+                                                </Button>
+
+                                                <Button 
+                                                    variant="outline" 
+                                                    onClick={handleWalletConnected}
+                                                    disabled={isLoading || !walletAddress}
+                                                >
+                                                    {isLoading ? (
+                                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                                    ) : (
+                                                        <div className="flex items-center gap-1">
+                                                            Continue <ArrowRight className="h-4 w-4 ml-1" />
+                                                        </div>
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </motion.div>
                         )}
                     </AnimatePresence>
                 </motion.div>
