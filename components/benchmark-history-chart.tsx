@@ -45,57 +45,57 @@ const CustomTooltip = ({ active, payload }: any) => {
 
         // Create an array of all protocols with their data
         const protocols = [
-            { 
-                name: 'Superfund', 
-                color: '#fb5900', 
+            {
+                name: 'Superfund',
+                color: '#fb5900',
                 value: Number(payload[0]?.payload.superfund || 0),
                 display: payload[0]?.payload.superfundDisplay || '0.00'
             },
-            { 
-                name: 'Aave', 
-                color: '#1E90FF', 
+            {
+                name: 'Aave',
+                color: '#1E90FF',
                 value: Number(payload[0]?.payload.aave || 0),
                 display: payload[0]?.payload.aaveDisplay || '0.00'
             },
-            { 
-                name: 'Fluid', 
-                color: '#00C853', 
+            {
+                name: 'Fluid',
+                color: '#00C853',
                 value: Number(payload[0]?.payload.fluid || 0),
                 display: payload[0]?.payload.fluidDisplay || '0.00'
             },
-            { 
-                name: 'Morpho G. Prime', 
-                color: '#9C27B0', 
+            {
+                name: 'Morpho G. Prime',
+                color: '#9C27B0',
                 value: Number(payload[0]?.payload.morphoGauntletPrime || 0),
                 display: payload[0]?.payload.morphoGauntletPrimeDisplay || '0.00'
             },
-            { 
-                name: 'Morpho Moonwell', 
-                color: '#673AB7', 
+            {
+                name: 'Morpho Moonwell',
+                color: '#673AB7',
                 value: Number(payload[0]?.payload.morphoMoonwell || 0),
                 display: payload[0]?.payload.morphoMoonwellDisplay || '0.00'
             },
-            { 
-                name: 'Morpho G. Core', 
-                color: '#3F51B5', 
+            {
+                name: 'Morpho G. Core',
+                color: '#3F51B5',
                 value: Number(payload[0]?.payload.morphoGauntletCore || 0),
                 display: payload[0]?.payload.morphoGauntletCoreDisplay || '0.00'
             },
-            { 
-                name: 'Morpho Steakhouse', 
-                color: '#FF5722', 
+            {
+                name: 'Morpho Steakhouse',
+                color: '#FF5722',
                 value: Number(payload[0]?.payload.morphoSteakhouse || 0),
                 display: payload[0]?.payload.morphoSteakhouseDisplay || '0.00'
             },
-            { 
-                name: 'Morpho Ionic', 
-                color: '#607D8B', 
+            {
+                name: 'Morpho Ionic',
+                color: '#607D8B',
                 value: Number(payload[0]?.payload.morphoIonic || 0),
                 display: payload[0]?.payload.morphoIonicDisplay || '0.00'
             },
-            { 
-                name: 'Morpho Re7', 
-                color: '#795548', 
+            {
+                name: 'Morpho Re7',
+                color: '#795548',
                 value: Number(payload[0]?.payload.morphoRe7 || 0),
                 display: payload[0]?.payload.morphoRe7Display || '0.00'
             }
@@ -262,7 +262,7 @@ const chartConfig = {
 // Update the renderCustomizedLegend function to fix the visibility issue
 const renderCustomizedLegend = (props: any, visibleLines: { [key: string]: boolean }, onClick: (dataKey: string) => void) => {
     const { payload } = props;
-  
+
     // Map of dataKey to display name
     const nameMap: Record<string, string> = {
         superfund: "SuperFund",
@@ -278,7 +278,7 @@ const renderCustomizedLegend = (props: any, visibleLines: { [key: string]: boole
 
     // List of all dataKeys in the order we want them displayed
     const orderedKeys = [
-        "superfund", "aave", "fluid", 
+        "superfund", "aave", "fluid",
         "morphoGauntletPrime", "morphoMoonwell", "morphoGauntletCore",
         "morphoSteakhouse", "morphoIonic", "morphoRe7"
     ];
@@ -295,19 +295,19 @@ const renderCustomizedLegend = (props: any, visibleLines: { [key: string]: boole
         morphoIonic: "var(--color-morphoIonic)",
         morphoRe7: "var(--color-morphoRe7)"
     };
-  
+
     return (
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 px-2 pt-2 pb-1">
             {orderedKeys.map((dataKey, index) => {
                 const isVisible = visibleLines[dataKey];
                 return (
-                    <div 
+                    <div
                         key={`legend-item-${index}`}
                         className="flex items-center cursor-pointer transition-all duration-150 mx-2"
                         style={{ opacity: isVisible ? 1 : 0.4 }}
                         onClick={() => onClick(dataKey)}
                     >
-                        <div 
+                        <div
                             className="w-3 h-3 rounded-full mr-1.5"
                             style={{ backgroundColor: colorMap[dataKey] }}
                         />
@@ -401,9 +401,9 @@ export function BenchmarkHistoryChart() {
     }, []);
 
     // Determine if we're loading data
-    const isLoading = isSuperfundLoading || isAaveLoading || isFluidLoading || 
-                      isMorphoGauntletPrimeLoading || isMorphoMoonwellLoading || isMorphoGauntletCoreLoading || 
-                      isMorphoSteakhouseLoading || isMorphoIonicLoading || isMorphoRe7Loading;
+    const isLoading = isSuperfundLoading || isAaveLoading || isFluidLoading ||
+        isMorphoGauntletPrimeLoading || isMorphoMoonwellLoading || isMorphoGauntletCoreLoading ||
+        isMorphoSteakhouseLoading || isMorphoIonicLoading || isMorphoRe7Loading;
 
     // Reset zoom when period changes
     useEffect(() => {
@@ -447,7 +447,7 @@ export function BenchmarkHistoryChart() {
             });
         }
         console.log('Superfund map size:', superfundMap.size);
-        
+
         const aaveMap = new Map<number, number>();
         if (AaveHistoryData?.processMap && Array.isArray(AaveHistoryData.processMap)) {
             AaveHistoryData.processMap.forEach((item: any) => {
@@ -457,7 +457,7 @@ export function BenchmarkHistoryChart() {
             });
         }
         console.log('Aave map size:', aaveMap.size);
-        
+
         const fluidMap = new Map<number, number>();
         if (FluidHistoryData?.processMap && Array.isArray(FluidHistoryData.processMap)) {
             FluidHistoryData.processMap.forEach((item: any) => {
@@ -586,7 +586,7 @@ export function BenchmarkHistoryChart() {
                     normalizedSuperfundMap.set(key * 1000, value);
                 });
                 console.log('Normalized: Superfund seconds -> milliseconds');
-                
+
                 // Print sample of normalized map for debugging
                 const superfundMapEntries = Array.from(normalizedSuperfundMap.entries()).slice(0, 3);
                 console.log('Normalized Superfund map sample:', superfundMapEntries);
@@ -598,7 +598,7 @@ export function BenchmarkHistoryChart() {
                 aaveMap.forEach((value, key) => {
                     normalizedAaveMap.set(key * 1000, value);
                 });
-                
+
                 normalizedFluidMap = new Map();
                 normalizedFluidTimestamps = fluidTimestamps.map(ts => ts * 1000);
                 fluidMap.forEach((value, key) => {
@@ -647,10 +647,10 @@ export function BenchmarkHistoryChart() {
 
             // NEW APPROACH: Superfund leads, prioritize all Superfund data points
             // Use normalized timestamps instead of original timestamps
-            const timestampsToUse = superfundFirstTimestamp.toString().length === 10 && aaveFirstTimestamp.toString().length === 13 
-                ? normalizedSuperfundTimestamps 
+            const timestampsToUse = superfundFirstTimestamp.toString().length === 10 && aaveFirstTimestamp.toString().length === 13
+                ? normalizedSuperfundTimestamps
                 : superfundTimestamps;
-                
+
             console.log('Using Superfund-led approach with', timestampsToUse.length, 'data points');
 
             // Helper function to find closest timestamp in a set
@@ -663,12 +663,12 @@ export function BenchmarkHistoryChart() {
                     console.log(`Found exact match for ${target}`);
                     return exactMatch;
                 }
-                
+
                 // Check if we need to normalize the target (depends on which is in seconds vs milliseconds)
                 let normalizedTarget = target;
                 const targetLength = target.toString().length;
                 const timestampLength = timestamps[0]?.toString().length;
-                
+
                 // If formats are different, normalize target to match timestamps
                 if (targetLength === 10 && timestampLength === 13) {
                     // Target in seconds, timestamps in milliseconds
@@ -679,7 +679,7 @@ export function BenchmarkHistoryChart() {
                     normalizedTarget = Math.floor(target / 1000);
                     console.log(`Normalized target from ${target} to ${normalizedTarget} for comparison`);
                 }
-                
+
                 // Find the closest timestamp
                 let closest = timestamps[0];
                 let minDistance = Math.abs(normalizedTarget - closest);
@@ -695,9 +695,9 @@ export function BenchmarkHistoryChart() {
                 // Only return if within reasonable time range (24 hours)
                 // Use an appropriate max distance based on the time format
                 const maxDistance = timestampLength === 13 ? 24 * 60 * 60 * 1000 : 24 * 60 * 60;
-                
+
                 console.log(`Closest match for ${target} -> ${normalizedTarget}: ${closest}, distance: ${minDistance}, max allowed: ${maxDistance}`);
-                
+
                 return minDistance <= maxDistance ? closest : null;
             };
 
@@ -721,9 +721,9 @@ export function BenchmarkHistoryChart() {
             const combined = timestampsToUse.map(timestamp => {
                 // Get Superfund value - use the appropriate map based on normalization
                 const superfundValue = superfundFirstTimestamp.toString().length === 10 && aaveFirstTimestamp.toString().length === 13
-                    ? normalizedSuperfundMap.get(timestamp) 
+                    ? normalizedSuperfundMap.get(timestamp)
                     : superfundMap.get(timestamp);
-                
+
                 // Debug single timestamp matching
                 if (timestamp === timestampsToUse[0]) {
                     console.log('First Superfund timestamp:', timestamp);
@@ -740,7 +740,7 @@ export function BenchmarkHistoryChart() {
                 let morphoSteakhouseValue = normalizedMorphoSteakhouseMap.get(timestamp);
                 let morphoIonicValue = normalizedMorphoIonicMap.get(timestamp);
                 let morphoRe7Value = normalizedMorphoRe7Map.get(timestamp);
-                
+
                 let isAaveApproximated = false;
                 let isFluidApproximated = false;
                 let isMorphoGauntletPrimeApproximated = false;
@@ -788,7 +788,7 @@ export function BenchmarkHistoryChart() {
                         isFluidApproximated = true;
                     }
                 }
-                
+
                 // Look for closest Morpho timestamps
                 if (morphoGauntletPrimeValue === undefined) {
                     const closestTimestamp = findClosestTimestamp(timestamp, sortedMorphoGauntletPrimeTimestamps as number[]);
@@ -797,7 +797,7 @@ export function BenchmarkHistoryChart() {
                         isMorphoGauntletPrimeApproximated = true;
                     }
                 }
-                
+
                 if (morphoMoonwellValue === undefined) {
                     const closestTimestamp = findClosestTimestamp(timestamp, sortedMorphoMoonwellTimestamps as number[]);
                     if (closestTimestamp !== null) {
@@ -805,7 +805,7 @@ export function BenchmarkHistoryChart() {
                         isMorphoMoonwellApproximated = true;
                     }
                 }
-                
+
                 if (morphoGauntletCoreValue === undefined) {
                     const closestTimestamp = findClosestTimestamp(timestamp, sortedMorphoGauntletCoreTimestamps as number[]);
                     if (closestTimestamp !== null) {
@@ -813,7 +813,7 @@ export function BenchmarkHistoryChart() {
                         isMorphoGauntletCoreApproximated = true;
                     }
                 }
-                
+
                 if (morphoSteakhouseValue === undefined) {
                     const closestTimestamp = findClosestTimestamp(timestamp, sortedMorphoSteakhouseTimestamps as number[]);
                     if (closestTimestamp !== null) {
@@ -821,7 +821,7 @@ export function BenchmarkHistoryChart() {
                         isMorphoSteakhouseApproximated = true;
                     }
                 }
-                
+
                 if (morphoIonicValue === undefined) {
                     const closestTimestamp = findClosestTimestamp(timestamp, sortedMorphoIonicTimestamps as number[]);
                     if (closestTimestamp !== null) {
@@ -829,7 +829,7 @@ export function BenchmarkHistoryChart() {
                         isMorphoIonicApproximated = true;
                     }
                 }
-                
+
                 if (morphoRe7Value === undefined) {
                     const closestTimestamp = findClosestTimestamp(timestamp, sortedMorphoRe7Timestamps as number[]);
                     if (closestTimestamp !== null) {
@@ -862,28 +862,28 @@ export function BenchmarkHistoryChart() {
 
             console.log('Combined dataset created with', combined.length, 'Superfund-led points');
             console.log('Approximated Aave values:', combined.filter(d => d.isAaveApproximated).length);
-            
+
             // Debug: Check if we have any matches
             const withAave = combined.filter(d => d.aave !== null).length;
             const withFluid = combined.filter(d => d.fluid !== null).length;
             const withEither = combined.filter(d => d.aave !== null || d.fluid !== null).length;
-            const withMorphoAny = combined.filter(d => 
-                d.morphoGauntletPrime !== null || 
-                d.morphoMoonwell !== null || 
-                d.morphoGauntletCore !== null || 
-                d.morphoSteakhouse !== null || 
-                d.morphoIonic !== null || 
+            const withMorphoAny = combined.filter(d =>
+                d.morphoGauntletPrime !== null ||
+                d.morphoMoonwell !== null ||
+                d.morphoGauntletCore !== null ||
+                d.morphoSteakhouse !== null ||
+                d.morphoIonic !== null ||
                 d.morphoRe7 !== null
             ).length;
-            
+
             console.log('Data points with: Aave =', withAave, 'Fluid =', withFluid, 'Either =', withEither, 'Any Morpho =', withMorphoAny);
-            
+
             // Sample a few timestamps after normalization for debugging
             if (combined.length > 0) {
                 console.log('Sample normalized timestamps:');
                 const sampleSize = Math.min(3, combined.length);
                 for (let i = 0; i < sampleSize; i++) {
-                    console.log(`Sample ${i+1}:`, {
+                    console.log(`Sample ${i + 1}:`, {
                         timestamp: combined[i].timestamp,
                         superfund: combined[i].superfund,
                         aave: combined[i].aave,
@@ -963,7 +963,7 @@ export function BenchmarkHistoryChart() {
                 morphoGauntletPrime: item.morphoGauntletPrime !== null ? item.morphoGauntletPrime : null,
                 morphoMoonwell: item.morphoMoonwell !== null ? item.morphoMoonwell : null,
                 morphoGauntletCore: item.morphoGauntletCore !== null ? item.morphoGauntletCore : null,
-                morphoSteakhouse: item.morphoSteakhouse !== null ? item.morphoSteakhouse : null, 
+                morphoSteakhouse: item.morphoSteakhouse !== null ? item.morphoSteakhouse : null,
                 morphoIonic: item.morphoIonic !== null ? item.morphoIonic : null,
                 morphoRe7: item.morphoRe7 !== null ? item.morphoRe7 : null,
                 isAaveApproximated: item.isAaveApproximated || false,
@@ -992,10 +992,10 @@ export function BenchmarkHistoryChart() {
                 valueRange: 10
             };
         }
-        
+
         const allValues = chartData.flatMap((d: any) => [
-            Number(d.superfund), 
-            Number(d.aave), 
+            Number(d.superfund),
+            Number(d.aave),
             Number(d.fluid),
             Number(d.morphoGauntletPrime),
             Number(d.morphoMoonwell),
@@ -1004,7 +1004,7 @@ export function BenchmarkHistoryChart() {
             Number(d.morphoIonic),
             Number(d.morphoRe7)
         ].filter(v => v !== null && v !== undefined && !isNaN(v)))
-        
+
         if (allValues.length === 0) {
             return {
                 minValue: 0,
@@ -1012,7 +1012,7 @@ export function BenchmarkHistoryChart() {
                 valueRange: 10
             };
         }
-        
+
         const min = Math.min(...allValues)
         const max = Math.max(...allValues)
         return {
@@ -1125,7 +1125,7 @@ export function BenchmarkHistoryChart() {
                 <style>{styles}</style>
                 <div className="flex items-center justify-between max-md:px-4 p-6">
                     <HeadingText level="h4" weight="medium" className='text-gray-800'>
-                        Benchmark History
+                        Performance vs Peers
                     </HeadingText>
                     <div className="flex items-center gap-2">
                         <div>
@@ -1192,10 +1192,10 @@ export function BenchmarkHistoryChart() {
                                         content={<CustomTooltip />}
                                         cursor={{ stroke: 'hsl(var(--foreground-disabled))', strokeWidth: 1 }}
                                     />
-                                    <Legend 
+                                    <Legend
                                         content={(props) => renderCustomizedLegend(props, visibleLines, handleLegendClick)}
-                                        layout="horizontal" 
-                                        verticalAlign="top" 
+                                        layout="horizontal"
+                                        verticalAlign="top"
                                         align="center"
                                         wrapperStyle={{ paddingTop: "10px" }}
                                     />
