@@ -8,12 +8,14 @@ import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { HeadingText, BodyText } from '@/components/ui/typography'
 import { Input } from '@/components/ui/input'
-import { Loader2, Asterisk, CheckCircle, XCircle, ArrowRight, Twitter, ExternalLink, Check, ArrowLeft } from 'lucide-react'
+import { Loader2, Asterisk, CheckCircle, XCircle, ArrowRight, Twitter, ExternalLink, Check, ArrowLeft, Info } from 'lucide-react'
 import ConnectWalletButton from '@/components/ConnectWalletButton'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useAuth } from '@/context/auth-provider'
 import useLogNewUserEvent from '@/hooks/points/useLogNewUserEvent'
 import Link from 'next/link'
+import InfoTooltip from '@/components/tooltips/InfoTooltip'
+import ExternalLinkAnchor from "@/components/ExternalLink"
 
 const emailSchema = z.string().email('Please enter a valid email address')
 
@@ -471,10 +473,32 @@ export default function WaitlistPage() {
                     variants={itemVariants}
                     className="mb-4 flex justify-center"
                 >
-                    <div className="px-4 py-2 bg-primary/10 rounded-full">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
                         <BodyText level="body2" weight="medium" className="text-primary">
                             Your Points: {points}
                         </BodyText>
+                        <InfoTooltip
+                            label={
+                                <Info
+                                    width={16}
+                                    height={16}
+                                    // weight="1.5"
+                                    className="stroke-primary"
+                                />
+                            }
+                            content={
+                                <BodyText level="body3" weight="normal" className="text-gray-800">
+                                    Points accumulated are updated every Sunday on Superlend during the week.
+                                    <ExternalLinkAnchor
+                                        className="gap-0"
+                                        iconSize={14}
+                                        href="https://app.superlend.xyz/points"
+                                    >
+                                        Know more
+                                    </ExternalLinkAnchor>
+                                </BodyText>
+                            }
+                        />
                     </div>
                 </motion.div>
 
