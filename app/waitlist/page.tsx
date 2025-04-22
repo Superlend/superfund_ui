@@ -4,17 +4,15 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { z } from 'zod'
-
 import { Button } from '@/components/ui/button'
 import { HeadingText, BodyText } from '@/components/ui/typography'
 import { Input } from '@/components/ui/input'
-import { Loader2, Asterisk, CheckCircle, XCircle, ArrowRight, Twitter, ExternalLink, Check, ArrowLeft, Info } from 'lucide-react'
+import { Loader2, Asterisk, CheckCircle, XCircle, ArrowRight, Twitter, ExternalLink, Check, ArrowLeft, Info, MousePointerClick, LogOut } from 'lucide-react'
 import ConnectWalletButton from '@/components/ConnectWalletButton'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useAuth } from '@/context/auth-provider'
 import useLogNewUserEvent from '@/hooks/points/useLogNewUserEvent'
 import Link from 'next/link'
-import InfoTooltip from '@/components/tooltips/InfoTooltip'
 import ExternalLinkAnchor from "@/components/ExternalLink"
 
 const emailSchema = z.string().email('Please enter a valid email address')
@@ -469,7 +467,7 @@ export default function WaitlistPage() {
                 </motion.div>
 
                 {/* Points Display */}
-                <motion.div
+                {/* <motion.div
                     variants={itemVariants}
                     className="mb-4 flex justify-center"
                 >
@@ -500,7 +498,7 @@ export default function WaitlistPage() {
                             }
                         />
                     </div>
-                </motion.div>
+                </motion.div> */}
 
                 {/* Stepper UI */}
                 <motion.div variants={itemVariants}>
@@ -542,7 +540,7 @@ export default function WaitlistPage() {
 
                                 <div className="w-full mt-4 pt-4 border-t border-white/20">
                                     <BodyText level="body2" weight="medium" className="text-white text-center mb-4">
-                                        To stay updated on the launch and your points:
+                                        To stay updated on the launch:
                                     </BodyText>
 
                                     <div className="flex flex-col sm:flex-row sm:justify-center gap-4 w-full mb-2">
@@ -702,16 +700,27 @@ export default function WaitlistPage() {
                                             transition={{ duration: 0.3 }}
                                             className="flex flex-col items-center"
                                         >
-                                            <BodyText level="body1" weight="medium" className="text-gray-800 mb-4 text-center">
-                                                Step 2: Connect your wallet
+                                            <BodyText level="body1" weight="medium" className="text-gray-800 mb-1 text-center">
+                                                Step 2: Earn Superlend Points
+                                            </BodyText>
+                                            <BodyText level="body2" weight="normal" className="text-gray-800 mb-6 text-center">
+                                                Connect your wallet and earn 50 superlend points for joining the waitlist.
+                                                <ExternalLinkAnchor
+                                                    className="pl-1 gap-0"
+                                                    iconSize={14}
+                                                    href="https://app.superlend.xyz/points"
+                                                >
+                                                    Know more
+                                                </ExternalLinkAnchor>
                                             </BodyText>
 
-                                            <div className="w-full mb-4">
+                                            <div className={`relative w-full md:w-[200px] mb-2 ${isWalletConnected ? 'ring-1 ring-green-500 rounded-4' : ''}`}>
                                                 <ConnectWalletButton />
                                             </div>
 
-                                            <BodyText level="body3" className="text-primary mb-4">
-                                                +50 points
+                                            <BodyText level="body3" weight="medium" className={`flex items-center gap-1 ${isWalletConnected ? 'text-green-600' : 'text-primary'} mb-4`}>
+                                                {isWalletConnected && <Check className="h-4 w-4 text-green-500" />}
+                                                {isWalletConnected ? 'Wallet Connected' : '+50 points'}
                                             </BodyText>
 
                                             {error && (
@@ -738,7 +747,7 @@ export default function WaitlistPage() {
                                                 </Button>
 
                                                 <Button
-                                                    variant="outline"
+                                                    variant="primary"
                                                     onClick={handleWalletConnected}
                                                     disabled={isLoading || !walletAddress}
                                                 >
@@ -746,7 +755,7 @@ export default function WaitlistPage() {
                                                         <Loader2 className="h-5 w-5 animate-spin" />
                                                     ) : (
                                                         <div className="flex items-center gap-1">
-                                                            Continue <ArrowRight className="h-4 w-4 ml-1" />
+                                                            Join Waitlist <ArrowRight className="h-4 w-4 ml-1" />
                                                         </div>
                                                     )}
                                                 </Button>
