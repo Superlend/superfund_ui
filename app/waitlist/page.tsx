@@ -513,7 +513,7 @@ export default function WaitlistPage() {
                                     Thank you for completing registration!
                                 </BodyText>
                                 <BodyText level="body2" className="text-white/90 text-center">
-                                    You've earned {points} points. We'll notify you when we launch.
+                                    You&apos;ve earned {points} points. We&apos;ll notify you when we launch.
                                 </BodyText>
 
                                 <div className="w-full mt-4 pt-4 border-t border-white/20">
