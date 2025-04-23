@@ -5,14 +5,9 @@ import LendBorrowToggle from '@/components/LendBorrowToggle'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { TActionType, TPositionType } from '@/types'
-import {
-    LoaderCircle,
-} from 'lucide-react'
+import { LoaderCircle } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import {
-    abbreviateNumber,
-    getLowestDisplayValue,
-} from '@/lib/utils'
+import { abbreviateNumber, getLowestDisplayValue } from '@/lib/utils'
 import { BodyText } from '@/components/ui/typography'
 import { cn } from '@/lib/utils'
 import CustomNumberInput from '@/components/inputs/CustomNumberInput'
@@ -33,7 +28,10 @@ import { useWalletConnection } from '@/hooks/useWalletConnection'
 import SuperVaultTxDialog from '@/components/dialogs/SuperVaultTx'
 import { useChain } from '@/context/chain-context'
 
-export type THelperText = Record<string, Record<string | 'placeholder' | 'input' | 'error', string | null>>
+export type THelperText = Record<
+    string,
+    Record<string | 'placeholder' | 'input' | 'error', string | null>
+>
 
 export default function DepositAndWithdrawAssets() {
     const { isWalletConnected, handleSwitchChain } = useWalletConnection()
@@ -171,7 +169,7 @@ export default function DepositAndWithdrawAssets() {
         } else {
             return (
                 Number(userEnteredWithdrawAmount) >
-                Number(userMaxWithdrawAmount) ||
+                    Number(userMaxWithdrawAmount) ||
                 Number(userEnteredWithdrawAmount) === 0
             )
         }
@@ -211,7 +209,7 @@ export default function DepositAndWithdrawAssets() {
                                                 isDepositPositionType
                                                     ? (balance ?? 0)
                                                     : (userMaxWithdrawAmount ??
-                                                        0)
+                                                          0)
                                             ),
                                             2
                                         )
@@ -273,8 +271,8 @@ export default function DepositAndWithdrawAssets() {
                                     isDepositPositionType
                                         ? setUserEnteredDepositAmount(balance)
                                         : setUserEnteredWithdrawAmount(
-                                            userMaxWithdrawAmount
-                                        )
+                                              userMaxWithdrawAmount
+                                          )
                                 }
                                 className="uppercase text-[14px] font-medium w-fit"
                             >
