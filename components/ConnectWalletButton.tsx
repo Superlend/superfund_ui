@@ -33,18 +33,18 @@ export default function ConnectWalletButton() {
                 : 'Connect Wallet'
 
     // Handle redirection after successful connection
-    useEffect(() => {
-        if (authenticated && walletAddress) {
-            router.push('/super-fund')
-        } else if (ready && !walletAddress) {
-            router.push('/')
-        }
-    }, [authenticated, walletAddress, router])
+    // useEffect(() => {
+    //     if (authenticated && walletAddress) {
+    //         router.push('/super-fund')
+    //     } else if (ready && !walletAddress) {
+    //         router.push('/')
+    //     }
+    // }, [authenticated, walletAddress, router])
 
     // Handle logout with redirection
     const handleLogout = async () => {
         await logout()
-        router.push('/')
+        // router.push('/')
     }
 
     return (

@@ -1,192 +1,88 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
+import { HeadingText, BodyText } from '@/components/ui/typography'
 import MainContainer from '@/components/MainContainer'
-import React, { useState, useEffect } from 'react'
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card'
-import { BodyText, HeadingText } from '@/components/ui/typography'
-import DepositAndWithdrawAssets from './deposit-and-withdraw'
-import TxProvider from '@/context/super-vault-tx-provider'
-import VaultStats from './vault-stats'
-import PageHeader from './page-header'
-import useIsClient from '@/hooks/useIsClient'
-import { Skeleton } from '@/components/ui/skeleton'
-import FlatTabs from '@/components/tabs/flat-tabs'
-import PositionDetails from './position-details'
-import FundOverview from './fund-overview'
-import { useWalletConnection } from '@/hooks/useWalletConnection'
-import {
-    useHistoricalData,
-    useRebalanceHistory,
-} from '@/hooks/vault_hooks/useHistoricalDataHook'
-import { Period } from '@/types/periodButtons'
-import { useRouter } from 'next/navigation'
-import { usePrivy } from '@privy-io/react-auth'
-import { useLoginToFrame } from '@privy-io/react-auth/farcaster'
-import sdk from '@farcaster/frame-sdk'
+import ImageWithDefault from '@/components/ImageWithDefault'
+import { CHAIN_DETAILS } from '@/context/chain-context'
+import { ChainId } from '@/types/chain'
+import { motion } from 'motion/react'
+import { useEffect } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 
-export default function SuperVaultPage() {
-    const { isClient } = useIsClient()
-    const { isWalletConnected, isConnectingWallet, walletAddress } =
-        useWalletConnection()
-    const [selectedTab, setSelectedTab] = useState('fund-overview')
-    const router = useRouter()
+export default function ChainSelectionPage() {
+  // Function to handle direct navigation using window.location
+  // This bypasses Next.js client-side routing for more reliable navigation
+  // const navigateToChain = (path: string) => {
+  //   console.log(`Navigating directly to: /super-fund/${path}`)
+  //   window.location.href = `/super-fund/${path}`
+  // }
+  const router = useRouter();
 
-    const { initLoginToFrame, loginToFrame } = useLoginToFrame()
-    const { ready, authenticated } = usePrivy()
+  // Log when this page is mounted
+  useEffect(() => {
+    console.log('Chain selection page mounted')
+  }, [])
 
-    // const { historicalData, days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading, error } = useHistoricalData(Period.oneDay)
-
-    // const { rebalanceHistory, isLoading: isLoading2, error: error2 } = useRebalanceHistory(Period.oneDay)
-
-    const tabs = [
-        {
-            label: 'Fund Overview',
-            value: 'fund-overview',
-            content: <FundOverview />,
-            show: true,
-        },
-        {
-            label: 'Position Details',
-            value: 'position-details',
-            content: <PositionDetails />,
-            show: isWalletConnected,
-        },
-    ]
-
-    const handleTabChange = (tab: string) => {
-        setSelectedTab(tab)
-    }
-
-    // useEffect(() => {
-    //     if (!walletAddress && isClient && !isConnectingWallet) {
-    //         router.push('/')
-    //     }
-    // }, [walletAddress, isClient, isConnectingWallet, router])
-
-    useEffect(() => {
-        const login = async () => {
-            const frameContext = await sdk.context
-            if (ready && !authenticated && frameContext) {
-                const { nonce } = await initLoginToFrame()
-                const result = await sdk.actions.signIn({
-                    nonce: nonce,
-                })
-                await loginToFrame({
-                    message: result.message,
-                    signature: result.signature,
-                })
-            }
-        }
-        login()
-    }, [ready, authenticated])
-
-    if (!isClient) {
-        return <LoadingPageSkeleton />
-    }
-
-    return (
-        <TxProvider>
-            <MainContainer className="flex flex-col flex-wrap gap-[40px] w-full mx-auto my-14">
-                <PageHeader />
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-[16px]">
-                    <div className="flex flex-col gap-10">
-                        <VaultStats />
-                        <div className="block lg:hidden">
-                            <DepositAndWithdrawAssets />
-                        </div>
-                        {isConnectingWallet && <LoadingTabs />}
-                        {!isConnectingWallet && (
-                            <FlatTabs
-                                tabs={tabs}
-                                activeTab={selectedTab}
-                                onTabChange={handleTabChange}
-                            />
-                        )}
-                    </div>
-                    <div className="hidden lg:block">
-                        <DepositAndWithdrawAssets />
-                    </div>
-                </div>
-            </MainContainer>
-        </TxProvider>
-    )
-}
-
-function BlogCard() {
-    return (
-        <div className="blog-card-wrapper">
-            <Card className="group">
-                <CardContent className="relative h-[262px] w-full p-0 overflow-hidden rounded-6 flex items-center justify-center">
-                    <div className="absolute top-0 left-0 h-full w-full bg-primary bg-opacity-40 blur-md"></div>
-                    <BodyText
-                        level="body1"
-                        weight="medium"
-                        className="group-hover:scale-125 transition-all relative text-white font-bold text-[32px]"
-                    >
-                        Coming soon
-                    </BodyText>
-                </CardContent>
-                <CardFooter className="py-[16px] blur-[2px]">
-                    <div className="flex flex-col gap-[6px]">
-                        <BodyText level="body1" weight="medium">
-                            Introduction to Lending & Borrowing with Superlend
-                        </BodyText>
-                        <BodyText level="body2">
-                            Understanding: What is Superlend, How does it work,
-                            Key benefits of using Superlend and more.
-                        </BodyText>
-                    </div>
-                </CardFooter>
-            </Card>
+  return (
+    <MainContainer className="flex flex-col items-center justify-center min-h-[80vh] py-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="max-w-md w-full mx-auto text-center"
+      >
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <ImageWithDefault
+            src={'/images/logos/superlend-rounded.svg'}
+            alt="Bluechip Stable SuperFund"
+            width={40}
+            height={40}
+          />
+          <HeadingText level="h3" weight="medium" className="text-gray-800">
+            Bluechip Stable SuperFund
+          </HeadingText>
         </div>
-    )
-}
-
-function LoadingTabs() {
-    return (
-        <div className="flex flex-col gap-4">
-            <Skeleton className="h-12 w-full rounded-lg" />
-            <Skeleton className="h-64 w-full rounded-2xl" />
-        </div>
-    )
-}
-
-function LoadingPageSkeleton() {
-    return (
-        <MainContainer>
-            <div className="flex flex-col gap-12">
-                <Skeleton className="h-12 w-[80%] md:w-80 rounded-2xl" />
-                <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-[16px]">
-                    <div className="flex flex-col gap-8">
-                        <div className="flex items-start justify-between gap-4">
-                            {[1, 2, 3, 4].map((item) => (
-                                <div
-                                    className="flex flex-col items-start w-full max-w-[250px] gap-2"
-                                    key={item}
-                                >
-                                    <Skeleton className="h-8 w-full rounded-2xl" />
-                                    <Skeleton className="h-6 w-[80%] rounded-2xl" />
-                                </div>
-                            ))}
-                        </div>
-                        <div className="flex flex-col items-start w-full gap-4">
-                            <Skeleton className="h-8 w-full md:w-48 rounded-2xl" />
-                            <Skeleton className="h-40 w-full rounded-2xl" />
-                        </div>
-                    </div>
-                    <div className="flex flex-col gap-4">
-                        <Skeleton className="h-[50px] w-full rounded-2xl" />
-                        <Skeleton className="h-[240px] w-full rounded-2xl" />
-                    </div>
-                </div>
+        
+        <BodyText level="body1" className="mb-8 text-gray-600">
+          Select a blockchain network to access the SuperFund
+        </BodyText>
+        
+        <div className="space-y-4">
+          <Button 
+            className="w-full h-14"
+            onClick={() => router.push('/super-fund/sonic')}
+          >
+            <div className="flex items-center justify-center gap-3">
+              <ImageWithDefault
+                src={CHAIN_DETAILS[ChainId.Sonic].logo}
+                alt="Sonic"
+                width={24}
+                height={24}
+                className="rounded-full"
+              />
+              <span>Sonic Network</span>
             </div>
-        </MainContainer>
-    )
+          </Button>
+          
+          <Button 
+            className="w-full h-14 bg-white hover:bg-gray-50 text-gray-800 border border-gray-200"
+            variant="outline"
+            onClick={() => router.push('/super-fund/base')}
+          >
+            <div className="flex items-center justify-center gap-3">
+              <ImageWithDefault
+                src={CHAIN_DETAILS[ChainId.Base].logo}
+                alt="Base"
+                width={24}
+                height={24}
+                className="rounded-full"
+              />
+              <span>Base Network</span>
+            </div>
+          </Button>
+        </div>
+      </motion.div>
+    </MainContainer>
+  )
 }

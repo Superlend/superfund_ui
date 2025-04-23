@@ -24,9 +24,10 @@ import { ArrowRightIcon } from 'lucide-react'
 import { BigNumber } from 'ethers'
 import { getErrorText } from '@/lib/getErrorText'
 import { BodyText } from '@/components/ui/typography'
-import { USDC_ADDRESS, USDC_DECIMALS, VAULT_ADDRESS } from '@/lib/constants'
+import { USDC_ADDRESS_MAP, USDC_DECIMALS, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { parseAbi } from 'viem'
+import { useChain } from '@/context/chain-context'
 
 interface IDepositButtonProps {
     disabled: boolean
@@ -61,6 +62,7 @@ const DepositButton = ({
         data: hash,
         error,
     } = useWriteContract()
+    const { selectedChain } = useChain()
 
     const { isLoading: isConfirming, isSuccess: isConfirmed } =
         useWaitForTransactionReceipt({
@@ -124,7 +126,7 @@ const DepositButton = ({
             const amountInWei = parseUnits(amount, USDC_DECIMALS)
 
             writeContractAsync({
-                address: VAULT_ADDRESS,
+                address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
                 abi: VAULT_ABI,
                 functionName: 'deposit',
                 args: [amountInWei.toBigInt(), walletAddress],
@@ -163,8 +165,18 @@ const DepositButton = ({
             isConfirmed: isConfirmed,
             isRefreshingAllowance: isConfirmed,
         }))
+        
+        // If approval transaction is confirmed, move to deposit state
+        if (isConfirmed && !isPending && !isConfirming && depositTx.status === 'approve') {
+            setDepositTx((prev: TDepositTx) => ({
+                ...prev,
+                status: 'deposit',
+                allowanceBN: amountBN, // Set the allowance to the amount we just approved
+            }))
+        }
     }, [isPending, isConfirming, isConfirmed])
 
+    // Check allowance for initial state
     useEffect(() => {
         if (depositTx.status === 'view') return
 
@@ -221,10 +233,10 @@ const DepositButton = ({
 
             const amountInWei = parseUnits(amount, USDC_DECIMALS)
             writeContractAsync({
-                address: USDC_ADDRESS,
+                address:  USDC_ADDRESS_MAP[selectedChain as keyof typeof USDC_ADDRESS_MAP] as `0x${string}`,
                 abi: USDC_ABI,
                 functionName: 'approve',
-                args: [VAULT_ADDRESS, amountInWei.toBigInt()],
+                args: [VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`, amountInWei.toBigInt()],
             }).catch((error) => {
                 setDepositTx((prev: TDepositTx) => ({
                     ...prev,
@@ -235,13 +247,14 @@ const DepositButton = ({
         } catch (error) {
             error
         } finally {
-            // TODO: Add check for allowance
-            // setDepositTx((prev: TDepositTx) => ({
-            //     ...prev,
-            //     status: 'deposit',
-            //     hash: '',
-            //     errorMessage: '',
-            // }))
+            // After approval is completed and confirmed, set the allowanceBN
+            if (isConfirmed && !isPending && !isConfirming) {
+                // Update the allowanceBN to reflect the new approval amount
+                setDepositTx((prev: TDepositTx) => ({
+                    ...prev,
+                    allowanceBN: amountBN,
+                }))
+            }
         }
     }
 

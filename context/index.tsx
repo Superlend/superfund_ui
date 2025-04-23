@@ -4,31 +4,33 @@ import React, { useEffect, useState, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { PrivyProvider } from '@privy-io/react-auth'
 import { createConfig, WagmiProvider } from '@privy-io/wagmi'
-import { base } from 'viem/chains'
-import farcasterFrame from '@farcaster/frame-wagmi-connector'
-import FrameSDK, { sdk } from '@farcaster/frame-sdk'
-import { http } from 'viem'
+import {
+    base,
+    sonic,
+} from 'viem/chains'
+import { http } from 'wagmi'
+import { AuthProvider } from './auth-provider'
 
 // Set up queryClient
 const queryClient = new QueryClient()
 
-const appId = process.env.NEXT_PUBLIC_PRIVY_PROJECT_ID || ''
+export const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_PROJECT_ID || ''
 
 // Set up metadata
 const metadata = {
     name: 'superlend',
     description: 'superlend',
-    url: 'https://app.superlend.xyz.com', // origin must match your domain & subdomain
+    url: 'https://app.superlend.xyz.com',
     icons: ['https://avatars.githubusercontent.com/u/179229932'],
 }
 
-// export const config = createConfig({
-//     chains: [base], // Pass your required chains as an array
-//     transports: {
-//         [base.id]: http(),
-//     },
-//     connectors,
-// })
+export const config = createConfig({
+    chains: [base, sonic],
+    transports: {
+        [base.id]: http(),
+        [sonic.id]: http(),
+    },
+})
 
 function ContextProvider({
     children,
@@ -37,39 +39,37 @@ function ContextProvider({
     children: ReactNode
     cookies: string | null
 }) {
-    const [config, setConfig] = useState<any>(null)
+    const [localConfig, setLocalConfig] = useState<any>(null)
     const [context, setContext] = useState<any>(null)
 
-    useEffect(() => {
-        const initializeConfig = async () => {
-            await FrameSDK.actions.ready()
-            const context = await FrameSDK.context
-            setContext(context)
-            const newConfig = createConfig({
-                chains: [base],
-                transports: {
-                    [base.id]: http(),
-                },
-            })
-            const newConfigForFarcaster = createConfig({
-                chains: [base],
-                transports: {
-                    [base.id]: http(),
-                },
-                connectors: [farcasterFrame()],
-            })
+    // useEffect(() => {
+    //     const initializeConfig = async () => {
+    //         await FrameSDK.actions.ready()
+    //         const context = await FrameSDK.context
+    //         setContext(context)
+    //         const newConfig = createConfig({
+    //             chains: [base],
+    //             transports: {
+    //                 [base.id]: http(),
+    //             },
+    //         })
+    //         const newConfigForFarcaster = createConfig({
+    //             chains: [base],
+    //             transports: {
+    //                 [base.id]: http(),
+    //             },
+    //             connectors: [farcasterFrame()],
+    //         })
 
-            setConfig(context ? newConfigForFarcaster : newConfig)
-        }
+    //         setLocalConfig(context ? newConfigForFarcaster : newConfig)
+    //     }
 
-        initializeConfig()
-    }, [])
-
-    if (!config) return null
+    //     initializeConfig()
+    // }, [])
 
     return (
         <PrivyProvider
-            appId={appId}
+            appId={PRIVY_APP_ID}
             config={{
                 loginMethods: ['wallet', context && 'farcaster'],
                 appearance: {
@@ -89,11 +89,15 @@ function ContextProvider({
                         'wallet_connect',
                     ],
                 },
-                supportedChains: [base],
+                supportedChains: [base, sonic],
             }}
         >
             <QueryClientProvider client={queryClient}>
-                <WagmiProvider config={config}>{children}</WagmiProvider>
+                <WagmiProvider config={config}>
+                    <AuthProvider>
+                        {children}
+                    </AuthProvider>
+                </WagmiProvider>
             </QueryClientProvider>
         </PrivyProvider>
     )

@@ -33,6 +33,8 @@ import {
     Dialog,
     DialogContent,
 } from "@/components/ui/dialog"
+import { ChainId } from '@/types/chain'
+import { useChain } from '@/context/chain-context'
 
 const chartData = [
     { date: '11/07', value1: 8, value2: 4, value3: 12 },
@@ -165,7 +167,7 @@ interface ChartConfig {
     }
 }
 
-const chartConfig: ChartConfig = {
+const BASE_CHAIN_CONFIG = {
     '0xeE8F4eC5672F09119b96Ab6fB59C27E1b7e44b61': {
         label: 'Morpho Gauntlet USDC Prime',
         color: '#3366CC', // Deep blue
@@ -208,12 +210,46 @@ const chartConfig: ChartConfig = {
     }
 }
 
+const SONIC_CHAIN_CONFIG = {
+    '0x7342c3387EfBbcc9fa505027bd1fDB0093e6E8bA': {
+        label: 'Aave V3 USDC',
+        color: '#3366CC', // Deep blue
+    },
+    '0x417B12320601D59A548b67ce08b15F7c4bF4fe4d': {
+        label: 'MEV Capital Sonic Cluster',
+        color: '#8A2BE2', // Bright purple
+    },
+    '0x5001f8Ca9fc7809D13854885E419D11Da12df8AF': {
+        label: 'Re7 labs Cluster',
+        color: '#FF8C00', // Dark orange
+    },
+    '0x0000000000000000000000000000000000000000': {
+        label: 'Cash Reserve',
+        color: '#F4A460', // Sandy brown
+    },
+    '0x14886c2Fc03D1858e6d097d40EdF92B3bFEBA678': {
+        label: 'Silo Finance Borrowable USDC.e Deposit',
+        color: '#3f3f3f', // Dark gray
+    },
+    '0xa352A4851cc8ae0DA04220a92F4Ce4A0E06912dc': {
+        label: 'Silo Finance Borrowable USDC.e Deposit, SiloId: 49',
+        color: '#3f3f3f', // Dark gray
+    }
+}
+
+const CHART_CONFIG_MAP = {
+    [ChainId.Base]: BASE_CHAIN_CONFIG,
+    [ChainId.Sonic]: SONIC_CHAIN_CONFIG,
+}
+
 export function AllocationHistoryChart() {
     const [selectedRange, setSelectedRange] = useState<Period>(Period.oneWeek)
     const { rebalanceHistory, isLoading, error } = useRebalanceHistory(selectedRange)
     const [startIndex, setStartIndex] = useState(0)
     const [endIndex, setEndIndex] = useState(rebalanceHistory.length - 1)
     const [openDialog, setOpenDialog] = useState(false)
+    const { selectedChain } = useChain()
+    const chartConfig: ChartConfig = CHART_CONFIG_MAP[selectedChain as keyof typeof CHART_CONFIG_MAP]
 
     const customTicks = {
         [Period.oneDay]: 5,
@@ -251,7 +287,7 @@ export function AllocationHistoryChart() {
             const allocationsWithValues = item.allocations
                 .filter((allocation: any) => allocation.value > 0)
                 .map((allocation: any) => ({
-                    name: allocation.name,
+                    name: chartConfig[allocation.address]?.label || allocation.name,
                     value: (item.totalAssets * allocation.value) / 100,
                     address: allocation.address,
                 }))
@@ -294,7 +330,7 @@ export function AllocationHistoryChart() {
                     const nextAllocationsWithValues = nextItem.allocations
                         .filter((allocation: any) => allocation.value > 0)
                         .map((allocation: any) => ({
-                            name: allocation.name,
+                            name: chartConfig[allocation.address]?.label || allocation.name,
                             value: (nextItem.totalAssets * allocation.value) / 100,
                             address: allocation.address,
                         }))

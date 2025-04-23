@@ -26,6 +26,7 @@ import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import ConnectWalletButton from '@/components/ConnectWalletButton'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import SuperVaultTxDialog from '@/components/dialogs/SuperVaultTx'
+import { useChain } from '@/context/chain-context'
 
 export type THelperText = Record<
     string,
@@ -61,11 +62,13 @@ export default function DepositAndWithdrawAssets() {
         error: vaultStatsError,
     } = useVaultHook()
 
+    const { selectedChain } = useChain()
+
     useEffect(() => {
         if (isWalletConnected) {
-            handleSwitchChain(ChainId.Base)
+            handleSwitchChain(selectedChain)
         }
-    }, [isWalletConnected])
+    }, [isWalletConnected, selectedChain, handleSwitchChain])
 
     useEffect(() => {
         if (depositTx.status === 'approve' && depositTx.isRefreshingAllowance) {
@@ -74,7 +77,7 @@ export default function DepositAndWithdrawAssets() {
                 isConfirming: true,
             }))
 
-            checkAllowance(walletAddress as `0x${string}`).then((allowance) => {
+            checkAllowance(walletAddress as `0x${string}`, selectedChain).then((allowance) => {
                 if (
                     Number(allowance) > 0 &&
                     Number(allowance) >= Number(userEnteredDepositAmount)
@@ -303,7 +306,7 @@ export default function DepositAndWithdrawAssets() {
                                     },
                                     spot_apy: spotApy,
                                 },
-                                chain_id: ChainId.Base,
+                                chain_id: selectedChain,
                             }}
                             amount={
                                 isDepositPositionType
