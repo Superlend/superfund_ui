@@ -14,6 +14,7 @@ import { useAuth } from '@/context/auth-provider'
 import useLogNewUserEvent from '@/hooks/points/useLogNewUserEvent'
 import Link from 'next/link'
 import ExternalLinkAnchor from "@/components/ExternalLink"
+import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
 
 const emailSchema = z.string().email('Please enter a valid email address')
 
@@ -67,16 +68,58 @@ export default function WaitlistPage() {
     const [completedSteps, setCompletedSteps] = useState<number[]>([])
     const [points, setPoints] = useState(0)
     const [socialFollows, setSocialFollows] = useState<string[]>([])
-    const { walletAddress, isWalletConnected } = useWalletConnection()
+    const [showTelegramSection, setShowTelegramSection] = useState(false)
+    const [telegramUsername, setTelegramUsername] = useState('')
+    const [isTelegramLoading, setIsTelegramLoading] = useState(false)
+    const [telegramValidationError, setTelegramValidationError] = useState('')
+    const [isTelegramSuccess, setIsTelegramSuccess] = useState(false)
+
     const [submittedEmail, setSubmittedEmail] = useState<string | null>(null)
     const { logUserEvent } = useLogNewUserEvent()
     const { accessToken, getAccessTokenFromPrivy } = useAuth()
+    const { walletAddress, isWalletConnected } = useWalletConnection()
+
+    const { userMaxWithdrawAmount } = useUserBalance(
+        walletAddress ? (walletAddress as `0x${string}`) : '0x0000000000000000000000000000000000000000'
+    )
 
     useEffect(() => {
         if (isWalletConnected || currentStep === 2) {
             getAccessTokenFromPrivy()
         }
     }, [isWalletConnected, currentStep])
+
+    // Add a function to check if the Telegram table exists
+    useEffect(() => {
+        // Only run the check when wallet is connected and portfolioValue meets threshold
+        if (walletAddress && parseFloat(userMaxWithdrawAmount) >= 1000) {
+            const checkTelegramTableExists = async () => {
+                try {
+                    // Try to get status of Telegram API
+                    const checkResponse = await fetch('/api/telegram-check?wallet=0x0000000000000000000000000000000000000000', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+
+                    if (checkResponse.ok) {
+                        // Table exists, we can show Telegram section
+                        setShowTelegramSection(true);
+                    } else {
+                        // If the API returns an error, log it but don't show Telegram section
+                        console.warn('Telegram API not available:', await checkResponse.text());
+                        setShowTelegramSection(false);
+                    }
+                } catch (error) {
+                    console.error('Error checking Telegram API availability:', error);
+                    setShowTelegramSection(false);
+                }
+            };
+
+            checkTelegramTableExists();
+        }
+    }, [walletAddress, userMaxWithdrawAmount]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -198,7 +241,7 @@ export default function WaitlistPage() {
                 })
             }
 
-            // Show success instead of going to step 3
+            // Show success screen - the Telegram section visibility is handled by the useEffect
             setSuccess(true)
         } catch (err) {
             if (err instanceof Error) {
@@ -285,6 +328,80 @@ export default function WaitlistPage() {
             opacity: 0.15,
             y: 0,
             transition: { duration: 0.5, ease: "easeOut" }
+        }
+    }
+
+    // Add function to validate Telegram username
+    const validateTelegramUsername = (username: string) => {
+        // Telegram usernames must be 5-32 characters and only contain a-z, 0-9 and underscores
+        const telegramUsernameRegex = /^[a-zA-Z0-9_]{5,32}$/
+        if (!telegramUsernameRegex.test(username)) {
+            setTelegramValidationError('Please enter a valid Telegram username (5-32 characters, only letters, numbers, and underscores)')
+            return false
+        }
+        setTelegramValidationError('')
+        return true
+    }
+
+    // Add function to handle Telegram username submission
+    const handleTelegramSubmit = async () => {
+        if (!validateTelegramUsername(telegramUsername)) {
+            return
+        }
+
+        setIsTelegramLoading(true)
+        try {
+            // Log submission details for debugging
+            console.log('Submitting Telegram username:', {
+                wallet: walletAddress,
+                telegram: telegramUsername
+            });
+
+            const checkResponse = await fetch('/api/telegram-check?wallet=' + walletAddress, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            // If the check fails, it might be because the table doesn't exist
+            if (!checkResponse.ok) {
+                const errorText = await checkResponse.text();
+                console.warn('Telegram API check failed:', errorText);
+                throw new Error('Telegram service is not available: ' + errorText);
+            }
+
+            // Proceed with the submission if the check passes
+            const response = await fetch('/api/telegram-connect', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    wallet: walletAddress,
+                    telegram: telegramUsername,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(e => ({
+                    message: `Failed to parse error response: ${response.status} ${response.statusText}`
+                }));
+                console.error('Telegram API submission error:', errorData);
+                throw new Error(errorData.message || `Failed to submit Telegram username: ${response.status} ${response.statusText}`);
+            }
+
+            setIsTelegramSuccess(true)
+
+            // Hide Telegram section after a delay
+            setTimeout(() => {
+                setShowTelegramSection(false)
+            }, 3000)
+        } catch (error) {
+            console.error('Error submitting Telegram username:', error)
+            setTelegramValidationError(`Failed to submit Telegram username: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        } finally {
+            setIsTelegramLoading(false)
         }
     }
 
@@ -556,6 +673,110 @@ export default function WaitlistPage() {
                                         You&apos;ve earned {points} points. We&apos;ll notify you when we launch.
                                     </BodyText>
 
+                                    {/* Conditional Telegram section for high-value portfolios */}
+                                    {showTelegramSection && (
+                                        <div className="w-full mt-4 pt-4 border-t border-white/20">
+                                            <div className="bg-blue-500/30 p-4 rounded-lg flex items-center gap-4 mb-4">
+                                                <div className="bg-blue-500/40 p-2 rounded-lg">
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M6 8H6.01M6 16H6.01M6 12H18M6 12C5.20435 12 4.44129 11.6839 3.87868 11.1213C3.31607 10.5587 3 9.79565 3 9C3 8.20435 3.31607 7.44129 3.87868 6.87868C4.44129 6.31607 5.20435 6 6 6C6.79565 6 7.55871 6.31607 8.12132 6.87868C8.68393 7.44129 9 8.20435 9 9C9 9.79565 8.68393 10.5587 8.12132 11.1213C7.55871 11.6839 6.79565 12 6 12ZM6 12C5.20435 12 4.44129 12.3161 3.87868 12.8787C3.31607 13.4413 3 14.2044 3 15C3 15.7956 3.31607 16.5587 3.87868 17.1213C4.44129 17.6839 5.20435 18 6 18C6.79565 18 7.55871 17.6839 8.12132 17.1213C8.68393 16.5587 9 15.7956 9 15C9 14.2044 8.68393 13.4413 8.12132 12.8787C7.55871 12.3161 6.79565 12 6 12Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                                    </svg>
+                                                </div>
+                                                <BodyText level="body2" className="text-white">
+                                                    Your portfolio of
+                                                    <a href={`https://app.superlend.xyz/portfolio`} target="_blank" rel="noopener noreferrer" className="font-semibold mx-1 border-b border-white hover:text-white/80 hover:border-white/80">
+                                                        ${
+                                                            isNaN(parseFloat(userMaxWithdrawAmount))
+                                                                ? '0.00'
+                                                                : parseFloat(userMaxWithdrawAmount).toFixed(2)
+                                                        }
+                                                    </a>
+                                                    qualifies you for personalized support from our team.
+                                                </BodyText>
+                                            </div>
+
+                                            {/* Telegram submission form - show when not in success state */}
+                                            {!isTelegramSuccess && (
+                                                <>
+                                                    <BodyText level="body2" weight="medium" className="text-white text-center mb-2">
+                                                        Enter your Telegram username to get early updates:
+                                                    </BodyText>
+
+                                                    <div className="flex flex-col gap-2 mb-4">
+                                                        <Input
+                                                            placeholder="Enter your Telegram username"
+                                                            value={telegramUsername}
+                                                            onChange={(e) => setTelegramUsername(e.target.value)}
+                                                            className={`h-12 rounded-md ${telegramValidationError ? 'border-red-300' : 'border-white/30'} 
+                                                                bg-white/10 text-white placeholder:text-white/60`}
+                                                            disabled={isTelegramLoading}
+                                                        />
+                                                        {telegramValidationError && (
+                                                            <motion.div
+                                                                initial={{ opacity: 0, y: -5 }}
+                                                                animate={{ opacity: 1, y: 0 }}
+                                                                className="p-2 bg-red-500/30 border border-red-500/30 rounded-md"
+                                                            >
+                                                                <BodyText level="body3" className="text-red-100 flex items-center">
+                                                                    <XCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+                                                                    {telegramValidationError}
+                                                                </BodyText>
+                                                            </motion.div>
+                                                        )}
+                                                        <BodyText level="body3" className="text-white/70">
+                                                            Your information will only be used for product improvement purposes.
+                                                        </BodyText>
+                                                    </div>
+
+                                                    <Button
+                                                        variant="default"
+                                                        className="w-full h-12 bg-white hover:bg-white/80 text-teal-700 rounded-md flex items-center justify-center gap-2"
+                                                        onClick={handleTelegramSubmit}
+                                                        disabled={isTelegramLoading || !telegramUsername}
+                                                    >
+                                                        {isTelegramLoading ? (
+                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                        ) : (
+                                                            <>
+                                                                SUBMIT
+                                                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path d="M4.16663 10H15.8333M15.8333 10L9.99996 4.16669M15.8333 10L9.99996 15.8334" stroke="currentColor" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round" />
+                                                                </svg>
+                                                            </>
+                                                        )}
+                                                    </Button>
+                                                </>
+                                            )}
+
+                                            {/* Success message after Telegram submission */}
+                                            {isTelegramSuccess && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 20 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{
+                                                        type: "spring",
+                                                        stiffness: 300,
+                                                        damping: 30
+                                                    }}
+                                                    className="bg-green-500/30 p-5 rounded-lg border border-green-500/40 mb-4"
+                                                >
+                                                    <div className="flex items-center justify-center gap-3 mb-3">
+                                                        <div className="bg-green-500 rounded-full p-1">
+                                                            <Check className="h-6 w-6 text-white" />
+                                                        </div>
+                                                        <BodyText level="body1" weight="medium" className="text-white">
+                                                            Telegram Username Submitted!
+                                                        </BodyText>
+                                                    </div>
+                                                    <BodyText level="body2" className="text-white text-center">
+                                                        Thank you! Our product manager will be in touch with you soon
+                                                        through Telegram to provide personalized support.
+                                                    </BodyText>
+                                                </motion.div>
+                                            )}
+                                        </div>
+                                    )}
+
                                     <div className="w-full mt-4 pt-4 border-t border-white/20">
                                         <BodyText level="body2" weight="medium" className="text-white text-center mb-4">
                                             To stay updated on the launch:
@@ -597,17 +818,6 @@ export default function WaitlistPage() {
                                             </Link>
                                         </div>
                                     </div>
-
-                                    {/* <Button 
-                                    variant="secondary" 
-                                    className="bg-white/20 hover:bg-white/30 border-0 text-white mt-2"
-                                    onClick={() => {
-                                        setSuccess(false);
-                                        setCurrentStep(2);
-                                    }}
-                                >
-                                    Edit Registration
-                                </Button> */}
                                 </motion.div>
                             ) : (
                                 <motion.div
