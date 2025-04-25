@@ -115,7 +115,7 @@ export default function SuperFundSonicDialog({
                         We need your inputs!
                     </HeadingText>
                     <BodyText level="body1" className="text-gray-600">
-                        Hope you've been enjoying Superfund. Our product manager
+                        Hope you&apos;ve been enjoying Superfund. Our product manager
                         would like to have a chat with you and ask you a few
                         questions to understand how best we can add value to you.
                         This will help us build the best DeFi products for you.
