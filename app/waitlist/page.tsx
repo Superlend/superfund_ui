@@ -354,7 +354,8 @@ export default function WaitlistPage() {
             // Log submission details for debugging
             console.log('Submitting Telegram username:', {
                 wallet: walletAddress,
-                telegram: telegramUsername
+                telegram: telegramUsername,
+                portfolioValue: parseFloat(userMaxWithdrawAmount)
             });
 
             const checkResponse = await fetch('/api/telegram-check?wallet=' + walletAddress, {
@@ -380,6 +381,7 @@ export default function WaitlistPage() {
                 body: JSON.stringify({
                     wallet: walletAddress,
                     telegram: telegramUsername,
+                    portfolioValue: parseFloat(userMaxWithdrawAmount)
                 }),
             });
 
