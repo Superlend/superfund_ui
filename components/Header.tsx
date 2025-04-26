@@ -86,6 +86,10 @@ const Header: React.FC = () => {
         show: { opacity: 1, x: 0 },
     }
 
+    if(pathname === '/waitlist') {
+        return null
+    }
+
     return (
         <>
             <header className="z-50 sticky top-0 md:top-5 left-0 max-w-[1200px] w-full mx-auto md:px-5">
