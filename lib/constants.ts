@@ -71,7 +71,7 @@ export const SONIC_VAULT_STRATEGIES_COLORS = {
     'MEV Capital Sonic Cluster': "#8A2BE2",
     'Re7 labs Cluster': "#FF8C00",
     'Cash Reserve': "#F4A460",
-    'Silo Finance Borrowable USDC.e Deposit': "#171a17",
+    'Silo Finance Borrowable USDC.e Deposit, SiloId: 27': "#171a17",
     'Silo Finance Borrowable USDC.e Deposit, SiloId: 49': "#3f3f3f",
 }
 
@@ -153,16 +153,16 @@ export const SONIC_VAULT_STRATEGIES: Record<string, SonicStrategy> = {
         details_url: `https://sonicscan.org/token/0x29219dd400f2Bf60E5a23d13Be72B486D4038894?a=0x96328cd6fBCc3adC8bee58523Bbc67aBF38f8124`,
         vault_address: '0x0000000000000000000000000000000000000000'
     },
-    "Silo Finance Borrowable USDC.e Deposit": {
+    "Silo Finance Borrowable USDC.e Deposit, SiloId: 27": {
         address: "0x14886c2Fc03D1858e6d097d40EdF92B3bFEBA678",
         strategy_type: StrategiesType.SILO_V2,
-        details_url: "https://app.silo.finance/borrowable-usdc-e-deposit",
+        details_url: "https://app.silo.finance/markets/sonic/anon-usdc-27",
         vault_address: "0x7e88AE5E50474A48deA4c42a634aA7485e7CaA62",
     },
     "Silo Finance Borrowable USDC.e Deposit, SiloId: 49": {
         address: "0xa352A4851cc8ae0DA04220a92F4Ce4A0E06912dc",
         strategy_type: StrategiesType.SILO_V2,
-        details_url: "https://app.silo.finance/borrowable-usdc-e-deposit",
+        details_url: "https://app.silo.finance/markets/sonic/anon-usdc-49",
         vault_address: "0xa18a8f100f2c976044f2f84fae1eE9f807Ae7893",
     }
 }

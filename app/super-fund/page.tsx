@@ -51,7 +51,7 @@ export default function ChainSelectionPage() {
         <div className="space-y-4">
           <Button 
             className="w-full h-14"
-            onClick={() => router.push('/super-fund/sonic')}
+            onClick={() => window.open('/waitlist', '_blank')}
           >
             <div className="flex items-center justify-center gap-3">
               <ImageWithDefault

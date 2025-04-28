@@ -14,6 +14,35 @@ import { usePrivy } from '@privy-io/react-auth'
 import { ProfileMenuDropdown } from './dropdowns/ProfileMenuDropdown'
 import { usePathname, useRouter } from 'next/navigation'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
+import SuperFundSonicDialog from './dialogs/SuperFundSonicDialog'
+import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
+
+// Create a wrapper component to conditionally use the useUserBalance hook
+function PortfolioChecker({ 
+    walletAddress, 
+    onPortfolioCheck 
+}: { 
+    walletAddress: `0x${string}`, 
+    onPortfolioCheck: (value: string) => void 
+}) {
+    const { userMaxWithdrawAmount, isLoading } = useUserBalance(walletAddress);
+    
+    useEffect(() => {
+        if (!isLoading && userMaxWithdrawAmount) {
+            try {
+                const portfolioValue = parseFloat(userMaxWithdrawAmount);
+                
+                // Check if portfolio is greater than $1000K ($1M)
+                if (!isNaN(portfolioValue) && portfolioValue > 1000) 
+                    onPortfolioCheck(userMaxWithdrawAmount);
+            } catch (error) {
+                console.error('Error parsing portfolio value:', error);
+            }
+        }
+    }, [isLoading, userMaxWithdrawAmount, onPortfolioCheck]);
+    
+    return null; // This is a non-visual component
+}
 
 export default function ConnectWalletButton() {
     const { isClient } = useIsClient()
@@ -22,6 +51,8 @@ export default function ConnectWalletButton() {
     const router = useRouter()
     const pathname = usePathname()
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+    const [showSonicDialog, setShowSonicDialog] = useState(false)
+    const [portfolioValue, setPortfolioValue] = useState('0')
     const disableLogin = !ready || (ready && authenticated)
     const disableLogout = !ready || (ready && !authenticated)
     const isDisabled = walletAddress ? disableLogout : disableLogin
@@ -32,14 +63,12 @@ export default function ConnectWalletButton() {
                 ? `${walletAddress?.slice(0, 5)}...${walletAddress?.slice(-5)}`
                 : 'Connect Wallet'
 
-    // Handle redirection after successful connection
-    // useEffect(() => {
-    //     if (authenticated && walletAddress) {
-    //         router.push('/super-fund')
-    //     } else if (ready && !walletAddress) {
-    //         router.push('/')
-    //     }
-    // }, [authenticated, walletAddress, router])
+    // Handle showing dialog when portfolio value is set
+    useEffect(() => {
+        if (portfolioValue !== '0') {
+            setShowSonicDialog(true);
+        }
+    }, [portfolioValue]);
 
     // Handle logout with redirection
     const handleLogout = async () => {
@@ -47,8 +76,31 @@ export default function ConnectWalletButton() {
         // router.push('/')
     }
 
+    // Portfolio check handler
+    const handlePortfolioCheck = (value: string) => {
+        setPortfolioValue(value);
+    };
+
     return (
         <>
+            {/* Conditionally render the PortfolioChecker only when wallet is connected */}
+            {walletAddress && (
+                <PortfolioChecker 
+                    walletAddress={walletAddress as `0x${string}`}
+                    onPortfolioCheck={handlePortfolioCheck}
+                />
+            )}
+
+            {/* Superfund Sonic Dialog */}
+            {walletAddress && (
+                <SuperFundSonicDialog 
+                    open={showSonicDialog}
+                    setOpen={setShowSonicDialog}
+                    walletAddress={walletAddress as `0x${string}`}
+                    portfolioValue={portfolioValue}
+                />
+            )}
+
             {/* This is a workaround to show the skeleton on the first render */}
             {!isClient && (
                 <div className="w-[100px] md:w-[120px] h-[40px] rounded-4 overflow-hidden">

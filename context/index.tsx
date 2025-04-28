@@ -9,11 +9,12 @@ import {
     sonic,
 } from 'viem/chains'
 import { http } from 'wagmi'
+import { AuthProvider } from './auth-provider'
 
 // Set up queryClient
 const queryClient = new QueryClient()
 
-const appId = process.env.NEXT_PUBLIC_PRIVY_PROJECT_ID || ''
+export const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_PROJECT_ID || ''
 
 // Set up metadata
 const metadata = {
@@ -68,7 +69,7 @@ function ContextProvider({
 
     return (
         <PrivyProvider
-            appId={appId}
+            appId={PRIVY_APP_ID}
             config={{
                 loginMethods: ['wallet', context && 'farcaster'],
                 appearance: {
@@ -92,7 +93,11 @@ function ContextProvider({
             }}
         >
             <QueryClientProvider client={queryClient}>
-                <WagmiProvider config={config}>{children}</WagmiProvider>
+                <WagmiProvider config={config}>
+                    <AuthProvider>
+                        {children}
+                    </AuthProvider>
+                </WagmiProvider>
             </QueryClientProvider>
         </PrivyProvider>
     )

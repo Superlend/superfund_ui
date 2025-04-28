@@ -74,22 +74,39 @@ export async function checkAllowance(walletAddress: `0x${string}`, chainId: Chai
 
 export function useUserBalance(walletAddress: `0x${string}`) {
     const [balance, setBalance] = useState<string>('0')
-    const [isLoading, setIsLoading] = useState(true)
+    const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [userMaxWithdrawAmount, setUserMaxWithdrawAmount] = useState<string>('0')
     const timeoutRef = useRef<NodeJS.Timeout | null>(null)
     const isMountedRef = useRef(true)
-    const { selectedChain } = useChain()
+    
+    // Use a try-catch to handle the case when we're not in a ChainProvider
+    let selectedChain: ChainId;
+    try {
+        // Try to use the chain context
+        const { selectedChain: chainFromContext } = useChain();
+        selectedChain = chainFromContext;
+    } catch (error) {
+        // Default to Base chain if ChainProvider is not available
+        console.warn('useChain hook called outside ChainProvider, using default chain');
+        selectedChain = ChainId.Base;
+    }
+    
+    const isValidWalletAddress = walletAddress && walletAddress !== '0x0000000000000000000000000000000000000000'
 
     async function getUserBalance(walletAddress: string, isFirstTimeCall: boolean) {
-        if (!walletAddress) return
+        if (!walletAddress || walletAddress === '0x0000000000000000000000000000000000000000') {
+            if (isFirstTimeCall && isMountedRef.current) {
+                setIsLoading(false)
+            }
+            return
+        }
 
         try {
             if (isFirstTimeCall) {
                 setIsLoading(true)
             }
 
-            // Get chain-specific config
             const config = CHAIN_CONFIGS[selectedChain as keyof typeof CHAIN_CONFIGS]
             if (!config) {
                 throw new Error(`Configuration not found for chain ID ${selectedChain}`)
@@ -135,9 +152,7 @@ export function useUserBalance(walletAddress: `0x${string}`) {
                 setIsLoading(false)
             }
 
-            // Schedule next update after completion
-            if (isMountedRef.current) {
-                // Clear any existing timeout before setting a new one
+            if (isMountedRef.current && isValidWalletAddress) {
                 if (timeoutRef.current) {
                     clearTimeout(timeoutRef.current)
                 }
@@ -154,16 +169,20 @@ export function useUserBalance(walletAddress: `0x${string}`) {
     useEffect(() => {
         isMountedRef.current = true
         
-        // Clear any existing timeout when dependencies change (chain changes)
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current)
             timeoutRef.current = null
         }
 
-        // Reset states when chain changes
-        setIsLoading(true)
-        
-        getUserBalance(walletAddress, true)
+        if (isValidWalletAddress) {
+            setIsLoading(true)
+            getUserBalance(walletAddress, true)
+        } else {
+            setIsLoading(false)
+            setBalance('0')
+            setUserMaxWithdrawAmount('0')
+            setError(null)
+        }
 
         return () => {
             isMountedRef.current = false
@@ -172,7 +191,7 @@ export function useUserBalance(walletAddress: `0x${string}`) {
                 timeoutRef.current = null
             }
         }
-    }, [walletAddress, selectedChain])
+    }, [walletAddress, selectedChain, isValidWalletAddress])
 
     return { balance, userMaxWithdrawAmount, isLoading, error }
 }

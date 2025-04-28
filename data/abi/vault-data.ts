@@ -12,19 +12,19 @@ export const rebalancedAssetsList = [
     {
         title: 'MORPHO',
         logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/morpho-logo.svg',
-        link: 'https://morpho.org/',
+        link: 'https://morpho.org',
         chainIds: [ChainId.Base],
     },
     {
         title: 'FLUID',
         logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/fluid_logo.png',
-        link: 'https://fluid.io/',
+        link: 'https://fluid.io',
         chainIds: [ChainId.Base],
     },
     {
         title: 'Euler',
         logo: '/images/logos/euler-symbol.svg',
-        link: 'https://euler.finance/',
+        link: 'https://euler.finance',
         chainIds: [ChainId.Base, ChainId.Sonic],
     },
     {
