@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+const ALLOWED_PATHS = ['/waitlist', '/super-fund', '/super-fund/base', '/super-fund/base/txs']
+
 export function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
 
@@ -23,8 +25,8 @@ export function middleware(request: NextRequest) {
         return NextResponse.next()
     }
 
-    // Skip if already on waitlist page OR super-fund page
-    if (url.pathname === '/waitlist' || url.pathname === '/super-fund' || url.pathname === '/super-fund/base') {
+    // Skip if already on ALLOWED_PATHS
+    if (ALLOWED_PATHS.includes(url.pathname)) {
         return NextResponse.next()
     }
 

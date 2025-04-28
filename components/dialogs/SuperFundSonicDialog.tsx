@@ -209,7 +209,7 @@ export default function SuperFundSonicDialog({
 
     // Mobile drawer
     return (
-        <Drawer open={true} onOpenChange={handleOpenChange}>
+        <Drawer open={open} onOpenChange={handleOpenChange}>
             <DrawerContent>
                 <DrawerHeader className="relative">
                     {/* <DrawerTitle className="text-center">
