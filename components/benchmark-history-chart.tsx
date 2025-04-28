@@ -19,8 +19,8 @@ import { Period } from '@/types/periodButtons'
 import { PERIOD_LIST } from '@/constants'
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { useHistoricalData } from '@/hooks/vault_hooks/useHistoricalDataHook'
-import { abbreviateNumber, extractTimeFromDate, formatDateAccordingToPeriod, shortNubers } from '@/lib/utils'
-import { ChartConfig, ChartContainer } from './ui/chart'
+import { abbreviateNumber, extractTimeFromDate, formatDateAccordingToPeriod } from '@/lib/utils'
+import { ChartContainer } from './ui/chart'
 import { TimelineFilterTabs } from './tabs/timeline-filter-tabs'
 import {
     Dialog,
@@ -39,39 +39,57 @@ import { useChain } from '@/context/chain-context'
 import { ChainId } from '@/types/chain'
 import { SONIC_USDC_ADDRESS, USDC_ADDRESS } from '@/lib/constants'
 import { fetchRewardApyAaveV3 } from '@/hooks/vault_hooks/vaultHook'
+import { CHART_CONFIG, PROTOCOL_IDENTIFIERS } from '@/lib/benchmark-chart-config'
+import { 
+    TBenchmarkDataPoint, 
+    TFormattedBenchmarkDataPoint, 
+    TCustomTooltipProps,
+    TCustomXAxisTickProps,
+    TCustomYAxisTickProps
+} from '@/types/benchmark-chart'
 
-
-const CustomTooltip = ({ active, payload }: any) => {
+const CustomTooltip = ({ active, payload }: TCustomTooltipProps) => {
     if (active && payload && payload.length) {
-        const isAaveApproximated = payload[0]?.payload.isAaveApproximated;
+        const data = payload[0]?.payload;
+
+        // Sort protocols by their APY values (highest to lowest)
+        const sortedProtocols = Object.entries(CHART_CONFIG)
+            .map(([key, config]) => {
+                const value = data[key as keyof TFormattedBenchmarkDataPoint];
+                const displayValue = data[`${key}Display` as keyof TFormattedBenchmarkDataPoint];
+                const isApproximated = data[`is${key.charAt(0).toUpperCase() + key.slice(1)}Approximated` as keyof TFormattedBenchmarkDataPoint];
+                
+                return {
+                    key,
+                    config,
+                    value: value as number | null | undefined,
+                    displayValue,
+                    isApproximated
+                };
+            })
+            .filter(item => item.value !== null && item.value !== undefined)
+            .sort((a, b) => (b.value || 0) - (a.value || 0));
 
         return (
             <div className="flex flex-col gap-2 bg-card border border-border rounded-lg shadow-lg p-3 text-sm">
                 <BodyText level='body3' className="text-gray-600">
-                    {payload[0]?.payload.timestamp}
+                    {data.timestamp}
                 </BodyText>
                 <div className="space-y-1">
-                    <BodyText level='body3' className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full bg-[#fb5900]" />
-                            Superfund
-                        </div>
-                        <span className="font-medium">
-                            {payload[0]?.payload.superfundDisplay}% APY
-                        </span>
-                    </BodyText>
-                    <BodyText level='body3' className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full bg-[#1E90FF]" />
-                            Aave
-                            {/* {isAaveApproximated && (
-                                <span className="text-xs text-muted-foreground ml-1">(approx.)</span>
-                            )} */}
-                        </div>
-                        <span className="font-medium">
-                            {payload[0]?.payload.aaveDisplay}% APY
-                        </span>
-                    </BodyText>
+                    {sortedProtocols.map(({ key, config, displayValue, isApproximated }) => (
+                        <BodyText key={key} level='body3' className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-1">
+                                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: config.color }} />
+                                {config.label}
+                                {/* {isApproximated && (
+                                    <span className="text-xs text-muted-foreground ml-1">(approx.)</span>
+                                )} */}
+                            </div>
+                            <span className="font-medium">
+                                {displayValue}% APY
+                            </span>
+                        </BodyText>
+                    ))}
                 </div>
             </div>
         )
@@ -97,34 +115,13 @@ const styles = `
     }
 `
 
-interface CustomXAxisTickProps {
-    x: number
-    y: number
-    selectedRange: Period
-    payload: {
-        value: number
-    }
-    index: number
-    length: number
-}
-
-interface CustomYAxisTickProps {
-    x: number
-    y: number
-    payload: {
-        value: number
-    }
-    index: number
-    length: number
-}
-
 const CustomYAxisTick = ({
     x,
     y,
     payload,
     index,
     length,
-}: CustomYAxisTickProps) => {
+}: TCustomYAxisTickProps) => {
     return (
         <g
             transform={`translate(${x},${y})`}
@@ -144,7 +141,7 @@ const CustomXAxisTick = ({
     payload,
     index,
     length,
-}: CustomXAxisTickProps) => {
+}: TCustomXAxisTickProps) => {
     if (index % 2 !== 0 && length > 10) return null;
 
     return (
@@ -159,53 +156,101 @@ const CustomXAxisTick = ({
     )
 }
 
-const chartConfig = {
-    superfund: {
-        label: 'Superfund',
-        color: '#fb5900',
-    },
-    aave: {
-        label: 'Aave',
-        color: '#1E90FF',
-    }
-} satisfies ChartConfig
-
 export function BenchmarkHistoryChart() {
     const [selectedRange, setSelectedRange] = useState<Period>(Period.oneMonth)
     const [apiPeriod, setApiPeriod] = useState<Period | 'YEAR'>(Period.oneMonth)
     const [aaveRewardApy, setAaveRewardApy] = useState<number>(0)
     const { selectedChain } = useChain()
-    const SONIC_PROTOCOL_IDENTIFIER = '0x0b1d26d64c197f8644f6f24ef29af869793188f521c37dc35052c5aebf1e1b1e'
-    const BASE_PROTOCOL_IDENTIFIER = '0x8ef0fa7f46a36d852953f0b6ea02f9a92a8a2b1b9a39f38654bee0792c4b4304'
 
-    const { historicalData: SuperfundHistoryData, isLoading: isSuperfundLoading } = useHistoricalData({
-        period: selectedRange,
+    // Get Superfund data
+    const { historicalData: superfundData, isLoading: superfundLoading } = useHistoricalData({
+        period: apiPeriod === 'YEAR' ? Period.allTime : apiPeriod as Period,
+        chain_id: selectedChain
     })
-    fetchRewardApyAaveV3()
-        .then((apy) => {
-            setAaveRewardApy(apy)
-        })
-        .catch((error) => {
-            console.error('Error fetching Aave reward apy:', error)
-        })
-    const { data: AaveHistoryData, isLoading: isAaveLoading } = useGetBenchmarkHistory({
-        protocol_identifier: selectedChain === ChainId.Sonic ? SONIC_PROTOCOL_IDENTIFIER : BASE_PROTOCOL_IDENTIFIER,
-        token: selectedChain === ChainId.Sonic ? SONIC_USDC_ADDRESS : USDC_ADDRESS,
+
+    // Get Aave reward APY
+    useEffect(() => {
+        fetchRewardApyAaveV3()
+            .then((apy) => {
+                setAaveRewardApy(apy)
+            })
+            .catch((error) => {
+                console.error('Error fetching Aave reward apy:', error)
+            })
+    }, [])
+
+    // Get Aave data
+    const { data: aaveData, isLoading: isAaveLoading } = useGetBenchmarkHistory({
+        protocol_identifier: PROTOCOL_IDENTIFIERS[selectedChain === ChainId.Sonic ? 'SONIC' : 'BASE'].aave,
         period: apiPeriod,
+        token: selectedChain === ChainId.Sonic ? SONIC_USDC_ADDRESS : USDC_ADDRESS
     })
-    const [historicalData, setHistoricalData] = useState<Array<{ timestamp: number; aave: number; superfund: number }>>([])
-    const prevSuperfundData = useRef<any>(null);
-    const prevAaveData = useRef<any>(null);
 
-    // Combine both data sources
+    // Get Morpho data for Base chain
+    const { data: morphoGauntletPrimeData, isLoading: isMorphoGauntletPrimeLoading } = useGetBenchmarkHistory({
+        protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.morphoGauntletPrime,
+        period: apiPeriod,
+        token: USDC_ADDRESS
+    })
+
+    const { data: morphoMoonwellData, isLoading: isMorphoMoonwellLoading } = useGetBenchmarkHistory({
+        protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.morphoMoonwell,
+        period: apiPeriod,
+        token: USDC_ADDRESS
+    })
+
+    const { data: morphoGauntletCoreData, isLoading: isMorphoGauntletCoreLoading } = useGetBenchmarkHistory({
+        protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.morphoGauntletCore,
+        period: apiPeriod,
+        token: USDC_ADDRESS
+    })
+
+    const { data: morphoSteakhouseData, isLoading: isMorphoSteakhouseLoading } = useGetBenchmarkHistory({
+        protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.morphoSteakhouse,
+        period: apiPeriod,
+        token: USDC_ADDRESS
+    })
+
+    const { data: morphoIonicData, isLoading: isMorphoIonicLoading } = useGetBenchmarkHistory({
+        protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.morphoIonic,
+        period: apiPeriod,
+        token: USDC_ADDRESS
+    })
+
+    const { data: morphoRe7Data, isLoading: isMorphoRe7Loading } = useGetBenchmarkHistory({
+        protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.morphoRe7,
+        period: apiPeriod,
+        token: USDC_ADDRESS
+    })
+
+    // Get Fluid data for Base chain
+    const { data: fluidData, isLoading: isFluidLoading } = useGetBenchmarkHistory({
+        protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.fluid,
+        period: apiPeriod,
+        token: USDC_ADDRESS
+    });
+
+    const [historicalData, setHistoricalData] = useState<TBenchmarkDataPoint[]>([])
+    const prevSuperfundData = useRef<any>(null)
+    const prevAaveData = useRef<any>(null)
+    const prevMorphoData = useRef<any>({
+        morphoGauntletPrime: null,
+        morphoMoonwell: null,
+        morphoGauntletCore: null,
+        morphoSteakhouse: null,
+        morphoIonic: null,
+        morphoRe7: null
+    })
+
+    // Combine data sources
     useEffect(() => {
         // Skip if API is still loading
-        if (isSuperfundLoading || isAaveLoading) return;
+        if (superfundLoading || isAaveLoading) return;
 
         // Create maps for faster lookups
         const superfundMap = new Map<number, number>();
-        if (SuperfundHistoryData && Array.isArray(SuperfundHistoryData)) {
-            SuperfundHistoryData.forEach((item: any) => {
+        if (superfundData && Array.isArray(superfundData)) {
+            superfundData.forEach((item: any) => {
                 if (item && item.timestamp && item.totalApy) {
                     superfundMap.set(item.timestamp, item.totalApy);
                 }
@@ -213,10 +258,43 @@ export function BenchmarkHistoryChart() {
         }
 
         const aaveMap = new Map<number, number>();
-        if (AaveHistoryData?.processMap && Array.isArray(AaveHistoryData.processMap)) {
-            AaveHistoryData.processMap.forEach((item: any) => {
+        if (aaveData?.processMap && Array.isArray(aaveData.processMap)) {
+            aaveData.processMap.forEach((item: any) => {
                 if (item && item.timestamp && item.data && item.data.depositRate) {
                     aaveMap.set(item.timestamp, item.data.depositRate);
+                }
+            });
+        }
+
+        // Create maps for Morpho protocols if on Base chain
+        const morphoMaps = {
+            fluid: new Map<number, number>(),
+            morphoGauntletPrime: new Map<number, number>(),
+            morphoMoonwell: new Map<number, number>(),
+            morphoGauntletCore: new Map<number, number>(),
+            morphoSteakhouse: new Map<number, number>(),
+            morphoIonic: new Map<number, number>(),
+            morphoRe7: new Map<number, number>()
+        };
+
+        if (selectedChain === ChainId.Base) {
+            const morphoData = {
+                fluid: fluidData,
+                morphoGauntletPrime: morphoGauntletPrimeData,
+                morphoMoonwell: morphoMoonwellData,
+                morphoGauntletCore: morphoGauntletCoreData,
+                morphoSteakhouse: morphoSteakhouseData,
+                morphoIonic: morphoIonicData,
+                morphoRe7: morphoRe7Data
+            };
+
+            Object.entries(morphoData).forEach(([key, data]) => {
+                if (data?.processMap && Array.isArray(data.processMap)) {
+                    data.processMap.forEach((item: any) => {
+                        if (item && item.timestamp && item.data && item.data.depositRate) {
+                            morphoMaps[key as keyof typeof morphoMaps].set(item.timestamp, item.data.depositRate);
+                        }
+                    });
                 }
             });
         }
@@ -224,35 +302,52 @@ export function BenchmarkHistoryChart() {
         // Get all timestamps
         const superfundTimestamps = Array.from(superfundMap.keys());
         const aaveTimestamps = Array.from(aaveMap.keys());
-
+        const morphoTimestamps = selectedChain === ChainId.Base 
+            ? Object.values(morphoMaps).flatMap(map => Array.from(map.keys()))
+            : [];
 
         // Check if timestamps are in different formats (e.g., milliseconds vs seconds)
         const superfundFirstTimestamp = superfundTimestamps[0];
         const aaveFirstTimestamp = aaveTimestamps[0];
+        const morphoFirstTimestamp = morphoTimestamps[0];
 
         // Log timestamp formats
-        if (superfundFirstTimestamp && aaveFirstTimestamp) {
+        if (superfundFirstTimestamp && (aaveFirstTimestamp || morphoFirstTimestamp)) {
             // Normalize timestamps to milliseconds if needed
             let normalizedSuperfundTimestamps = superfundTimestamps;
             let normalizedSuperfundMap = superfundMap;
             let normalizedAaveTimestamps = aaveTimestamps;
             let normalizedAaveMap = aaveMap;
+            let normalizedMorphoMaps = morphoMaps;
 
             // Convert seconds to milliseconds if needed
-            if (superfundFirstTimestamp.toString().length === 10 && aaveFirstTimestamp.toString().length === 13) {
-                // Superfund in seconds, Aave in milliseconds
+            if (superfundFirstTimestamp.toString().length === 10 && 
+                (aaveFirstTimestamp?.toString().length === 13 || morphoFirstTimestamp?.toString().length === 13)) {
+                // Superfund in seconds, others in milliseconds
                 normalizedSuperfundMap = new Map();
                 normalizedSuperfundTimestamps = superfundTimestamps.map(ts => ts * 1000);
                 superfundMap.forEach((value, key) => {
                     normalizedSuperfundMap.set(key * 1000, value);
                 });
-            } else if (superfundFirstTimestamp.toString().length === 13 && aaveFirstTimestamp.toString().length === 10) {
-                // Superfund in milliseconds, Aave in seconds
+            } else if (superfundFirstTimestamp.toString().length === 13 && 
+                      (aaveFirstTimestamp?.toString().length === 10 || morphoFirstTimestamp?.toString().length === 10)) {
+                // Superfund in milliseconds, others in seconds
                 normalizedAaveMap = new Map();
                 normalizedAaveTimestamps = aaveTimestamps.map(ts => ts * 1000);
                 aaveMap.forEach((value, key) => {
                     normalizedAaveMap.set(key * 1000, value);
                 });
+
+                if (selectedChain === ChainId.Base) {
+                    Object.entries(morphoMaps).forEach(([key, map]) => {
+                        const normalizedMap = new Map();
+                        const timestamps = Array.from(map.keys());
+                        timestamps.forEach(ts => {
+                            normalizedMap.set(ts * 1000, map.get(ts)!);
+                        });
+                        normalizedMorphoMaps[key as keyof typeof morphoMaps] = normalizedMap;
+                    });
+                }
             }
 
             // Helper function to find closest timestamp in a set
@@ -278,61 +373,131 @@ export function BenchmarkHistoryChart() {
             // Sort Superfund timestamps chronologically
             normalizedSuperfundTimestamps.sort((a, b) => a - b);
 
-            // For each Superfund timestamp, find exact or nearest Aave value
+            // For each Superfund timestamp, find exact or nearest values for other protocols
             const sortedAaveTimestamps = Array.from(normalizedAaveTimestamps).sort((a, b) => a - b);
+            const sortedMorphoTimestamps = selectedChain === ChainId.Base
+                ? Object.values(normalizedMorphoMaps).map(map => Array.from(map.keys()).sort((a, b) => a - b))
+                : [];
 
             const combined = normalizedSuperfundTimestamps.map(timestamp => {
                 // Get Superfund value
                 const superfundValue = normalizedSuperfundMap.get(timestamp);
 
                 // Try exact match for Aave first
+                let aaveValue = null;
+                let isAaveApproximated = false;
                 if (normalizedAaveMap.has(timestamp)) {
-                    return {
-                        timestamp,
-                        superfund: superfundValue as number,
-                        aave: normalizedAaveMap.get(timestamp) as number
-                    };
+                    aaveValue = normalizedAaveMap.get(timestamp);
+                } else {
+                    // If no exact match, find closest Aave timestamp
+                    const closestAaveTimestamp = findClosestTimestamp(timestamp, sortedAaveTimestamps);
+                    if (closestAaveTimestamp !== null) {
+                        aaveValue = normalizedAaveMap.get(closestAaveTimestamp);
+                        isAaveApproximated = true;
+                    }
                 }
 
-                // If no exact match, find closest Aave timestamp
-                const closestAaveTimestamp = findClosestTimestamp(timestamp, sortedAaveTimestamps);
-
-                if (closestAaveTimestamp !== null) {
-                    return {
-                        timestamp,
-                        superfund: superfundValue as number,
-                        aave: normalizedAaveMap.get(closestAaveTimestamp) as number,
-                        isAaveApproximated: true // Flag to indicate approximated value
-                    };
+                // For Base chain, get Fluid and Morpho values
+                let fluidValue = null;
+                let isFluidApproximated = false;
+                if (selectedChain === ChainId.Base) {
+                    const fluidMap = normalizedMorphoMaps['fluid'];
+                    const sortedFluidTimestamps = sortedMorphoTimestamps[0]; // fluid is first in morphoMaps
+                    if (fluidMap && fluidMap.has(timestamp)) {
+                        fluidValue = fluidMap.get(timestamp);
+                        isFluidApproximated = false;
+                    } else if (fluidMap) {
+                        const closestFluidTimestamp = findClosestTimestamp(timestamp, sortedFluidTimestamps);
+                        if (closestFluidTimestamp !== null) {
+                            fluidValue = fluidMap.get(closestFluidTimestamp);
+                            isFluidApproximated = true;
+                        }
+                    }
                 }
 
-                // If no reasonable Aave match found
+                // For Base chain, get Morpho values
+                let morphoValues: any = {};
+                if (selectedChain === ChainId.Base) {
+                    Object.entries(normalizedMorphoMaps).forEach(([key, map], index) => {
+                        if (key === 'fluid') return; // handled above
+                        const morphoKey = key as keyof typeof morphoMaps;
+                        if (map.has(timestamp)) {
+                            morphoValues[morphoKey] = map.get(timestamp);
+                            morphoValues[`is${morphoKey.charAt(0).toUpperCase() + morphoKey.slice(1)}Approximated`] = false;
+                        } else {
+                            const closestMorphoTimestamp = findClosestTimestamp(timestamp, sortedMorphoTimestamps[index]);
+                            if (closestMorphoTimestamp !== null) {
+                                morphoValues[morphoKey] = map.get(closestMorphoTimestamp);
+                                morphoValues[`is${morphoKey.charAt(0).toUpperCase() + morphoKey.slice(1)}Approximated`] = true;
+                            } else {
+                                morphoValues[morphoKey] = null;
+                                morphoValues[`is${morphoKey.charAt(0).toUpperCase() + morphoKey.slice(1)}Approximated`] = false;
+                            }
+                        }
+                    });
+                }
+
                 return {
                     timestamp,
                     superfund: superfundValue as number,
-                    aave: null // Will be handled in rendering
+                    aave: aaveValue,
+                    isAaveApproximated,
+                    fluid: fluidValue,
+                    isFluidApproximated,
+                    ...morphoValues
                 };
             });
 
-            setHistoricalData(combined.filter(d => d.aave !== null) as any);
+            setHistoricalData(
+              combined.filter(d =>
+                d.aave !== null ||
+                d.fluid !== null ||
+                d.morphoGauntletPrime !== null ||
+                d.morphoMoonwell !== null ||
+                d.morphoGauntletCore !== null ||
+                d.morphoSteakhouse !== null ||
+                d.morphoIonic !== null ||
+                d.morphoRe7 !== null
+              ) as TBenchmarkDataPoint[]
+            );
         } else {
             console.log('Missing timestamp data in one or both datasets');
             setHistoricalData([]);
         }
 
         // Update refs
-        prevSuperfundData.current = SuperfundHistoryData;
-        prevAaveData.current = AaveHistoryData;
-
-    }, [SuperfundHistoryData, AaveHistoryData, isSuperfundLoading, isAaveLoading]);
-
-    const chartData = useMemo(() => {
-
-        if (historicalData.length === 0) {
-            return [];
+        prevSuperfundData.current = superfundData;
+        prevAaveData.current = aaveData;
+        if (selectedChain === ChainId.Base) {
+            prevMorphoData.current = {
+                morphoGauntletPrime: morphoGauntletPrimeData,
+                morphoMoonwell: morphoMoonwellData,
+                morphoGauntletCore: morphoGauntletCoreData,
+                morphoSteakhouse: morphoSteakhouseData,
+                morphoIonic: morphoIonicData,
+                morphoRe7: morphoRe7Data
+            };
         }
 
-        const formatted = historicalData.map((item: any) => {
+    }, [
+        superfundData,
+        aaveData,
+        morphoGauntletPrimeData,
+        morphoMoonwellData,
+        morphoGauntletCoreData,
+        morphoSteakhouseData,
+        morphoIonicData,
+        morphoRe7Data,
+        superfundLoading,
+        isAaveLoading,
+        selectedChain,
+        fluidData
+    ]);
+
+    const chartData = useMemo(() => {
+        if (!historicalData) return []
+
+        return historicalData.map((item: TBenchmarkDataPoint) => {
             const date = new Date(item.timestamp)
             const dateOptions: any = {
                 year: 'numeric',
@@ -351,34 +516,82 @@ export function BenchmarkHistoryChart() {
                 day: 'numeric'
             }).format(date);
 
-            return {
+            const formattedItem: TFormattedBenchmarkDataPoint = {
                 rawTimestamp: item.timestamp,
                 xValue: item.timestamp,
                 date: formattedDate.split(',')[0],
                 monthDay,
                 timestamp: `${formattedDate} ${time}`,
                 timeValue: time,
-                superfund: item.superfund,
-                aave: selectedChain === ChainId.Sonic ? (item.aave + aaveRewardApy) : item.aave,
+                superfund: item.superfund ?? null,
+                aave: selectedChain === ChainId.Sonic ? ((item.aave ?? 0) + aaveRewardApy) : (item.aave ?? null),
                 isAaveApproximated: item.isAaveApproximated || false,
-                superfundDisplay: abbreviateNumber(item.superfund),
-                aaveDisplay: abbreviateNumber(selectedChain === ChainId.Sonic ? (item.aave + aaveRewardApy) : item.aave),
-            }
-        }).sort((a: any, b: any) => a.rawTimestamp - b.rawTimestamp);
+                superfundDisplay: abbreviateNumber(item.superfund ?? 0),
+                aaveDisplay: abbreviateNumber(selectedChain === ChainId.Sonic ? ((item.aave ?? 0) + aaveRewardApy) : (item.aave ?? 0)),
+                fluid: item.fluid ?? null,
+                isFluidApproximated: item.isFluidApproximated || false,
+                fluidDisplay: abbreviateNumber(item.fluid ?? 0),
+            } as TFormattedBenchmarkDataPoint;
 
-        return formatted;
-    }, [historicalData, aaveRewardApy])
+            // Add Morpho data for Base chain
+            if (selectedChain === ChainId.Base) {
+                const morphoKeys = [
+                    'morphoGauntletPrime',
+                    'morphoMoonwell',
+                    'morphoGauntletCore',
+                    'morphoSteakhouse',
+                    'morphoIonic',
+                    'morphoRe7'
+                ];
+
+                morphoKeys.forEach(key => {
+                    const value = item[key as keyof TBenchmarkDataPoint];
+                    const isApproximated = item[`is${key.charAt(0).toUpperCase() + key.slice(1)}Approximated` as keyof TBenchmarkDataPoint];
+                    
+                    if (value !== null && value !== undefined) {
+                        (formattedItem as any)[key] = value;
+                        (formattedItem as any)[`${key}Display`] = abbreviateNumber(value as number);
+                        (formattedItem as any)[`is${key.charAt(0).toUpperCase() + key.slice(1)}Approximated`] = isApproximated || false;
+                    }
+                });
+            }
+
+            return formattedItem;
+        }).sort((a: TFormattedBenchmarkDataPoint, b: TFormattedBenchmarkDataPoint) => a.rawTimestamp - b.rawTimestamp);
+    }, [historicalData, aaveRewardApy, selectedChain]);
 
     const { minValue, maxValue, valueRange } = useMemo(() => {
-        const allValues = chartData.flatMap((d: any) => [Number(d.superfund), Number(d.aave)])
-        const min = Math.min(...allValues)
-        const max = Math.max(...allValues)
+        if (!chartData || chartData.length === 0) {
+            return {
+                minValue: 0,
+                maxValue: 10,
+                valueRange: 10
+            };
+        }
+
+        const allValues = chartData.flatMap((d: TFormattedBenchmarkDataPoint) => {
+            const values = [Number(d.superfund), Number(d.aave)];
+            if (selectedChain === ChainId.Base) {
+                values.push(
+                    Number(d.morphoGauntletPrime),
+                    Number(d.morphoMoonwell),
+                    Number(d.morphoGauntletCore),
+                    Number(d.morphoSteakhouse),
+                    Number(d.morphoIonic),
+                    Number(d.morphoRe7)
+                );
+            }
+            return values.filter(v => !isNaN(v));
+        });
+
+        const min = Math.min(...allValues);
+        const max = Math.max(...allValues);
         return {
             minValue: min,
             maxValue: max,
             valueRange: max - min
-        }
-    }, [chartData])
+        };
+    }, [chartData, selectedChain]);
 
     const yAxisDomain = useMemo(() => {
         // Calculate a minimum y-axis value that's proportionally lower than the minimum value
@@ -386,7 +599,7 @@ export function BenchmarkHistoryChart() {
         const padding = valueRange * 0.5; // Adjust this factor to control vertical positioning
         const minYValue = Math.max(0, minValue - padding); // Ensure we don't go below 0 for APY values
         const maxYValue = maxValue + (valueRange * 0.1);
-        return [minYValue, maxYValue];
+        return [minYValue, maxYValue] as [number, number];
     }, [minValue, maxValue, valueRange]);
 
     const yAxisTicks = useMemo(() => {
@@ -484,6 +697,73 @@ export function BenchmarkHistoryChart() {
         }
     }, [selectedRange]);
 
+    // Legend toggle state
+    const [visibleLines, setVisibleLines] = useState<Record<string, boolean>>({
+        superfund: true,
+        aave: true,
+        fluid: true,
+        morphoGauntletPrime: true,
+        morphoMoonwell: true,
+        morphoGauntletCore: true,
+        morphoSteakhouse: true,
+        morphoIonic: true,
+        morphoRe7: true,
+    });
+
+    // Helper for legend toggle
+    const handleLegendToggle = (key: keyof typeof CHART_CONFIG) => {
+        setVisibleLines((prev) => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    // Custom legend component
+    const CustomLegend = () => {
+        // Determine which protocols to show based on selectedChain
+        const filteredEntries = Object.entries(CHART_CONFIG).filter(([key]) => {
+            if (key === 'superfund' || key === 'aave') {
+                // Always show superfund and aave for both chains
+                return true;
+            } else {
+                // Show other protocols only for Base chain
+                return selectedChain === ChainId.Base;
+            }
+        }) as [keyof typeof CHART_CONFIG, typeof CHART_CONFIG[keyof typeof CHART_CONFIG]][];
+
+        return (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 8 }}>
+                {filteredEntries.map(([key, config]) => (
+                    <button
+                        key={key}
+                        onClick={() => handleLegendToggle(key)}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            opacity: visibleLines[key] ? 1 : 0.4,
+                            fontWeight: visibleLines[key] ? 600 : 400,
+                            fontSize: 15,
+                            padding: 0,
+                        }}
+                    >
+                        <span style={{
+                            width: 16,
+                            height: 6,
+                            borderRadius: 3,
+                            background: config.color,
+                            display: 'inline-block',
+                            marginRight: 4,
+                            border: visibleLines[key] ? '2px solid #222' : '2px solid #ccc',
+                            transition: 'border 0.2s',
+                        }} />
+                        {config.label}
+                    </button>
+                ))}
+            </div>
+        );
+    };
+
     return (
         <>
             {/* {content}
@@ -512,9 +792,12 @@ export function BenchmarkHistoryChart() {
                         } */}
                     </div>
                 </div>
+                <div className="px-6 pt-2">
+                    <CustomLegend />
+                </div>
                 {/* <div className={`h-[${false ? '500px' : '350px'}] bg-white rounded-4`}> */}
                 <ChartContainer
-                    config={chartConfig}
+                    config={CHART_CONFIG}
                     className={`w-full h-[350px] bg-white rounded-4`}
                 >
                     <>
@@ -557,29 +840,123 @@ export function BenchmarkHistoryChart() {
                                     />
                                     <ReferenceLine y={0} stroke="hsl(var(--muted))" strokeDasharray="3 3" />
                                     <Tooltip
-                                        content={<CustomTooltip />}
+                                        content={({ active, payload }) => {
+                                            if (!active || !payload || !payload.length) return null;
+                                            const formattedPayload = payload.map(item => ({
+                                                payload: item.payload as TFormattedBenchmarkDataPoint
+                                            }));
+                                            return <CustomTooltip active={active} payload={formattedPayload} />;
+                                        }}
                                         cursor={{ stroke: 'hsl(var(--foreground-disabled))', strokeWidth: 1 }}
                                     />
-                                    <Line
-                                        dataKey="superfund"
-                                        type="monotone"
-                                        stroke="var(--color-superfund)"
-                                        strokeWidth={2}
-                                        dot={false}
-                                        activeDot={{ r: 5, strokeWidth: 1 }}
-                                        connectNulls={true}
-                                        isAnimationActive={false}
-                                    />
-                                    <Line
-                                        dataKey="aave"
-                                        type="monotone"
-                                        stroke="var(--color-aave)"
-                                        strokeWidth={2}
-                                        dot={false}
-                                        activeDot={{ r: 5, strokeWidth: 1 }}
-                                        connectNulls={true}
-                                        isAnimationActive={false}
-                                    />
+                                    {visibleLines.superfund && (
+                                        <Line
+                                            dataKey="superfund"
+                                            type="monotone"
+                                            stroke="var(--color-superfund)"
+                                            strokeWidth={2}
+                                            dot={false}
+                                            activeDot={{ r: 5, strokeWidth: 1 }}
+                                            connectNulls={true}
+                                            isAnimationActive={false}
+                                        />
+                                    )}
+                                    {visibleLines.aave && (
+                                        <Line
+                                            dataKey="aave"
+                                            type="monotone"
+                                            stroke="var(--color-aave)"
+                                            strokeWidth={2}
+                                            dot={false}
+                                            activeDot={{ r: 5, strokeWidth: 1 }}
+                                            connectNulls={true}
+                                            isAnimationActive={false}
+                                        />
+                                    )}
+                                    {visibleLines.fluid && selectedChain === ChainId.Base && (
+                                        <Line
+                                            dataKey="fluid"
+                                            type="monotone"
+                                            stroke="#00C853"
+                                            strokeWidth={2}
+                                            dot={false}
+                                            activeDot={{ r: 5, strokeWidth: 1 }}
+                                            connectNulls={true}
+                                            isAnimationActive={false}
+                                        />
+                                    )}
+                                    {visibleLines.morphoGauntletPrime && selectedChain === ChainId.Base && (
+                                        <Line
+                                            dataKey="morphoGauntletPrime"
+                                            type="monotone"
+                                            stroke="var(--color-morphoGauntletPrime)"
+                                            strokeWidth={2}
+                                            dot={false}
+                                            activeDot={{ r: 5, strokeWidth: 1 }}
+                                            connectNulls={true}
+                                            isAnimationActive={false}
+                                        />
+                                    )}
+                                    {visibleLines.morphoMoonwell && selectedChain === ChainId.Base && (
+                                        <Line
+                                            dataKey="morphoMoonwell"
+                                            type="monotone"
+                                            stroke="var(--color-morphoMoonwell)"
+                                            strokeWidth={2}
+                                            dot={false}
+                                            activeDot={{ r: 5, strokeWidth: 1 }}
+                                            connectNulls={true}
+                                            isAnimationActive={false}
+                                        />
+                                    )}
+                                    {visibleLines.morphoGauntletCore && selectedChain === ChainId.Base && (
+                                        <Line
+                                            dataKey="morphoGauntletCore"
+                                            type="monotone"
+                                            stroke="var(--color-morphoGauntletCore)"
+                                            strokeWidth={2}
+                                            dot={false}
+                                            activeDot={{ r: 5, strokeWidth: 1 }}
+                                            connectNulls={true}
+                                            isAnimationActive={false}
+                                        />
+                                    )}
+                                    {visibleLines.morphoSteakhouse && selectedChain === ChainId.Base && (
+                                        <Line
+                                            dataKey="morphoSteakhouse"
+                                            type="monotone"
+                                            stroke="var(--color-morphoSteakhouse)"
+                                            strokeWidth={2}
+                                            dot={false}
+                                            activeDot={{ r: 5, strokeWidth: 1 }}
+                                            connectNulls={true}
+                                            isAnimationActive={false}
+                                        />
+                                    )}
+                                    {visibleLines.morphoIonic && selectedChain === ChainId.Base && (
+                                        <Line
+                                            dataKey="morphoIonic"
+                                            type="monotone"
+                                            stroke="var(--color-morphoIonic)"
+                                            strokeWidth={2}
+                                            dot={false}
+                                            activeDot={{ r: 5, strokeWidth: 1 }}
+                                            connectNulls={true}
+                                            isAnimationActive={false}
+                                        />
+                                    )}
+                                    {visibleLines.morphoRe7 && selectedChain === ChainId.Base && (
+                                        <Line
+                                            dataKey="morphoRe7"
+                                            type="monotone"
+                                            stroke="var(--color-morphoRe7)"
+                                            strokeWidth={2}
+                                            dot={false}
+                                            activeDot={{ r: 5, strokeWidth: 1 }}
+                                            connectNulls={true}
+                                            isAnimationActive={false}
+                                        />
+                                    )}
                                     <Brush
                                         dataKey="rawTimestamp"
                                         height={35}
@@ -593,22 +970,96 @@ export function BenchmarkHistoryChart() {
                                         tickFormatter={formatTimestamp}
                                     >
                                         <AreaChart data={processedChartData}>
-                                            <Area
-                                                type="monotone"
-                                                dataKey="superfund"
-                                                stroke="var(--color-superfund)"
-                                                strokeWidth={1}
-                                                fill="rgba(251, 89, 0, 0.2)"
-                                                connectNulls={true}
-                                            />
-                                            <Area
-                                                type="monotone"
-                                                dataKey="aave"
-                                                stroke="var(--color-aave)"
-                                                strokeWidth={1}
-                                                fill="rgba(30, 144, 255, 0.2)"
-                                                connectNulls={true}
-                                            />
+                                            {visibleLines.superfund && (
+                                                <Area
+                                                    type="monotone"
+                                                    dataKey="superfund"
+                                                    stroke="var(--color-superfund)"
+                                                    strokeWidth={1}
+                                                    fill="rgba(251, 89, 0, 0.2)"
+                                                    connectNulls={true}
+                                                />
+                                            )}
+                                            {visibleLines.aave && (
+                                                <Area
+                                                    type="monotone"
+                                                    dataKey="aave"
+                                                    stroke="var(--color-aave)"
+                                                    strokeWidth={1}
+                                                    fill="rgba(30, 144, 255, 0.2)"
+                                                    connectNulls={true}
+                                                />
+                                            )}
+                                            {visibleLines.fluid && selectedChain === ChainId.Base && (
+                                                <Area
+                                                    type="monotone"
+                                                    dataKey="fluid"
+                                                    stroke="#00C853"
+                                                    strokeWidth={1}
+                                                    fill="rgba(0, 200, 83, 0.2)"
+                                                    connectNulls={true}
+                                                />
+                                            )}
+                                            {visibleLines.morphoGauntletPrime && selectedChain === ChainId.Base && (
+                                                <Area
+                                                    type="monotone"
+                                                    dataKey="morphoGauntletPrime"
+                                                    stroke="var(--color-morphoGauntletPrime)"
+                                                    strokeWidth={1}
+                                                    fill="rgba(255, 107, 107, 0.2)"
+                                                    connectNulls={true}
+                                                />
+                                            )}
+                                            {visibleLines.morphoMoonwell && selectedChain === ChainId.Base && (
+                                                <Area
+                                                    type="monotone"
+                                                    dataKey="morphoMoonwell"
+                                                    stroke="var(--color-morphoMoonwell)"
+                                                    strokeWidth={1}
+                                                    fill="rgba(78, 205, 196, 0.2)"
+                                                    connectNulls={true}
+                                                />
+                                            )}
+                                            {visibleLines.morphoGauntletCore && selectedChain === ChainId.Base && (
+                                                <Area
+                                                    type="monotone"
+                                                    dataKey="morphoGauntletCore"
+                                                    stroke="var(--color-morphoGauntletCore)"
+                                                    strokeWidth={1}
+                                                    fill="rgba(69, 183, 209, 0.2)"
+                                                    connectNulls={true}
+                                                />
+                                            )}
+                                            {visibleLines.morphoSteakhouse && selectedChain === ChainId.Base && (
+                                                <Area
+                                                    type="monotone"
+                                                    dataKey="morphoSteakhouse"
+                                                    stroke="var(--color-morphoSteakhouse)"
+                                                    strokeWidth={1}
+                                                    fill="rgba(150, 206, 180, 0.2)"
+                                                    connectNulls={true}
+                                                />
+                                            )}
+                                            {visibleLines.morphoIonic && selectedChain === ChainId.Base && (
+                                                <Area
+                                                    type="monotone"
+                                                    dataKey="morphoIonic"
+                                                    stroke="var(--color-morphoIonic)"
+                                                    strokeWidth={1}
+                                                    fill="rgba(255, 238, 173, 0.2)"
+                                                    connectNulls={true}
+                                                />
+                                            )}
+                                            {visibleLines.morphoRe7 && selectedChain === ChainId.Base && (
+                                                <Area
+                                                    type="monotone"
+                                                    dataKey="morphoRe7"
+                                                    stroke="var(--color-morphoRe7)"
+                                                    strokeWidth={1}
+                                                    fill="rgba(212, 165, 165, 0.2)"
+                                                    connectNulls={true}
+                                                />
+                                            )}
                                         </AreaChart>
                                     </Brush>
                                 </LineChart>
