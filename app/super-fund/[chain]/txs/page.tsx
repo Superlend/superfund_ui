@@ -46,7 +46,7 @@ export default function ChainTransactionsPage({ params }: ChainTxsPageProps) {
   return (
     <ChainProvider initialChain={chainId}>
       <MainContainer className="flex flex-col gap-[40px] w-full mx-auto my-14">
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
             size="icon"

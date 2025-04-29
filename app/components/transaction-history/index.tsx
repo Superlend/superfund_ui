@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useChain } from '@/context/chain-context'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -18,16 +18,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-
-interface Transaction {
-  user: string
-  type: 'deposit' | 'withdraw'
-  assets: string
-  shares: string
-  blockNumber: string
-  blockTimestamp: string
-  transactionHash: string
-}
+import useTransactionHistory from '@/hooks/useTransactionHistory'
+import { Transaction } from '@/queries/transaction-history-api'
 
 interface TransactionHistoryProps {
   protocolIdentifier: string
@@ -36,43 +28,39 @@ interface TransactionHistoryProps {
 export default function TransactionHistory({ protocolIdentifier }: TransactionHistoryProps) {
   const { walletAddress, isWalletConnected } = useWalletConnection()
   const { selectedChain, chainDetails } = useChain()
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  
+  const { transactions, isLoading, startRefreshing } = useTransactionHistory({
+    protocolIdentifier,
+    chainId: selectedChain || 0,
+    walletAddress: walletAddress || '',
+    refetchOnTransaction: true
+  })
 
+  // Listen for transaction events from the global event system if available
   useEffect(() => {
-    const fetchTransactionHistory = async () => {
-      if (!isWalletConnected || !walletAddress || !selectedChain) return
+    const handleTransactionComplete = () => {
+      // Manually trigger refreshing for 30 seconds when transaction completes
+      startRefreshing();
+    };
 
-      setIsLoading(true)
-      try {
-        const response = await fetch(
-          `https://api.funds.superlend.xyz/vaults/user_tx_history/${protocolIdentifier}/${selectedChain}/${walletAddress}`
-        )
-        const data = await response.json()
-
-        if (data.success && data.data?.transactions) {
-          // Sort transactions by timestamp (newest first)
-          const sortedTransactions = [...data.data.transactions].sort(
-            (a, b) => parseInt(b.blockTimestamp) - parseInt(a.blockTimestamp)
-          )
-          setTransactions(sortedTransactions)
-        }
-      } catch (error) {
-        console.error('Failed to fetch transaction history:', error)
-      } finally {
-        setIsLoading(false)
-      }
+    // Add event listener if window exists
+    if (typeof window !== 'undefined') {
+      window.addEventListener('transaction-complete', handleTransactionComplete);
     }
 
-    fetchTransactionHistory()
-  }, [walletAddress, selectedChain, protocolIdentifier, isWalletConnected])
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('transaction-complete', handleTransactionComplete);
+      }
+    };
+  }, [startRefreshing]);
 
   // Get the chain name for routing
   const getChainName = () => {
     if (selectedChain === ChainId.Base) return 'base'
     if (selectedChain === ChainId.Sonic) return 'sonic'
-    return 'sonic' // Default fallback
+    return 'sonic'
   }
 
   // Hide for Base chain or if wallet not connected
@@ -135,18 +123,16 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
         )}
       </div>
 
-      {transactions.length > 0 && (
-        <div className="mt-3">
-          <Button 
-            variant="outline"
-            className="w-full text-primary border-primary/30 hover:bg-primary/5"
-            onClick={() => router.push(`/super-fund/${getChainName()}/txs`)}
-          >
-            View all transactions
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
-      )}
+      <div className="mt-3">
+        <Button 
+          variant="outline"
+          className="w-full text-primary border-primary/30 hover:bg-primary/5"
+          onClick={() => router.push(`/super-fund/${getChainName()}/txs`)}
+        >
+          View all transactions
+          <ChevronRight className="h-4 w-4 ml-1" />
+        </Button>
+      </div>
     </div>
   )
 }

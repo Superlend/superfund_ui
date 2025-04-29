@@ -25,16 +25,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-
-interface Transaction {
-  user: string
-  type: 'deposit' | 'withdraw'
-  assets: string
-  shares: string
-  blockNumber: string
-  blockTimestamp: string
-  transactionHash: string
-}
+import useTransactionHistory from '@/hooks/useTransactionHistory'
+import { Transaction } from '@/queries/transaction-history-api'
 
 interface AllTransactionsProps {
   protocolIdentifier?: string // Optional if we want to pass it directly
@@ -45,8 +37,6 @@ type FilterType = 'all' | 'deposit' | 'withdraw'
 export default function AllTransactions({ protocolIdentifier }: AllTransactionsProps) {
   const { walletAddress, isWalletConnected } = useWalletConnection()
   const { selectedChain, chainDetails } = useChain()
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [isLoading, setIsLoading] = useState(false)
   const [currentFilter, setCurrentFilter] = useState<FilterType>('all')
 
   // Skip for Base chain
@@ -59,36 +49,33 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
     return chainDetails[selectedChain as keyof typeof chainDetails]?.contractAddress || ''
   }
 
+  // Use the custom hook instead of direct fetch and local state
+  const protocolId = getProtocolIdentifier()
+  const { transactions, isLoading, startRefreshing } = useTransactionHistory({
+    protocolIdentifier: protocolId,
+    chainId: selectedChain || 0,
+    walletAddress: walletAddress || '',
+    refetchOnTransaction: true
+  })
+
+  // Listen for transaction events from the global event system if available
   useEffect(() => {
-    const fetchTransactionHistory = async () => {
-      if (!isWalletConnected || !walletAddress || !selectedChain || isBaseChain) return
+    const handleTransactionComplete = () => {
+      // Manually trigger refreshing for 30 seconds when transaction completes
+      startRefreshing();
+    };
 
-      setIsLoading(true)
-      try {
-        const protocolId = getProtocolIdentifier()
-        if (!protocolId) return
-
-        const response = await fetch(
-          `https://api.funds.superlend.xyz/vaults/user_tx_history/${protocolId}/${selectedChain}/${walletAddress}`
-        )
-        const data = await response.json()
-
-        if (data.success && data.data?.transactions) {
-          // Sort transactions by timestamp (newest first)
-          const sortedTransactions = [...data.data.transactions].sort(
-            (a, b) => parseInt(b.blockTimestamp) - parseInt(a.blockTimestamp)
-          )
-          setTransactions(sortedTransactions)
-        }
-      } catch (error) {
-        console.error('Failed to fetch transaction history:', error)
-      } finally {
-        setIsLoading(false)
-      }
+    // Add event listener if window exists
+    if (typeof window !== 'undefined') {
+      window.addEventListener('transaction-complete', handleTransactionComplete);
     }
 
-    fetchTransactionHistory()
-  }, [walletAddress, selectedChain, protocolIdentifier, isWalletConnected, isBaseChain])
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('transaction-complete', handleTransactionComplete);
+      }
+    };
+  }, [startRefreshing]);
 
   // Filter transactions
   const filteredTransactions = transactions.filter(tx => {
@@ -329,7 +316,7 @@ function TransactionItem({ transaction, expanded = false }: { transaction: Trans
                   <TooltipTrigger asChild>
                     <div className="flex items-center">
                       +{formattedShares}
-                      <Badge variant="secondary" className="ml-1 py-0 h-4 px-1.5 text-[10px] font-normal">slUSD</Badge>
+                      <Badge variant="secondary" className="ml-1 py-0 h-4 px-1.5 text-[10px] font-normal normal-case">slUSD</Badge>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="left" className="bg-card">
@@ -345,7 +332,7 @@ function TransactionItem({ transaction, expanded = false }: { transaction: Trans
                   <TooltipTrigger asChild>
                     <div className="flex items-center">
                       -{formattedShares}
-                      <Badge variant="secondary" className="ml-1 py-0 h-4 px-1.5 text-[10px] font-normal">slUSD</Badge>
+                      <Badge variant="secondary" className="ml-1 py-0 h-4 px-1.5 text-[10px] font-normal normal-case">slUSD</Badge>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="left" className="bg-card">
