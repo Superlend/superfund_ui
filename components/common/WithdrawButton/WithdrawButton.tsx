@@ -61,13 +61,13 @@ const WithdrawButton = ({
     useEffect(() => {
         if (withdrawTx.status === 'view') return
 
-        if (hash) {
-            setWithdrawTx((prev: TWithdrawTx) => ({
-                ...prev,
-                status: 'view',
-                hash,
-            }))
-        }
+        // if (hash) {
+        //     setWithdrawTx((prev: TWithdrawTx) => ({
+        //         ...prev,
+        //         status: 'view',
+        //         hash,
+        //     }))
+        // }
 
         if (hash && isConfirmed) {
             setWithdrawTx((prev: TWithdrawTx) => ({
@@ -76,6 +76,19 @@ const WithdrawButton = ({
                 hash,
                 isConfirmed: isConfirmed,
             }))
+
+            // Dispatch custom event to notify transaction is complete
+            if (typeof window !== 'undefined') {
+                console.log('Dispatching transaction-complete event for withdraw');
+                const event = new CustomEvent('transaction-complete', {
+                    detail: {
+                        type: 'withdraw',
+                        hash: hash,
+                        amount: amount
+                    }
+                });
+                window.dispatchEvent(event);
+            }
         }
     }, [hash, isConfirmed])
 
@@ -92,20 +105,20 @@ const WithdrawButton = ({
 
     const txBtnText =
         txBtnStatus[
-            isConfirming
-                ? 'confirming'
-                : isConfirmed
-                  ? withdrawTx.status === 'view'
-                      ? 'success'
-                      : 'default'
-                  : isPending
+        isConfirming
+            ? 'confirming'
+            : isConfirmed
+                ? withdrawTx.status === 'view'
+                    ? 'success'
+                    : 'default'
+                : isPending
                     ? 'pending'
                     : !isPending &&
                         !isConfirming &&
                         !isConfirmed &&
                         withdrawTx.status === 'view'
-                      ? 'error'
-                      : 'default'
+                        ? 'error'
+                        : 'default'
         ]
 
     const handleWithdrawSuperVault = useCallback(async () => {

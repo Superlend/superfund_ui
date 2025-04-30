@@ -177,7 +177,7 @@ export default function DepositAndWithdrawAssets() {
 
     // Render component
     return (
-        <section className="lend-and-borrow-section-wrapper flex flex-col gap-[12px] lg:sticky top-24 left-0 right-0">
+        <section className="lend-and-borrow-section-wrapper flex flex-col gap-[12px]">
             <LendBorrowToggle
                 type={positionType}
                 handleToggle={setPositionType}

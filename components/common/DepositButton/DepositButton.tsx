@@ -137,6 +137,19 @@ const DepositButton = ({
                         status: 'view',
                         errorMessage: '',
                     }))
+
+                    // Dispatch custom event to notify transaction is complete
+                    if (typeof window !== 'undefined') {
+                        console.log('Dispatching transaction-complete event');
+                        const event = new CustomEvent('transaction-complete', {
+                            detail: {
+                                type: 'deposit',
+                                hash: hash,
+                                amount: amount
+                            }
+                        });
+                        window.dispatchEvent(event);
+                    }
                 })
                 .catch((error) => {
                     setDepositTx((prev: TDepositTx) => ({
@@ -165,7 +178,7 @@ const DepositButton = ({
             isConfirmed: isConfirmed,
             isRefreshingAllowance: isConfirmed,
         }))
-        
+
         // If approval transaction is confirmed, move to deposit state
         if (isConfirmed && !isPending && !isConfirming && depositTx.status === 'approve') {
             setDepositTx((prev: TDepositTx) => ({
@@ -233,7 +246,7 @@ const DepositButton = ({
 
             const amountInWei = parseUnits(amount, USDC_DECIMALS)
             writeContractAsync({
-                address:  USDC_ADDRESS_MAP[selectedChain as keyof typeof USDC_ADDRESS_MAP] as `0x${string}`,
+                address: USDC_ADDRESS_MAP[selectedChain as keyof typeof USDC_ADDRESS_MAP] as `0x${string}`,
                 abi: USDC_ABI,
                 functionName: 'approve',
                 args: [VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`, amountInWei.toBigInt()],
