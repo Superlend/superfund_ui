@@ -89,56 +89,59 @@ export default function VaultStats() {
             isLoading: isWalletConnected && isLoadingUserMaxWithdrawAmount,
             error: errorUserMaxWithdrawAmount,
         },
-        {
-            id: 'effective-apy',
-            title: 'Effective APY',
-            titleTooltipContent: 'Actual APY received after adjusting the vault\'s 7-day interest distribution period. It reflects how much your money is truly growing over time, after accounting for the vault\s yield distribution schedule.',
-            value: `${(effectiveApyData?.total_apy ?? 0).toFixed(2)}%`,
-            show: true,
-            hasRewards: true,
-            rewardsTooltip: getRewardsTooltipContent({
-                baseRateFormatted: abbreviateNumber(effectiveApyData?.base_apy),
-                rewardsCustomList: [
-                    {
-                        key: 'rewards_apy',
-                        key_name: 'Rewards APY',
-                        value: abbreviateNumber(effectiveApyData?.rewards_apy),
-                    }
-                ],
-                apyCurrent: Number(effectiveApyData?.total_apy),
-                positionTypeParam: 'lend',
-            }),
-            isLoading: isLoadingEffectiveApy,
-            error: isErrorEffectiveApy,
-        },
-        {
-            id: 'spot-apy',
-            title: 'Spot APY',
-            titleTooltipContent: 'The current interest rate earned by users.',
-            value: `${(Number(spotApy) + Number(totalRewardApy)).toFixed(2)}%`,
-            show: true,
-            hasRewards: true,
-            rewardsTooltip: getRewardsTooltipContent({
-                baseRateFormatted: spotApy,
-                rewards: rewards,
-                apyCurrent: Number(spotApy) + Number(totalRewardApy),
-                positionTypeParam: 'lend',
-            }),
-            // isLoading: isLoadingVault || isLoadingRewards,
-            error: !!errorVault || !!errorRewards,
-        },
-        {
-            id: 'tvl',
-            title: 'TVL',
-            value: '$' + Number(totalAssets).toFixed(4),
-            show: true,
-            // isLoading: isLoadingVault,
-            error: !!errorVault,
-        },
+        // {
+        //     id: 'effective-apy',
+        //     title: 'Effective APY',
+        //     titleTooltipContent: 'Actual APY received after adjusting the vault\'s 7-day interest distribution period. It reflects how much your money is truly growing over time, after accounting for the vault\s yield distribution schedule.',
+        //     value: `${(effectiveApyData?.total_apy ?? 0).toFixed(2)}%`,
+        //     show: true,
+        //     hasRewards: true,
+        //     rewardsTooltip: getRewardsTooltipContent({
+        //         baseRateFormatted: abbreviateNumber(effectiveApyData?.base_apy),
+        //         rewardsCustomList: [
+        //             {
+        //                 key: 'rewards_apy',
+        //                 key_name: 'Rewards APY',
+        //                 value: abbreviateNumber(effectiveApyData?.rewards_apy),
+        //             }
+        //         ],
+        //         apyCurrent: Number(effectiveApyData?.total_apy),
+        //         positionTypeParam: 'lend',
+        //     }),
+        //     isLoading: isLoadingEffectiveApy,
+        //     error: isErrorEffectiveApy,
+        // },
+        // {
+        //     id: 'spot-apy',
+        //     title: 'Spot APY',
+        //     titleTooltipContent: 'The current interest rate earned by users.',
+        //     value: `${(Number(spotApy) + Number(totalRewardApy)).toFixed(2)}%`,
+        //     show: true,
+        //     hasRewards: true,
+        //     rewardsTooltip: getRewardsTooltipContent({
+        //         baseRateFormatted: spotApy,
+        //         rewards: rewards,
+        //         apyCurrent: Number(spotApy) + Number(totalRewardApy),
+        //         positionTypeParam: 'lend',
+        //     }),
+        //     // isLoading: isLoadingVault || isLoadingRewards,
+        //     error: !!errorVault || !!errorRewards,
+        // },
         {
             id: '7d-apy',
             title: '7D APY',
-            titleTooltipContent: 'Average Spot APY over the past 7 days.',
+            titleTooltipContent: () => {
+                return (
+                    <>
+                        <BodyText level="body2" weight="normal" className="text-gray-600 mb-2">
+                            The APY is calculated using the trailing one-week average of daily protocol returns, including the rewards from underlying protocols.
+                        </BodyText>
+                        <BodyText level="body2" weight="normal" className="text-gray-600">
+                            The displayed APY is an estimate and may fluctuate based on protocol performance. It is not a fixed or guaranteed rate.
+                        </BodyText>
+                    </>
+                )
+            },
             value: `${abbreviateNumber(days_7_avg_total_apy)}%`,
             show: true,
             hasRewards: true,
@@ -153,6 +156,14 @@ export default function VaultStats() {
             }),
             isLoading: isLoading7DayAvg,
             error: error7DayAvg,
+        },
+        {
+            id: 'tvl',
+            title: 'TVL',
+            value: '$' + Number(totalAssets).toFixed(4),
+            show: true,
+            // isLoading: isLoadingVault,
+            error: !!errorVault,
         },
     ]
 
@@ -179,7 +190,7 @@ export default function VaultStats() {
                 {vaultStats.slice(0, 1).map((item, index) => (
                     <motion.div
                         key={index}
-                        className="block"
+                        className="block w-full"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{
@@ -241,12 +252,12 @@ export default function VaultStats() {
                 ))}
             </div>
 
-            {/* Second row - remaining items with original styles */}
-            <div className="flex flex-wrap items-center justify-between gap-6">
+            {/* Second row - remaining items with balanced layout */}
+            <div className="flex flex-wrap gap-8">
                 {vaultStats.slice(1).map((item, index) => (
                     <motion.div
                         key={index}
-                        className="block shrink-0 min-w-[110px] min-[418px]:min-w-[120px]"
+                        className="flex-1 min-w-[160px] bg-blue-50 rounded-xl p-4 transition-all duration-200 hover:bg-blue-50/50"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{
@@ -268,7 +279,7 @@ export default function VaultStats() {
                                         </TooltipText>
                                     </BodyText>
                                 }
-                                content={item.titleTooltipContent}
+                                content={item.titleTooltipContent()}
                             />
                         }
                         {!item.titleTooltipContent &&
