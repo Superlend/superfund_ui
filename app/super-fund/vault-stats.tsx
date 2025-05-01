@@ -129,7 +129,7 @@ export default function VaultStats() {
         // },
         {
             id: '7d-apy',
-            title: '7D APY',
+            title: 'APY',
             titleTooltipContent: () => {
                 return (
                     <>
