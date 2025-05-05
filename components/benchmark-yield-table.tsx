@@ -331,10 +331,6 @@ export function BenchmarkYieldTable() {
                 header: 'Platform',
                 cell: ({ row }) => (
                     <div className="flex items-center gap-2">
-                        {/* <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: row.original.color }}
-                        /> */}
                         <ImageWithDefault src={row.original.logo} alt={row.original.platform} width={20} height={20} />
                         <BodyText level="body2" weight="medium">
                             {row.original.platform}
@@ -352,7 +348,7 @@ export function BenchmarkYieldTable() {
 
                     return (
                         <div className="text-center w-full">
-                            {periodText} Yield (APR-Adjusted)
+                            {periodText} Yield <span className="hidden sm:inline">(APR-Adjusted)</span>
                         </div>
                     );
                 },
@@ -372,7 +368,7 @@ export function BenchmarkYieldTable() {
 
                     return (
                         <div className="text-center w-full">
-                            Total Earned on $1,000 ({periodText})
+                            <span className="hidden sm:inline">Total Earned on </span>$1,000<span className="hidden sm:inline"> ({periodText})</span>
                         </div>
                     );
                 },
@@ -394,7 +390,7 @@ export function BenchmarkYieldTable() {
 
     return (
         <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2">
                 <div>
                     <CardTitle>
                         <HeadingText level="h4" weight="medium" className="text-gray-800 mb-1">
@@ -408,60 +404,63 @@ export function BenchmarkYieldTable() {
                 <TimelineFilterTabs
                     selectedRange={selectedRange}
                     handleRangeChange={handleRangeChange}
+                    className="mt-2 sm:mt-0"
                 />
             </CardHeader>
-            <CardContent className="px-0 px-3">
+            <CardContent className="px-0 px-3 overflow-x-auto">
                 {isLoading ? (
                     <div className="px-3 py-4">
                         <Skeleton className="h-64 w-full rounded-4" />
                     </div>
                 ) : (
-                    <Table>
-                        <TableHeader>
-                            {table.getHeaderGroups().map((headerGroup) => (
-                                <TableRow key={headerGroup.id}>
-                                    {headerGroup.headers.map((header) => (
-                                        <TableHead key={header.id} className="font-medium">
-                                            {header.isPlaceholder
-                                                ? null
-                                                : flexRender(
-                                                    header.column.columnDef.header,
-                                                    header.getContext()
-                                                )}
-                                        </TableHead>
-                                    ))}
-                                </TableRow>
-                            ))}
-                        </TableHeader>
-                        <TableBody>
-                            {table.getRowModel().rows?.length ? (
-                                table.getRowModel().rows.map((row) => (
-                                    <TableRow
-                                        key={row.id}
-                                        data-state={row.getIsSelected() && "selected"}
-                                    >
-                                        {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>
-                                                {flexRender(
-                                                    cell.column.columnDef.cell,
-                                                    cell.getContext()
-                                                )}
-                                            </TableCell>
+                    <div className="min-w-[320px]">
+                        <Table>
+                            <TableHeader>
+                                {table.getHeaderGroups().map((headerGroup) => (
+                                    <TableRow key={headerGroup.id}>
+                                        {headerGroup.headers.map((header) => (
+                                            <TableHead key={header.id} className="font-medium text-xs sm:text-sm">
+                                                {header.isPlaceholder
+                                                    ? null
+                                                    : flexRender(
+                                                        header.column.columnDef.header,
+                                                        header.getContext()
+                                                    )}
+                                            </TableHead>
                                         ))}
                                     </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={columns.length}
-                                        className="h-24 text-center"
-                                    >
-                                        No results.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
+                                ))}
+                            </TableHeader>
+                            <TableBody>
+                                {table.getRowModel().rows?.length ? (
+                                    table.getRowModel().rows.map((row) => (
+                                        <TableRow
+                                            key={row.id}
+                                            data-state={row.getIsSelected() && "selected"}
+                                        >
+                                            {row.getVisibleCells().map((cell) => (
+                                                <TableCell key={cell.id} className="py-3 px-2 sm:px-4">
+                                                    {flexRender(
+                                                        cell.column.columnDef.cell,
+                                                        cell.getContext()
+                                                    )}
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={columns.length}
+                                            className="h-24 text-center"
+                                        >
+                                            No results.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
                 )}
             </CardContent>
         </Card>
