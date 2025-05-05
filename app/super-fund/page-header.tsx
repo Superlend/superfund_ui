@@ -33,6 +33,9 @@ export default function PageHeader() {
                             <HeadingText level="h4" weight="medium" className="mr-1 text-gray-800">
                                 Bluechip Stable SuperFund
                             </HeadingText>
+                            <Badge variant="green" size="md">
+                                Low Risk
+                            </Badge>
                             <div className="network-controls inline-flex items-center bg-white rounded-3 border border-gray-200 shadow-sm h-6 gap-1 pr-1 w-fit">
                                 <ChainSelector />
                             </div>
