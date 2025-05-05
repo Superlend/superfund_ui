@@ -225,7 +225,7 @@ export default function FundOverview() {
                         </div> */}
                         {
                             footerRows.map((row) => (
-                                <div className="row flex gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
+                                <div key={row.id} className="row flex gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
                                     <div className="col flex-0 md:flex-1 flex flex-col items-start gap-0">
                                         <BodyText level="body1" weight="medium">
                                             {row.column_1()}
