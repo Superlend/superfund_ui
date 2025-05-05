@@ -20,30 +20,27 @@ export default function PageHeader() {
             transition={{ duration: 0.5, ease: 'easeOut' }}
             className="mb-3"
         >
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-start gap-2">
                     <ImageWithDefault
                         src={'/images/logos/superlend-rounded.svg'}
                         alt="Bluechip Stable SuperFund"
                         width={28}
                         height={28}
                     />
-                    <HeadingText level="h4" weight="medium" className="mr-1 text-gray-800">
-                        Bluechip Stable SuperFund
-                    </HeadingText>
-                </div>
-
-                <div className="network-controls inline-flex items-center bg-white rounded-3 border border-gray-200 shadow-sm h-8 gap-1 pr-1 w-fit">
-                    <ChainSelector />
-                    <Badge variant="outline" size="sm" className="flex items-center gap-1">
-                        <ExternalLink
-                            href={`${currentChainDetails?.explorerUrl}${currentChainDetails?.contractAddress}`}
-                            className="leading-none"
-                            iconSize={14}
-                        >
-                            <span className="-mb-0.5">Contract</span>
-                        </ExternalLink>
-                    </Badge>
+                    <div className="">
+                        <div className="flex items-center gap-2">
+                            <HeadingText level="h4" weight="medium" className="mr-1 text-gray-800">
+                                Bluechip Stable SuperFund
+                            </HeadingText>
+                            <div className="network-controls inline-flex items-center bg-white rounded-3 border border-gray-200 shadow-sm h-6 gap-1 pr-1 w-fit">
+                                <ChainSelector />
+                            </div>
+                        </div>
+                        <BodyText level="body2" weight="medium" className="text-gray-600">
+                            Your stablecoin savings account, optimized for yield.
+                        </BodyText>
+                    </div>
                 </div>
             </div>
         </motion.div>

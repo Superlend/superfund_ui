@@ -48,113 +48,25 @@ import {
     TCustomYAxisTickProps
 } from '@/types/benchmark-chart'
 
-const CustomTooltip = ({ active, payload }: TCustomTooltipProps) => {
-    if (active && payload && payload.length) {
-        const data = payload[0]?.payload;
-
-        // Sort protocols by their APY values (highest to lowest)
-        const sortedProtocols = Object.entries(CHART_CONFIG)
-            .map(([key, config]) => {
-                const value = data[key as keyof TFormattedBenchmarkDataPoint];
-                const displayValue = data[`${key}Display` as keyof TFormattedBenchmarkDataPoint];
-                const isApproximated = data[`is${key.charAt(0).toUpperCase() + key.slice(1)}Approximated` as keyof TFormattedBenchmarkDataPoint];
-                
-                return {
-                    key,
-                    config,
-                    value: value as number | null | undefined,
-                    displayValue,
-                    isApproximated
-                };
-            })
-            .filter(item => item.value !== null && item.value !== undefined)
-            .sort((a, b) => (b.value || 0) - (a.value || 0));
-
-        return (
-            <div className="flex flex-col gap-2 bg-card border border-border rounded-lg shadow-lg p-3 text-sm">
-                <BodyText level='body3' className="text-gray-600">
-                    {data.timestamp}
-                </BodyText>
-                <div className="space-y-1">
-                    {sortedProtocols.map(({ key, config, displayValue, isApproximated }) => (
-                        <BodyText key={key} level='body3' className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-1">
-                                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: config.color }} />
-                                {config.label}
-                                {/* {isApproximated && (
-                                    <span className="text-xs text-muted-foreground ml-1">(approx.)</span>
-                                )} */}
-                            </div>
-                            <span className="font-medium">
-                                {displayValue}% APY
-                            </span>
-                        </BodyText>
-                    ))}
-                </div>
-            </div>
-        )
-    }
-    return null
+// Add a new type for top morpho data
+interface TopMorphoInfo {
+    key: string;
+    value: number;
+    protocolName: string;
+    color: string;
 }
 
-const styles = `
-    .recharts-brush .recharts-brush-traveller {
-        fill: hsl(var(--background));
-        stroke: #cacaca;
-        stroke-width: 1.5;
-        rx: 4;
-        ry: 4;
-    }
-    .recharts-brush .recharts-brush-slide {
-        fill: rgba(138, 43, 226, 0.05);
-        stroke: none;
-    }
-    .recharts-brush text {
-        fill: hsl(var(--foreground)) !important;
-        font-weight: 500;
-    }
-`
+// No need to extend TFormattedBenchmarkDataPoint here as it causes duplicate identifier errors
+// We'll use type assertions instead to handle the TypeScript errors
 
-const CustomYAxisTick = ({
-    x,
-    y,
-    payload,
-    index,
-    length,
-}: TCustomYAxisTickProps) => {
-    return (
-        <g
-            transform={`translate(${x},${y})`}
-            style={{ zIndex: 10, position: 'relative', color: 'hsl(var(--foreground-subtle))' }}
-        >
-            <text x={0} y={0} dy={6} dx={11} textAnchor="start" fontSize={12} fill="hsl(var(--foreground-subtle))">
-                {`${abbreviateNumber(payload.value, 0)}%`}
-            </text>
-        </g>
-    )
-}
-
-const CustomXAxisTick = ({
-    x,
-    y,
-    selectedRange,
-    payload,
-    index,
-    length,
-}: TCustomXAxisTickProps) => {
-    if (index % 2 !== 0 && length > 10) return null;
-
-    return (
-        <g transform={`translate(${x},${y})`} style={{ zIndex: 10 }}>
-            <text x={0} y={0} dy={16} textAnchor="middle" fontSize={12} fill="hsl(var(--foreground-subtle))">
-                {formatDateAccordingToPeriod(
-                    payload.value.toString(),
-                    selectedRange
-                )}
-            </text>
-        </g>
-    )
-}
+// Add topMorpho to CHART_CONFIG for consistent legends
+const CHART_CONFIG_EXTENDED = {
+    ...CHART_CONFIG,
+    topMorpho: {
+        label: 'Top Morpho Vault',
+        color: 'var(--color-morphoGauntletPrime)',
+    }
+};
 
 export function BenchmarkHistoryChart() {
     const [selectedRange, setSelectedRange] = useState<Period>(Period.oneMonth)
@@ -533,17 +445,43 @@ export function BenchmarkHistoryChart() {
                 fluidDisplay: abbreviateNumber(item.fluid ?? 0),
             } as TFormattedBenchmarkDataPoint;
 
-            // Add Morpho data for Base chain
-            if (selectedChain === ChainId.Base) {
-                const morphoKeys = [
-                    'morphoGauntletPrime',
-                    'morphoMoonwell',
-                    'morphoGauntletCore',
-                    'morphoSteakhouse',
-                    'morphoIonic',
-                    'morphoRe7'
-                ];
-
+            // Find the top performing Morpho vault
+            let topMorpho = null as TopMorphoInfo | null;
+            
+            // Find the top performing Morpho protocol at this data point
+            const morphoKeys = [
+                'morphoGauntletPrime',
+                'morphoMoonwell',
+                'morphoGauntletCore',
+                'morphoSteakhouse',
+                'morphoIonic',
+                'morphoRe7'
+            ];
+            
+            morphoKeys.forEach(key => {
+                const value = item[key as keyof TBenchmarkDataPoint] as number | null | undefined;
+                
+                if (value !== null && value !== undefined && (topMorpho === null || value > topMorpho.value)) {
+                    topMorpho = {
+                        key,
+                        value,
+                        protocolName: CHART_CONFIG[key as keyof typeof CHART_CONFIG].label,
+                        color: CHART_CONFIG[key as keyof typeof CHART_CONFIG].color
+                    };
+                }
+            });
+            
+            // Add the top performing Morpho protocol to the formatted item
+            if (topMorpho) {
+                // Add a new field for the top Morpho protocol
+                (formattedItem as any).topMorpho = topMorpho.value;
+                (formattedItem as any).topMorphoDisplay = abbreviateNumber(topMorpho.value);
+                (formattedItem as any).topMorphoKey = topMorpho.key;
+                (formattedItem as any).topMorphoName = topMorpho.protocolName;
+                (formattedItem as any).topMorphoColor = topMorpho.color;
+                (formattedItem as any).isTopMorphoApproximated = item[`is${topMorpho.key.charAt(0).toUpperCase() + topMorpho.key.slice(1)}Approximated` as keyof TBenchmarkDataPoint] || false;
+                
+                // Also keep the individual morpho data for reference/filtering
                 morphoKeys.forEach(key => {
                     const value = item[key as keyof TBenchmarkDataPoint];
                     const isApproximated = item[`is${key.charAt(0).toUpperCase() + key.slice(1)}Approximated` as keyof TBenchmarkDataPoint];
@@ -702,67 +640,195 @@ export function BenchmarkHistoryChart() {
         superfund: true,
         aave: true,
         fluid: true,
-        morphoGauntletPrime: true,
-        morphoMoonwell: true,
-        morphoGauntletCore: true,
-        morphoSteakhouse: true,
-        morphoIonic: true,
-        morphoRe7: true,
     });
 
     // Helper for legend toggle
-    const handleLegendToggle = (key: keyof typeof CHART_CONFIG) => {
+    const handleLegendToggle = (key: keyof typeof CHART_CONFIG | 'topMorpho') => {
         setVisibleLines((prev) => ({ ...prev, [key]: !prev[key] }));
     };
+
+    // Calculate the top Morpho vault based on the selected time period
+    const topMorphoInfo = useMemo(() => {
+        if (!chartData.length || selectedChain !== ChainId.Base) return null;
+
+        const morphoKeys = [
+            'morphoGauntletPrime',
+            'morphoMoonwell',
+            'morphoGauntletCore',
+            'morphoSteakhouse',
+            'morphoIonic',
+            'morphoRe7'
+        ];
+        
+        // Calculate average APY for each Morpho vault over the selected period
+        const morphoAverages = morphoKeys.reduce((acc, key) => {
+            let totalValue = 0;
+            let count = 0;
+            
+            chartData.forEach(dataPoint => {
+                const value = dataPoint[key as keyof typeof dataPoint];
+                if (value !== null && value !== undefined && typeof value === 'number') {
+                    totalValue += value;
+                    count++;
+                }
+            });
+            
+            const average = count > 0 ? totalValue / count : 0;
+            acc[key] = average;
+            return acc;
+        }, {} as Record<string, number>);
+        
+        // Find the Morpho vault with the highest average APY
+        let topMorphoKey = '';
+        let topMorphoAverage = -1;
+        
+        Object.entries(morphoAverages).forEach(([key, avg]) => {
+            if (avg > topMorphoAverage) {
+                topMorphoKey = key;
+                topMorphoAverage = avg;
+            }
+        });
+        
+        return topMorphoKey ? { key: topMorphoKey, averageValue: topMorphoAverage } : null;
+    }, [chartData, selectedChain]);
+
+    // Update visible lines when topMorphoInfo changes
+    useEffect(() => {
+        if (topMorphoInfo?.key && visibleLines[topMorphoInfo.key] === undefined) {
+            setVisibleLines(prev => ({
+                ...prev,
+                [topMorphoInfo.key]: true
+            }));
+        }
+    }, [topMorphoInfo]);
+
+    // Modified CustomTooltip to only show relevant protocols including the top morpho
+    const CustomTooltip = ({ active, payload, visibleLines = {} }: TCustomTooltipProps) => {
+        if (active && payload && payload.length) {
+            const data = payload[0]?.payload;
+            
+            // Sort protocols by their APY values (highest to lowest)
+            const sortedProtocols = Object.entries(CHART_CONFIG)
+                .map(([key, config]) => {
+                    // Skip Morpho protocols that aren't the selected top one
+                    if (key.startsWith('morpho') && key !== topMorphoInfo?.key) {
+                        return null;
+                    }
+                    
+                    const value = data[key as keyof TFormattedBenchmarkDataPoint];
+                    const displayValue = data[`${key}Display` as keyof TFormattedBenchmarkDataPoint];
+                    
+                    return {
+                        key,
+                        config,
+                        value: value as number | null | undefined,
+                        displayValue,
+                    };
+                })
+                .filter(item => 
+                    // Filter out null items and protocols that are not visible
+                    item !== null &&
+                    item.value !== null && 
+                    item.value !== undefined && 
+                    (visibleLines[item.key as keyof typeof visibleLines] !== false) // Show if not explicitly set to false
+                )
+                .sort((a, b) => (b!.value || 0) - (a!.value || 0));
+
+            return (
+                <div className="flex flex-col gap-2 bg-card border border-border rounded-lg shadow-lg p-3 text-sm">
+                    <BodyText level='body3' className="text-gray-600">
+                        {data.timestamp}
+                    </BodyText>
+                    <div className="space-y-1">
+                        {sortedProtocols.map((item) => (
+                            <BodyText key={item!.key} level='body3' className="flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-1">
+                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: item!.config.color }} />
+                                    {item!.config.label}
+                                </div>
+                                <span className="font-medium">
+                                    {item!.displayValue}% APY
+                                </span>
+                            </BodyText>
+                        ))}
+                    </div>
+                </div>
+            )
+        }
+        return null
+    }
 
     // Custom legend component
     const CustomLegend = () => {
         // Determine which protocols to show based on selectedChain
-        const filteredEntries = Object.entries(CHART_CONFIG).filter(([key]) => {
-            if (key === 'superfund' || key === 'aave') {
-                // Always show superfund and aave for both chains
-                return true;
-            } else {
-                // Show other protocols only for Base chain
-                return selectedChain === ChainId.Base;
+        const protocolsToShow = ['superfund', 'aave'];
+        
+        if (selectedChain === ChainId.Base) {
+            protocolsToShow.push('fluid');
+            
+            // Add the top Morpho vault if available
+            if (topMorphoInfo?.key) {
+                protocolsToShow.push(topMorphoInfo.key);
             }
-        }) as [keyof typeof CHART_CONFIG, typeof CHART_CONFIG[keyof typeof CHART_CONFIG]][];
-
+        }
+        
         return (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 8 }}>
-                {filteredEntries.map(([key, config]) => (
-                    <button
-                        key={key}
-                        onClick={() => handleLegendToggle(key)}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 6,
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            opacity: visibleLines[key] ? 1 : 0.4,
-                            fontWeight: visibleLines[key] ? 600 : 400,
-                            fontSize: 15,
-                            padding: 0,
-                        }}
-                    >
-                        <span style={{
-                            width: 16,
-                            height: 6,
-                            borderRadius: 3,
-                            background: config.color,
-                            display: 'inline-block',
-                            marginRight: 4,
-                            border: visibleLines[key] ? '2px solid #222' : '2px solid #ccc',
-                            transition: 'border 0.2s',
-                        }} />
-                        {config.label}
-                    </button>
-                ))}
+                {protocolsToShow.map((key) => {
+                    const config = CHART_CONFIG[key as keyof typeof CHART_CONFIG];
+                    return (
+                        <button
+                            key={key}
+                            onClick={() => handleLegendToggle(key as keyof typeof CHART_CONFIG)}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                opacity: visibleLines[key] ? 1 : 0.4,
+                                fontWeight: visibleLines[key] ? 600 : 400,
+                                fontSize: 15,
+                                padding: 0,
+                            }}
+                        >
+                            <span style={{
+                                width: 16,
+                                height: 6,
+                                borderRadius: 3,
+                                background: config.color,
+                                display: 'inline-block',
+                                marginRight: 4,
+                                border: visibleLines[key] ? '2px solid #222' : '2px solid #ccc',
+                                transition: 'border 0.2s',
+                            }} />
+                            {config.label}
+                        </button>
+                    );
+                })}
             </div>
         );
     };
+
+    // Add this between the CustomTooltip and CustomLegend functions
+    const styles = `
+        .recharts-brush .recharts-brush-traveller {
+            fill: hsl(var(--background));
+            stroke: #cacaca;
+            stroke-width: 1.5;
+            rx: 4;
+            ry: 4;
+        }
+        .recharts-brush .recharts-brush-slide {
+            fill: rgba(138, 43, 226, 0.05);
+            stroke: none;
+        }
+        .recharts-brush text {
+            fill: hsl(var(--foreground)) !important;
+            font-weight: 500;
+        }
+    `
 
     return (
         <>
@@ -809,7 +875,7 @@ export function BenchmarkHistoryChart() {
                                     margin={{
                                         top: 0,
                                         right: 30,
-                                        left: -15,
+                                        left: 5,
                                         bottom: 45
                                     }}
                                 >
@@ -845,7 +911,7 @@ export function BenchmarkHistoryChart() {
                                             const formattedPayload = payload.map(item => ({
                                                 payload: item.payload as TFormattedBenchmarkDataPoint
                                             }));
-                                            return <CustomTooltip active={active} payload={formattedPayload} />;
+                                            return <CustomTooltip active={active} payload={formattedPayload} visibleLines={visibleLines} />;
                                         }}
                                         cursor={{ stroke: 'hsl(var(--foreground-disabled))', strokeWidth: 1 }}
                                     />
@@ -885,71 +951,12 @@ export function BenchmarkHistoryChart() {
                                             isAnimationActive={false}
                                         />
                                     )}
-                                    {visibleLines.morphoGauntletPrime && selectedChain === ChainId.Base && (
+                                    {selectedChain === ChainId.Base && topMorphoInfo?.key && visibleLines[topMorphoInfo.key] === true && (
                                         <Line
-                                            dataKey="morphoGauntletPrime"
+                                            key={topMorphoInfo.key}
+                                            dataKey={topMorphoInfo.key}
                                             type="monotone"
-                                            stroke="var(--color-morphoGauntletPrime)"
-                                            strokeWidth={2}
-                                            dot={false}
-                                            activeDot={{ r: 5, strokeWidth: 1 }}
-                                            connectNulls={true}
-                                            isAnimationActive={false}
-                                        />
-                                    )}
-                                    {visibleLines.morphoMoonwell && selectedChain === ChainId.Base && (
-                                        <Line
-                                            dataKey="morphoMoonwell"
-                                            type="monotone"
-                                            stroke="var(--color-morphoMoonwell)"
-                                            strokeWidth={2}
-                                            dot={false}
-                                            activeDot={{ r: 5, strokeWidth: 1 }}
-                                            connectNulls={true}
-                                            isAnimationActive={false}
-                                        />
-                                    )}
-                                    {visibleLines.morphoGauntletCore && selectedChain === ChainId.Base && (
-                                        <Line
-                                            dataKey="morphoGauntletCore"
-                                            type="monotone"
-                                            stroke="var(--color-morphoGauntletCore)"
-                                            strokeWidth={2}
-                                            dot={false}
-                                            activeDot={{ r: 5, strokeWidth: 1 }}
-                                            connectNulls={true}
-                                            isAnimationActive={false}
-                                        />
-                                    )}
-                                    {visibleLines.morphoSteakhouse && selectedChain === ChainId.Base && (
-                                        <Line
-                                            dataKey="morphoSteakhouse"
-                                            type="monotone"
-                                            stroke="var(--color-morphoSteakhouse)"
-                                            strokeWidth={2}
-                                            dot={false}
-                                            activeDot={{ r: 5, strokeWidth: 1 }}
-                                            connectNulls={true}
-                                            isAnimationActive={false}
-                                        />
-                                    )}
-                                    {visibleLines.morphoIonic && selectedChain === ChainId.Base && (
-                                        <Line
-                                            dataKey="morphoIonic"
-                                            type="monotone"
-                                            stroke="var(--color-morphoIonic)"
-                                            strokeWidth={2}
-                                            dot={false}
-                                            activeDot={{ r: 5, strokeWidth: 1 }}
-                                            connectNulls={true}
-                                            isAnimationActive={false}
-                                        />
-                                    )}
-                                    {visibleLines.morphoRe7 && selectedChain === ChainId.Base && (
-                                        <Line
-                                            dataKey="morphoRe7"
-                                            type="monotone"
-                                            stroke="var(--color-morphoRe7)"
+                                            stroke={CHART_CONFIG[topMorphoInfo.key as keyof typeof CHART_CONFIG].color}
                                             strokeWidth={2}
                                             dot={false}
                                             activeDot={{ r: 5, strokeWidth: 1 }}
@@ -1000,63 +1007,14 @@ export function BenchmarkHistoryChart() {
                                                     connectNulls={true}
                                                 />
                                             )}
-                                            {visibleLines.morphoGauntletPrime && selectedChain === ChainId.Base && (
+                                            {selectedChain === ChainId.Base && topMorphoInfo?.key && visibleLines[topMorphoInfo.key] === true && (
                                                 <Area
+                                                    key={topMorphoInfo.key}
                                                     type="monotone"
-                                                    dataKey="morphoGauntletPrime"
-                                                    stroke="var(--color-morphoGauntletPrime)"
+                                                    dataKey={topMorphoInfo.key}
+                                                    stroke={CHART_CONFIG[topMorphoInfo.key as keyof typeof CHART_CONFIG].color}
                                                     strokeWidth={1}
-                                                    fill="rgba(255, 107, 107, 0.2)"
-                                                    connectNulls={true}
-                                                />
-                                            )}
-                                            {visibleLines.morphoMoonwell && selectedChain === ChainId.Base && (
-                                                <Area
-                                                    type="monotone"
-                                                    dataKey="morphoMoonwell"
-                                                    stroke="var(--color-morphoMoonwell)"
-                                                    strokeWidth={1}
-                                                    fill="rgba(78, 205, 196, 0.2)"
-                                                    connectNulls={true}
-                                                />
-                                            )}
-                                            {visibleLines.morphoGauntletCore && selectedChain === ChainId.Base && (
-                                                <Area
-                                                    type="monotone"
-                                                    dataKey="morphoGauntletCore"
-                                                    stroke="var(--color-morphoGauntletCore)"
-                                                    strokeWidth={1}
-                                                    fill="rgba(69, 183, 209, 0.2)"
-                                                    connectNulls={true}
-                                                />
-                                            )}
-                                            {visibleLines.morphoSteakhouse && selectedChain === ChainId.Base && (
-                                                <Area
-                                                    type="monotone"
-                                                    dataKey="morphoSteakhouse"
-                                                    stroke="var(--color-morphoSteakhouse)"
-                                                    strokeWidth={1}
-                                                    fill="rgba(150, 206, 180, 0.2)"
-                                                    connectNulls={true}
-                                                />
-                                            )}
-                                            {visibleLines.morphoIonic && selectedChain === ChainId.Base && (
-                                                <Area
-                                                    type="monotone"
-                                                    dataKey="morphoIonic"
-                                                    stroke="var(--color-morphoIonic)"
-                                                    strokeWidth={1}
-                                                    fill="rgba(255, 238, 173, 0.2)"
-                                                    connectNulls={true}
-                                                />
-                                            )}
-                                            {visibleLines.morphoRe7 && selectedChain === ChainId.Base && (
-                                                <Area
-                                                    type="monotone"
-                                                    dataKey="morphoRe7"
-                                                    stroke="var(--color-morphoRe7)"
-                                                    strokeWidth={1}
-                                                    fill="rgba(212, 165, 165, 0.2)"
+                                                    fill={`${CHART_CONFIG[topMorphoInfo.key as keyof typeof CHART_CONFIG].color}33`} // Add 33 for 20% opacity
                                                     connectNulls={true}
                                                 />
                                             )}

@@ -80,4 +80,5 @@ export type TCustomTooltipProps = {
     payload: Array<{
         payload: TFormattedBenchmarkDataPoint
     }>
+    visibleLines?: Record<string, boolean>
 } 

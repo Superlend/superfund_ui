@@ -9,6 +9,7 @@ import { ChainId } from '@/types/chain'
 import { motion } from 'motion/react'
 import { useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function ChainSelectionPage() {
   // Function to handle direct navigation using window.location
@@ -43,44 +44,47 @@ export default function ChainSelectionPage() {
             Bluechip Stable SuperFund
           </HeadingText>
         </div>
-        
+
         <BodyText level="body1" className="mb-8 text-gray-600">
           Select a blockchain network to access the SuperFund
         </BodyText>
-        
-        <div className="space-y-4">
-          <Button 
-            className="w-full h-14"
-            onClick={() => router.push('/super-fund/sonic')}
-          >
-            <div className="flex items-center justify-center gap-3">
-              <ImageWithDefault
-                src={CHAIN_DETAILS[ChainId.Sonic].logo}
-                alt="Sonic"
-                width={24}
-                height={24}
-                className="rounded-full"
-              />
-              <span>Sonic Network</span>
-            </div>
-          </Button>
-          
-          <Button 
-            className="w-full h-14 bg-white hover:bg-gray-50 text-gray-800 border border-gray-200"
-            variant="outline"
-            onClick={() => router.push('/super-fund/base')}
-          >
-            <div className="flex items-center justify-center gap-3">
-              <ImageWithDefault
-                src={CHAIN_DETAILS[ChainId.Base].logo}
-                alt="Base"
-                width={24}
-                height={24}
-                className="rounded-full"
-              />
-              <span>Base Network</span>
-            </div>
-          </Button>
+
+        <div className="flex flex-col gap-4">
+          <Link href="/super-fund/sonic">
+            <Button
+              className="w-full h-14"
+              onClick={() => window.open('/waitlist', '_blank')}
+            >
+              <div className="flex items-center justify-center gap-3">
+                <ImageWithDefault
+                  src={CHAIN_DETAILS[ChainId.Sonic].logo}
+                  alt="Sonic"
+                  width={24}
+                  height={24}
+                  className="rounded-full"
+                />
+                <span>Sonic Network</span>
+              </div>
+            </Button>
+          </Link>
+
+          <Link href="/super-fund/base">
+            <Button
+              className="w-full h-14 bg-white hover:bg-gray-50 text-gray-800 border border-gray-200"
+              variant="outline"
+            >
+              <div className="flex items-center justify-center gap-3">
+                <ImageWithDefault
+                  src={CHAIN_DETAILS[ChainId.Base].logo}
+                  alt="Base"
+                  width={24}
+                  height={24}
+                  className="rounded-full"
+                />
+                <span>Base Network</span>
+              </div>
+            </Button>
+          </Link>
         </div>
       </motion.div>
     </MainContainer>
