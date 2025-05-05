@@ -48,7 +48,7 @@ import {
     TCustomYAxisTickProps
 } from '@/types/benchmark-chart'
 
-const CustomTooltip = ({ active, payload }: TCustomTooltipProps) => {
+const CustomTooltip = ({ active, payload, visibleLines = {} }: TCustomTooltipProps) => {
     if (active && payload && payload.length) {
         const data = payload[0]?.payload;
 
@@ -67,7 +67,12 @@ const CustomTooltip = ({ active, payload }: TCustomTooltipProps) => {
                     isApproximated
                 };
             })
-            .filter(item => item.value !== null && item.value !== undefined)
+            .filter(item => 
+                // Filter out null values and protocols that are not visible
+                item.value !== null && 
+                item.value !== undefined && 
+                (visibleLines[item.key as keyof typeof visibleLines] !== false) // Show if not explicitly set to false
+            )
             .sort((a, b) => (b.value || 0) - (a.value || 0));
 
         return (
@@ -845,7 +850,7 @@ export function BenchmarkHistoryChart() {
                                             const formattedPayload = payload.map(item => ({
                                                 payload: item.payload as TFormattedBenchmarkDataPoint
                                             }));
-                                            return <CustomTooltip active={active} payload={formattedPayload} />;
+                                            return <CustomTooltip active={active} payload={formattedPayload} visibleLines={visibleLines} />;
                                         }}
                                         cursor={{ stroke: 'hsl(var(--foreground-disabled))', strokeWidth: 1 }}
                                     />
