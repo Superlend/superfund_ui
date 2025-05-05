@@ -64,8 +64,8 @@ const starVariants = {
 
 export default function VaultStats() {
     const { walletAddress, isWalletConnected } = useWalletConnection()
-    const { totalAssets, spotApy, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
-    const { rewards, totalRewardApy, isLoading: isLoadingRewards, error: errorRewards } = useRewardsHook()
+    // const { totalAssets, spotApy, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
+    // const { rewards, totalRewardApy, isLoading: isLoadingRewards, error: errorRewards } = useRewardsHook()
     const { userMaxWithdrawAmount, isLoading: isLoadingUserMaxWithdrawAmount, error: errorUserMaxWithdrawAmount } = useUserBalance(
         walletAddress as `0x${string}`
     )
@@ -76,9 +76,9 @@ export default function VaultStats() {
     })
     const { isClient } = useIsClient()
     const isLoadingSection = !isClient;
-    const { days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading: isLoading7DayAvg, error: error7DayAvg } = useHistoricalData({
-        chain_id: selectedChain
-    })
+    // const { days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading: isLoading7DayAvg, error: error7DayAvg } = useHistoricalData({
+    //     chain_id: selectedChain
+    // })
 
     const vaultStats = [
         {
