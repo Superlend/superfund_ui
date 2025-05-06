@@ -96,10 +96,10 @@ export default function VaultStats() {
                 return (
                     <>
                         <BodyText level="body2" weight="normal" className="text-gray-600 mb-2">
-                            The APY is calculated using the trailing one-week average of daily protocol returns, including the rewards from underlying protocols.
+                            The Vault APY is calculated as the weighted average of the spot APYs from the underlying protocols where liquidity is deployed.
                         </BodyText>
                         <BodyText level="body2" weight="normal" className="text-gray-600">
-                            The displayed APY is an estimate and may fluctuate based on protocol performance. It is not a fixed or guaranteed rate.
+                            The displayed APY is an estimate and may fluctuate based on the performance of these protocols. It is not fixed or guaranteed.
                         </BodyText>
                     </>
                 )
