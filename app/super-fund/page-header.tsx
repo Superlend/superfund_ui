@@ -21,7 +21,7 @@ export default function PageHeader() {
             className="mb-3"
         >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div className="flex items-start gap-2">
+                <div className="flex flex-col sm:flex-row items-start gap-2">
                     <ImageWithDefault
                         src={'/images/logos/superlend-rounded.svg'}
                         alt="Bluechip Stable SuperFund"
@@ -30,7 +30,7 @@ export default function PageHeader() {
                         className="mt-0.5 sm:mt-0"
                     />
                     <div className="w-full">
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                             <HeadingText level="h4" weight="medium" className="mr-1 text-gray-800">
                                 Bluechip Stable SuperFund
                             </HeadingText>
@@ -43,7 +43,7 @@ export default function PageHeader() {
                                 </div>
                             </div>
                         </div>
-                        <BodyText level="body2" weight="medium" className="text-gray-600">
+                        <BodyText level="body2" weight="medium" className="text-gray-600 max-sm:mt-2">
                             Your stablecoin savings account, optimized for yield.
                         </BodyText>
                     </div>

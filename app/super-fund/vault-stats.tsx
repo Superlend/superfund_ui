@@ -200,7 +200,7 @@ export default function VaultStats() {
                 {vaultStats.map((item, index) => (
                     <motion.div
                         key={index}
-                        className="flex-1 min-w-[160px] rounded-xl p-4 transition-all duration-200 hover:bg-blue-50"
+                        className="flex-1"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{
