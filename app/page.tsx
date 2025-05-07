@@ -213,6 +213,85 @@ export default function HomePage() {
         }
     }
 
+    // New animation variants
+    const cardVariants = {
+        hidden: { opacity: 0, scale: 0.8, y: 20 },
+        visible: {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            transition: { 
+                duration: 0.5, 
+                ease: "easeOut",
+                type: "spring",
+                stiffness: 100
+            }
+        }
+    }
+
+    const cardVariantsLeft = {
+        hidden: { opacity: 0, x: -40 },
+        visible: {
+            opacity: 1,
+            x: 0,
+            transition: { 
+                duration: 0.6, 
+                ease: "easeOut",
+                type: "spring"
+            }
+        }
+    }
+
+    const cardVariantsRight = {
+        hidden: { opacity: 0, x: 40 },
+        visible: {
+            opacity: 1,
+            x: 0,
+            transition: { 
+                duration: 0.6, 
+                ease: "easeOut",
+                type: "spring"
+            }
+        }
+    }
+
+    const statVariants = {
+        hidden: { opacity: 0, scale: 0.7 },
+        visible: {
+            opacity: 1,
+            scale: 1,
+            transition: { 
+                duration: 0.6,
+                ease: "backOut",
+                type: "spring",
+                bounce: 0.4
+            }
+        }
+    }
+
+    const iconVariants = {
+        hidden: { opacity: 0, rotate: -15, scale: 0.8 },
+        visible: { 
+            opacity: 1, 
+            rotate: 0,
+            scale: 1,
+            transition: { 
+                duration: 0.5,
+                ease: "easeOut",
+                type: "spring", 
+                stiffness: 200
+            }
+        }
+    }
+
+    const fadeInVariants = {
+        hidden: { opacity: 0 },
+        visible: { 
+            opacity: 1,
+            transition: { duration: 0.6 }
+        }
+    }
+
     return (
         <MainContainer className="flex flex-col min-h-screen" onMouseMove={handleMouseMove}>
             {/* SECTION 1: Hero with APY Highlight */}
@@ -427,12 +506,15 @@ export default function HomePage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
                         {/* Problem 1 */}
                         <motion.div
-                            variants={childVariants}
+                            variants={cardVariantsLeft}
                             className="bg-white/75 backdrop-blur-sm p-6 rounded-xl shadow-sm"
                         >
-                            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                            <motion.div 
+                                variants={iconVariants} 
+                                className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4"
+                            >
                                 <span className="text-red-600 text-xl font-bold">1</span>
-                            </div>
+                            </motion.div>
                             <HeadingText level="h3" weight="semibold" className="mb-3">
                                 Low Bank Yields
                             </HeadingText>
@@ -443,12 +525,15 @@ export default function HomePage() {
 
                         {/* Problem 2 */}
                         <motion.div
-                            variants={childVariants}
+                            variants={cardVariants}
                             className="bg-white/75 backdrop-blur-sm p-6 rounded-xl shadow-sm"
                         >
-                            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                            <motion.div 
+                                variants={iconVariants} 
+                                className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4"
+                            >
                                 <span className="text-red-600 text-xl font-bold">2</span>
-                            </div>
+                            </motion.div>
                             <HeadingText level="h3" weight="semibold" className="mb-3">
                                 Inflation Risk
                             </HeadingText>
@@ -459,12 +544,15 @@ export default function HomePage() {
 
                         {/* Problem 3 */}
                         <motion.div
-                            variants={childVariants}
+                            variants={cardVariantsRight}
                             className="bg-white/75 backdrop-blur-sm p-6 rounded-xl shadow-sm"
                         >
-                            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                            <motion.div 
+                                variants={iconVariants} 
+                                className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4"
+                            >
                                 <span className="text-red-600 text-xl font-bold">3</span>
-                            </div>
+                            </motion.div>
                             <HeadingText level="h3" weight="semibold" className="mb-3">
                                 Limited Access
                             </HeadingText>
@@ -501,13 +589,16 @@ export default function HomePage() {
                     {/* Solution Benefits */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Solution Details */}
-                        <motion.div variants={childVariants} className="space-y-6">
+                        <motion.div variants={cardVariantsLeft} className="space-y-6">
                             <div className="flex items-start">
-                                <div className="mr-4 mt-1">
+                                <motion.div 
+                                    variants={iconVariants}
+                                    className="mr-4 mt-1"
+                                >
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-primary">
                                         <path d="M5 13L9 17L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
-                                </div>
+                                </motion.div>
                                 <div>
                                     <HeadingText level="h4" weight="semibold" className="mb-1">
                                         Up to 9% APY on USDC
@@ -519,11 +610,14 @@ export default function HomePage() {
                             </div>
 
                             <div className="flex items-start">
-                                <div className="mr-4 mt-1">
+                                <motion.div 
+                                    variants={iconVariants}
+                                    className="mr-4 mt-1"
+                                >
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-primary">
                                         <path d="M5 13L9 17L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
-                                </div>
+                                </motion.div>
                                 <div>
                                     <HeadingText level="h4" weight="semibold" className="mb-1">
                                         Multi-Chain Optimization
@@ -535,11 +629,14 @@ export default function HomePage() {
                             </div>
 
                             <div className="flex items-start">
-                                <div className="mr-4 mt-1">
+                                <motion.div 
+                                    variants={iconVariants}
+                                    className="mr-4 mt-1"
+                                >
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-primary">
                                         <path d="M5 13L9 17L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
-                                </div>
+                                </motion.div>
                                 <div>
                                     <HeadingText level="h4" weight="semibold" className="mb-1">
                                         Trusted Protocols
@@ -562,7 +659,7 @@ export default function HomePage() {
 
                         {/* Comparison Chart */}
                         <motion.div
-                            variants={childVariants}
+                            variants={cardVariantsRight}
                             className="bg-white/50 backdrop-blur-sm p-6 rounded-xl shadow-sm"
                         >
                             <HeadingText level="h4" weight="semibold" className="mb-6 text-center">
@@ -571,48 +668,112 @@ export default function HomePage() {
 
                             <div className="space-y-4">
                                 {/* SuperFund */}
-                                <div className="space-y-1">
+                                <motion.div 
+                                    variants={fadeInVariants}
+                                    transition={{ delay: 0.1 }}
+                                    className="space-y-1"
+                                >
                                     <div className="flex justify-between items-center">
                                         <BodyText level="body2" weight="medium">SuperFund</BodyText>
                                         <BodyText level="body2" weight="bold" className="text-primary">9.0%</BodyText>
                                     </div>
-                                    <div className="w-full bg-gray-100 rounded-full h-2.5">
-                                        <div className="bg-primary h-2.5 rounded-full" style={{ width: '65%' }}></div>
-                                    </div>
-                                </div>
+                                    <motion.div 
+                                        className="w-full bg-gray-100 rounded-full h-2.5"
+                                        initial={{ width: 0 }}
+                                        whileInView={{ width: "100%" }}
+                                        transition={{ duration: 0.5, delay: 0.1 }}
+                                        viewport={{ once: true }}
+                                    >
+                                        <motion.div 
+                                            className="bg-primary h-2.5 rounded-full" 
+                                            initial={{ width: 0 }}
+                                            whileInView={{ width: '65%' }}
+                                            transition={{ duration: 0.8, delay: 0.2 }}
+                                            viewport={{ once: true }}
+                                        ></motion.div>
+                                    </motion.div>
+                                </motion.div>
 
                                 {/* Competing DeFi */}
-                                <div className="space-y-1">
+                                <motion.div 
+                                    variants={fadeInVariants}
+                                    transition={{ delay: 0.2 }}
+                                    className="space-y-1"
+                                >
                                     <div className="flex justify-between items-center">
                                         <BodyText level="body2" weight="medium">Average DeFi Yield</BodyText>
                                         <BodyText level="body2" weight="bold" className="text-blue-600">8.2%</BodyText>
                                     </div>
-                                    <div className="w-full bg-gray-100 rounded-full h-2.5">
-                                        <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: '55%' }}></div>
-                                    </div>
-                                </div>
+                                    <motion.div 
+                                        className="w-full bg-gray-100 rounded-full h-2.5"
+                                        initial={{ width: 0 }}
+                                        whileInView={{ width: "100%" }}
+                                        transition={{ duration: 0.5, delay: 0.2 }}
+                                        viewport={{ once: true }}
+                                    >
+                                        <motion.div 
+                                            className="bg-blue-600 h-2.5 rounded-full" 
+                                            initial={{ width: 0 }}
+                                            whileInView={{ width: '55%' }}
+                                            transition={{ duration: 0.8, delay: 0.3 }}
+                                            viewport={{ once: true }}
+                                        ></motion.div>
+                                    </motion.div>
+                                </motion.div>
 
                                 {/* Traditional Finance */}
-                                <div className="space-y-1">
+                                <motion.div 
+                                    variants={fadeInVariants}
+                                    transition={{ delay: 0.3 }}
+                                    className="space-y-1"
+                                >
                                     <div className="flex justify-between items-center">
                                         <BodyText level="body2" weight="medium">High-Yield Savings</BodyText>
                                         <BodyText level="body2" weight="bold" className="text-blue-400">3.5%</BodyText>
                                     </div>
-                                    <div className="w-full bg-gray-100 rounded-full h-2.5">
-                                        <div className="bg-blue-400 h-2.5 rounded-full" style={{ width: '23%' }}></div>
-                                    </div>
-                                </div>
+                                    <motion.div 
+                                        className="w-full bg-gray-100 rounded-full h-2.5"
+                                        initial={{ width: 0 }}
+                                        whileInView={{ width: "100%" }}
+                                        transition={{ duration: 0.5, delay: 0.3 }}
+                                        viewport={{ once: true }}
+                                    >
+                                        <motion.div 
+                                            className="bg-blue-400 h-2.5 rounded-full" 
+                                            initial={{ width: 0 }}
+                                            whileInView={{ width: '23%' }}
+                                            transition={{ duration: 0.8, delay: 0.4 }}
+                                            viewport={{ once: true }}
+                                        ></motion.div>
+                                    </motion.div>
+                                </motion.div>
 
                                 {/* Bank */}
-                                <div className="space-y-1">
+                                <motion.div 
+                                    variants={fadeInVariants}
+                                    transition={{ delay: 0.4 }}
+                                    className="space-y-1"
+                                >
                                     <div className="flex justify-between items-center">
                                         <BodyText level="body2" weight="medium">Traditional Bank</BodyText>
                                         <BodyText level="body2" weight="bold" className="text-gray-500">0.1%</BodyText>
                                     </div>
-                                    <div className="w-full bg-gray-100 rounded-full h-2.5">
-                                        <div className="bg-gray-400 h-2.5 rounded-full" style={{ width: '1%' }}></div>
-                                    </div>
-                                </div>
+                                    <motion.div 
+                                        className="w-full bg-gray-100 rounded-full h-2.5"
+                                        initial={{ width: 0 }}
+                                        whileInView={{ width: "100%" }}
+                                        transition={{ duration: 0.5, delay: 0.4 }}
+                                        viewport={{ once: true }}
+                                    >
+                                        <motion.div 
+                                            className="bg-gray-400 h-2.5 rounded-full" 
+                                            initial={{ width: 0 }}
+                                            whileInView={{ width: '1%' }}
+                                            transition={{ duration: 0.8, delay: 0.5 }}
+                                            viewport={{ once: true }}
+                                        ></motion.div>
+                                    </motion.div>
+                                </motion.div>
                             </div>
 
                             {/* Testimonial */}
@@ -657,12 +818,24 @@ export default function HomePage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
                         {/* Sonic Network Card */}
                         <motion.div
-                            variants={childVariants}
+                            variants={cardVariantsLeft}
                             className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 border border-blue-200 shadow-sm"
                         >
                             {/* Background Decoration */}
-                            <div className="absolute -top-16 -right-16 w-48 h-48 bg-blue-200/20 rounded-full"></div>
-                            <div className="absolute bottom-16 -left-16 w-32 h-32 bg-blue-200/20 rounded-full"></div>
+                            <motion.div 
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                whileInView={{ scale: 1, opacity: 0.2 }}
+                                transition={{ duration: 0.8 }}
+                                viewport={{ once: true }}
+                                className="absolute -top-16 -right-16 w-48 h-48 bg-blue-200/20 rounded-full"
+                            ></motion.div>
+                            <motion.div 
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                whileInView={{ scale: 1, opacity: 0.2 }}
+                                transition={{ duration: 0.8, delay: 0.2 }}
+                                viewport={{ once: true }}
+                                className="absolute bottom-16 -left-16 w-32 h-32 bg-blue-200/20 rounded-full"
+                            ></motion.div>
 
                             {/* Content */}
                             <div className="relative z-10">
@@ -744,12 +917,24 @@ export default function HomePage() {
 
                         {/* Base Network Card */}
                         <motion.div
-                            variants={childVariants}
+                            variants={cardVariantsRight}
                             className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border border-indigo-100 shadow-sm"
                         >
                             {/* Background Decoration */}
-                            <div className="absolute -top-16 -right-16 w-48 h-48 bg-indigo-200/20 rounded-full"></div>
-                            <div className="absolute bottom-16 -left-16 w-32 h-32 bg-indigo-200/20 rounded-full"></div>
+                            <motion.div 
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                whileInView={{ scale: 1, opacity: 0.2 }}
+                                transition={{ duration: 0.8 }}
+                                viewport={{ once: true }}
+                                className="absolute -top-16 -right-16 w-48 h-48 bg-indigo-200/20 rounded-full"
+                            ></motion.div>
+                            <motion.div 
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                whileInView={{ scale: 1, opacity: 0.2 }}
+                                transition={{ duration: 0.8, delay: 0.2 }}
+                                viewport={{ once: true }}
+                                className="absolute bottom-16 -left-16 w-32 h-32 bg-indigo-200/20 rounded-full"
+                            ></motion.div>
 
                             {/* Content */}
                             <div className="relative z-10">
@@ -833,7 +1018,7 @@ export default function HomePage() {
 
                     {/* Supplementary Info */}
                     <motion.div
-                        variants={childVariants}
+                        variants={cardVariants}
                         className="bg-gray-50 p-6 rounded-xl border border-gray-100 max-w-3xl mx-auto"
                     >
                         <HeadingText level="h4" weight="semibold" className="mb-4 text-center">
@@ -843,48 +1028,68 @@ export default function HomePage() {
                             SuperFund&apos;s multi-chain approach diversifies your deposits across networks to:
                         </BodyText>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="flex flex-col items-center text-center p-4">
-                                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-3">
+                            <motion.div 
+                                variants={statVariants}
+                                className="flex flex-col items-center text-center p-4"
+                            >
+                                <motion.div 
+                                    variants={iconVariants}
+                                    className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-3"
+                                >
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-blue-600">
                                         <path d="M8 13V17M16 11V17M12 7V17M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
-                                </div>
+                                </motion.div>
                                 <BodyText level="body2" weight="medium" className="text-gray-800 mb-1">
                                     Maximize Yield
                                 </BodyText>
                                 <BodyText level="body3" className="text-gray-600">
                                     Capture the highest available rates across different chains
                                 </BodyText>
-                            </div>
+                            </motion.div>
 
-                            <div className="flex flex-col items-center text-center p-4">
-                                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-3">
+                            <motion.div 
+                                variants={statVariants}
+                                transition={{ delay: 0.1 }}
+                                className="flex flex-col items-center text-center p-4"
+                            >
+                                <motion.div 
+                                    variants={iconVariants}
+                                    className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-3"
+                                >
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-600">
                                         <path d="M9 12L11 14L15 10M3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
-                                </div>
+                                </motion.div>
                                 <BodyText level="body2" weight="medium" className="text-gray-800 mb-1">
                                     Reduce Risk
                                 </BodyText>
                                 <BodyText level="body3" className="text-gray-600">
                                     Mitigate network-specific risks through diversification
                                 </BodyText>
-                            </div>
+                            </motion.div>
 
-                            <div className="flex flex-col items-center text-center p-4">
-                                <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-3">
+                            <motion.div 
+                                variants={statVariants}
+                                transition={{ delay: 0.2 }}
+                                className="flex flex-col items-center text-center p-4"
+                            >
+                                <motion.div 
+                                    variants={iconVariants}
+                                    className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-3"
+                                >
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-purple-600">
                                         <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         <path d="M19.4 15C19.2669 15.3016 19.2272 15.6362 19.286 15.9606C19.3448 16.285 19.4995 16.5843 19.73 16.82L19.79 16.88C19.976 17.0657 20.1235 17.2863 20.2241 17.5291C20.3248 17.7719 20.3766 18.0322 20.3766 18.295C20.3766 18.5578 20.3248 18.8181 20.2241 19.0609C20.1235 19.3037 19.976 19.5243 19.79 19.71C19.6043 19.896 19.3837 20.0435 19.1409 20.1441C18.8981 20.2448 18.6378 20.2966 18.375 20.2966C18.1122 20.2966 17.8519 20.2448 17.6091 20.1441C17.3663 20.0435 17.1457 19.896 16.96 19.71L16.9 19.65C16.6643 19.4195 16.365 19.2648 16.0406 19.206C15.7162 19.1472 15.3816 19.1869 15.08 19.32C14.7842 19.4468 14.532 19.6572 14.3543 19.9255C14.1766 20.1938 14.0813 20.5082 14.08 20.83V21C14.08 21.5304 13.8693 22.0391 13.4942 22.4142C13.1191 22.7893 12.6104 23 12.08 23C11.5496 23 11.0409 22.7893 10.6658 22.4142C10.2907 22.0391 10.08 21.5304 10.08 21V20.91C10.0723 20.579 9.96512 20.258 9.77251 19.9887C9.5799 19.7194 9.31074 19.5143 9 19.4C8.69838 19.2669 8.36381 19.2272 8.03941 19.286C7.71502 19.3448 7.41568 19.4995 7.18 19.73L7.12 19.79C6.93425 19.976 6.71368 20.1235 6.47088 20.2241C6.22808 20.3248 5.96783 20.3766 5.705 20.3766C5.44217 20.3766 5.18192 20.3248 4.93912 20.2241C4.69632 20.1235 4.47575 19.976 4.29 19.79C4.10405 19.6043 3.95653 19.3837 3.85588 19.1409C3.75523 18.8981 3.70343 18.6378 3.70343 18.375C3.70343 18.1122 3.75523 17.8519 3.85588 17.6091C3.95653 17.3663 4.10405 17.1457 4.29 16.96L4.35 16.9C4.58054 16.6643 4.73519 16.365 4.794 16.0406C4.85282 15.7162 4.81312 15.3816 4.68 15.08C4.55324 14.7842 4.34276 14.532 4.07447 14.3543C3.80618 14.1766 3.49179 14.0813 3.17 14.08H3C2.46957 14.08 1.96086 13.8693 1.58579 13.4942C1.21071 13.1191 1 12.6104 1 12.08C1 11.5496 1.21071 11.0409 1.58579 10.6658C1.96086 10.2907 2.46957 10.08 3 10.08H3.09C3.42099 10.0723 3.742 9.96512 4.0113 9.77251C4.28059 9.5799 4.48572 9.31074 4.6 9C4.73312 8.69838 4.77282 8.36381 4.714 8.03941C4.65519 7.71502 4.50054 7.41568 4.27 7.18L4.21 7.12C4.02405 6.93425 3.87653 6.71368 3.77588 6.47088C3.67523 6.22808 3.62343 5.96783 3.62343 5.705C3.62343 5.44217 3.67523 5.18192 3.77588 4.93912C3.87653 4.69632 4.02405 4.47575 4.21 4.29C4.39575 4.10405 4.61632 3.95653 4.85912 3.85588C5.10192 3.75523 5.36217 3.70343 5.625 3.70343C5.88783 3.70343 6.14808 3.75523 6.39088 3.85588C6.63368 3.95653 6.85425 4.10405 7.04 4.29L7.1 4.35C7.33568 4.58054 7.63502 4.73519 7.95941 4.794C8.28381 4.85282 8.61838 4.81312 8.92 4.68H9C9.29577 4.55324 9.54802 4.34276 9.72569 4.07447C9.90337 3.80618 9.99872 3.49179 10 3.17V3C10 2.46957 10.2107 1.96086 10.5858 1.58579C10.9609 1.21071 11.4696 1 12 1C12.5304 1 13.0391 1.21071 13.4142 1.58579C13.7893 1.96086 14 2.46957 14 3V3.09C14.0013 3.41179 14.0966 3.72618 14.2743 3.99447C14.452 4.26276 14.7042 4.47324 15 4.6C15.3016 4.73312 15.6362 4.77282 15.9606 4.714C16.285 4.65519 16.5843 4.50054 16.82 4.27L16.88 4.21C17.0657 4.02405 17.2863 3.87653 17.5291 3.77588C17.7719 3.67523 18.0322 3.62343 18.295 3.62343C18.5578 3.62343 18.8181 3.67523 19.0609 3.77588C19.3037 3.87653 19.5243 4.02405 19.71 4.21C19.896 4.39575 20.0435 4.61632 20.1441 4.85912C20.2448 5.10192 20.2966 5.36217 20.2966 5.625C20.2966 5.88783 20.2448 6.14808 20.1441 6.39088C20.0435 6.63368 19.896 6.85425 19.71 7.04L19.65 7.1C19.4195 7.33568 19.2648 7.63502 19.206 7.95941C19.1472 8.28381 19.1869 8.61838 19.32 8.92V9C19.4468 9.29577 19.6572 9.54802 19.9255 9.72569C20.1938 9.90337 20.5082 9.99872 20.83 10H21C21.5304 10 22.0391 10.2107 22.4142 10.5858C22.7893 10.9609 23 11.4696 23 12C23 12.5304 22.7893 13.0391 22.4142 13.4142C22.0391 13.7893 21.5304 14 21 14H20.91C20.5882 14.0013 20.2738 14.0966 20.0055 14.2743C19.7372 14.452 19.5268 14.7042 19.4 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
-                                </div>
+                                </motion.div>
                                 <BodyText level="body2" weight="medium" className="text-gray-800 mb-1">
                                     Continuous Monitoring
                                 </BodyText>
                                 <BodyText level="body3" className="text-gray-600">
                                     24/7 automated monitoring systems detect and respond to anomalies in real-time
                                 </BodyText>
-                            </div>
+                            </motion.div>
                         </div>
                     </motion.div>
                 </motion.div>
@@ -988,50 +1193,75 @@ export default function HomePage() {
 
                     <motion.div variants={childVariants} className="max-w-3xl mx-auto bg-white/75 backdrop-blur-sm rounded-xl shadow-sm px-6">
                         <Accordion type="single" collapsible className="w-full">
-                            <AccordionItem value="item-1" className="border-b border-gray-200">
-                                <AccordionTrigger className="text-left py-5 text-gray-800 font-medium hover:no-underline">
-                                    What new features does SuperFund bring to the DeFi ecosystem?
-                                </AccordionTrigger>
-                                <AccordionContent className="pb-5 text-gray-600">
-                                    SuperFund enhances the DeFi ecosystem by offering optimized cross-chain yield farming. It automatically distributes your assets across multiple lending protocols on different chains to maximize returns while minimizing risk through diversification. This enables assets to flow effortlessly between lending markets, all managed through a simple, unified interface.
-                                </AccordionContent>
-                            </AccordionItem>
+                            <motion.div
+                                variants={cardVariants}
+                                transition={{ delay: 0.1 }}
+                            >
+                                <AccordionItem value="item-1" className="border-b border-gray-200">
+                                    <AccordionTrigger className="text-left py-5 text-gray-800 font-medium hover:no-underline">
+                                        What new features does SuperFund bring to the DeFi ecosystem?
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pb-5 text-gray-600">
+                                        SuperFund enhances the DeFi ecosystem by offering optimized cross-chain yield farming. It automatically distributes your assets across multiple lending protocols on different chains to maximize returns while minimizing risk through diversification. This enables assets to flow effortlessly between lending markets, all managed through a simple, unified interface.
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </motion.div>
 
-                            <AccordionItem value="item-2" className="border-b border-gray-200">
-                                <AccordionTrigger className="text-left py-5 text-gray-800 font-medium hover:no-underline">
-                                    How does SuperFund&apos;s cross-chain strategy work?
-                                </AccordionTrigger>
-                                <AccordionContent className="pb-5 text-gray-600">
-                                    SuperFund leverages multiple cross-chain bridges to enable seamless asset transfers between networks. The system continuously monitors yield opportunities across chains and automatically rebalances your assets to capture the highest returns. Users access liquidity with a single click, making the process smooth and efficient across multiple EVM-compatible chains.
-                                </AccordionContent>
-                            </AccordionItem>
+                            <motion.div
+                                variants={cardVariants}
+                                transition={{ delay: 0.2 }}
+                            >
+                                <AccordionItem value="item-2" className="border-b border-gray-200">
+                                    <AccordionTrigger className="text-left py-5 text-gray-800 font-medium hover:no-underline">
+                                        How does SuperFund&apos;s cross-chain strategy work?
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pb-5 text-gray-600">
+                                        SuperFund leverages multiple cross-chain bridges to enable seamless asset transfers between networks. The system continuously monitors yield opportunities across chains and automatically rebalances your assets to capture the highest returns. Users access liquidity with a single click, making the process smooth and efficient across multiple EVM-compatible chains.
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </motion.div>
 
-                            <AccordionItem value="item-3" className="border-b border-gray-200">
-                                <AccordionTrigger className="text-left py-5 text-gray-800 font-medium hover:no-underline">
-                                    What is the benefit of using SuperFund versus direct lending?
-                                </AccordionTrigger>
-                                <AccordionContent className="pb-5 text-gray-600">
-                                    SuperFund offers up to 25% better returns than direct lending through position optimization across multiple protocols. You benefit from automatic yield optimization, reduced liquidation risks through diversification, and a simplified experience with access to multiple lending protocols through a single interface. This eliminates the complexity of managing positions across different platforms and chains yourself.
-                                </AccordionContent>
-                            </AccordionItem>
+                            <motion.div
+                                variants={cardVariants}
+                                transition={{ delay: 0.3 }}
+                            >
+                                <AccordionItem value="item-3" className="border-b border-gray-200">
+                                    <AccordionTrigger className="text-left py-5 text-gray-800 font-medium hover:no-underline">
+                                        What is the benefit of using SuperFund versus direct lending?
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pb-5 text-gray-600">
+                                        SuperFund offers up to 25% better returns than direct lending through position optimization across multiple protocols. You benefit from automatic yield optimization, reduced liquidation risks through diversification, and a simplified experience with access to multiple lending protocols through a single interface. This eliminates the complexity of managing positions across different platforms and chains yourself.
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </motion.div>
 
-                            <AccordionItem value="item-4" className="border-b border-gray-200">
-                                <AccordionTrigger className="text-left py-5 text-gray-800 font-medium hover:no-underline">
-                                    Are the interest rates on SuperFund different from regular lending rates?
-                                </AccordionTrigger>
-                                <AccordionContent className="pb-5 text-gray-600">
-                                    The interest rates in SuperFund are typically higher than direct lending on a single protocol. This is achieved by dynamically allocating your assets to the highest-yielding opportunities across multiple lending platforms and chains. While protocol fees may apply for cross-chain transactions, the overall returns remain competitive and often superior to single-platform lending.
-                                </AccordionContent>
-                            </AccordionItem>
+                            <motion.div
+                                variants={cardVariants}
+                                transition={{ delay: 0.4 }}
+                            >
+                                <AccordionItem value="item-4" className="border-b border-gray-200">
+                                    <AccordionTrigger className="text-left py-5 text-gray-800 font-medium hover:no-underline">
+                                        Are the interest rates on SuperFund different from regular lending rates?
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pb-5 text-gray-600">
+                                        The interest rates in SuperFund are typically higher than direct lending on a single protocol. This is achieved by dynamically allocating your assets to the highest-yielding opportunities across multiple lending platforms and chains. While protocol fees may apply for cross-chain transactions, the overall returns remain competitive and often superior to single-platform lending.
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </motion.div>
 
-                            <AccordionItem value="item-5" className="border-b border-gray-200">
-                                <AccordionTrigger className="text-left py-5 text-gray-800 font-medium hover:no-underline">
-                                    What happens if there&apos;s a disruption in one of the lending protocols?
-                                </AccordionTrigger>
-                                <AccordionContent className="pb-5 text-gray-600">
-                                    SuperFund&apos;s multi-chain strategy provides built-in risk management. By distributing assets across multiple protocols and chains, the impact of any single protocol&apos;s disruption is minimized. The system has built-in safeguards to protect user assets and can quickly rebalance away from any protocol experiencing issues, ensuring your funds remain secure while maximizing returns.
-                                </AccordionContent>
-                            </AccordionItem>
+                            <motion.div
+                                variants={cardVariants}
+                                transition={{ delay: 0.5 }}
+                            >
+                                <AccordionItem value="item-5" className="border-b border-gray-200">
+                                    <AccordionTrigger className="text-left py-5 text-gray-800 font-medium hover:no-underline">
+                                        What happens if there&apos;s a disruption in one of the lending protocols?
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pb-5 text-gray-600">
+                                        SuperFund&apos;s multi-chain strategy provides built-in risk management. By distributing assets across multiple protocols and chains, the impact of any single protocol&apos;s disruption is minimized. The system has built-in safeguards to protect user assets and can quickly rebalance away from any protocol experiencing issues, ensuring your funds remain secure while maximizing returns.
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </motion.div>
                         </Accordion>
                         </motion.div>
             </motion.div>
