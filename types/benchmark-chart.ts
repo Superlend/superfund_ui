@@ -19,6 +19,7 @@ export type TBenchmarkDataPoint = {
     morphoSteakhouse?: number | null
     morphoIonic?: number | null
     morphoRe7?: number | null
+    euler?: number | null
     isAaveApproximated?: boolean
     isFluidApproximated?: boolean
     isMorphoGauntletPrimeApproximated?: boolean
@@ -27,6 +28,7 @@ export type TBenchmarkDataPoint = {
     isMorphoSteakhouseApproximated?: boolean
     isMorphoIonicApproximated?: boolean
     isMorphoRe7Approximated?: boolean
+    isEulerApproximated?: boolean
 }
 
 export type TFormattedBenchmarkDataPoint = TBenchmarkDataPoint & {
@@ -45,6 +47,7 @@ export type TFormattedBenchmarkDataPoint = TBenchmarkDataPoint & {
     morphoSteakhouseDisplay?: string
     morphoIonicDisplay?: string
     morphoRe7Display?: string
+    eulerDisplay?: string
 }
 
 export type TChartConfig = {

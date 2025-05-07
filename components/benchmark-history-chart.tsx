@@ -142,6 +142,13 @@ export function BenchmarkHistoryChart() {
         token: USDC_ADDRESS
     });
 
+    // Get Euler data for Base chain
+    const { data: eulerData, isLoading: isEulerLoading } = useGetBenchmarkHistory({
+        protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.euler,
+        period: apiPeriod,
+        token: USDC_ADDRESS
+    });
+
     const [historicalData, setHistoricalData] = useState<TBenchmarkDataPoint[]>([])
     const prevSuperfundData = useRef<any>(null)
     const prevAaveData = useRef<any>(null)
@@ -186,7 +193,8 @@ export function BenchmarkHistoryChart() {
             morphoGauntletCore: new Map<number, number>(),
             morphoSteakhouse: new Map<number, number>(),
             morphoIonic: new Map<number, number>(),
-            morphoRe7: new Map<number, number>()
+            morphoRe7: new Map<number, number>(),
+            euler: new Map<number, number>()
         };
 
         if (selectedChain === ChainId.Base) {
@@ -197,7 +205,8 @@ export function BenchmarkHistoryChart() {
                 morphoGauntletCore: morphoGauntletCoreData,
                 morphoSteakhouse: morphoSteakhouseData,
                 morphoIonic: morphoIonicData,
-                morphoRe7: morphoRe7Data
+                morphoRe7: morphoRe7Data,
+                euler: eulerData
             };
 
             Object.entries(morphoData).forEach(([key, data]) => {
@@ -403,7 +412,8 @@ export function BenchmarkHistoryChart() {
         superfundLoading,
         isAaveLoading,
         selectedChain,
-        fluidData
+        fluidData,
+        eulerData
     ]);
 
     const chartData = useMemo(() => {
@@ -443,6 +453,9 @@ export function BenchmarkHistoryChart() {
                 fluid: item.fluid ?? null,
                 isFluidApproximated: item.isFluidApproximated || false,
                 fluidDisplay: abbreviateNumber(item.fluid ?? 0),
+                euler: item.euler ?? null,
+                isEulerApproximated: item.isEulerApproximated || false,
+                eulerDisplay: abbreviateNumber(item.euler ?? 0),
             } as TFormattedBenchmarkDataPoint;
 
             // Find the top performing Morpho vault
@@ -455,7 +468,8 @@ export function BenchmarkHistoryChart() {
                 'morphoGauntletCore',
                 'morphoSteakhouse',
                 'morphoIonic',
-                'morphoRe7'
+                'morphoRe7',
+                'euler'
             ];
             
             morphoKeys.forEach(key => {
@@ -516,7 +530,8 @@ export function BenchmarkHistoryChart() {
                     Number(d.morphoGauntletCore),
                     Number(d.morphoSteakhouse),
                     Number(d.morphoIonic),
-                    Number(d.morphoRe7)
+                    Number(d.morphoRe7),
+                    Number(d.euler)
                 );
             }
             return values.filter(v => !isNaN(v));
@@ -640,6 +655,7 @@ export function BenchmarkHistoryChart() {
         superfund: true,
         aave: true,
         fluid: true,
+        euler: true,
     });
 
     // Helper for legend toggle
@@ -657,7 +673,8 @@ export function BenchmarkHistoryChart() {
             'morphoGauntletCore',
             'morphoSteakhouse',
             'morphoIonic',
-            'morphoRe7'
+            'morphoRe7',
+            'euler'
         ];
         
         // Calculate average APY for each Morpho vault over the selected period
@@ -765,6 +782,7 @@ export function BenchmarkHistoryChart() {
         
         if (selectedChain === ChainId.Base) {
             protocolsToShow.push('fluid');
+            protocolsToShow.push('euler');
             
             // Add the top Morpho vault if available
             if (topMorphoInfo?.key) {
@@ -951,6 +969,18 @@ export function BenchmarkHistoryChart() {
                                             isAnimationActive={false}
                                         />
                                     )}
+                                    {visibleLines.euler && selectedChain === ChainId.Base && (
+                                        <Line
+                                            dataKey="euler"
+                                            type="monotone"
+                                            stroke={CHART_CONFIG.euler.color}
+                                            strokeWidth={2}
+                                            dot={false}
+                                            activeDot={{ r: 5, strokeWidth: 1 }}
+                                            connectNulls={true}
+                                            isAnimationActive={false}
+                                        />
+                                    )}
                                     {selectedChain === ChainId.Base && topMorphoInfo?.key && visibleLines[topMorphoInfo.key] === true && (
                                         <Line
                                             key={topMorphoInfo.key}
@@ -1004,6 +1034,16 @@ export function BenchmarkHistoryChart() {
                                                     stroke="#00C853"
                                                     strokeWidth={1}
                                                     fill="rgba(0, 200, 83, 0.2)"
+                                                    connectNulls={true}
+                                                />
+                                            )}
+                                            {visibleLines.euler && selectedChain === ChainId.Base && (
+                                                <Area
+                                                    type="monotone"
+                                                    dataKey="euler"
+                                                    stroke={CHART_CONFIG.euler.color}
+                                                    strokeWidth={1}
+                                                    fill={`${CHART_CONFIG.euler.color}33`} // Add 33 for 20% opacity
                                                     connectNulls={true}
                                                 />
                                             )}

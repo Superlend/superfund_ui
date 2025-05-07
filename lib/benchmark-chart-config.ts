@@ -37,6 +37,10 @@ export const CHART_CONFIG: TChartConfig = {
         label: 'Fluid',
         color: '#00C853',
     },
+    euler: {
+        label: 'Euler',
+        color: '#08131f',
+    },
 }
 
 export const PROTOCOL_IDENTIFIERS = {
@@ -52,5 +56,6 @@ export const PROTOCOL_IDENTIFIERS = {
         morphoSteakhouse: '0xd54545c6103cd824ef74d3c7f9c9e42393521aa093aac66c6714de2201d2757e' as `0x${string}`,
         morphoIonic: '0x0acac7b189a953d42bb4af2a7147328c3dc5fc8b2949f590ecad2bc1b4da23af' as `0x${string}`,
         morphoRe7: '0x4c3ee701174bb8e3b83a219bbfd4bb4782ac0c4569a89acb1c23563a26b42312' as `0x${string}`,
+        euler: '0x24d996023d16c8cb105e72c92b9652401a4fa1cfc6e675b6c7bc67cc842c6b15' as `0x${string}`,
     }
 } 

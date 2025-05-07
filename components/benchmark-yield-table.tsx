@@ -128,6 +128,13 @@ export function BenchmarkYieldTable() {
         period: apiPeriod,
         token: USDC_ADDRESS
     })
+    
+    // Get Euler data for Base chain
+    const { data: eulerData, isLoading: isEulerLoading } = useGetBenchmarkHistory({
+        protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.euler,
+        period: apiPeriod,
+        token: USDC_ADDRESS
+    })
 
     // Calculate average APY for a dataset over the selected period
     const calculateAverageApy = (data: any) => {
@@ -205,7 +212,8 @@ export function BenchmarkYieldTable() {
                 isMorphoGauntletCoreLoading ||
                 isMorphoSteakhouseLoading ||
                 isMorphoIonicLoading ||
-                isMorphoRe7Loading
+                isMorphoRe7Loading ||
+                isEulerLoading
             ));
 
         setIsLoading(isDataLoading);
@@ -269,6 +277,16 @@ export function BenchmarkYieldTable() {
                 color: "#00C853", // Fluid color
                 logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/fluid_logo.png'
             });
+            
+            // Add Euler
+            const eulerApy = calculateAverageApy(eulerData);
+            newBenchmarkData.push({
+                platform: 'Euler',
+                apy: eulerApy,
+                totalEarned: calculateEarningsForCurrentPeriod(eulerApy),
+                color: CHART_CONFIG.euler.color,
+                logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/euler_logo.png'
+            });
 
             // Add top Morpho vault only if we found one
             const topMorpho = getTopMorphoVault;
@@ -297,6 +315,7 @@ export function BenchmarkYieldTable() {
         morphoSteakhouseData,
         morphoIonicData,
         morphoRe7Data,
+        eulerData,
         superfundLoading,
         isAaveLoading,
         isFluidLoading,
@@ -306,6 +325,7 @@ export function BenchmarkYieldTable() {
         isMorphoSteakhouseLoading,
         isMorphoIonicLoading,
         isMorphoRe7Loading,
+        isEulerLoading,
         selectedChain,
         aaveRewardApy,
         selectedRange
