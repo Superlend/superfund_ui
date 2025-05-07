@@ -285,7 +285,7 @@ export function BenchmarkYieldTable() {
                 apy: eulerApy,
                 totalEarned: calculateEarningsForCurrentPeriod(eulerApy),
                 color: CHART_CONFIG.euler.color,
-                logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/euler_logo.png'
+                logo: '/images/logos/euler-symbol.svg'
             });
 
             // Add top Morpho vault only if we found one
@@ -368,7 +368,7 @@ export function BenchmarkYieldTable() {
 
                     return (
                         <div className="text-center w-full">
-                            {periodText} Yield <span className="hidden sm:inline">(APR-Adjusted)</span>
+                            {periodText} Yield <span className="hidden sm:inline"></span>
                         </div>
                     );
                 },
