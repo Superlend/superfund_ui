@@ -38,9 +38,6 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
   const { walletAddress, isWalletConnected } = useWalletConnection()
   const { selectedChain, chainDetails } = useChain()
   const [currentFilter, setCurrentFilter] = useState<FilterType>('all')
-
-  // Skip for Base chain
-  const isBaseChain = selectedChain === ChainId.Base;
   
   // Get protocol identifier from chain context if not provided
   const getProtocolIdentifier = () => {
@@ -120,11 +117,6 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
         <p>Please connect your wallet to view your transactions</p>
       </div>
     )
-  }
-
-  // This check is redundant with the page-level check, but adding as a safeguard
-  if (isBaseChain) {
-    return null;
   }
 
   const hasTransactions = transactions.length > 0
