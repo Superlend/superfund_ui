@@ -1,6 +1,5 @@
 import { ChainId } from "@/types/chain"
 
-// Add type definitions at the top
 export type BaseStrategy = {
     address: string;
     strategy_type: StrategiesType;
@@ -58,12 +57,14 @@ export const VAULT_STRATEGIES_COLORS = {
     'Morpho Moonwell Flagship USDC': "#8A2BE2",
     'Morpho Gauntlet USDC Core': "#FF8C00",
     'Morpho Steakhouse USDC': "#DEB887",
-    'Morpho Ionic Ecosystem USDC': "#4169E1",
+    'Morpho Extrafi XLend USDC': "#4169E1",
     'Morpho Re7 USDC': "#9370DB",
     AaveV3: "#1E90FF",
     Fluid: "#FFA500",
     'Euler Base USDC': "#6A5ACD",
     'Cash Reserve': "#F4A460",
+    'Spark USDC Vault': "#3366CC",
+    'Seamless USDC Vault': "#8A2BE2",
 }
 
 export const SONIC_VAULT_STRATEGIES_COLORS = {
@@ -96,10 +97,10 @@ export const VAULT_STRATEGIES: Record<string, BaseStrategy> = {
         strategy_type: StrategiesType.Morpho,
         details_url: `${MORPHO_BASE_URL}/vault/0xbeeF010f9cb27031ad51e3333f9aF9C6B1228183/steakhouse-usdc`,
     },
-    'Morpho Ionic Ecosystem USDC': {
+    'Morpho Extrafi XLend USDC': {
         address: '0x23479229e52Ab6aaD312D0B03DF9F33B46753B5e',
         strategy_type: StrategiesType.Morpho,
-        details_url: `${MORPHO_BASE_URL}/vault/0x23479229e52Ab6aaD312D0B03DF9F33B46753B5e/ionic-ecosystem-usdc`,
+        details_url: `${MORPHO_BASE_URL}/vault/0x23479229e52Ab6aaD312D0B03DF9F33B46753B5e/extrafi-xlend-usdc-vault`,
     },
     'Morpho Re7 USDC': {
         address: '0x12AFDeFb2237a5963e7BAb3e2D46ad0eee70406e',
@@ -126,6 +127,16 @@ export const VAULT_STRATEGIES: Record<string, BaseStrategy> = {
         strategy_type: StrategiesType.CASH_RESERVE,
         details_url: `https://basescan.org/token/0x833589fcd6edb6e08f4c7c32d4f71b54bda02913?a=0x10076ed296571cE4Fde5b1FDF0eB9014a880e47B`,
     },
+    "Spark USDC Vault": {
+        address: "0x7BfA7C4f149E7415b73bdeDfe609237e29CBF34A",
+        strategy_type: StrategiesType.Morpho,
+        details_url: `${MORPHO_BASE_URL}/vault/0x7BfA7C4f149E7415b73bdeDfe609237e29CBF34A/spark-usdc-vault`,
+    },
+    "Seamless USDC Vault": {
+        address: "0x616a4E1db48e22028f6bbf20444Cd3b8e3273738",
+        strategy_type: StrategiesType.Morpho,
+        details_url: `${MORPHO_BASE_URL}/vault/0x616a4E1db48e22028f6bbf20444Cd3b8e3273738/seamless-usdc-vault`,
+    }
 }
 
 export const SONIC_VAULT_STRATEGIES: Record<string, SonicStrategy> = {
@@ -167,7 +178,6 @@ export const SONIC_VAULT_STRATEGIES: Record<string, SonicStrategy> = {
     }
 }
 
-// Update the type of the map
 export const VAULT_STRATEGIES_MAP: {
     [ChainId.Base]: Record<string, BaseStrategy>;
     [ChainId.Sonic]: Record<string, SonicStrategy>;
