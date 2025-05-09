@@ -128,7 +128,7 @@ export function BenchmarkYieldTable() {
         period: apiPeriod,
         token: USDC_ADDRESS
     })
-    
+
     // Get Euler data for Base chain
     // const { data: eulerData, isLoading: isEulerLoading } = useGetBenchmarkHistory({
     //     protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.euler,
@@ -143,7 +143,20 @@ export function BenchmarkYieldTable() {
         }
 
         const total = data.processMap.reduce((sum: number, item: any) => {
-            return sum + ((item.data?.depositRateReward ?? item.data?.depositRate) || 0);
+            return sum + (item.data?.depositRate || 0);
+        }, 0);
+
+        return total / data.processMap.length;
+    };
+
+    // Calculate average APY for Morpho vaults
+    const calculateMorphoAverageApy = (data: any) => {
+        if (!data || !data.processMap || !Array.isArray(data.processMap) || data.processMap.length === 0) {
+            return 0;
+        }
+
+        const total = data.processMap.reduce((sum: number, item: any) => {
+            return sum + (item.data?.depositRateReward || 0);
         }, 0);
 
         return total / data.processMap.length;
@@ -180,7 +193,7 @@ export function BenchmarkYieldTable() {
         let topApy = -1;
 
         Object.entries(morphoData).forEach(([key, { data }]) => {
-            const apy = calculateAverageApy(data);
+            const apy = calculateMorphoAverageApy(data);
             if (apy > topApy) {
                 topApy = apy;
                 topMorphoInfo = {
@@ -277,7 +290,7 @@ export function BenchmarkYieldTable() {
             //     color: "#00C853", // Fluid color
             //     logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/fluid_logo.png'
             // });
-            
+
             // Add Euler
             // const eulerApy = calculateAverageApy(eulerData);
             // newBenchmarkData.push({
