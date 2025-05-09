@@ -10,6 +10,8 @@ import { VAULT_STRATEGIES_MAP, VAULT_STRATEGIES_COLORS_MAP } from "@/lib/constan
 import ExternalLink from "./ExternalLink";
 import InfoTooltip from "./tooltips/InfoTooltip";
 import { useChain } from "@/context/chain-context";
+import { useVaultHook } from "@/hooks/vault_hooks/vaultHook";
+import { abbreviateNumber } from "@/lib/utils";
 
 const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -30,6 +32,7 @@ export default function AllocationDetailsChart({
 }: {
     allocationPoints: { name: string; value: number }[]
 }) {
+    const { totalAssets, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
     const allocatedAssetDetails = {
         name: 'Loading...',
         value: '0',
@@ -64,9 +67,9 @@ export default function AllocationDetailsChart({
                     <HeadingText level="h4" weight="medium" className="text-gray-800">
                         Allocation Details
                     </HeadingText>
-                    {/* <BodyText level="body2" weight="medium" className="text-muted-foreground">
-                        Last Rebalance: <span className="text-gray-700">2 hrs 34 mins ago</span>
-                    </BodyText> */}
+                    <HeadingText level="h5" weight="medium" className="text-muted-foreground">
+                        TVL{" "}:{" "}<span className="text-gray-800">${abbreviateNumber(Number(totalAssets), 4)}</span>
+                    </HeadingText>
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-6 lg:gap-8 w-full bg-white rounded-4 px-4 pb-4 sm:px-12">
                     <div className="h-[340px] w-[300px] max-w-[300px]">
@@ -177,8 +180,8 @@ export default function AllocationDetailsChart({
                                                 content={item.name}
                                             />
                                             {vaultStrategies && vaultStrategies[item.name as keyof typeof vaultStrategies] && (
-                                                <ExternalLink 
-                                                    href={vaultStrategies[item.name as keyof typeof vaultStrategies].details_url} 
+                                                <ExternalLink
+                                                    href={vaultStrategies[item.name as keyof typeof vaultStrategies].details_url}
                                                     className="text-xs text-muted-foreground"
                                                 >
                                                 </ExternalLink>

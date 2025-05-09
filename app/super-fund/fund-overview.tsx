@@ -38,11 +38,40 @@ const BenchmarkHistoryChart = lazy(() =>
     }))
 )
 
+const BenchmarkYieldTable = lazy(() =>
+    import('@/components/benchmark-yield-table').then(module => ({
+        default: module.BenchmarkYieldTable
+    }))
+)
+
 export default function FundOverview() {
     const { allocationPoints } = useVaultAllocationPoints()
-    const { selectedChain } = useChain()
+    const { selectedChain, chainDetails } = useChain()
+    const currentChainDetails = chainDetails[selectedChain as keyof typeof chainDetails]
     const rebalancedAssetsListFiltered = rebalancedAssetsList.filter((token) => token.chainIds.includes(selectedChain))
     const gridColsClass = `md:grid-cols-${rebalancedAssetsListFiltered.length > 4 ? 4 : rebalancedAssetsListFiltered.length}`
+    const CONTRACT_LINK = `${currentChainDetails?.explorerUrl}${currentChainDetails?.contractAddress}`
+
+    const footerRows = [
+        {
+            id: 'Documentation',
+            column_1: () => <BodyText level="body1" weight="medium">Documentation</BodyText>,
+            column_2: () => <BodyText level="body1" weight="medium">Updated Recently</BodyText>,
+            column_3: () => <ExternalLink href={DOCUMENTATION_LINK} className="font-medium" variant="secondary">View <span className="hidden md:inline">documentation</span></ExternalLink>
+        },
+        {
+            id: 'Performance Fees',
+            column_1: () => <BodyText level="body1" weight="medium">Performance Fees</BodyText>,
+            column_2: () => <BodyText level="body1" weight="medium">Every Rebalance</BodyText>,
+            column_3: () => <BodyText level="body1" weight="medium">10% of earnings</BodyText>
+        },
+        {
+            id: 'Contract',
+            column_1: () => <BodyText level="body1" weight="medium">Contract</BodyText>,
+            column_2: () => null,
+            column_3: () => <ExternalLink href={CONTRACT_LINK} className="font-medium" variant="secondary">View <span className="hidden md:inline">contract</span></ExternalLink>
+        }
+    ]
 
     return (
         <motion.div
@@ -153,6 +182,11 @@ export default function FundOverview() {
                     <BenchmarkHistoryChart />
                 </Suspense>
             </LazyLoad>
+            <LazyLoad>
+                <Suspense fallback={<LoadingSectionSkeleton className="h-[300px]" />}>
+                    <BenchmarkYieldTable />
+                </Suspense>
+            </LazyLoad>
             <AllocationDetailsChart allocationPoints={allocationPoints} />
             <LazyLoad>
                 <Suspense fallback={<LoadingSectionSkeleton className="h-[300px]" />}>
@@ -189,73 +223,43 @@ export default function FundOverview() {
                                 </ExternalLink>
                             </div>
                         </div> */}
-                        <div className="row flex gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
-                            <div className="col flex-1 flex flex-col items-start gap-0">
-                                <BodyText level="body1" weight="medium" className="text-gray-800">
-                                    Documentation
-                                </BodyText>
-                            </div>
-
-                            <div className="col flex-1">
-                                <BodyText
-                                    level="body2"
-                                    weight="medium"
-                                    className="hidden md:block text-gray-600 text-center"
-                                >
-                                    Updated Recently
-                                </BodyText>
-                            </div>
-                            <div className="col flex-1 flex justify-end">
-                                <ExternalLink
-                                    href={DOCUMENTATION_LINK}
-                                    className="font-medium"
-                                    variant="secondary"
-                                >
-                                    <BodyText level="body2" weight="medium" className="shrink-0 flex items-center gap-1">
-                                        View <span className="hidden md:block">documentation</span>
-                                    </BodyText>
-                                </ExternalLink>
-                            </div>
-                        </div>
-                        <div className="row flex gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
-                            <div className="col flex-0 md:flex-1 flex flex-col items-start gap-0">
-                                <BodyText level="body1" weight="medium">
-                                    Performance Fees
-                                </BodyText>
-                                <Label
-                                    size='small'
-                                    weight="medium"
-                                    className="md:hidden text-gray-600 text-center"
-                                >
-                                    Every Rebalance
-                                </Label>
-                            </div>
-
-                            <div className="col flex-0 md:flex-1">
-                                <BodyText
-                                    level="body2"
-                                    weight="medium"
-                                    className="hidden md:block text-gray-600 text-center"
-                                >
-                                    Every Rebalance
-                                </BodyText>
-                            </div>
-                            <div className="col flex-1 flex justify-end">
-                                {/* <InfoTooltip
-                                    label={
-                                        <BodyText level="body1" weight="medium" className="text-gray-800 text-right">
-                                            <TooltipText>
-                                                10% of earnings
-                                            </TooltipText>
+                        {
+                            footerRows.map((row) => (
+                                <div key={row.id} className="row flex gap-8 items-center justify-between py-6 first:pt-2 last:pb-2">
+                                    <div className="col flex-0 md:flex-1 flex flex-col items-start gap-0">
+                                        <BodyText level="body1" weight="medium">
+                                            {row.column_1()}
                                         </BodyText>
+                                        {row.column_2() &&
+                                            <Label
+                                                size='small'
+                                                weight="medium"
+                                                className="md:hidden text-gray-600 text-center"
+                                            >
+                                                {row.column_2()}
+                                            </Label>
+                                        }
+                                    </div>
+
+                                    {row.column_2() &&
+                                        <div className="col flex-0 md:flex-1">
+                                            <BodyText
+                                                level="body2"
+                                                weight="medium"
+                                                className="hidden md:block text-gray-600 text-center"
+                                            >
+                                                {row.column_2()}
+                                            </BodyText>
+                                        </div>
                                     }
-                                    content="Performance fees are applied only to the interest earned, not your initial deposit."
-                                /> */}
-                                <BodyText level="body1" weight="medium" className="text-gray-800 text-right">
-                                    10% of earnings
-                                </BodyText>
-                            </div>
-                        </div>
+                                    <div className="col flex-1 flex justify-end">
+                                        <BodyText level="body1" weight="medium" className="text-gray-800 text-right">
+                                            {row.column_3()}
+                                        </BodyText>
+                                    </div>
+                                </div>
+                            ))
+                        }
                     </CardContent>
                 </Card>
             </section>

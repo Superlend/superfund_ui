@@ -451,11 +451,11 @@ export default function SuperVaultTxDialog({
                                     weight="normal"
                                     className="text-gray-600"
                                 >
-                                    Spot APY
+                                    APY
                                 </BodyText>
                                 <Badge variant="green" size="lg">
                                     {abbreviateNumber(
-                                        Number(assetDetails?.asset?.spot_apy) ?? 0
+                                        Number(assetDetails?.asset?.effective_apy) ?? 0
                                     )}
                                     %
                                 </Badge>
@@ -865,9 +865,9 @@ export default function SuperVaultTxDialog({
                     )}
                 {/* Block 4 */}
                 {miniappUser &&
-                ((withdrawTx.status === 'view' && withdrawTx.isConfirmed) ||
-                    (depositTx.status === 'view' &&
-                        depositTx.isConfirmed)) ? null : (
+                    ((withdrawTx.status === 'view' && withdrawTx.isConfirmed) ||
+                        (depositTx.status === 'view' &&
+                            depositTx.isConfirmed)) ? null : (
                     <ActionButton
                         disabled={false}
                         handleCloseModal={handleOpenChange}

@@ -31,10 +31,10 @@ export type TChainNamesBasedOnAaveMarkets = {
 }
 
 export const PERIOD_LIST: { label: string, value: Period }[] = [
-    {
-        label: PeriodDisplay.oneDay,
-        value: Period.oneDay,
-    },
+    // {
+    //     label: PeriodDisplay.oneDay,
+    //     value: Period.oneDay,
+    // },
     {
         label: PeriodDisplay.oneWeek,
         value: Period.oneWeek,

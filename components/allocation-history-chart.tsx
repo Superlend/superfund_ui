@@ -185,7 +185,7 @@ const BASE_CHAIN_CONFIG = {
         color: '#DEB887', // Beige/sand
     },
     '0x23479229e52Ab6aaD312D0B03DF9F33B46753B5e': {
-        label: 'Morpho Ionic Ecosystem USDC',
+        label: 'Morpho Extrafi XLend USDC',
         color: '#4169E1', // Royal blue
     },
     '0x12AFDeFb2237a5963e7BAb3e2D46ad0eee70406e': {
@@ -207,6 +207,14 @@ const BASE_CHAIN_CONFIG = {
     '0x0000000000000000000000000000000000000000': {
         label: 'Cash Reserve',
         color: '#F4A460', // Sandy brown
+    },
+    '0x7BfA7C4f149E7415b73bdeDfe609237e29CBF34A': {
+        label: 'Spark USDC Vault',
+        color: '#3366CC', // Deep blue
+    },
+    '0x616a4E1db48e22028f6bbf20444Cd3b8e3273738': {
+        label: 'Seamless USDC Vault',
+        color: '#8A2BE2', // Bright purple
     }
 }
 
