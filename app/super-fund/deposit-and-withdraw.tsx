@@ -27,6 +27,8 @@ import ConnectWalletButton from '@/components/ConnectWalletButton'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import SuperVaultTxDialog from '@/components/dialogs/SuperVaultTx'
 import { useChain } from '@/context/chain-context'
+import { VAULT_ADDRESS_MAP } from '@/lib/constants'
+import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
 
 export type THelperText = Record<
     string,
@@ -46,9 +48,9 @@ export default function DepositAndWithdrawAssets() {
         useState<string>('')
 
     const isDepositPositionType = positionType === 'deposit'
-
+    const { selectedChain } = useChain()
     const { user } = usePrivy()
-    const walletAddress = user?.wallet?.address
+    const { walletAddress } = useWalletConnection()
 
     const {
         balance,
@@ -56,13 +58,15 @@ export default function DepositAndWithdrawAssets() {
         isLoading: isLoadingBalance,
         error: balanceError,
     } = useUserBalance(walletAddress as `0x${string}`)
-    const {
-        spotApy,
-        isLoading: isLoadingVaultStats,
-        error: vaultStatsError,
-    } = useVaultHook()
-
-    const { selectedChain } = useChain()
+    // const {
+    //     spotApy,
+    //     isLoading: isLoadingVaultStats,
+    //     error: vaultStatsError,
+    // } = useVaultHook()
+    const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
+        vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        chain_id: selectedChain
+    })
 
     useEffect(() => {
         if (isWalletConnected) {
@@ -169,7 +173,7 @@ export default function DepositAndWithdrawAssets() {
         } else {
             return (
                 Number(userEnteredWithdrawAmount) >
-                    Number(userMaxWithdrawAmount) ||
+                Number(userMaxWithdrawAmount) ||
                 Number(userEnteredWithdrawAmount) === 0
             )
         }
@@ -209,7 +213,7 @@ export default function DepositAndWithdrawAssets() {
                                                 isDepositPositionType
                                                     ? (balance ?? 0)
                                                     : (userMaxWithdrawAmount ??
-                                                          0)
+                                                        0)
                                             ),
                                             2
                                         )
@@ -271,8 +275,8 @@ export default function DepositAndWithdrawAssets() {
                                     isDepositPositionType
                                         ? setUserEnteredDepositAmount(balance)
                                         : setUserEnteredWithdrawAmount(
-                                              userMaxWithdrawAmount
-                                          )
+                                            userMaxWithdrawAmount
+                                        )
                                 }
                                 className="uppercase text-[14px] font-medium w-fit"
                             >
@@ -304,7 +308,7 @@ export default function DepositAndWithdrawAssets() {
                                         logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg',
                                         symbol: 'USDC',
                                     },
-                                    spot_apy: spotApy,
+                                    effective_apy: effectiveApyData?.total_apy,
                                 },
                                 chain_id: selectedChain,
                             }}
