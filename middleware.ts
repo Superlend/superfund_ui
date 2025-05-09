@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const ALLOWED_PATHS = ['/', '/waitlist', '/super-fund', '/super-fund/base', '/super-fund/base/txs']
+const ALLOWED_PATHS = ['/waitlist', '/super-fund', '/super-fund/base', '/super-fund/base/txs']
 
 export function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
 
-    // if (url.pathname === '/') {
-    //     url.pathname = '/super-fund'
-    //     return NextResponse.redirect(url)
-    // }
+    if (url.pathname === '/') {
+        url.pathname = '/super-fund'
+        return NextResponse.redirect(url)
+    }
 
     // Skip redirecting API routes
     if (url.pathname.startsWith('/api')) {
