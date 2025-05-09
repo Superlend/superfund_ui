@@ -268,10 +268,14 @@ function TransactionItem({ transaction, expanded = false }: { transaction: Trans
               <div className="flex flex-wrap items-center gap-2 mt-1">
                 <button 
                   onClick={copyTxHash}
-                  className="text-xs text-orange-500 flex items-center hover:underline"
+                  className="text-xs text-orange-500 flex items-center"
                 >
                   {truncatedHash}
-                  <Copy className="h-3 w-3 ml-0.5" />
+                  {copied ? (
+                    <CheckCircle2 className="text-green-500 h-3 w-3 ml-0.5" />
+                  ) : (
+                    <Copy className="h-3 w-3 ml-0.5" />
+                  )}
                 </button>
                 
                 <Link 

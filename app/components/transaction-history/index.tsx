@@ -6,7 +6,7 @@ import { useChain } from '@/context/chain-context'
 import { Skeleton } from '@/components/ui/skeleton'
 import { format, isToday, isYesterday } from 'date-fns'
 import { Button } from '@/components/ui/button'
-import { ChevronRight, ExternalLink, Copy, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { ChevronRight, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, CheckCircle2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { formatUnits } from 'ethers/lib/utils'
 import Link from 'next/link'
@@ -156,6 +156,9 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
   // Truncate hash for display (first 6 chars)
   const shortenedHash = `0x${transactionHash.substring(2, 7)}`
 
+  // Truncate transaction hash for display
+  const truncatedHash = `${transactionHash.substring(0, 6)}...${transactionHash.substring(transactionHash.length - 4)}`
+
   // Copy tx hash
   const copyHash = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -209,12 +212,16 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
 
             {/* Hash with copy button */}
             <div className="flex items-center text-xs text-orange-500">
-              {shortenedHash}
+              {truncatedHash}
               <button
                 onClick={copyHash}
                 className="ml-1 focus:outline-none"
               >
-                <Copy className="h-3 w-3 hover:text-orange-400" />
+                {copied ? (
+                  <CheckCircle2 className="text-green-500 h-3 w-3" />
+                ) : (
+                  <Copy className="h-3 w-3 hover:text-orange-400" />
+                )}
               </button>
             </div>
 
@@ -223,7 +230,7 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
               <Link
                 href={`${getExplorerUrl()}${transactionHash}`}
                 target="_blank"
-                className="text-xs text-orange-500 hover:underline flex items-center"
+                className="text-xs text-orange-500 hover:underline flex items-center w-fit"
               >
                 View tx
                 <ExternalLink className="h-3 w-3 ml-0.5" />
