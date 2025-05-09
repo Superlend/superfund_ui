@@ -96,10 +96,10 @@ export default function VaultStats() {
                 return (
                     <>
                         <BodyText level="body2" weight="normal" className="text-gray-600 mb-2">
-                            The APY is calculated using the trailing one-week average of daily protocol returns, including the rewards from underlying protocols.
+                            The Vault APY is calculated as the weighted average of the spot APYs from the underlying protocols where liquidity is deployed.
                         </BodyText>
                         <BodyText level="body2" weight="normal" className="text-gray-600">
-                            The displayed APY is an estimate and may fluctuate based on protocol performance. It is not a fixed or guaranteed rate.
+                            The displayed APY is an estimate and may fluctuate based on the performance of these protocols. It is not fixed or guaranteed.
                         </BodyText>
                     </>
                 )
@@ -200,7 +200,7 @@ export default function VaultStats() {
                 {vaultStats.map((item, index) => (
                     <motion.div
                         key={index}
-                        className="flex-1 min-w-[160px] rounded-xl p-4 transition-all duration-200 hover:bg-blue-50"
+                        className="flex-1"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{

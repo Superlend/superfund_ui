@@ -57,7 +57,7 @@ export default function FundOverview() {
             id: 'Documentation',
             column_1: () => <BodyText level="body1" weight="medium">Documentation</BodyText>,
             column_2: () => <BodyText level="body1" weight="medium">Updated Recently</BodyText>,
-            column_3: () => <ExternalLink href={DOCUMENTATION_LINK} className="font-medium" variant="secondary">View documentation</ExternalLink>
+            column_3: () => <ExternalLink href={DOCUMENTATION_LINK} className="font-medium" variant="secondary">View <span className="hidden md:inline">documentation</span></ExternalLink>
         },
         {
             id: 'Performance Fees',
@@ -69,7 +69,7 @@ export default function FundOverview() {
             id: 'Contract',
             column_1: () => <BodyText level="body1" weight="medium">Contract</BodyText>,
             column_2: () => null,
-            column_3: () => <ExternalLink href={CONTRACT_LINK} className="font-medium" variant="secondary">View contract</ExternalLink>
+            column_3: () => <ExternalLink href={CONTRACT_LINK} className="font-medium" variant="secondary">View <span className="hidden md:inline">contract</span></ExternalLink>
         }
     ]
 

@@ -38,9 +38,6 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
   const { walletAddress, isWalletConnected } = useWalletConnection()
   const { selectedChain, chainDetails } = useChain()
   const [currentFilter, setCurrentFilter] = useState<FilterType>('all')
-
-  // Skip for Base chain
-  const isBaseChain = selectedChain === ChainId.Base;
   
   // Get protocol identifier from chain context if not provided
   const getProtocolIdentifier = () => {
@@ -120,11 +117,6 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
         <p>Please connect your wallet to view your transactions</p>
       </div>
     )
-  }
-
-  // This check is redundant with the page-level check, but adding as a safeguard
-  if (isBaseChain) {
-    return null;
   }
 
   const hasTransactions = transactions.length > 0
@@ -276,10 +268,14 @@ function TransactionItem({ transaction, expanded = false }: { transaction: Trans
               <div className="flex flex-wrap items-center gap-2 mt-1">
                 <button 
                   onClick={copyTxHash}
-                  className="text-xs text-orange-500 flex items-center hover:underline"
+                  className="text-xs text-orange-500 flex items-center"
                 >
                   {truncatedHash}
-                  <Copy className="h-3 w-3 ml-0.5" />
+                  {copied ? (
+                    <CheckCircle2 className="text-green-500 h-3 w-3 ml-0.5" />
+                  ) : (
+                    <Copy className="h-3 w-3 ml-0.5" />
+                  )}
                 </button>
                 
                 <Link 

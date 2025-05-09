@@ -88,7 +88,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
   // Wrap content in a chain provider with forced chain ID from URL
   return (
     <ChainProvider initialChain={chainId}>
-      <MainContainer className="flex flex-col flex-wrap gap-[40px] w-full mx-auto my-14">
+      <MainContainer className="flex flex-col flex-wrap gap-[40px] w-full mx-auto md:my-14">
         <PageHeader />
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-[16px]">
           <div className="flex flex-col gap-10">

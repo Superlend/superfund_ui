@@ -40,9 +40,9 @@ import { ChainId } from '@/types/chain'
 import { SONIC_USDC_ADDRESS, USDC_ADDRESS } from '@/lib/constants'
 import { fetchRewardApyAaveV3 } from '@/hooks/vault_hooks/vaultHook'
 import { CHART_CONFIG, PROTOCOL_IDENTIFIERS } from '@/lib/benchmark-chart-config'
-import { 
-    TBenchmarkDataPoint, 
-    TFormattedBenchmarkDataPoint, 
+import {
+    TBenchmarkDataPoint,
+    TFormattedBenchmarkDataPoint,
     TCustomTooltipProps,
     TCustomXAxisTickProps,
     TCustomYAxisTickProps
@@ -55,18 +55,6 @@ interface TopMorphoInfo {
     protocolName: string;
     color: string;
 }
-
-// No need to extend TFormattedBenchmarkDataPoint here as it causes duplicate identifier errors
-// We'll use type assertions instead to handle the TypeScript errors
-
-// Add topMorpho to CHART_CONFIG for consistent legends
-const CHART_CONFIG_EXTENDED = {
-    ...CHART_CONFIG,
-    topMorpho: {
-        label: 'Top Morpho Vault',
-        color: 'var(--color-morphoGauntletPrime)',
-    }
-};
 
 export function BenchmarkHistoryChart() {
     const [selectedRange, setSelectedRange] = useState<Period>(Period.oneMonth)
@@ -136,11 +124,18 @@ export function BenchmarkHistoryChart() {
     })
 
     // Get Fluid data for Base chain
-    const { data: fluidData, isLoading: isFluidLoading } = useGetBenchmarkHistory({
-        protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.fluid,
-        period: apiPeriod,
-        token: USDC_ADDRESS
-    });
+    // const { data: fluidData, isLoading: isFluidLoading } = useGetBenchmarkHistory({
+    //     protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.fluid,
+    //     period: apiPeriod,
+    //     token: USDC_ADDRESS
+    // });
+
+    // Get Euler data for Base chain
+    // const { data: eulerData, isLoading: isEulerLoading } = useGetBenchmarkHistory({
+    //     protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.euler,
+    //     period: apiPeriod,
+    //     token: USDC_ADDRESS
+    // });
 
     const [historicalData, setHistoricalData] = useState<TBenchmarkDataPoint[]>([])
     const prevSuperfundData = useRef<any>(null)
@@ -180,69 +175,111 @@ export function BenchmarkHistoryChart() {
 
         // Create maps for Morpho protocols if on Base chain
         const morphoMaps = {
-            fluid: new Map<number, number>(),
             morphoGauntletPrime: new Map<number, number>(),
             morphoMoonwell: new Map<number, number>(),
             morphoGauntletCore: new Map<number, number>(),
             morphoSteakhouse: new Map<number, number>(),
             morphoIonic: new Map<number, number>(),
-            morphoRe7: new Map<number, number>()
+            morphoRe7: new Map<number, number>(),
         };
 
+        // Create individual maps for fluid and euler
+        // const fluidMap = new Map<number, number>();
+        // const eulerMap = new Map<number, number>();
+
         if (selectedChain === ChainId.Base) {
+            // Process Morpho data
             const morphoData = {
-                fluid: fluidData,
                 morphoGauntletPrime: morphoGauntletPrimeData,
                 morphoMoonwell: morphoMoonwellData,
                 morphoGauntletCore: morphoGauntletCoreData,
                 morphoSteakhouse: morphoSteakhouseData,
                 morphoIonic: morphoIonicData,
-                morphoRe7: morphoRe7Data
+                morphoRe7: morphoRe7Data,
             };
 
             Object.entries(morphoData).forEach(([key, data]) => {
                 if (data?.processMap && Array.isArray(data.processMap)) {
                     data.processMap.forEach((item: any) => {
-                        if (item && item.timestamp && item.data && item.data.depositRate) {
-                            morphoMaps[key as keyof typeof morphoMaps].set(item.timestamp, item.data.depositRate);
+                        if (item && item.timestamp && item.data && item.data.depositRateReward) {
+                            morphoMaps[key as keyof typeof morphoMaps].set(item.timestamp, item.data.depositRateReward);
                         }
                     });
                 }
             });
+
+            // Process Fluid data
+            // if (fluidData?.processMap && Array.isArray(fluidData.processMap)) {
+            //     fluidData.processMap.forEach((item: any) => {
+            //         if (item && item.timestamp && item.data && item.data.depositRate) {
+            //             fluidMap.set(item.timestamp, item.data.depositRate);
+            //         }
+            //     });
+            // }
+
+            // Process Euler data
+            // if (eulerData?.processMap && Array.isArray(eulerData.processMap)) {
+            //     eulerData.processMap.forEach((item: any) => {
+            //         if (item && item.timestamp && item.data && item.data.depositRate) {
+            //             eulerMap.set(item.timestamp, item.data.depositRate);
+            //         }
+            //     });
+            // }
         }
 
         // Get all timestamps
         const superfundTimestamps = Array.from(superfundMap.keys());
         const aaveTimestamps = Array.from(aaveMap.keys());
-        const morphoTimestamps = selectedChain === ChainId.Base 
+        const morphoTimestamps = selectedChain === ChainId.Base
             ? Object.values(morphoMaps).flatMap(map => Array.from(map.keys()))
             : [];
+        // const fluidTimestamps = selectedChain === ChainId.Base 
+        //     ? Array.from(fluidMap.keys())
+        //     : [];
+        // const eulerTimestamps = selectedChain === ChainId.Base 
+        //     ? Array.from(eulerMap.keys())
+        //     : [];
 
         // Check if timestamps are in different formats (e.g., milliseconds vs seconds)
         const superfundFirstTimestamp = superfundTimestamps[0];
         const aaveFirstTimestamp = aaveTimestamps[0];
         const morphoFirstTimestamp = morphoTimestamps[0];
+        // const fluidFirstTimestamp = fluidTimestamps[0];
+        // const eulerFirstTimestamp = eulerTimestamps[0];
 
         // Log timestamp formats
         if (superfundFirstTimestamp && (aaveFirstTimestamp || morphoFirstTimestamp)) {
+            // TODO: Add fluid and euler condition above
             // Normalize timestamps to milliseconds if needed
             let normalizedSuperfundTimestamps = superfundTimestamps;
             let normalizedSuperfundMap = superfundMap;
             let normalizedAaveTimestamps = aaveTimestamps;
             let normalizedAaveMap = aaveMap;
             let normalizedMorphoMaps = morphoMaps;
+            // let normalizedFluidMap = fluidMap;
+            // let normalizedFluidTimestamps = fluidTimestamps;
+            // let normalizedEulerMap = eulerMap;
+            // let normalizedEulerTimestamps = eulerTimestamps;
 
             // Convert seconds to milliseconds if needed
-            if (superfundFirstTimestamp.toString().length === 10 && 
-                (aaveFirstTimestamp?.toString().length === 13 || morphoFirstTimestamp?.toString().length === 13)) {
+            if (superfundFirstTimestamp.toString().length === 10 &&
+                (aaveFirstTimestamp?.toString().length === 13 ||
+                    morphoFirstTimestamp?.toString().length === 13))
+            // fluidFirstTimestamp?.toString().length === 13 ||
+            // eulerFirstTimestamp?.toString().length === 13)) 
+            {
                 // Superfund in seconds, others in milliseconds
                 normalizedSuperfundMap = new Map();
                 normalizedSuperfundTimestamps = superfundTimestamps.map(ts => ts * 1000);
                 superfundMap.forEach((value, key) => {
                     normalizedSuperfundMap.set(key * 1000, value);
                 });
-            } else if (superfundFirstTimestamp.toString().length === 13 && 
-                      (aaveFirstTimestamp?.toString().length === 10 || morphoFirstTimestamp?.toString().length === 10)) {
+            } else if (superfundFirstTimestamp.toString().length === 13 &&
+                (aaveFirstTimestamp?.toString().length === 10 ||
+                    morphoFirstTimestamp?.toString().length === 10))
+            // fluidFirstTimestamp?.toString().length === 10 ||
+            // eulerFirstTimestamp?.toString().length === 10)) 
+            {
                 // Superfund in milliseconds, others in seconds
                 normalizedAaveMap = new Map();
                 normalizedAaveTimestamps = aaveTimestamps.map(ts => ts * 1000);
@@ -251,6 +288,7 @@ export function BenchmarkHistoryChart() {
                 });
 
                 if (selectedChain === ChainId.Base) {
+                    // Normalize Morpho maps
                     Object.entries(morphoMaps).forEach(([key, map]) => {
                         const normalizedMap = new Map();
                         const timestamps = Array.from(map.keys());
@@ -259,6 +297,20 @@ export function BenchmarkHistoryChart() {
                         });
                         normalizedMorphoMaps[key as keyof typeof morphoMaps] = normalizedMap;
                     });
+
+                    // Normalize Fluid map
+                    // normalizedFluidMap = new Map();
+                    // normalizedFluidTimestamps = fluidTimestamps.map(ts => ts * 1000);
+                    // fluidMap.forEach((value, key) => {
+                    //     normalizedFluidMap.set(key * 1000, value);
+                    // });
+
+                    // Normalize Euler map
+                    // normalizedEulerMap = new Map();
+                    // normalizedEulerTimestamps = eulerTimestamps.map(ts => ts * 1000);
+                    // eulerMap.forEach((value, key) => {
+                    //     normalizedEulerMap.set(key * 1000, value);
+                    // });
                 }
             }
 
@@ -290,6 +342,8 @@ export function BenchmarkHistoryChart() {
             const sortedMorphoTimestamps = selectedChain === ChainId.Base
                 ? Object.values(normalizedMorphoMaps).map(map => Array.from(map.keys()).sort((a, b) => a - b))
                 : [];
+            // const sortedFluidTimestamps = normalizedFluidTimestamps.sort((a, b) => a - b);
+            // const sortedEulerTimestamps = normalizedEulerTimestamps.sort((a, b) => a - b);
 
             const combined = normalizedSuperfundTimestamps.map(timestamp => {
                 // Get Superfund value
@@ -309,29 +363,42 @@ export function BenchmarkHistoryChart() {
                     }
                 }
 
-                // For Base chain, get Fluid and Morpho values
-                let fluidValue = null;
-                let isFluidApproximated = false;
-                if (selectedChain === ChainId.Base) {
-                    const fluidMap = normalizedMorphoMaps['fluid'];
-                    const sortedFluidTimestamps = sortedMorphoTimestamps[0]; // fluid is first in morphoMaps
-                    if (fluidMap && fluidMap.has(timestamp)) {
-                        fluidValue = fluidMap.get(timestamp);
-                        isFluidApproximated = false;
-                    } else if (fluidMap) {
-                        const closestFluidTimestamp = findClosestTimestamp(timestamp, sortedFluidTimestamps);
-                        if (closestFluidTimestamp !== null) {
-                            fluidValue = fluidMap.get(closestFluidTimestamp);
-                            isFluidApproximated = true;
-                        }
-                    }
-                }
+                // For Base chain, get Fluid value
+                // let fluidValue = null;
+                // let isFluidApproximated = false;
+                // if (selectedChain === ChainId.Base) {
+                //     if (normalizedFluidMap.has(timestamp)) {
+                //         fluidValue = normalizedFluidMap.get(timestamp);
+                //         isFluidApproximated = false;
+                //     } else {
+                //         const closestFluidTimestamp = findClosestTimestamp(timestamp, sortedFluidTimestamps);
+                //         if (closestFluidTimestamp !== null) {
+                //             fluidValue = normalizedFluidMap.get(closestFluidTimestamp);
+                //             isFluidApproximated = true;
+                //         }
+                //     }
+                // }
+
+                // For Base chain, get Euler value
+                // let eulerValue = null;
+                // let isEulerApproximated = false;
+                // if (selectedChain === ChainId.Base) {
+                //     if (normalizedEulerMap.has(timestamp)) {
+                //         eulerValue = normalizedEulerMap.get(timestamp);
+                //         isEulerApproximated = false;
+                //     } else {
+                //         const closestEulerTimestamp = findClosestTimestamp(timestamp, sortedEulerTimestamps);
+                //         if (closestEulerTimestamp !== null) {
+                //             eulerValue = normalizedEulerMap.get(closestEulerTimestamp);
+                //             isEulerApproximated = true;
+                //         }
+                //     }
+                // }
 
                 // For Base chain, get Morpho values
                 let morphoValues: any = {};
                 if (selectedChain === ChainId.Base) {
                     Object.entries(normalizedMorphoMaps).forEach(([key, map], index) => {
-                        if (key === 'fluid') return; // handled above
                         const morphoKey = key as keyof typeof morphoMaps;
                         if (map.has(timestamp)) {
                             morphoValues[morphoKey] = map.get(timestamp);
@@ -354,23 +421,25 @@ export function BenchmarkHistoryChart() {
                     superfund: superfundValue as number,
                     aave: aaveValue,
                     isAaveApproximated,
-                    fluid: fluidValue,
-                    isFluidApproximated,
+                    // fluid: fluidValue,
+                    // isFluidApproximated,
+                    // euler: eulerValue,
+                    // isEulerApproximated,
                     ...morphoValues
                 };
             });
 
             setHistoricalData(
-              combined.filter(d =>
-                d.aave !== null ||
-                d.fluid !== null ||
-                d.morphoGauntletPrime !== null ||
-                d.morphoMoonwell !== null ||
-                d.morphoGauntletCore !== null ||
-                d.morphoSteakhouse !== null ||
-                d.morphoIonic !== null ||
-                d.morphoRe7 !== null
-              ) as TBenchmarkDataPoint[]
+                combined.filter(d =>
+                    d.aave !== null ||
+                    d.fluid !== null ||
+                    d.morphoGauntletPrime !== null ||
+                    d.morphoMoonwell !== null ||
+                    d.morphoGauntletCore !== null ||
+                    d.morphoSteakhouse !== null ||
+                    d.morphoIonic !== null ||
+                    d.morphoRe7 !== null
+                ) as TBenchmarkDataPoint[]
             );
         } else {
             console.log('Missing timestamp data in one or both datasets');
@@ -403,7 +472,8 @@ export function BenchmarkHistoryChart() {
         superfundLoading,
         isAaveLoading,
         selectedChain,
-        fluidData
+        // fluidData,
+        // eulerData
     ]);
 
     const chartData = useMemo(() => {
@@ -440,14 +510,17 @@ export function BenchmarkHistoryChart() {
                 isAaveApproximated: item.isAaveApproximated || false,
                 superfundDisplay: abbreviateNumber(item.superfund ?? 0),
                 aaveDisplay: abbreviateNumber(selectedChain === ChainId.Sonic ? ((item.aave ?? 0) + aaveRewardApy) : (item.aave ?? 0)),
-                fluid: item.fluid ?? null,
-                isFluidApproximated: item.isFluidApproximated || false,
-                fluidDisplay: abbreviateNumber(item.fluid ?? 0),
+                // fluid: item.fluid ?? null,
+                // isFluidApproximated: item.isFluidApproximated || false,
+                // fluidDisplay: abbreviateNumber(item.fluid ?? 0),
+                // euler: item.euler ?? null,
+                // isEulerApproximated: item.isEulerApproximated || false,
+                // eulerDisplay: abbreviateNumber(item.euler ?? 0),
             } as TFormattedBenchmarkDataPoint;
 
             // Find the top performing Morpho vault
             let topMorpho = null as TopMorphoInfo | null;
-            
+
             // Find the top performing Morpho protocol at this data point
             const morphoKeys = [
                 'morphoGauntletPrime',
@@ -457,10 +530,10 @@ export function BenchmarkHistoryChart() {
                 'morphoIonic',
                 'morphoRe7'
             ];
-            
+
             morphoKeys.forEach(key => {
                 const value = item[key as keyof TBenchmarkDataPoint] as number | null | undefined;
-                
+
                 if (value !== null && value !== undefined && (topMorpho === null || value > topMorpho.value)) {
                     topMorpho = {
                         key,
@@ -470,7 +543,7 @@ export function BenchmarkHistoryChart() {
                     };
                 }
             });
-            
+
             // Add the top performing Morpho protocol to the formatted item
             if (topMorpho) {
                 // Add a new field for the top Morpho protocol
@@ -480,12 +553,12 @@ export function BenchmarkHistoryChart() {
                 (formattedItem as any).topMorphoName = topMorpho.protocolName;
                 (formattedItem as any).topMorphoColor = topMorpho.color;
                 (formattedItem as any).isTopMorphoApproximated = item[`is${topMorpho.key.charAt(0).toUpperCase() + topMorpho.key.slice(1)}Approximated` as keyof TBenchmarkDataPoint] || false;
-                
+
                 // Also keep the individual morpho data for reference/filtering
                 morphoKeys.forEach(key => {
                     const value = item[key as keyof TBenchmarkDataPoint];
                     const isApproximated = item[`is${key.charAt(0).toUpperCase() + key.slice(1)}Approximated` as keyof TBenchmarkDataPoint];
-                    
+
                     if (value !== null && value !== undefined) {
                         (formattedItem as any)[key] = value;
                         (formattedItem as any)[`${key}Display`] = abbreviateNumber(value as number);
@@ -516,7 +589,8 @@ export function BenchmarkHistoryChart() {
                     Number(d.morphoGauntletCore),
                     Number(d.morphoSteakhouse),
                     Number(d.morphoIonic),
-                    Number(d.morphoRe7)
+                    Number(d.morphoRe7),
+                    Number(d.euler)
                 );
             }
             return values.filter(v => !isNaN(v));
@@ -545,7 +619,7 @@ export function BenchmarkHistoryChart() {
         const range = maxYValue - minYValue;
         const tickCount = 4;
         const interval = range / (tickCount - 1);
-        
+
         // Generate evenly spaced ticks between min and max
         return Array.from({ length: tickCount }, (_, i) => minYValue + (interval * i));
     }, [yAxisDomain]);
@@ -640,6 +714,7 @@ export function BenchmarkHistoryChart() {
         superfund: true,
         aave: true,
         fluid: true,
+        euler: true,
     });
 
     // Helper for legend toggle
@@ -659,12 +734,12 @@ export function BenchmarkHistoryChart() {
             'morphoIonic',
             'morphoRe7'
         ];
-        
+
         // Calculate average APY for each Morpho vault over the selected period
         const morphoAverages = morphoKeys.reduce((acc, key) => {
             let totalValue = 0;
             let count = 0;
-            
+
             chartData.forEach(dataPoint => {
                 const value = dataPoint[key as keyof typeof dataPoint];
                 if (value !== null && value !== undefined && typeof value === 'number') {
@@ -672,23 +747,23 @@ export function BenchmarkHistoryChart() {
                     count++;
                 }
             });
-            
+
             const average = count > 0 ? totalValue / count : 0;
             acc[key] = average;
             return acc;
         }, {} as Record<string, number>);
-        
+
         // Find the Morpho vault with the highest average APY
         let topMorphoKey = '';
         let topMorphoAverage = -1;
-        
+
         Object.entries(morphoAverages).forEach(([key, avg]) => {
             if (avg > topMorphoAverage) {
                 topMorphoKey = key;
                 topMorphoAverage = avg;
             }
         });
-        
+
         return topMorphoKey ? { key: topMorphoKey, averageValue: topMorphoAverage } : null;
     }, [chartData, selectedChain]);
 
@@ -706,7 +781,7 @@ export function BenchmarkHistoryChart() {
     const CustomTooltip = ({ active, payload, visibleLines = {} }: TCustomTooltipProps) => {
         if (active && payload && payload.length) {
             const data = payload[0]?.payload;
-            
+
             // Sort protocols by their APY values (highest to lowest)
             const sortedProtocols = Object.entries(CHART_CONFIG)
                 .map(([key, config]) => {
@@ -714,10 +789,10 @@ export function BenchmarkHistoryChart() {
                     if (key.startsWith('morpho') && key !== topMorphoInfo?.key) {
                         return null;
                     }
-                    
+
                     const value = data[key as keyof TFormattedBenchmarkDataPoint];
                     const displayValue = data[`${key}Display` as keyof TFormattedBenchmarkDataPoint];
-                    
+
                     return {
                         key,
                         config,
@@ -725,11 +800,11 @@ export function BenchmarkHistoryChart() {
                         displayValue,
                     };
                 })
-                .filter(item => 
+                .filter(item =>
                     // Filter out null items and protocols that are not visible
                     item !== null &&
-                    item.value !== null && 
-                    item.value !== undefined && 
+                    item.value !== null &&
+                    item.value !== undefined &&
                     (visibleLines[item.key as keyof typeof visibleLines] !== false) // Show if not explicitly set to false
                 )
                 .sort((a, b) => (b!.value || 0) - (a!.value || 0));
@@ -762,16 +837,17 @@ export function BenchmarkHistoryChart() {
     const CustomLegend = () => {
         // Determine which protocols to show based on selectedChain
         const protocolsToShow = ['superfund', 'aave'];
-        
+
         if (selectedChain === ChainId.Base) {
-            protocolsToShow.push('fluid');
-            
+            // protocolsToShow.push('fluid');
+            // protocolsToShow.push('euler');
+
             // Add the top Morpho vault if available
             if (topMorphoInfo?.key) {
                 protocolsToShow.push(topMorphoInfo.key);
             }
         }
-        
+
         return (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 8 }}>
                 {protocolsToShow.map((key) => {
@@ -939,7 +1015,7 @@ export function BenchmarkHistoryChart() {
                                             isAnimationActive={false}
                                         />
                                     )}
-                                    {visibleLines.fluid && selectedChain === ChainId.Base && (
+                                    {/* {visibleLines.fluid && selectedChain === ChainId.Base && (
                                         <Line
                                             dataKey="fluid"
                                             type="monotone"
@@ -950,7 +1026,19 @@ export function BenchmarkHistoryChart() {
                                             connectNulls={true}
                                             isAnimationActive={false}
                                         />
-                                    )}
+                                    )} */}
+                                    {/* {visibleLines.euler && selectedChain === ChainId.Base && (
+                                        <Line
+                                            dataKey="euler"
+                                            type="monotone"
+                                            stroke={CHART_CONFIG.euler.color}
+                                            strokeWidth={2}
+                                            dot={false}
+                                            activeDot={{ r: 5, strokeWidth: 1 }}
+                                            connectNulls={true}
+                                            isAnimationActive={false}
+                                        />
+                                    )} */}
                                     {selectedChain === ChainId.Base && topMorphoInfo?.key && visibleLines[topMorphoInfo.key] === true && (
                                         <Line
                                             key={topMorphoInfo.key}
@@ -997,7 +1085,7 @@ export function BenchmarkHistoryChart() {
                                                     connectNulls={true}
                                                 />
                                             )}
-                                            {visibleLines.fluid && selectedChain === ChainId.Base && (
+                                            {/* {visibleLines.fluid && selectedChain === ChainId.Base && (
                                                 <Area
                                                     type="monotone"
                                                     dataKey="fluid"
@@ -1006,7 +1094,17 @@ export function BenchmarkHistoryChart() {
                                                     fill="rgba(0, 200, 83, 0.2)"
                                                     connectNulls={true}
                                                 />
-                                            )}
+                                            )} */}
+                                            {/* {visibleLines.euler && selectedChain === ChainId.Base && (
+                                                <Area
+                                                    type="monotone"
+                                                    dataKey="euler"
+                                                    stroke={CHART_CONFIG.euler.color}
+                                                    strokeWidth={1}
+                                                    fill={`${CHART_CONFIG.euler.color}33`} // Add 33 for 20% opacity
+                                                    connectNulls={true}
+                                                />
+                                            )} */}
                                             {selectedChain === ChainId.Base && topMorphoInfo?.key && visibleLines[topMorphoInfo.key] === true && (
                                                 <Area
                                                     key={topMorphoInfo.key}

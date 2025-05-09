@@ -22,7 +22,7 @@ export default function ChainTransactionsPage({ params }: ChainTxsPageProps) {
   const { isWalletConnected } = useWalletConnection()
   const { isClient } = useIsClient()
   const router = useRouter()
-  
+
   // Determine chain ID from the URL without side effects
   let chainId: ChainId;
   if (params.chain.toLowerCase() === 'base') {
@@ -47,8 +47,8 @@ export default function ChainTransactionsPage({ params }: ChainTxsPageProps) {
     <ChainProvider initialChain={chainId}>
       <MainContainer className="flex flex-col gap-[40px] w-full mx-auto my-14">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="icon"
             onClick={() => router.back()}
           >
@@ -57,20 +57,7 @@ export default function ChainTransactionsPage({ params }: ChainTxsPageProps) {
           <h1 className="text-2xl font-semibold">Transactions</h1>
         </div>
 
-        {isBaseChain ? (
-          <div className="bg-card rounded-2xl p-8 flex flex-col items-center justify-center text-muted-foreground">
-            <p className="text-center">Transaction history for Base chain is coming soon.</p>
-            <Button 
-              variant="outline"
-              className="mt-4 text-primary border-primary/30 hover:bg-primary/5"
-              onClick={() => router.back()}
-            >
-              Go Back
-            </Button>
-          </div>
-        ) : (
-          <AllTransactions />
-        )}
+        <AllTransactions />
       </MainContainer>
     </ChainProvider>
   )

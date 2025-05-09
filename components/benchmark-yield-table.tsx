@@ -86,11 +86,11 @@ export function BenchmarkYieldTable() {
     })
 
     // Get Fluid data
-    const { data: fluidData, isLoading: isFluidLoading } = useGetBenchmarkHistory({
-        protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.fluid,
-        period: apiPeriod,
-        token: USDC_ADDRESS
-    });
+    // const { data: fluidData, isLoading: isFluidLoading } = useGetBenchmarkHistory({
+    //     protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.fluid,
+    //     period: apiPeriod,
+    //     token: USDC_ADDRESS
+    // });
 
     // Get Morpho data for Base chain - add all the ones from chart component
     const { data: morphoGauntletPrimeData, isLoading: isMorphoGauntletPrimeLoading } = useGetBenchmarkHistory({
@@ -129,6 +129,13 @@ export function BenchmarkYieldTable() {
         token: USDC_ADDRESS
     })
 
+    // Get Euler data for Base chain
+    // const { data: eulerData, isLoading: isEulerLoading } = useGetBenchmarkHistory({
+    //     protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.euler,
+    //     period: apiPeriod,
+    //     token: USDC_ADDRESS
+    // })
+
     // Calculate average APY for a dataset over the selected period
     const calculateAverageApy = (data: any) => {
         if (!data || !data.processMap || !Array.isArray(data.processMap) || data.processMap.length === 0) {
@@ -137,6 +144,19 @@ export function BenchmarkYieldTable() {
 
         const total = data.processMap.reduce((sum: number, item: any) => {
             return sum + (item.data?.depositRate || 0);
+        }, 0);
+
+        return total / data.processMap.length;
+    };
+
+    // Calculate average APY for Morpho vaults
+    const calculateMorphoAverageApy = (data: any) => {
+        if (!data || !data.processMap || !Array.isArray(data.processMap) || data.processMap.length === 0) {
+            return 0;
+        }
+
+        const total = data.processMap.reduce((sum: number, item: any) => {
+            return sum + (item.data?.depositRateReward || 0);
         }, 0);
 
         return total / data.processMap.length;
@@ -173,7 +193,7 @@ export function BenchmarkYieldTable() {
         let topApy = -1;
 
         Object.entries(morphoData).forEach(([key, { data }]) => {
-            const apy = calculateAverageApy(data);
+            const apy = calculateMorphoAverageApy(data);
             if (apy > topApy) {
                 topApy = apy;
                 topMorphoInfo = {
@@ -199,13 +219,14 @@ export function BenchmarkYieldTable() {
             superfundLoading ||
             isAaveLoading ||
             (selectedChain === ChainId.Base && (
-                isFluidLoading ||
+                // isFluidLoading ||
                 isMorphoGauntletPrimeLoading ||
                 isMorphoMoonwellLoading ||
                 isMorphoGauntletCoreLoading ||
                 isMorphoSteakhouseLoading ||
                 isMorphoIonicLoading ||
                 isMorphoRe7Loading
+                // isEulerLoading
             ));
 
         setIsLoading(isDataLoading);
@@ -261,14 +282,24 @@ export function BenchmarkYieldTable() {
         // Base chain specific protocols
         if (selectedChain === ChainId.Base) {
             // Add Fluid
-            const fluidApy = calculateAverageApy(fluidData);
-            newBenchmarkData.push({
-                platform: 'Fluid',
-                apy: fluidApy,
-                totalEarned: calculateEarningsForCurrentPeriod(fluidApy),
-                color: "#00C853", // Fluid color
-                logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/fluid_logo.png'
-            });
+            // const fluidApy = calculateAverageApy(fluidData);
+            // newBenchmarkData.push({
+            //     platform: 'Fluid',
+            //     apy: fluidApy,
+            //     totalEarned: calculateEarningsForCurrentPeriod(fluidApy),
+            //     color: "#00C853", // Fluid color
+            //     logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/fluid_logo.png'
+            // });
+
+            // Add Euler
+            // const eulerApy = calculateAverageApy(eulerData);
+            // newBenchmarkData.push({
+            //     platform: 'Euler',
+            //     apy: eulerApy,
+            //     totalEarned: calculateEarningsForCurrentPeriod(eulerApy),
+            //     color: CHART_CONFIG.euler.color,
+            //     logo: '/images/logos/euler-symbol.svg'
+            // });
 
             // Add top Morpho vault only if we found one
             const topMorpho = getTopMorphoVault;
@@ -290,22 +321,24 @@ export function BenchmarkYieldTable() {
     }, [
         superfundData,
         aaveData,
-        fluidData,
+        // fluidData,
         morphoGauntletPrimeData,
         morphoMoonwellData,
         morphoGauntletCoreData,
         morphoSteakhouseData,
         morphoIonicData,
         morphoRe7Data,
+        // eulerData,
         superfundLoading,
         isAaveLoading,
-        isFluidLoading,
+        // isFluidLoading,
         isMorphoGauntletPrimeLoading,
         isMorphoMoonwellLoading,
         isMorphoGauntletCoreLoading,
         isMorphoSteakhouseLoading,
         isMorphoIonicLoading,
         isMorphoRe7Loading,
+        // isEulerLoading,
         selectedChain,
         aaveRewardApy,
         selectedRange
@@ -348,7 +381,7 @@ export function BenchmarkYieldTable() {
 
                     return (
                         <div className="text-center w-full">
-                            {periodText} Yield <span className="hidden sm:inline">(APR-Adjusted)</span>
+                            {periodText} Yield <span className="hidden sm:inline"></span>
                         </div>
                     );
                 },

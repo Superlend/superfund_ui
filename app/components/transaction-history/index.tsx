@@ -6,13 +6,13 @@ import { useChain } from '@/context/chain-context'
 import { Skeleton } from '@/components/ui/skeleton'
 import { format, isToday, isYesterday } from 'date-fns'
 import { Button } from '@/components/ui/button'
-import { ChevronRight, ExternalLink, Copy, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { ChevronRight, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, CheckCircle2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { formatUnits } from 'ethers/lib/utils'
 import Link from 'next/link'
 import { ChainId } from '@/types/chain'
 import Image from 'next/image'
-import { 
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -29,7 +29,7 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
   const { walletAddress, isWalletConnected } = useWalletConnection()
   const { selectedChain, chainDetails } = useChain()
   const router = useRouter()
-  
+
   const { transactions, isLoading, startRefreshing } = useTransactionHistory({
     protocolIdentifier,
     chainId: selectedChain || 0,
@@ -63,19 +63,19 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
     return 'sonic'
   }
 
-  // Hide for Base chain or if wallet not connected
-  if (!isWalletConnected || selectedChain === ChainId.Base) {
+  // Hide if wallet not connected
+  if (!isWalletConnected) {
     return null
   }
 
   // Group transactions by date
   const groupTransactionsByDate = () => {
     const groups: { [key: string]: Transaction[] } = {}
-    
+
     transactions.slice(0, 5).forEach(tx => {
       const date = new Date(parseInt(tx.blockTimestamp) * 1000)
       let dateKey = ''
-      
+
       if (isToday(date)) {
         dateKey = 'Today'
       } else if (isYesterday(date)) {
@@ -83,14 +83,14 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
       } else {
         dateKey = format(date, 'MMM dd, yyyy')
       }
-      
+
       if (!groups[dateKey]) {
         groups[dateKey] = []
       }
-      
+
       groups[dateKey].push(tx)
     })
-    
+
     return groups
   }
 
@@ -124,7 +124,7 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
       </div>
 
       <div className="mt-3">
-        <Button 
+        <Button
           variant="outline"
           className="w-full text-primary border-primary/30 hover:bg-primary/5"
           onClick={() => router.push(`/super-fund/${getChainName()}/txs`)}
@@ -142,7 +142,7 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
   const date = new Date(parseInt(blockTimestamp) * 1000)
   const { selectedChain, chainDetails } = useChain()
   const [copied, setCopied] = useState(false)
-  
+
   // Format the asset amount (using 1e6 decimals as specified)
   const formattedAssets = parseFloat(formatUnits(assets, 6)).toFixed(4)
   const formattedShares = parseFloat(formatUnits(shares, 6)).toFixed(4)
@@ -155,7 +155,10 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
 
   // Truncate hash for display (first 6 chars)
   const shortenedHash = `0x${transactionHash.substring(2, 7)}`
-  
+
+  // Truncate transaction hash for display
+  const truncatedHash = `${transactionHash.substring(0, 6)}...${transactionHash.substring(transactionHash.length - 4)}`
+
   // Copy tx hash
   const copyHash = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -167,10 +170,10 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
 
   // USDC logo for amount display
   const USDCIcon = (
-    <Image 
-      src="https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg" 
-      alt="USDC" 
-      width={16} 
+    <Image
+      src="https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg"
+      alt="USDC"
+      width={16}
       height={16}
       className="inline-block ml-1"
     />
@@ -206,37 +209,41 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
                 {type}
               </span>
             </div>
-            
+
             {/* Hash with copy button */}
             <div className="flex items-center text-xs text-orange-500">
-              {shortenedHash}
-              <button 
+              {truncatedHash}
+              <button
                 onClick={copyHash}
                 className="ml-1 focus:outline-none"
               >
-                <Copy className="h-3 w-3 hover:text-orange-400" />
+                {copied ? (
+                  <CheckCircle2 className="text-green-500 h-3 w-3" />
+                ) : (
+                  <Copy className="h-3 w-3 hover:text-orange-400" />
+                )}
               </button>
             </div>
-            
+
             {/* View tx link */}
             <div>
-              <Link 
-                href={`${getExplorerUrl()}${transactionHash}`} 
+              <Link
+                href={`${getExplorerUrl()}${transactionHash}`}
                 target="_blank"
-                className="text-xs text-orange-500 hover:underline flex items-center"
+                className="text-xs text-orange-500 hover:underline flex items-center w-fit"
               >
                 View tx
                 <ExternalLink className="h-3 w-3 ml-0.5" />
               </Link>
             </div>
           </div>
-          
+
           {/* Right Column: Time and amounts */}
           <div className="flex flex-col space-y-1 items-end pr-2">
             <div className="text-xs text-muted-foreground">
               {format(date, 'HH:mm')}
             </div>
-            
+
             {/* Amounts */}
             <div className="text-right text-red-500 text-xs">
               <Tooltip>
@@ -253,7 +260,7 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
                 </TooltipContent>
               </Tooltip>
             </div>
-            
+
             <div className="text-right text-green-500 text-xs">
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -297,10 +304,10 @@ function EmptyTransactionsState() {
   return (
     <div className="text-center py-4 px-2">
       <div className="mb-2 text-muted-foreground">
-        <Image 
-          src="https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg" 
-          alt="USDC" 
-          width={32} 
+        <Image
+          src="https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg"
+          alt="USDC"
+          width={32}
           height={32}
           className="mx-auto opacity-50 mb-2"
         />

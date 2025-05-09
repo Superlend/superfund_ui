@@ -67,9 +67,9 @@ export default function AllocationDetailsChart({
                     <HeadingText level="h4" weight="medium" className="text-gray-800">
                         Allocation Details
                     </HeadingText>
-                    <BodyText level="body2" weight="medium" className="text-muted-foreground">
+                    <HeadingText level="h5" weight="medium" className="text-muted-foreground">
                         TVL{" "}:{" "}<span className="text-gray-800">${abbreviateNumber(Number(totalAssets), 4)}</span>
-                    </BodyText>
+                    </HeadingText>
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-6 lg:gap-8 w-full bg-white rounded-4 px-4 pb-4 sm:px-12">
                     <div className="h-[340px] w-[300px] max-w-[300px]">

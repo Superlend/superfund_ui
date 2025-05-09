@@ -33,7 +33,7 @@ const ChainContext = createContext<ChainContextType | undefined>(undefined)
 export function ChainProvider({
     children,
     supportedChains = [ChainId.Base, ChainId.Sonic],
-    initialChain = ChainId.Sonic
+    initialChain = ChainId.Base
 }: {
     children: ReactNode,
     supportedChains?: ChainId[],

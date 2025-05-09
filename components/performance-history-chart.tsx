@@ -167,14 +167,6 @@ export function PerformanceHistoryChart() {
     })
     const [startIndex, setStartIndex] = useState(0)
     const [endIndex, setEndIndex] = useState(historicalData.length - 1)
-    // const [openDialog, setOpenDialog] = useState(false)
-
-    const customTicks = {
-        [Period.oneDay]: 5,
-        [Period.oneWeek]: 5,
-        [Period.oneMonth]: 5,
-        [Period.allTime]: 5,
-    }
 
     useEffect(() => {
         setStartIndex(0)
@@ -282,185 +274,93 @@ export function PerformanceHistoryChart() {
         </Brush>
     ), [startIndex, endIndex])
 
-    // const content = (
-    //     <Card>
-    //         {/* <style>{styles}</style> */}
-    //         <div className="flex items-center justify-between p-6">
-    //             <h2 className="text-lg font-semibold">
-    //                 Performance History
-    //             </h2>
-    //             <div className="flex items-center gap-2">
-    //                 <div className={`${openDialog ? 'mr-12' : ''}`}>
-    //                     <TimelineFilterTabs
-    //                         selectedRange={selectedRange}
-    //                         handleRangeChange={handleRangeChange}
-    //                     />
-    //                 </div>
-    //                 {!openDialog &&
-    //                     <Button onClick={() => setOpenDialog(true)} className='py-1'>
-    //                         <Expand className='w-4 h-4 text-gray-600' />
-    //                     </Button>
-    //                 }
-    //             </div>
-    //         </div>
-    //         <div className={`h-[${openDialog ? '500px' : '350px'}] bg-white rounded-4`}>
-    //             <ResponsiveContainer width="100%" height="100%">
-    //                 <LineChart
-    //                     data={chartData}
-    //                     margin={{
-    //                         top: 10,
-    //                         right: 30,
-    //                         left: 0,
-    //                         bottom: 45
-    //                     }}
-    //                 >
-    //                     <XAxis
-    //                         dataKey="date"
-    //                         stroke="hsl(var(--foreground-subtle))"
-    //                         fontSize={12}
-    //                         tickLine={false}
-    //                         tickCount={4}
-    //                         axisLine={false}
-    //                         padding={{ left: 10, right: 10 }}
-    //                         dy={10}
-    //                         tick={({ x, y, payload, index }) => (
-    //                             <CustomXAxisTick
-    //                                 payload={payload as { value: number }}
-    //                                 selectedRange={selectedRange}
-    //                                 x={x as number}
-    //                                 y={y as number}
-    //                                 index={index as number}
-    //                                 length={chartData.length}
-    //                             />
-    //                         )}
-    //                     />
-    //                     <YAxis
-    //                         stroke="hsl(var(--foreground-subtle))"
-    //                         fontSize={12}
-    //                         tickLine={false}
-    //                         axisLine={false}
-    //                         tickFormatter={(value) => `${shortNubers(value.toFixed(0))}%`}
-    //                         padding={{ top: 10, bottom: 10 }}
-    //                         domain={[
-    //                             0,
-    //                             maxValue + (valueRange * 0.1)
-    //                         ]}
-    //                         allowDataOverflow={true}
-    //                     />
-    //                     <Tooltip
-    //                         content={<CustomTooltip />}
-    //                         cursor={{ stroke: 'hsl(var(--foreground-disabled))', strokeWidth: 1 }}
-    //                     />
-    //                     {memoizedLines}
-    //                     {memoizedBrush}
-    //                 </LineChart>
-    //             </ResponsiveContainer>
-    //         </div>
-    //     </Card>
-    // )
-
     return (
-        <>
-            {/* {content}
-            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-                <DialogContent className='w-[90%] h-[85%] max-w-full max-h-full p-0'>
-                    {content}
-                </DialogContent>
-            </Dialog> */}
-            <Card>
-                <div className="flex items-center justify-between max-md:px-4 p-6">
-                    <HeadingText level="h4" weight="medium" className='text-gray-800'>
-                        Performance History
-                    </HeadingText>
-                    <div className="flex items-center gap-2">
-                        <div className={`${false ? 'mr-12' : ''}`}>
-                            <TimelineFilterTabs
-                                selectedRange={selectedRange}
-                                handleRangeChange={handleRangeChange}
-                            />
-                        </div>
-                        {/* {!openDialog &&
-                            <Button onClick={() => setOpenDialog(true)} className='py-1'>
-                                <Expand className='w-4 h-4 text-gray-600' />
-                            </Button>
-                        } */}
+        <Card>
+            <div className="flex items-center justify-between max-md:px-4 p-6">
+                <HeadingText level="h4" weight="medium" className='text-gray-800'>
+                    Performance History
+                </HeadingText>
+                <div className="flex items-center gap-2">
+                    <div className={`${false ? 'mr-12' : ''}`}>
+                        <TimelineFilterTabs
+                            selectedRange={selectedRange}
+                            handleRangeChange={handleRangeChange}
+                        />
                     </div>
                 </div>
-                {/* <div className={`h-[${false ? '500px' : '350px'}] bg-white rounded-4`}> */}
-                <ChartContainer
-                    config={chartConfig}
-                    className={`w-full h-[350px] bg-white rounded-4`}
-                >
-                    <>
-                        {!isLoading &&
-                            <ResponsiveContainer width="100%" height="100%">
-                                <LineChart
-                                    data={chartData}
-                                    margin={{
-                                        top: 0,
-                                        right: 30,
-                                        left: -15,
-                                        bottom: 45
-                                    }}
-                                >
-                                    <CartesianGrid vertical={false} />
-                                    <XAxis
-                                        dataKey="date"
-                                        stroke="hsl(var(--foreground-subtle))"
-                                        fontSize={12}
-                                        tickLine={true}
-                                        axisLine={true}
-                                        tickCount={5}
-                                        interval={(chartData?.length || 0) > 5 ? Math.floor((chartData?.length || 0) / 5) : 0}
-                                        padding={{ left: 0, right: 10 }}
-                                        tickFormatter={(value) =>
-                                            formatDateAccordingToPeriod(
-                                                value,
-                                                selectedRange
-                                            )
-                                        }
-                                        tick={({ x, y, payload, index }) => (
-                                            <CustomXAxisTick
-                                                payload={payload as { value: number }}
-                                                selectedRange={selectedRange}
-                                                x={x as number}
-                                                y={y as number}
-                                                index={index as number}
-                                                length={chartData.length}
-                                            />
-                                        )}
-                                    />
-                                    <YAxis
-                                        stroke="hsl(var(--foreground-subtle))"
-                                        fontSize={12}
-                                        tickLine={true}
-                                        axisLine={true}
-                                        ticks={yAxisTicks}
-                                        tickFormatter={(value) => `${shortNubers(value.toFixed(0))}%`}
-                                        padding={{ top: 10, bottom: 10 }}
-                                        domain={[
-                                            0,
-                                            maxValue + (valueRange * 0.1)
-                                        ]}
-                                        allowDataOverflow={true}
-                                    />
-                                    <Tooltip
-                                        content={<CustomTooltip />}
-                                        cursor={{ stroke: 'hsl(var(--foreground-disabled))', strokeWidth: 1 }}
-                                    />
-                                    {memoizedLines}
-                                    {memoizedBrush}
-                                </LineChart>
-                            </ResponsiveContainer>
-                        }
-                        {
-                            isLoading &&
-                            <Skeleton className={`w-full h-[350px] rounded-4 max-w-[1200px] bg-gray-300`} />
-                        }
-                    </>
-                </ChartContainer>
-                {/* </div> */}
-            </Card>
-        </>
+            </div>
+            <ChartContainer
+                config={chartConfig}
+                className={`w-full h-[350px] bg-white rounded-4`}
+            >
+                <>
+                    {!isLoading &&
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart
+                                data={chartData}
+                                margin={{
+                                    top: 0,
+                                    right: 30,
+                                    left: -15,
+                                    bottom: 45
+                                }}
+                            >
+                                <CartesianGrid vertical={false} />
+                                <XAxis
+                                    dataKey="date"
+                                    stroke="hsl(var(--foreground-subtle))"
+                                    fontSize={12}
+                                    tickLine={true}
+                                    axisLine={true}
+                                    tickCount={5}
+                                    interval={(chartData?.length || 0) > 5 ? Math.floor((chartData?.length || 0) / 5) : 0}
+                                    padding={{ left: 0, right: 10 }}
+                                    tickFormatter={(value) =>
+                                        formatDateAccordingToPeriod(
+                                            value,
+                                            selectedRange
+                                        )
+                                    }
+                                    tick={({ x, y, payload, index }) => (
+                                        <CustomXAxisTick
+                                            payload={payload as { value: number }}
+                                            selectedRange={selectedRange}
+                                            x={x as number}
+                                            y={y as number}
+                                            index={index as number}
+                                            length={chartData.length}
+                                        />
+                                    )}
+                                />
+                                <YAxis
+                                    stroke="hsl(var(--foreground-subtle))"
+                                    fontSize={12}
+                                    tickLine={true}
+                                    axisLine={true}
+                                    ticks={yAxisTicks}
+                                    tickFormatter={(value) => `${shortNubers(value.toFixed(0))}%`}
+                                    padding={{ top: 10, bottom: 10 }}
+                                    domain={[
+                                        0,
+                                        maxValue + (valueRange * 0.1)
+                                    ]}
+                                    allowDataOverflow={true}
+                                />
+                                <Tooltip
+                                    content={<CustomTooltip />}
+                                    cursor={{ stroke: 'hsl(var(--foreground-disabled))', strokeWidth: 1 }}
+                                />
+                                {memoizedLines}
+                                {memoizedBrush}
+                            </LineChart>
+                        </ResponsiveContainer>
+                    }
+                    {
+                        isLoading &&
+                        <Skeleton className={`w-full h-[350px] rounded-4 max-w-[1200px] bg-gray-300`} />
+                    }
+                </>
+            </ChartContainer>
+        </Card>
     )
 }
