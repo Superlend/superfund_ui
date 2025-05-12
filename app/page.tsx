@@ -294,7 +294,7 @@ export default function HomePage() {
     return (
         <div onMouseMove={handleMouseMove}>
             {/* SECTION 1: Hero with APY Highlight */}
-            <section className="py-28 relative overflow-hidden min-h-screen -mt-[70px]">
+            <section className="py-28 relative overflow-hidden min-h-screen -mt-[70px] flex items-center justify-center">
                 <div className="absolute inset-0 w-full h-full max-w-full z-[-1] bg-primary overflow-hidden">
                     <img src="/banners/hero_bg.svg" alt="Hero banner" className="absolute w-full h-full object-cover" />
                 </div>
@@ -312,14 +312,14 @@ export default function HomePage() {
                                     Maximize Your USD Returns with SuperFund
                                 </h1>
                                 <p className="text-gray-400 max-w-lg md:text-lg lg:text-xl mx-auto">
-                                    Earn on USDC deposits optimally rebalanced across multiple protocols
+                                    Earn on USDC deposits optimally rebalanced across leading lending protocols
                                 </p>
                             </div>
                         </motion.div>
-                        <motion.div variants={childVariants} className="flex flex-wrap gap-6 md:gap-4 justify-center mb-12">
+                        <motion.div variants={childVariants} className="flex flex-col gap-6 md:gap-4 justify-center mb-12">
                             <Link target="_blank" href="/super-fund/base">
                                 <Button size="lg" variant="secondary" className="px-8 py-3 rounded-4 text-lg text-primary group">
-                                    <span>Start Earning Now</span>
+                                    <span>Launch SuperFund Base App</span>
                                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                 </Button>
                             </Link>
@@ -329,7 +329,7 @@ export default function HomePage() {
                                 className="px-8 py-3 text-lg text-gray-200 border-gray-200 rounded-4"
                                 onClick={() => window.open('/waitlist', '_blank')}
                             >
-                                <span>Join Waitlist</span>
+                                <span>Join SuperFund Sonic Waitlist</span>
                                 <Play className="ml-2 w-4 h-4 fill-gray-200" />
                             </Button>
                         </motion.div>
@@ -383,7 +383,7 @@ export default function HomePage() {
                             <HeadingText level="h2" weight="bold" className="mb-4">
                                 Traditional Banking Is Failing Your Money
                             </HeadingText>
-                            <BodyText level="body1" weight="medium" className="text-gray-600 max-w-2xl mx-auto">
+                            <BodyText level="body1" weight="medium" className="text-gray-600 max-w-lg mx-auto">
                                 While inflation erodes your savings, traditional financial institutions are offering minimal returns
                             </BodyText>
                         </motion.div>
@@ -419,11 +419,10 @@ export default function HomePage() {
                                     <span className="text-red-600 text-xl font-bold">2</span>
                                 </motion.div>
                                 <HeadingText level="h3" weight="semibold" className="mb-3">
-                                    Inflation Risk
+                                    No Growth Mindset
                                 </HeadingText>
                                 <BodyText level="body2" className="text-gray-600">
-                                    Your purchasing power decreases every year as inflation outpaces traditional savings rates by 10-20x.
-                                </BodyText>
+                                    Traditional banks focus on fixed rates and don&apos;t try to grow your money. If you want real growth, you need smarter, automated strategies that offer stability—while minimizing risk.                                </BodyText>
                             </motion.div>
                             {/* Problem 3 */}
                             <motion.div
@@ -797,7 +796,7 @@ export default function HomePage() {
                                                 </svg>
                                             </div>
                                             <BodyText level="body2" className="text-gray-700">
-                                                Low gas fees with fast transaction finality
+                                                Sonic is the highest-performing EVM L1
                                             </BodyText>
                                         </div>
                                         <div className="flex items-start">
@@ -817,7 +816,7 @@ export default function HomePage() {
                                                 </svg>
                                             </div>
                                             <BodyText level="body2" className="text-gray-700">
-                                                $5.2M+ already deployed on Sonic protocols
+                                                Real sub-second confirmation times
                                             </BodyText>
                                         </div>
                                     </div>
@@ -911,7 +910,7 @@ export default function HomePage() {
                                                 </svg>
                                             </div>
                                             <BodyText level="body2" className="text-gray-700">
-                                                $5.3M+ TVL with growing ecosystem and opportunities
+                                                Base is the best of Ethereum but 10-100x cheaper
                                             </BodyText>
                                         </div>
                                     </div>
