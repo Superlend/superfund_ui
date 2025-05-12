@@ -23,13 +23,14 @@ const metadata = {
     icons: ['https://avatars.githubusercontent.com/u/179229932'],
 }
 
-// export const config = createConfig({
-//     chains: [base, sonic],
-//     transports: {
-//         [base.id]: http(),
-//         [sonic.id]: http(),
-//     },
-// })
+// Create a default config for initial render
+const defaultConfig = createConfig({
+    chains: [base, sonic],
+    transports: {
+        [base.id]: http(),
+        [sonic.id]: http(),
+    },
+})
 
 function ContextProvider({
     children,
@@ -38,36 +39,44 @@ function ContextProvider({
     children: ReactNode
     cookies: string | null
 }) {
-    const [localConfig, setLocalConfig] = useState<any>(null)
+    const [localConfig, setLocalConfig] = useState(defaultConfig)
     const [context, setContext] = useState<any>(null)
+    const [isClient, setIsClient] = useState(false)
+
+    // Check if we're on the client side
+    useEffect(() => {
+        setIsClient(true)
+    }, [])
 
     useEffect(() => {
+        // Only run Farcaster initialization on the client side
+        if (!isClient) return
+
         const initializeConfig = async () => {
-            await FrameSDK.actions.ready()
-            const context = await FrameSDK.context
-            setContext(context)
-            const newConfig = createConfig({
-                chains: [base, sonic],
-                transports: {
-                    [base.id]: http(),
-                    [sonic.id]: http(),
-                },
-            })
+            try {
+                await FrameSDK.actions.ready()
+                const frameContext = await FrameSDK.context
+                setContext(frameContext)
 
-            const newConfigForFarcaster = createConfig({
-                chains: [base, sonic],
-                transports: {
-                    [base.id]: http(),
-                    [sonic.id]: http(),
-                },
-                connectors: [farcasterFrame()],
-            })
-
-            setLocalConfig(context ? newConfigForFarcaster : newConfig)
+                if (frameContext) {
+                    const newConfigForFarcaster = createConfig({
+                        chains: [base, sonic],
+                        transports: {
+                            [base.id]: http(),
+                            [sonic.id]: http(),
+                        },
+                        connectors: [farcasterFrame()],
+                    })
+                    setLocalConfig(newConfigForFarcaster)
+                }
+            } catch (error) {
+                console.error("Error initializing Farcaster SDK:", error)
+                // Keep using default config in case of errors
+            }
         }
 
         initializeConfig()
-    }, [])
+    }, [isClient])
 
     return (
         <PrivyProvider
