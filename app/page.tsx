@@ -19,6 +19,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion"
+import Container from '@/components/Container'
 
 // Lazy load components
 const BenchmarkYieldTable = dynamic(
@@ -42,20 +43,19 @@ const ParticlesBackground = dynamic(
 // Chain selector with benchmark table component
 function ChainSelectorWithBenchmarkTable() {
     const { selectedChain, setSelectedChain } = useChain();
-    
+
     return (
         <div className="relative">
             {/* Chain Selector - Moved outside the blurred region */}
             <div className="mb-6 flex items-center justify-end gap-3">
                 <BodyText level="body3" className="text-gray-600">Select Network:</BodyText>
                 <div className="flex gap-2">
-                    <button 
+                    <button
                         onClick={() => setSelectedChain(ChainId.Base)}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                            selectedChain === ChainId.Base 
-                                ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-200' 
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
+                        className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedChain === ChainId.Base
+                            ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-200'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            }`}
                     >
                         <ImageWithDefault
                             src={CHAIN_DETAILS[ChainId.Base].logo}
@@ -66,13 +66,12 @@ function ChainSelectorWithBenchmarkTable() {
                         />
                         <span className="ml-1">Base</span>
                     </button>
-                    <button 
+                    <button
                         onClick={() => setSelectedChain(ChainId.Sonic)}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                            selectedChain === ChainId.Sonic 
-                                ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-200' 
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
+                        className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedChain === ChainId.Sonic
+                            ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-200'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            }`}
                     >
                         <ImageWithDefault
                             src={CHAIN_DETAILS[ChainId.Sonic].logo}
@@ -94,8 +93,8 @@ function ChainSelectorWithBenchmarkTable() {
                         <HeadingText level="h3" weight="semibold" className="text-gray-800 mb-5">
                             Sonic Chain Coming Soon
                         </HeadingText>
-                        <Button 
-                            size="lg" 
+                        <Button
+                            size="lg"
                             className="px-8 py-3 text-lg group"
                             onClick={() => window.open('/waitlist', '_blank')}
                         >
@@ -220,8 +219,8 @@ export default function HomePage() {
             opacity: 1,
             scale: 1,
             y: 0,
-            transition: { 
-                duration: 0.5, 
+            transition: {
+                duration: 0.5,
                 ease: "easeOut",
                 type: "spring",
                 stiffness: 100
@@ -234,8 +233,8 @@ export default function HomePage() {
         visible: {
             opacity: 1,
             x: 0,
-            transition: { 
-                duration: 0.6, 
+            transition: {
+                duration: 0.6,
                 ease: "easeOut",
                 type: "spring"
             }
@@ -247,8 +246,8 @@ export default function HomePage() {
         visible: {
             opacity: 1,
             x: 0,
-            transition: { 
-                duration: 0.6, 
+            transition: {
+                duration: 0.6,
                 ease: "easeOut",
                 type: "spring"
             }
@@ -260,7 +259,7 @@ export default function HomePage() {
         visible: {
             opacity: 1,
             scale: 1,
-            transition: { 
+            transition: {
                 duration: 0.6,
                 ease: "backOut",
                 type: "spring",
@@ -271,14 +270,14 @@ export default function HomePage() {
 
     const iconVariants = {
         hidden: { opacity: 0, rotate: -15, scale: 0.8 },
-        visible: { 
-            opacity: 1, 
+        visible: {
+            opacity: 1,
             rotate: 0,
             scale: 1,
-            transition: { 
+            transition: {
                 duration: 0.5,
                 ease: "easeOut",
-                type: "spring", 
+                type: "spring",
                 stiffness: 200
             }
         }
@@ -286,128 +285,19 @@ export default function HomePage() {
 
     const fadeInVariants = {
         hidden: { opacity: 0 },
-        visible: { 
+        visible: {
             opacity: 1,
             transition: { duration: 0.6 }
         }
     }
 
     return (
-        <MainContainer className="flex flex-col min-h-screen" onMouseMove={handleMouseMove}>
+        <div onMouseMove={handleMouseMove}>
             {/* SECTION 1: Hero with APY Highlight */}
-            <section className="py-28 relative overflow-hidden">
-                {/* Particles Background */}
-                <ParticlesBackground />
-                
-                {/* Background Superlend Logos */}
-                    <motion.div
-                        variants={imageVariants}
-                    className="absolute right-8 top-18 w-32 h-32 pointer-events-none opacity-10 cursor-pointer"
-                    initial="hidden"
-                    animate={{
-                        opacity: 0.25,
-                        scale: 1,
-                        y: [0, -10, 0],
-                        transition: {
-                            y: {
-                                repeat: Infinity,
-                                duration: 6,
-                                ease: "easeInOut",
-                                repeatType: "reverse"
-                            },
-                            opacity: { duration: 0.8, ease: "easeOut" },
-                            scale: { duration: 0.8, ease: "easeOut" }
-                        }
-                    }}
-                    whileHover={{
-                        x: 10,
-                        y: -5,
-                        transition: { duration: 0.3 }
-                    }}
-                    >
-                        <Image
-                        src="/images/logos/superlend-blue-circle.png"
-                            alt=""
-                        width={256}
-                        height={256}
-                            style={{ objectFit: 'contain' }}
-                        />
-                    </motion.div>
-                    <motion.div
-                        variants={imageVariants}
-                    className="absolute top-4 left-0 w-32 h-32 pointer-events-none opacity-10 cursor-pointer"
-                    initial="hidden"
-                    animate={{
-                        opacity: 0.25,
-                        scale: 1,
-                        y: [0, -15, 0],
-                        transition: {
-                            y: {
-                                repeat: Infinity,
-                                duration: 8,
-                                ease: "easeInOut",
-                                repeatType: "reverse"
-                            },
-                            opacity: { duration: 0.8, ease: "easeOut" },
-                            scale: { duration: 0.8, ease: "easeOut" }
-                        }
-                    }}
-                    whileHover={{
-                        x: -10,
-                        y: -8,
-                        transition: { duration: 0.3 }
-                    }}
-                    >
-                        <Image
-                        src="/images/logos/superlend-orange-circle.png"
-                            alt=""
-                        width={288}
-                        height={288}
-                            style={{ objectFit: 'contain' }}
-                        />
-                    </motion.div>
-                    <motion.div
-                        variants={imageVariants}
-                    className="absolute bottom-32 left-32 w-32 h-32 pointer-events-none opacity-5 cursor-pointer"
-                    initial="hidden"
-                    animate={{
-                        opacity: 0.15,
-                        scale: 1,
-                        y: [0, -8, 0],
-                        x: [0, 5, 0],
-                        transition: {
-                            y: {
-                                repeat: Infinity,
-                                duration: 5,
-                                ease: "easeInOut",
-                                repeatType: "reverse"
-                            },
-                            x: {
-                                repeat: Infinity,
-                                duration: 7,
-                                ease: "easeInOut",
-                                repeatType: "reverse"
-                            },
-                            opacity: { duration: 0.8, ease: "easeOut" },
-                            scale: { duration: 0.8, ease: "easeOut" }
-                        }
-                    }}
-                    whileHover={{
-                        x: 8,
-                        y: -5,
-                        scale: 1.05,
-                        transition: { duration: 0.3 }
-                    }}
-                    >
-                        <Image
-                        src="/images/logos/superlend-rounded.svg"
-                            alt=""
-                        width={128}
-                        height={128}
-                            style={{ objectFit: 'contain' }}
-                        />
-                    </motion.div>
-
+            <section className="py-28 relative overflow-hidden min-h-screen -mt-[70px]">
+                <div className="absolute inset-0 w-full h-full max-w-full z-[-1] bg-primary overflow-hidden">
+                    <img src="/banners/hero_bg.svg" alt="Hero banner" className="absolute w-full h-full object-cover" />
+                </div>
                 <motion.div
                     initial="hidden"
                     animate="visible"
@@ -418,48 +308,43 @@ export default function HomePage() {
                     <div className="flex flex-col items-center text-center mb-20">
                         <motion.div variants={childVariants} className="max-w-3xl mx-auto mb-8">
                             <div className="space-y-5">
-                                <HeadingText level="h1" weight="bold" className="leading-tight text-gray-900 text-4xl md:text-5xl lg:text-6xl max-w-md mx-auto">
+                                <h1 className="leading-tight text-gray-400 text-4xl md:text-6xl lg:text-7xl font-bold md:max-w-xl lg:max-w-2xl mx-auto">
                                     Maximize Your USDC Returns with SuperFund
-                                </HeadingText>
-                                <BodyText level="body1" weight="medium" className="text-gray-600 max-w-xs mx-auto">
+                                </h1>
+                                <p className="text-gray-400 max-w-lg md:text-lg lg:text-xl mx-auto">
                                     Earn on USDC deposits across multiple chains
-                                </BodyText>
+                                </p>
                             </div>
                         </motion.div>
-
                         <motion.div variants={childVariants} className="flex flex-wrap gap-4 justify-center mb-12">
-                            <Link target="_blank" href="/super-fund">
-                                <Button size="lg" className="px-8 py-3 text-lg group">
+                            <Link target="_blank" href="/super-fund/base">
+                                <Button size="lg" variant="secondary" className="px-8 py-3 text-lg group">
                                     <span>Start Earning Now</span>
                                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                 </Button>
                             </Link>
                             <Button
-                                variant="secondaryOutline"
+                                variant="outline"
                                 size="lg"
-                                className="px-8 py-3 text-lg"
+                                className="px-8 py-3 text-lg text-gray-200 border-gray-200"
                                 onClick={() => window.open('/waitlist', '_blank')}
                             >
                                 <span>Join Waitlist</span>
-                                <Play className="ml-2 w-5 h-5 fill-current" />
+                                <Play className="ml-2 w-4 h-4 fill-gray-200" />
                             </Button>
                         </motion.div>
-
                         {/* <motion.div variants={statsCounterVariants} className="bg-white/60 backdrop-blur-sm px-8 py-3 rounded-full shadow-sm">
-                            <div className="flex items-center gap-3">
-                                <BodyText level="body2" weight="medium" className="text-gray-600">
-                                    Total Value Locked:
-                                </BodyText>
-                                <HeadingText level="h3" weight="bold" className="text-primary">
-                                    ${tvlValue}
-                                </HeadingText>
-                            </div>
-                        </motion.div> */}
+                                <div className="flex items-center gap-3">
+                                    <BodyText level="body2" weight="medium" className="text-gray-600">
+                                        Total Value Locked:
+                                    </BodyText>
+                                    <HeadingText level="h3" weight="bold" className="text-primary">
+                                        ${tvlValue}
+                                    </HeadingText>
+                                </div>
+                            </motion.div> */}
                     </div>
-
                     {/* Visual Element Below */}
-
-
                     {/* Scroll Indicator */}
                     <motion.div
                         variants={childVariants}
@@ -485,7 +370,7 @@ export default function HomePage() {
 
             {/* SECTION 2: Problem → Solution */}
             <section className="py-16">
-                    <motion.div
+                <motion.div
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true, margin: "-100px" }}
@@ -509,8 +394,8 @@ export default function HomePage() {
                             variants={cardVariantsLeft}
                             className="bg-white/75 backdrop-blur-sm p-6 rounded-xl shadow-sm"
                         >
-                            <motion.div 
-                                variants={iconVariants} 
+                            <motion.div
+                                variants={iconVariants}
                                 className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4"
                             >
                                 <span className="text-red-600 text-xl font-bold">1</span>
@@ -528,8 +413,8 @@ export default function HomePage() {
                             variants={cardVariants}
                             className="bg-white/75 backdrop-blur-sm p-6 rounded-xl shadow-sm"
                         >
-                            <motion.div 
-                                variants={iconVariants} 
+                            <motion.div
+                                variants={iconVariants}
                                 className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4"
                             >
                                 <span className="text-red-600 text-xl font-bold">2</span>
@@ -547,8 +432,8 @@ export default function HomePage() {
                             variants={cardVariantsRight}
                             className="bg-white/75 backdrop-blur-sm p-6 rounded-xl shadow-sm"
                         >
-                            <motion.div 
-                                variants={iconVariants} 
+                            <motion.div
+                                variants={iconVariants}
                                 className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4"
                             >
                                 <span className="text-red-600 text-xl font-bold">3</span>
@@ -591,7 +476,7 @@ export default function HomePage() {
                         {/* Solution Details */}
                         <motion.div variants={cardVariantsLeft} className="space-y-6">
                             <div className="flex items-start">
-                                <motion.div 
+                                <motion.div
                                     variants={iconVariants}
                                     className="mr-4 mt-1"
                                 >
@@ -610,7 +495,7 @@ export default function HomePage() {
                             </div>
 
                             <div className="flex items-start">
-                                <motion.div 
+                                <motion.div
                                     variants={iconVariants}
                                     className="mr-4 mt-1"
                                 >
@@ -629,7 +514,7 @@ export default function HomePage() {
                             </div>
 
                             <div className="flex items-start">
-                                <motion.div 
+                                <motion.div
                                     variants={iconVariants}
                                     className="mr-4 mt-1"
                                 >
@@ -668,7 +553,7 @@ export default function HomePage() {
 
                             <div className="space-y-4">
                                 {/* SuperFund */}
-                                <motion.div 
+                                <motion.div
                                     variants={fadeInVariants}
                                     transition={{ delay: 0.1 }}
                                     className="space-y-1"
@@ -677,15 +562,15 @@ export default function HomePage() {
                                         <BodyText level="body2" weight="medium">SuperFund</BodyText>
                                         <BodyText level="body2" weight="bold" className="text-primary">9.0%</BodyText>
                                     </div>
-                                    <motion.div 
+                                    <motion.div
                                         className="w-full bg-gray-100 rounded-full h-2.5"
                                         initial={{ width: 0 }}
                                         whileInView={{ width: "100%" }}
                                         transition={{ duration: 0.5, delay: 0.1 }}
                                         viewport={{ once: true }}
                                     >
-                                        <motion.div 
-                                            className="bg-primary h-2.5 rounded-full" 
+                                        <motion.div
+                                            className="bg-primary h-2.5 rounded-full"
                                             initial={{ width: 0 }}
                                             whileInView={{ width: '65%' }}
                                             transition={{ duration: 0.8, delay: 0.2 }}
@@ -695,7 +580,7 @@ export default function HomePage() {
                                 </motion.div>
 
                                 {/* Competing DeFi */}
-                                <motion.div 
+                                <motion.div
                                     variants={fadeInVariants}
                                     transition={{ delay: 0.2 }}
                                     className="space-y-1"
@@ -704,15 +589,15 @@ export default function HomePage() {
                                         <BodyText level="body2" weight="medium">Average DeFi Yield</BodyText>
                                         <BodyText level="body2" weight="bold" className="text-blue-600">8.2%</BodyText>
                                     </div>
-                                    <motion.div 
+                                    <motion.div
                                         className="w-full bg-gray-100 rounded-full h-2.5"
                                         initial={{ width: 0 }}
                                         whileInView={{ width: "100%" }}
                                         transition={{ duration: 0.5, delay: 0.2 }}
                                         viewport={{ once: true }}
                                     >
-                                        <motion.div 
-                                            className="bg-blue-600 h-2.5 rounded-full" 
+                                        <motion.div
+                                            className="bg-blue-600 h-2.5 rounded-full"
                                             initial={{ width: 0 }}
                                             whileInView={{ width: '55%' }}
                                             transition={{ duration: 0.8, delay: 0.3 }}
@@ -722,7 +607,7 @@ export default function HomePage() {
                                 </motion.div>
 
                                 {/* Traditional Finance */}
-                                <motion.div 
+                                <motion.div
                                     variants={fadeInVariants}
                                     transition={{ delay: 0.3 }}
                                     className="space-y-1"
@@ -731,15 +616,15 @@ export default function HomePage() {
                                         <BodyText level="body2" weight="medium">High-Yield Savings</BodyText>
                                         <BodyText level="body2" weight="bold" className="text-blue-400">3.5%</BodyText>
                                     </div>
-                                    <motion.div 
+                                    <motion.div
                                         className="w-full bg-gray-100 rounded-full h-2.5"
                                         initial={{ width: 0 }}
                                         whileInView={{ width: "100%" }}
                                         transition={{ duration: 0.5, delay: 0.3 }}
                                         viewport={{ once: true }}
                                     >
-                                        <motion.div 
-                                            className="bg-blue-400 h-2.5 rounded-full" 
+                                        <motion.div
+                                            className="bg-blue-400 h-2.5 rounded-full"
                                             initial={{ width: 0 }}
                                             whileInView={{ width: '23%' }}
                                             transition={{ duration: 0.8, delay: 0.4 }}
@@ -749,7 +634,7 @@ export default function HomePage() {
                                 </motion.div>
 
                                 {/* Bank */}
-                                <motion.div 
+                                <motion.div
                                     variants={fadeInVariants}
                                     transition={{ delay: 0.4 }}
                                     className="space-y-1"
@@ -758,15 +643,15 @@ export default function HomePage() {
                                         <BodyText level="body2" weight="medium">Traditional Bank</BodyText>
                                         <BodyText level="body2" weight="bold" className="text-gray-500">0.1%</BodyText>
                                     </div>
-                                    <motion.div 
+                                    <motion.div
                                         className="w-full bg-gray-100 rounded-full h-2.5"
                                         initial={{ width: 0 }}
                                         whileInView={{ width: "100%" }}
                                         transition={{ duration: 0.5, delay: 0.4 }}
                                         viewport={{ once: true }}
                                     >
-                                        <motion.div 
-                                            className="bg-gray-400 h-2.5 rounded-full" 
+                                        <motion.div
+                                            className="bg-gray-400 h-2.5 rounded-full"
                                             initial={{ width: 0 }}
                                             whileInView={{ width: '1%' }}
                                             transition={{ duration: 0.8, delay: 0.5 }}
@@ -822,14 +707,14 @@ export default function HomePage() {
                             className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 border border-blue-200 shadow-sm"
                         >
                             {/* Background Decoration */}
-                            <motion.div 
+                            <motion.div
                                 initial={{ scale: 0.5, opacity: 0 }}
                                 whileInView={{ scale: 1, opacity: 0.2 }}
                                 transition={{ duration: 0.8 }}
                                 viewport={{ once: true }}
                                 className="absolute -top-16 -right-16 w-48 h-48 bg-blue-200/20 rounded-full"
                             ></motion.div>
-                            <motion.div 
+                            <motion.div
                                 initial={{ scale: 0.5, opacity: 0 }}
                                 whileInView={{ scale: 1, opacity: 0.2 }}
                                 transition={{ duration: 0.8, delay: 0.2 }}
@@ -898,7 +783,7 @@ export default function HomePage() {
                                         </div>
                                         <BodyText level="body2" className="text-gray-700">
                                             $5.2M+ already deployed on Sonic protocols
-                                </BodyText>
+                                        </BodyText>
                                     </div>
                                 </div>
 
@@ -921,14 +806,14 @@ export default function HomePage() {
                             className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border border-indigo-100 shadow-sm"
                         >
                             {/* Background Decoration */}
-                            <motion.div 
+                            <motion.div
                                 initial={{ scale: 0.5, opacity: 0 }}
                                 whileInView={{ scale: 1, opacity: 0.2 }}
                                 transition={{ duration: 0.8 }}
                                 viewport={{ once: true }}
                                 className="absolute -top-16 -right-16 w-48 h-48 bg-indigo-200/20 rounded-full"
                             ></motion.div>
-                            <motion.div 
+                            <motion.div
                                 initial={{ scale: 0.5, opacity: 0 }}
                                 whileInView={{ scale: 1, opacity: 0.2 }}
                                 transition={{ duration: 0.8, delay: 0.2 }}
@@ -997,7 +882,7 @@ export default function HomePage() {
                                         </div>
                                         <BodyText level="body2" className="text-gray-700">
                                             $5.3M+ TVL with growing ecosystem and opportunities
-                                </BodyText>
+                                        </BodyText>
                                     </div>
                                 </div>
 
@@ -1028,11 +913,11 @@ export default function HomePage() {
                             SuperFund&apos;s multi-chain approach diversifies your deposits across networks to:
                         </BodyText>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <motion.div 
+                            <motion.div
                                 variants={statVariants}
                                 className="flex flex-col items-center text-center p-4"
                             >
-                                <motion.div 
+                                <motion.div
                                     variants={iconVariants}
                                     className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-3"
                                 >
@@ -1048,12 +933,12 @@ export default function HomePage() {
                                 </BodyText>
                             </motion.div>
 
-                            <motion.div 
+                            <motion.div
                                 variants={statVariants}
                                 transition={{ delay: 0.1 }}
                                 className="flex flex-col items-center text-center p-4"
                             >
-                                <motion.div 
+                                <motion.div
                                     variants={iconVariants}
                                     className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-3"
                                 >
@@ -1069,12 +954,12 @@ export default function HomePage() {
                                 </BodyText>
                             </motion.div>
 
-                            <motion.div 
+                            <motion.div
                                 variants={statVariants}
                                 transition={{ delay: 0.2 }}
                                 className="flex flex-col items-center text-center p-4"
                             >
-                                <motion.div 
+                                <motion.div
                                     variants={iconVariants}
                                     className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-3"
                                 >
@@ -1263,8 +1148,8 @@ export default function HomePage() {
                                 </AccordionItem>
                             </motion.div>
                         </Accordion>
-                        </motion.div>
-            </motion.div>
+                    </motion.div>
+                </motion.div>
             </section>
 
             {/* Footer Section */}
@@ -1302,7 +1187,7 @@ export default function HomePage() {
                                     <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
                                         {/* Discord logo */}
                                         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" className="text-gray-700">
-                                            <path d="M20.317 4.492c-1.53-.69-3.17-1.2-4.885-1.49a.075.075 0 0 0-.079.036c-.21.39-.444.885-.608 1.283a18.566 18.566 0 0 0-5.487 0 12.36 12.36 0 0 0-.617-1.283.077.077 0 0 0-.079-.036c-1.714.29-3.354.8-4.885 1.491a.07.07 0 0 0-.032.027C.533 9.093-.32 13.555.099 17.961a.08.08 0 0 0 .031.055 20.03 20.03 0 0 0 5.993 2.98.078.078 0 0 0 .084-.026c.462-.62.874-1.275 1.226-1.963.021-.04.001-.088-.041-.104a13.201 13.201 0 0 1-1.872-.878.075.075 0 0 1-.008-.125c.126-.093.252-.19.372-.287a.075.075 0 0 1 .078-.01c3.927 1.764 8.18 1.764 12.061 0a.075.075 0 0 1 .079.009c.12.098.245.195.372.288a.075.075 0 0 1-.006.125c-.598.344-1.22.635-1.873.877a.075.075 0 0 0-.041.105c.36.687.772 1.341 1.225 1.962a.077.077 0 0 0 .084.028 19.963 19.963 0 0 0 6.002-2.981.076.076 0 0 0 .032-.054c.5-5.094-.838-9.52-3.549-13.442a.06.06 0 0 0-.031-.028zM8.02 15.278c-1.182 0-2.157-1.069-2.157-2.38 0-1.312.956-2.38 2.157-2.38 1.21 0 2.176 1.077 2.157 2.38 0 1.312-.956 2.38-2.157 2.38zm7.975 0c-1.183 0-2.157-1.069-2.157-2.38 0-1.312.955-2.38 2.157-2.38 1.21 0 2.176 1.077 2.157 2.38 0 1.312-.946 2.38-2.157 2.38z"/>
+                                            <path d="M20.317 4.492c-1.53-.69-3.17-1.2-4.885-1.49a.075.075 0 0 0-.079.036c-.21.39-.444.885-.608 1.283a18.566 18.566 0 0 0-5.487 0 12.36 12.36 0 0 0-.617-1.283.077.077 0 0 0-.079-.036c-1.714.29-3.354.8-4.885 1.491a.07.07 0 0 0-.032.027C.533 9.093-.32 13.555.099 17.961a.08.08 0 0 0 .031.055 20.03 20.03 0 0 0 5.993 2.98.078.078 0 0 0 .084-.026c.462-.62.874-1.275 1.226-1.963.021-.04.001-.088-.041-.104a13.201 13.201 0 0 1-1.872-.878.075.075 0 0 1-.008-.125c.126-.093.252-.19.372-.287a.075.075 0 0 1 .078-.01c3.927 1.764 8.18 1.764 12.061 0a.075.075 0 0 1 .079.009c.12.098.245.195.372.288a.075.075 0 0 1-.006.125c-.598.344-1.22.635-1.873.877a.075.075 0 0 0-.041.105c.36.687.772 1.341 1.225 1.962a.077.077 0 0 0 .084.028 19.963 19.963 0 0 0 6.002-2.981.076.076 0 0 0 .032-.054c.5-5.094-.838-9.52-3.549-13.442a.06.06 0 0 0-.031-.028zM8.02 15.278c-1.182 0-2.157-1.069-2.157-2.38 0-1.312.956-2.38 2.157-2.38 1.21 0 2.176 1.077 2.157 2.38 0 1.312-.956 2.38-2.157 2.38zm7.975 0c-1.183 0-2.157-1.069-2.157-2.38 0-1.312.955-2.38 2.157-2.38 1.21 0 2.176 1.077 2.157 2.38 0 1.312-.946 2.38-2.157 2.38z" />
                                         </svg>
                                     </div>
                                 </Link>
@@ -1415,6 +1300,6 @@ export default function HomePage() {
                     </div>
                 </div>
             </footer>
-        </MainContainer>
+        </div>
     )
 }

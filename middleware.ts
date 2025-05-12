@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const ALLOWED_PATHS = ['/', '/waitlist', '/super-fund', '/super-fund/base', '/super-fund/base/txs']
+const ALLOWED_PATHS = ['/', '/waitlist', '/super-fund/base', '/super-fund/base/txs']
 
 export function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
@@ -36,6 +36,6 @@ export function middleware(request: NextRequest) {
     }
 
     // Redirect all other paths to waitlist
-    url.pathname = '/super-fund'
+    url.pathname = '/super-fund/base'
     return NextResponse.redirect(url)
 }
