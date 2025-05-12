@@ -112,7 +112,6 @@ function ChainSelectorWithBenchmarkTable() {
 }
 
 export default function HomePage() {
-    const [tvlValue, setTvlValue] = useState("10.5M")
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const coinControls = useAnimation()
     const [miniAppUser, setMiniAppUser] = useState<any>(null)
@@ -1049,10 +1048,10 @@ export default function HomePage() {
                                 >
                                     <AccordionItem value="item-1" className="border-b border-gray-200">
                                         <AccordionTrigger className="text-left py-5 text-gray-800 font-medium hover:no-underline">
-                                            What new features does SuperFund bring to the DeFi ecosystem?
+                                            How does SuperFund optimize my USDC deposits?
                                         </AccordionTrigger>
                                         <AccordionContent className="pb-5 text-gray-600">
-                                            SuperFund enhances the DeFi ecosystem by offering optimized cross-chain yield farming. It automatically distributes your assets across multiple lending protocols on different chains to maximize returns while minimizing risk through diversification. This enables assets to flow effortlessly between lending markets, all managed through a simple, unified interface.
+                                            SuperFund optimizes your USDC deposits by intelligently allocating them across multiple lending protocols like Aave, Morpho, Euler, and Fluid. Our system continuously analyzes market conditions and rebalances your assets to maximize returns while maintaining appropriate risk levels. This multi-protocol approach ensures you consistently earn competitive yields without having to manually manage multiple positions.
                                         </AccordionContent>
                                     </AccordionItem>
                                 </motion.div>
@@ -1062,10 +1061,10 @@ export default function HomePage() {
                                 >
                                     <AccordionItem value="item-2" className="border-b border-gray-200">
                                         <AccordionTrigger className="text-left py-5 text-gray-800 font-medium hover:no-underline">
-                                            How does SuperFund&apos;s cross-chain strategy work?
+                                            What makes SuperFund's yield strategy different?
                                         </AccordionTrigger>
                                         <AccordionContent className="pb-5 text-gray-600">
-                                            SuperFund leverages multiple cross-chain bridges to enable seamless asset transfers between networks. The system continuously monitors yield opportunities across chains and automatically rebalances your assets to capture the highest returns. Users access liquidity with a single click, making the process smooth and efficient across multiple EVM-compatible chains.
+                                            SuperFund's strategy differs from traditional approaches by dynamically rebalancing your USDC across multiple lending protocols rather than using a single platform. Our systems continuously monitor yield opportunities and automatically adjust allocations to capture the highest returns. This diversification also helps reduce risk by not having all your assets in a single protocol, providing both better yields and enhanced security.
                                         </AccordionContent>
                                     </AccordionItem>
                                 </motion.div>
@@ -1075,10 +1074,10 @@ export default function HomePage() {
                                 >
                                     <AccordionItem value="item-3" className="border-b border-gray-200">
                                         <AccordionTrigger className="text-left py-5 text-gray-800 font-medium hover:no-underline">
-                                            What is the benefit of using SuperFund versus direct lending?
+                                            How does SuperFund achieve higher yields than traditional options?
                                         </AccordionTrigger>
                                         <AccordionContent className="pb-5 text-gray-600">
-                                            SuperFund offers up to 25% better returns than direct lending through position optimization across multiple protocols. You benefit from automatic yield optimization, reduced liquidation risks through diversification, and a simplified experience with access to multiple lending protocols through a single interface. This eliminates the complexity of managing positions across different platforms and chains yourself.
+                                            SuperFund achieves up to 8% APY on USDC through protocol optimization - significantly higher than the 4% from traditional banks and 5% from single DeFi platforms like Aave. This is possible because we actively rebalance your funds across multiple lending protocols, targeting those with the best rates at any given time while maintaining a balanced risk profile. Our technology constantly monitors market conditions to maximize returns.
                                         </AccordionContent>
                                     </AccordionItem>
                                 </motion.div>
@@ -1088,10 +1087,10 @@ export default function HomePage() {
                                 >
                                     <AccordionItem value="item-4" className="border-b border-gray-200">
                                         <AccordionTrigger className="text-left py-5 text-gray-800 font-medium hover:no-underline">
-                                            Are the interest rates on SuperFund different from regular lending rates?
+                                            What lending protocols does SuperFund integrate with?
                                         </AccordionTrigger>
                                         <AccordionContent className="pb-5 text-gray-600">
-                                            The interest rates in SuperFund are typically higher than direct lending on a single protocol. This is achieved by dynamically allocating your assets to the highest-yielding opportunities across multiple lending platforms and chains. While protocol fees may apply for cross-chain transactions, the overall returns remain competitive and often superior to single-platform lending.
+                                            SuperFund integrates with established lending protocols like Aave, Morpho, Euler, and Fluid. These protocols have been carefully selected based on their security track record, liquidity depth, and yield potential. By using multiple trusted protocols simultaneously, we can capture the best rates available while spreading risk. Our team continually evaluates new protocols for potential integration based on rigorous security standards.
                                         </AccordionContent>
                                     </AccordionItem>
                                 </motion.div>
@@ -1101,10 +1100,10 @@ export default function HomePage() {
                                 >
                                     <AccordionItem value="item-5" className="border-b border-gray-200">
                                         <AccordionTrigger className="text-left py-5 text-gray-800 font-medium hover:no-underline">
-                                            What happens if there&apos;s a disruption in one of the lending protocols?
+                                            How does SuperFund manage risks while maximizing returns?
                                         </AccordionTrigger>
                                         <AccordionContent className="pb-5 text-gray-600">
-                                            SuperFund&apos;s multi-chain strategy provides built-in risk management. By distributing assets across multiple protocols and chains, the impact of any single protocol&apos;s disruption is minimized. The system has built-in safeguards to protect user assets and can quickly rebalance away from any protocol experiencing issues, ensuring your funds remain secure while maximizing returns.
+                                            SuperFund manages risk through protocol diversification and continuous monitoring. By distributing your USDC across multiple lending protocols rather than concentrating in one, we reduce the impact of any single protocol's issues.
                                         </AccordionContent>
                                     </AccordionItem>
                                 </motion.div>
