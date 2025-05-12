@@ -77,7 +77,7 @@ const Header: React.FC = () => {
 
     const NAV_BAR_STYLES = `flex overflow-hidden gap-5 max-lg:gap-10 justify-between items-center py-0 pr-[8px] pl-4 sm:pl-[20px] mb-5 md:mb-14 w-full font-semibold uppercase min-h-[56px] mx-auto ${isLandingPage
         ? `max-w-[1400px] py-4 ${scrolled ? 'text-gray-800' : 'text-white'}`
-        : 'max-w-[1200px] md:rounded-6 bg-white bg-opacity-40 backdrop-blur shadow-[0px_2px_2px_rgba(0,0,0,0.02)] mx-auto md:px-5'
+        : 'max-w-[1200px] md:rounded-6 bg-white bg-opacity-40 backdrop-blur shadow-[0px_2px_2px_rgba(0,0,0,0.02)] mx-auto'
         }`
 
     const BUTTON_DEFAULT_DESKTOP_STYLES =
