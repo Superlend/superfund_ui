@@ -125,7 +125,7 @@ const Header: React.FC = () => {
             <header className={HEADER_STYLES}>
                 <nav className={NAV_BAR_STYLES}>
                     <Link
-                        href={pathname || '/'}
+                        href={'/'}
                         className="relative md:w-[24px] md:w-fit p-0"
                     >
                         <img
@@ -172,7 +172,7 @@ const Header: React.FC = () => {
                                 <Button
                                     size="lg"
                                     variant={isLandingPage && !scrolled ? 'secondary' : 'primary'}
-                                    className="group rounded-4"
+                                    className={`group rounded-4 py-3 ${isLandingPage && !scrolled ? 'text-primary' : ''}`}
                                 >
                                     <span>Launch App</span>
                                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
