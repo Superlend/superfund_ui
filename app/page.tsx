@@ -754,100 +754,6 @@ export default function HomePage() {
                         </motion.div>
                         {/* Chain Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
-                            {/* Sonic Network Card */}
-                            <motion.div
-                                variants={cardVariantsLeft}
-                                className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 border border-blue-200 shadow-sm"
-                            >
-                                {/* Background Decoration */}
-                                <motion.div
-                                    initial={{ scale: 0.5, opacity: 0 }}
-                                    whileInView={{ scale: 1, opacity: 0.2 }}
-                                    transition={{ duration: 0.8 }}
-                                    viewport={{ once: true }}
-                                    className="absolute -top-16 -right-16 w-48 h-48 bg-blue-200/20 rounded-full"
-                                ></motion.div>
-                                <motion.div
-                                    initial={{ scale: 0.5, opacity: 0 }}
-                                    whileInView={{ scale: 1, opacity: 0.2 }}
-                                    transition={{ duration: 0.8, delay: 0.2 }}
-                                    viewport={{ once: true }}
-                                    className="absolute bottom-16 -left-16 w-32 h-32 bg-blue-200/20 rounded-full"
-                                ></motion.div>
-                                {/* Content */}
-                                <div className="relative z-10">
-                                    {/* Header with Logo */}
-                                    <div className="flex items-center mb-6">
-                                        <div className="bg-white rounded-full p-2 shadow-md mr-4">
-                                            <ImageWithDefault
-                                                src={CHAIN_DETAILS[ChainId.Sonic].logo}
-                                                alt="Sonic"
-                                                width={40}
-                                                height={40}
-                                                className="rounded-full"
-                                            />
-                                        </div>
-                                        <div>
-                                            <HeadingText level="h3" weight="semibold">
-                                                Sonic Network
-                                            </HeadingText>
-                                            <div className="flex items-center mt-1">
-                                                <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-                                                <BodyText level="body2" className="text-green-700">
-                                                    Live
-                                                </BodyText>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* APY Badge */}
-                                    <div className="inline-block bg-white px-4 py-2 rounded-full shadow-sm mb-6">
-                                        <span className="text-xl font-bold text-blue-600">Up to 13% APY</span>
-                                    </div>
-                                    {/* Key Benefits */}
-                                    <div className="space-y-4 mb-8">
-                                        <div className="flex items-start">
-                                            <div className="mr-3 mt-1 text-blue-500">
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M5 13L9 17L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                                </svg>
-                                            </div>
-                                            <BodyText level="body2" className="text-gray-700">
-                                                Sonic is the highest-performing EVM L1
-                                            </BodyText>
-                                        </div>
-                                        <div className="flex items-start">
-                                            <div className="mr-3 mt-1 text-blue-500">
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M5 13L9 17L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                                </svg>
-                                            </div>
-                                            <BodyText level="body2" className="text-gray-700">
-                                                Higher APY potential with optimized protocol selection
-                                            </BodyText>
-                                        </div>
-                                        <div className="flex items-start">
-                                            <div className="mr-3 mt-1 text-blue-500">
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M5 13L9 17L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                                </svg>
-                                            </div>
-                                            <BodyText level="body2" className="text-gray-700">
-                                                Real sub-second confirmation times
-                                            </BodyText>
-                                        </div>
-                                    </div>
-                                    {/* CTA Button */}
-                                    <Link target="_blank" href="/super-fund/sonic">
-                                        <Button
-                                            className="w-full h-12 group relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-md"
-                                        >
-                                            <span className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-                                            <span className="relative z-10 group-hover:text-white">Join Waitlist</span>
-                                            <ArrowRight className="relative z-10 ml-2 w-4 h-4 group-hover:translate-x-1 group-hover:text-white transition-all duration-200" />
-                                        </Button>
-                                    </Link>
-                                </div>
-                            </motion.div>
                             {/* Base Network Card */}
                             <motion.div
                                 variants={cardVariantsRight}
@@ -931,13 +837,107 @@ export default function HomePage() {
                                         </div>
                                     </div>
                                     {/* CTA Button */}
-                                    <Link href="/super-fund/base">
+                                    <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base">
+                                        <Button
+                                            className="w-full h-12 group relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-md"
+                                        >
+                                            <span className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                                            <span className="relative z-10 group-hover:text-white">Select Base Network</span>
+                                            <ArrowRight className="relative z-10 ml-2 w-4 h-4 group-hover:translate-x-1 group-hover:text-white transition-all duration-200" />
+                                        </Button>
+                                    </Link>
+                                </div>
+                            </motion.div>
+                            {/* Sonic Network Card */}
+                            <motion.div
+                                variants={cardVariantsLeft}
+                                className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 border border-blue-200 shadow-sm"
+                            >
+                                {/* Background Decoration */}
+                                <motion.div
+                                    initial={{ scale: 0.5, opacity: 0 }}
+                                    whileInView={{ scale: 1, opacity: 0.2 }}
+                                    transition={{ duration: 0.8 }}
+                                    viewport={{ once: true }}
+                                    className="absolute -top-16 -right-16 w-48 h-48 bg-blue-200/20 rounded-full"
+                                ></motion.div>
+                                <motion.div
+                                    initial={{ scale: 0.5, opacity: 0 }}
+                                    whileInView={{ scale: 1, opacity: 0.2 }}
+                                    transition={{ duration: 0.8, delay: 0.2 }}
+                                    viewport={{ once: true }}
+                                    className="absolute bottom-16 -left-16 w-32 h-32 bg-blue-200/20 rounded-full"
+                                ></motion.div>
+                                {/* Content */}
+                                <div className="relative z-10">
+                                    {/* Header with Logo */}
+                                    <div className="flex items-center mb-6">
+                                        <div className="bg-white rounded-full p-2 shadow-md mr-4">
+                                            <ImageWithDefault
+                                                src={CHAIN_DETAILS[ChainId.Sonic].logo}
+                                                alt="Sonic"
+                                                width={40}
+                                                height={40}
+                                                className="rounded-full"
+                                            />
+                                        </div>
+                                        <div>
+                                            <HeadingText level="h3" weight="semibold">
+                                                Sonic Network
+                                            </HeadingText>
+                                            <div className="flex items-center mt-1">
+                                                <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+                                                <BodyText level="body2" className="text-green-700">
+                                                    Live
+                                                </BodyText>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {/* APY Badge */}
+                                    <div className="inline-block bg-white px-4 py-2 rounded-full shadow-sm mb-6">
+                                        <span className="text-xl font-bold text-blue-600">Up to 13% APY</span>
+                                    </div>
+                                    {/* Key Benefits */}
+                                    <div className="space-y-4 mb-8">
+                                        <div className="flex items-start">
+                                            <div className="mr-3 mt-1 text-blue-500">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M5 13L9 17L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                                </svg>
+                                            </div>
+                                            <BodyText level="body2" className="text-gray-700">
+                                                Sonic is the highest-performing EVM L1
+                                            </BodyText>
+                                        </div>
+                                        <div className="flex items-start">
+                                            <div className="mr-3 mt-1 text-blue-500">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M5 13L9 17L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                                </svg>
+                                            </div>
+                                            <BodyText level="body2" className="text-gray-700">
+                                                Higher APY potential with optimized protocol selection
+                                            </BodyText>
+                                        </div>
+                                        <div className="flex items-start">
+                                            <div className="mr-3 mt-1 text-blue-500">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M5 13L9 17L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                                </svg>
+                                            </div>
+                                            <BodyText level="body2" className="text-gray-700">
+                                                Real sub-second confirmation times
+                                            </BodyText>
+                                        </div>
+                                    </div>
+                                    {/* CTA Button */}
+                                    <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/sonic">
                                         <Button
                                             variant="outline"
                                             className="w-full h-12 bg-white border-indigo-200 text-indigo-800 group relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-md hover:border-indigo-300"
                                         >
                                             <span className="absolute inset-0 bg-indigo-50 opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
-                                            <span className="relative z-10">Select Base Network</span>
+                                            <span className="relative z-10">Join Waitlist</span>
                                             <ArrowRight className="relative z-10 ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
                                         </Button>
                                     </Link>
@@ -1023,7 +1023,7 @@ export default function HomePage() {
             </Container>
 
             {/* NEW SECTION: FAQ */}
-            <Container>
+            {/* <Container>
                 <section className="pb-8">
                     <motion.div
                         initial="hidden"
@@ -1036,9 +1036,6 @@ export default function HomePage() {
                             <HeadingText level="h2" weight="bold" className="mb-4">
                                 You have got Questions?
                             </HeadingText>
-                            {/* <BodyText level="body1" weight="medium" className="text-gray-600 max-w-2xl mx-auto">
-                                We have got answers.
-                            </BodyText> */}
                         </motion.div>
                         <motion.div variants={childVariants} className="max-w-3xl mx-auto bg-white/75 backdrop-blur-sm rounded-xl shadow-sm px-6">
                             <Accordion type="single" collapsible className="w-full">
@@ -1109,6 +1106,105 @@ export default function HomePage() {
                                 </motion.div>
                             </Accordion>
                         </motion.div>
+                    </motion.div>
+                </section>
+            </Container> */}
+
+            {/* Call To Action Section */}
+            <Container>
+                <section className="py-16">
+                    <motion.div
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, margin: "-100px" }}
+                        variants={containerVariants}
+                        className="w-full max-w-5xl mx-auto"
+                    >
+                        <motion.div variants={childVariants} className="text-center mb-10">
+                            <HeadingText level="h2" weight="bold" className="mb-4">
+                                Ready to Maximize Your USDC Returns?
+                            </HeadingText>
+                            <BodyText level="body1" weight="medium" className="text-gray-600 max-w-2xl mx-auto">
+                                Choose your preferred network and start earning optimal yields today
+                            </BodyText>
+                        </motion.div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                            {/* Base Network Card Button */}
+                            <motion.div
+                                variants={cardVariantsLeft}
+                                className="group"
+                            >
+                                <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base" className="block h-full">
+                                    <div className="h-full bg-gradient-to-br from-blue-50/50 to-indigo-50/50 rounded-2xl backdrop-blur-lg p-8 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.02] flex flex-col justify-between">
+                                        <div>
+                                            <div className="flex items-center gap-4 mb-6">
+                                                <div className="bg-white rounded-full p-3 shadow-sm">
+                                                    <ImageWithDefault
+                                                        src={CHAIN_DETAILS[ChainId.Base].logo}
+                                                        alt="Base"
+                                                        width={32}
+                                                        height={32}
+                                                        className="rounded-full"
+                                                    />
+                                                </div>
+                                                <HeadingText level="h3" weight="semibold" className="text-gray-800">
+                                                    Base Network
+                                                </HeadingText>
+                                                <div className="inline-block bg-white px-3 py-1 rounded-full shadow-sm">
+                                                    <span className="text-xs font-bold text-indigo-600">Up to 8% APY</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            size="lg"
+                                            variant="secondary"
+                                            className="w-full h-12 mt-4 bg-primary text-white hover:bg-primary/90 group-hover:shadow-lg transition-all duration-300"
+                                        >
+                                            <span>Launch SuperFund Base App</span>
+                                            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                        </Button>
+                                    </div>
+                                </Link>
+                            </motion.div>
+
+                            {/* Sonic Network Card Button */}
+                            <motion.div
+                                variants={cardVariantsRight}
+                                className="group"
+                            >
+                                <Link target={miniAppUser ? '_self' : '_blank'} href="/waitlist" className="block h-full">
+                                    <div className="h-full bg-gradient-to-br from-blue-50/50 to-blue-100/50 rounded-2xl backdrop-blur-lg p-8 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.02] flex flex-col justify-between">
+                                        <div>
+                                            <div className="flex items-center gap-4 mb-6">
+                                                <div className="bg-white rounded-full p-3 shadow-sm">
+                                                    <ImageWithDefault
+                                                        src={CHAIN_DETAILS[ChainId.Sonic].logo}
+                                                        alt="Sonic"
+                                                        width={32}
+                                                        height={32}
+                                                        className="rounded-full"
+                                                    />
+                                                </div>
+                                                <HeadingText level="h3" weight="semibold" className="text-gray-800">
+                                                    Sonic Network
+                                                </HeadingText>
+                                                <div className="inline-block bg-white px-3 py-1 rounded-full shadow-sm shrink-0">
+                                                    <span className="text-xs font-bold text-blue-600">Up to 13% APY</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            size="lg"
+                                            className="w-full h-12 mt-4 hover:bg-indigo-700 hover:text-white group-hover:shadow-lg text-indigo-600 transition-all duration-300"
+                                        >
+                                            <span>Join SuperFund Sonic Waitlist</span>
+                                            <Play className="ml-2 w-4 h-4 fill-white" />
+                                        </Button>
+                                    </div>
+                                </Link>
+                            </motion.div>
+                        </div>
                     </motion.div>
                 </section>
             </Container>
