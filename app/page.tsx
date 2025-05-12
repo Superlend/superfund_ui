@@ -309,10 +309,10 @@ export default function HomePage() {
                         <motion.div variants={childVariants} className="max-w-3xl mx-auto mb-8">
                             <div className="space-y-5">
                                 <h1 className="leading-tight text-gray-400 text-4xl md:text-6xl lg:text-7xl font-bold md:max-w-xl lg:max-w-2xl mx-auto">
-                                    Maximize Your USDC Returns with SuperFund
+                                    Maximize Your USD Returns with SuperFund
                                 </h1>
                                 <p className="text-gray-400 max-w-lg md:text-lg lg:text-xl mx-auto">
-                                    Earn on USDC deposits across multiple chains
+                                    Earn on USDC deposits optimally rebalanced across multiple protocols
                                 </p>
                             </div>
                         </motion.div>
@@ -404,7 +404,7 @@ export default function HomePage() {
                                     Low Bank Yields
                                 </HeadingText>
                                 <BodyText level="body2" className="text-gray-600">
-                                    Traditional savings accounts offer a mere 0.01-0.1% APY, effectively losing value against inflation rates of 3-7%.
+                                    Traditional savings accounts offer a mere 1-2% APY, effectively losing value against inflation rates of 2-3%.
                                 </BodyText>
                             </motion.div>
                             {/* Problem 2 */}
@@ -481,7 +481,7 @@ export default function HomePage() {
                                     </motion.div>
                                     <div>
                                         <HeadingText level="h4" weight="semibold" className="mb-1">
-                                            Up to 9% APY on USDC
+                                            Up to 8% APY on USDC
                                         </HeadingText>
                                         <BodyText level="body2" className="text-gray-600">
                                             Earn competitive yields that outpace inflation and traditional banking products.
@@ -499,7 +499,7 @@ export default function HomePage() {
                                     </motion.div>
                                     <div>
                                         <HeadingText level="h4" weight="semibold" className="mb-1">
-                                            Multi-Chain Optimization
+                                            Optimal Rebalancing
                                         </HeadingText>
                                         <BodyText level="body2" className="text-gray-600">
                                             Funds are allocated across Sonic and Base networks to maximize returns while minimizing risks.
@@ -550,7 +550,7 @@ export default function HomePage() {
                                     >
                                         <div className="flex justify-between items-center">
                                             <BodyText level="body2" weight="medium">SuperFund</BodyText>
-                                            <BodyText level="body2" weight="bold" className="text-primary">9.0%</BodyText>
+                                            <BodyText level="body2" weight="bold" className="text-primary">8.0%</BodyText>
                                         </div>
                                         <motion.div
                                             className="w-full bg-gray-100 rounded-full h-2.5"
@@ -562,7 +562,7 @@ export default function HomePage() {
                                             <motion.div
                                                 className="bg-primary h-2.5 rounded-full"
                                                 initial={{ width: 0 }}
-                                                whileInView={{ width: '65%' }}
+                                                whileInView={{ width: '75%' }}
                                                 transition={{ duration: 0.8, delay: 0.2 }}
                                                 viewport={{ once: true }}
                                             ></motion.div>
@@ -575,8 +575,8 @@ export default function HomePage() {
                                         className="space-y-1"
                                     >
                                         <div className="flex justify-between items-center">
-                                            <BodyText level="body2" weight="medium">Average DeFi Yield</BodyText>
-                                            <BodyText level="body2" weight="bold" className="text-blue-600">8.2%</BodyText>
+                                            <BodyText level="body2" weight="medium">Average USDC Yield (AAVE)</BodyText>
+                                            <BodyText level="body2" weight="bold" className="text-blue-600">5%</BodyText>
                                         </div>
                                         <motion.div
                                             className="w-full bg-gray-100 rounded-full h-2.5"
@@ -594,32 +594,6 @@ export default function HomePage() {
                                             ></motion.div>
                                         </motion.div>
                                     </motion.div>
-                                    {/* Traditional Finance */}
-                                    <motion.div
-                                        variants={fadeInVariants}
-                                        transition={{ delay: 0.3 }}
-                                        className="space-y-1"
-                                    >
-                                        <div className="flex justify-between items-center">
-                                            <BodyText level="body2" weight="medium">High-Yield Savings</BodyText>
-                                            <BodyText level="body2" weight="bold" className="text-blue-400">3.5%</BodyText>
-                                        </div>
-                                        <motion.div
-                                            className="w-full bg-gray-100 rounded-full h-2.5"
-                                            initial={{ width: 0 }}
-                                            whileInView={{ width: "100%" }}
-                                            transition={{ duration: 0.5, delay: 0.3 }}
-                                            viewport={{ once: true }}
-                                        >
-                                            <motion.div
-                                                className="bg-blue-400 h-2.5 rounded-full"
-                                                initial={{ width: 0 }}
-                                                whileInView={{ width: '23%' }}
-                                                transition={{ duration: 0.8, delay: 0.4 }}
-                                                viewport={{ once: true }}
-                                            ></motion.div>
-                                        </motion.div>
-                                    </motion.div>
                                     {/* Bank */}
                                     <motion.div
                                         variants={fadeInVariants}
@@ -628,7 +602,7 @@ export default function HomePage() {
                                     >
                                         <div className="flex justify-between items-center">
                                             <BodyText level="body2" weight="medium">Traditional Bank</BodyText>
-                                            <BodyText level="body2" weight="bold" className="text-gray-500">0.1%</BodyText>
+                                            <BodyText level="body2" weight="bold" className="text-gray-500">4%</BodyText>
                                         </div>
                                         <motion.div
                                             className="w-full bg-gray-100 rounded-full h-2.5"
@@ -640,7 +614,7 @@ export default function HomePage() {
                                             <motion.div
                                                 className="bg-gray-400 h-2.5 rounded-full"
                                                 initial={{ width: 0 }}
-                                                whileInView={{ width: '1%' }}
+                                                whileInView={{ width: '40%' }}
                                                 transition={{ duration: 0.8, delay: 0.5 }}
                                                 viewport={{ once: true }}
                                             ></motion.div>
@@ -667,7 +641,84 @@ export default function HomePage() {
                 </section>
             </Container>
 
-            {/* SECTION 3: Multi-Chain Benefits */}
+            {/* SECTION 3: Live Performance Metrics */}
+            <Container>
+                <section className="py-8">
+                    <motion.div
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, margin: "-100px" }}
+                        variants={containerVariants}
+                        className="w-full max-w-6xl mx-auto"
+                    >
+                        {/* Section Header */}
+                        <motion.div variants={childVariants} className="text-center mb-8">
+                            <HeadingText level="h2" weight="bold" className="mb-4">
+                                Why Choose SuperFund?
+                            </HeadingText>
+                            <BodyText level="body1" weight="medium" className="text-gray-600 max-w-2xl mx-auto">
+                                Compare SuperFund yields with other platforms and see how your assets grow over time
+                            </BodyText>
+                        </motion.div>
+                        {/* Yield Table and Stats Cards Side by Side - grid grid-cols-1 lg:grid-cols-4 gap-6 */}
+                        <div className="max-w-3xl mx-auto mb-12">
+                            {/* Yield Table - Left Side (3/4 width) - lg:col-span-3 */}
+                            <div className="overflow-hidden relative">
+                                <ChainProvider>
+                                    <ChainSelectorWithBenchmarkTable />
+                                </ChainProvider>
+                            </div>
+                            {/* Stats Cards - Right Side (1/4 width) - Stacked vertically */}
+                            {/* <div className="flex flex-col gap-6 z-10 md:pt-16">
+                                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-auto">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <BodyText level="body2" weight="medium" className="text-gray-500">
+                                            Total Value Locked
+                                        </BodyText>
+                                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-blue-600">
+                                                <path d="M12 1V23M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-baseline space-x-1">
+                                        <HeadingText level="h2" weight="bold" className="text-gray-800">
+                                            $10.5M
+                                        </HeadingText>
+                                        <span className="text-green-600 text-sm font-medium">+12.4%</span>
+                                    </div>
+                                    <BodyText level="body3" className="text-gray-500 mt-1">
+                                        Updated live
+                                    </BodyText>
+                                </div>
+                                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-auto">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <BodyText level="body2" weight="medium" className="text-gray-500">
+                                            Average APY
+                                        </BodyText>
+                                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-600">
+                                                <path d="M23 6L13.5 15.5L8.5 10.5L1 18M23 6H17M23 6V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-baseline space-x-1">
+                                        <HeadingText level="h2" weight="bold" className="text-gray-800">
+                                            13.8%
+                                        </HeadingText>
+                                        <span className="text-green-600 text-sm font-medium">+2.1%</span>
+                                    </div>
+                                    <BodyText level="body3" className="text-gray-500 mt-1">
+                                        Last 30 days
+                                    </BodyText>
+                                </div>
+                            </div> */}
+                        </div>
+                    </motion.div>
+                </section>
+            </Container>
+
+            {/* SECTION 4: Available on 2 fastest growing chains */}
             <Container>
                 <section className="py-8">
                     <motion.div
@@ -680,10 +731,10 @@ export default function HomePage() {
                         {/* Section Header */}
                         <motion.div variants={childVariants} className="text-center mb-16">
                             <HeadingText level="h2" weight="bold" className="mb-4">
-                                Multi-Chain Yield Optimization
+                                Available on 2 fastest growing chains
                             </HeadingText>
                             <BodyText level="body1" weight="medium" className="text-gray-600 max-w-2xl mx-auto">
-                                SuperFund deploys your assets across multiple networks to capture the highest yields while minimizing risk
+                                SuperFund deploys your assets across multiple protocols to capture the highest yields while minimizing risk
                             </BodyText>
                         </motion.div>
                         {/* Chain Cards */}
@@ -735,7 +786,7 @@ export default function HomePage() {
                                     </div>
                                     {/* APY Badge */}
                                     <div className="inline-block bg-white px-4 py-2 rounded-full shadow-sm mb-6">
-                                        <span className="text-xl font-bold text-blue-600">Up to 9% APY</span>
+                                        <span className="text-xl font-bold text-blue-600">Up to 13% APY</span>
                                     </div>
                                     {/* Key Benefits */}
                                     <div className="space-y-4 mb-8">
@@ -829,7 +880,7 @@ export default function HomePage() {
                                     </div>
                                     {/* APY Badge */}
                                     <div className="inline-block bg-white px-4 py-2 rounded-full shadow-sm mb-6">
-                                        <span className="text-xl font-bold text-indigo-600">Up to 12% APY</span>
+                                        <span className="text-xl font-bold text-indigo-600">Up to 8% APY</span>
                                     </div>
                                     {/* Key Benefits */}
                                     <div className="space-y-4 mb-8">
@@ -884,10 +935,10 @@ export default function HomePage() {
                             className="bg-gray-50 p-6 rounded-xl border border-gray-100 max-w-3xl mx-auto"
                         >
                             <HeadingText level="h4" weight="semibold" className="mb-4 text-center">
-                                Why Multi-Chain Strategy Matters
+                                Why SuperFund Strategy Matters
                             </HeadingText>
                             <BodyText level="body2" className="text-gray-600 mb-4 text-center">
-                                SuperFund&apos;s multi-chain approach diversifies your deposits across networks to:
+                                SuperFund&apos;s approach diversifies your deposits across protocols to:
                             </BodyText>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <motion.div
@@ -952,83 +1003,6 @@ export default function HomePage() {
                                 </motion.div>
                             </div>
                         </motion.div>
-                    </motion.div>
-                </section>
-            </Container>
-
-            {/* SECTION 4: Live Performance Metrics */}
-            <Container>
-                <section className="py-8">
-                    <motion.div
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true, margin: "-100px" }}
-                        variants={containerVariants}
-                        className="w-full max-w-6xl mx-auto"
-                    >
-                        {/* Section Header */}
-                        <motion.div variants={childVariants} className="text-center mb-8">
-                            <HeadingText level="h2" weight="bold" className="mb-4">
-                                Why Choose SuperFund?
-                            </HeadingText>
-                            <BodyText level="body1" weight="medium" className="text-gray-600 max-w-2xl mx-auto">
-                                Compare SuperFund yields with other platforms and see how your assets grow over time
-                            </BodyText>
-                        </motion.div>
-                        {/* Yield Table and Stats Cards Side by Side - grid grid-cols-1 lg:grid-cols-4 gap-6 */}
-                        <div className="max-w-3xl mx-auto mb-12">
-                            {/* Yield Table - Left Side (3/4 width) - lg:col-span-3 */}
-                            <div className="overflow-hidden relative">
-                                <ChainProvider>
-                                    <ChainSelectorWithBenchmarkTable />
-                                </ChainProvider>
-                            </div>
-                            {/* Stats Cards - Right Side (1/4 width) - Stacked vertically */}
-                            {/* <div className="flex flex-col gap-6 z-10 md:pt-16">
-                                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-auto">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <BodyText level="body2" weight="medium" className="text-gray-500">
-                                            Total Value Locked
-                                        </BodyText>
-                                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-blue-600">
-                                                <path d="M12 1V23M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-baseline space-x-1">
-                                        <HeadingText level="h2" weight="bold" className="text-gray-800">
-                                            $10.5M
-                                        </HeadingText>
-                                        <span className="text-green-600 text-sm font-medium">+12.4%</span>
-                                    </div>
-                                    <BodyText level="body3" className="text-gray-500 mt-1">
-                                        Updated live
-                                    </BodyText>
-                                </div>
-                                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-auto">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <BodyText level="body2" weight="medium" className="text-gray-500">
-                                            Average APY
-                                        </BodyText>
-                                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-green-600">
-                                                <path d="M23 6L13.5 15.5L8.5 10.5L1 18M23 6H17M23 6V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-baseline space-x-1">
-                                        <HeadingText level="h2" weight="bold" className="text-gray-800">
-                                            13.8%
-                                        </HeadingText>
-                                        <span className="text-green-600 text-sm font-medium">+2.1%</span>
-                                    </div>
-                                    <BodyText level="body3" className="text-gray-500 mt-1">
-                                        Last 30 days
-                                    </BodyText>
-                                </div>
-                            </div> */}
-                        </div>
                     </motion.div>
                 </section>
             </Container>
