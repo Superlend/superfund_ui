@@ -7,7 +7,9 @@ import InfoTooltip from '@/components/tooltips/InfoTooltip'
 import TooltipText from '@/components/tooltips/TooltipText'
 import { Skeleton } from '@/components/ui/skeleton'
 import { BodyText, HeadingText } from '@/components/ui/typography'
+import { SUPERLEND_REWARDS_APY } from '@/constants'
 import { useChain } from '@/context/chain-context'
+import useGetBoostRewards from '@/hooks/useGetBoostRewards'
 import useIsClient from '@/hooks/useIsClient'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
@@ -64,18 +66,22 @@ const starVariants = {
 
 export default function VaultStats() {
     const { walletAddress, isWalletConnected } = useWalletConnection()
-    // const { totalAssets, spotApy, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
-    // const { rewards, totalRewardApy, isLoading: isLoadingRewards, error: errorRewards } = useRewardsHook()
+    const { selectedChain } = useChain()
+    const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
+        vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        chainId: selectedChain
+    })
     const { userMaxWithdrawAmount, isLoading: isLoadingUserMaxWithdrawAmount, error: errorUserMaxWithdrawAmount } = useUserBalance(
         walletAddress as `0x${string}`
     )
-    const { selectedChain } = useChain()
     const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
         vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
         chain_id: selectedChain
     })
     const { isClient } = useIsClient()
     const isLoadingSection = !isClient;
+    // const { totalAssets, spotApy, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
+    // const { rewards, totalRewardApy, isLoading: isLoadingRewards, error: errorRewards } = useRewardsHook()
     // const { days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading: isLoading7DayAvg, error: error7DayAvg } = useHistoricalData({
     //     chain_id: selectedChain
     // })
@@ -104,7 +110,7 @@ export default function VaultStats() {
                     </>
                 )
             },
-            value: `${(effectiveApyData?.total_apy ?? 0).toFixed(2)}%`,
+            value: `${((effectiveApyData?.total_apy ?? 0) + SUPERLEND_REWARDS_APY).toFixed(2)}%`,
             show: true,
             hasRewards: true,
             rewardsTooltip: getRewardsTooltipContent({
@@ -114,9 +120,15 @@ export default function VaultStats() {
                         key: 'rewards_apy',
                         key_name: 'Rewards APY',
                         value: abbreviateNumber(effectiveApyData?.rewards_apy),
-                    }
+                    },
+                    {
+                        key: 'superlend_rewards_apy',
+                        key_name: boostRewardsData?.[0]?.token?.symbol ?? 'Superlend Reward',
+                        value: abbreviateNumber(boostRewardsData?.[0]?.boost_apy ?? 0, 0),
+                        logo: "/images/tokens/usdc.webp"
+                    },
                 ],
-                apyCurrent: Number(effectiveApyData?.total_apy),
+                apyCurrent: Number((effectiveApyData?.total_apy ?? 0) + SUPERLEND_REWARDS_APY),
                 positionTypeParam: 'lend',
             }),
             isLoading: isLoadingEffectiveApy,
