@@ -325,10 +325,10 @@ export default function HomePage() {
                         <motion.div variants={childVariants} className="max-w-3xl mx-auto mb-8">
                             <div className="space-y-5">
                                 <h1 className="leading-tight text-gray-400 text-4xl md:text-6xl lg:text-7xl font-bold md:max-w-xl lg:max-w-2xl mx-auto">
-                                    Maximize Your USD Returns with SuperFund
+                                    Maximize Your USDC Returns with SuperFund
                                 </h1>
                                 <p className="text-gray-400 max-w-lg md:text-lg lg:text-xl mx-auto">
-                                    Earn on USDC deposits optimally rebalanced across leading lending protocols
+                                    Earn yield on deposits automatically rebalanced across top lending protocols.
                                 </p>
                             </div>
                         </motion.div>
@@ -812,7 +812,7 @@ export default function HomePage() {
                                                 </svg>
                                             </div>
                                             <BodyText level="body2" className="text-gray-700">
-                                                Ethereum L2 security with lower transaction costs
+                                                Ethereum-grade security with low fees
                                             </BodyText>
                                         </div>
                                         <div className="flex items-start">
@@ -822,7 +822,7 @@ export default function HomePage() {
                                                 </svg>
                                             </div>
                                             <BodyText level="body2" className="text-gray-700">
-                                                Access to established lending markets with deep liquidity
+                                                Access to leading lending markets and deep liquidity
                                             </BodyText>
                                         </div>
                                         <div className="flex items-start">
@@ -832,7 +832,7 @@ export default function HomePage() {
                                                 </svg>
                                             </div>
                                             <BodyText level="body2" className="text-gray-700">
-                                                Base is the best of Ethereum but 10-100x cheaper
+                                                Base offers the best of Ethereum but at a fraction of the cost (10–100x cheaper)
                                             </BodyText>
                                         </div>
                                     </div>
@@ -895,7 +895,7 @@ export default function HomePage() {
                                     </div>
                                     {/* APY Badge */}
                                     <div className="inline-block bg-white px-4 py-2 rounded-full shadow-sm mb-6">
-                                        <span className="text-xl font-bold text-blue-600">Up to 13% APY</span>
+                                        <span className="text-xl font-bold text-blue-600">Coming soon</span>
                                     </div>
                                     {/* Key Benefits */}
                                     <div className="space-y-4 mb-8">
@@ -1190,7 +1190,7 @@ export default function HomePage() {
                                                     Sonic Network
                                                 </HeadingText>
                                                 <div className="inline-block bg-white px-3 py-1 rounded-full shadow-sm shrink-0">
-                                                    <span className="text-xs font-bold text-blue-600">Up to 13% APY</span>
+                                                    <span className="text-xs font-bold text-blue-600">Coming soon</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1215,21 +1215,31 @@ export default function HomePage() {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
                         {/* Column 1: Logo and Tagline */}
                         <div className="md:col-span-1">
-                            <Link href="/">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <Image
-                                        src="/images/logos/superlend-rounded.svg"
-                                        alt="SuperFund"
-                                        width={40}
-                                        height={40}
-                                    />
+                            <div className="flex items-center gap-2 mb-4">
+                                <Image
+                                    src="/images/logos/superlend-rounded.svg"
+                                    alt="SuperFund"
+                                    width={40}
+                                    height={40}
+                                />
+                                <div className="flex flex-col gap-0">
                                     <HeadingText level="h4" weight="semibold" className="text-gray-900">
                                         SuperFund
                                     </HeadingText>
+                                    <BodyText level="body3" weight="medium" className="inline-block text-gray-600">
+                                        by <Link href="https://superlend.xyz" target="_blank" className="inline-block w-fit text-primary hover:underline hover:text-primary/80 transition-colors">
+                                            Superlend
+                                        </Link>
+                                    </BodyText>
                                 </div>
-                            </Link>
+                            </div>
                             <BodyText level="body2" className="text-gray-600 mb-6">
-                                Maximized returns through optimized yield farming across multiple chains.
+                                Maximized returns through optimized yield farming across multiple protocols.
+                            </BodyText>
+                            <BodyText level="body2" className="text-gray-600 mb-6">
+                                To Lend, Borrow, and Earn across 150+ DeFi markets, visit <Link href="https://app.superlend.xyz" target="_blank" className="inline-block w-fit text-primary hover:underline hover:text-primary/80 transition-colors font-medium">
+                                    Superlend
+                                </Link>
                             </BodyText>
                             <div className="flex gap-4">
                                 <Link href="https://x.com/SuperlendHQ" target="_blank" aria-label="X (Twitter)">
