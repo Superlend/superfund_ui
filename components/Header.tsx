@@ -13,6 +13,7 @@ import ConnectWalletButton from './ConnectWalletButton'
 import Link from 'next/link'
 import { Badge } from './ui/badge'
 import AccessDialog from './AccessDialog'
+import sdk from '@farcaster/frame-sdk'
 
 type TTab = {
     id: number
@@ -41,10 +42,26 @@ const Header: React.FC = () => {
     const isHomePage = pathname === '/' || pathname === '/super-fund'
     const isLandingPage = pathname === '/'
     const [scrolled, setScrolled] = useState(false)
+    const [miniAppUser, setMiniAppUser] = useState<any>(null)
 
     useEffect(() => {
         setActiveTab(activeTabInitialValue(pathname))
     }, [pathname])
+
+    useEffect(() => {
+        const initializeMiniappContext = async () => {
+            await sdk.actions.ready()
+            const context = await sdk.context
+            if (context && context.user) {
+                const user = context.user
+                setMiniAppUser(user)
+            } else {
+                setMiniAppUser(null)
+            }
+        }
+
+        void initializeMiniappContext()
+    }, [])
 
     // Add scroll event listener
     useEffect(() => {
@@ -126,6 +143,7 @@ const Header: React.FC = () => {
                 <nav className={NAV_BAR_STYLES}>
                     <Link
                         href={'/'}
+                        target={(miniAppUser || isLandingPage) ? '_self' : '_blank'}
                         className="relative md:w-[24px] md:w-fit p-0"
                     >
                         <img
@@ -168,7 +186,7 @@ const Header: React.FC = () => {
                     <div className="flex items-center gap-[12px]">
                         {!isHomePage && <ConnectWalletButton />}
                         {isLandingPage && (
-                            <Link target="_blank" href="/super-fund/base">
+                            <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base">
                                 <Button
                                     size="lg"
                                     variant={isLandingPage && !scrolled ? 'secondary' : 'primary'}

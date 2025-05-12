@@ -20,6 +20,7 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion"
 import Container from '@/components/Container'
+import sdk from '@farcaster/frame-sdk'
 
 // Lazy load components
 const BenchmarkYieldTable = dynamic(
@@ -114,6 +115,7 @@ export default function HomePage() {
     const [tvlValue, setTvlValue] = useState("10.5M")
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const coinControls = useAnimation()
+    const [miniAppUser, setMiniAppUser] = useState<any>(null)
 
     // Track mouse position for parallax effect
     const handleMouseMove = (e: React.MouseEvent) => {
@@ -126,6 +128,21 @@ export default function HomePage() {
 
         setMousePosition({ x, y })
     }
+
+    useEffect(() => {
+        const initializeMiniappContext = async () => {
+            await sdk.actions.ready()
+            const context = await sdk.context
+            if (context && context.user) {
+                const user = context.user
+                setMiniAppUser(user)
+            } else {
+                setMiniAppUser(null)
+            }
+        }
+
+        void initializeMiniappContext()
+    }, [])
 
     // Animate coin stacks
     useEffect(() => {
@@ -317,7 +334,7 @@ export default function HomePage() {
                             </div>
                         </motion.div>
                         <motion.div variants={childVariants} className="flex flex-col gap-6 md:gap-4 justify-center mb-12">
-                            <Link target="_blank" href="/super-fund/base">
+                            <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base">
                                 <Button size="lg" variant="secondary" className="px-8 py-3 rounded-4 text-lg text-primary group">
                                     <span>Launch SuperFund Base App</span>
                                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -327,7 +344,7 @@ export default function HomePage() {
                                 variant="outline"
                                 size="lg"
                                 className="px-8 py-3 text-lg text-gray-200 border-gray-200 rounded-4"
-                                onClick={() => window.open('/waitlist', '_blank')}
+                                onClick={() => window.open('/waitlist', miniAppUser ? '_self' : '_blank')}
                             >
                                 <span>Join SuperFund Sonic Waitlist</span>
                                 <Play className="ml-2 w-4 h-4 fill-gray-200" />
