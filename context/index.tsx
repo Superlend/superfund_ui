@@ -4,12 +4,11 @@ import React, { useEffect, useState, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { PrivyProvider } from '@privy-io/react-auth'
 import { createConfig, WagmiProvider } from '@privy-io/wagmi'
-import {
-    base,
-    sonic,
-} from 'viem/chains'
+import { base, sonic } from 'viem/chains'
 import { http } from 'wagmi'
 import { AuthProvider } from './auth-provider'
+import FrameSDK from '@farcaster/frame-sdk'
+import { farcasterFrame } from '@farcaster/frame-wagmi-connector'
 
 // Set up queryClient
 const queryClient = new QueryClient()
@@ -24,7 +23,8 @@ const metadata = {
     icons: ['https://avatars.githubusercontent.com/u/179229932'],
 }
 
-export const config = createConfig({
+// Create a default config for initial render
+const defaultConfig = createConfig({
     chains: [base, sonic],
     transports: {
         [base.id]: http(),
@@ -39,33 +39,44 @@ function ContextProvider({
     children: ReactNode
     cookies: string | null
 }) {
-    const [localConfig, setLocalConfig] = useState<any>(null)
+    const [localConfig, setLocalConfig] = useState(defaultConfig)
     const [context, setContext] = useState<any>(null)
+    const [isClient, setIsClient] = useState(false)
 
-    // useEffect(() => {
-    //     const initializeConfig = async () => {
-    //         await FrameSDK.actions.ready()
-    //         const context = await FrameSDK.context
-    //         setContext(context)
-    //         const newConfig = createConfig({
-    //             chains: [base],
-    //             transports: {
-    //                 [base.id]: http(),
-    //             },
-    //         })
-    //         const newConfigForFarcaster = createConfig({
-    //             chains: [base],
-    //             transports: {
-    //                 [base.id]: http(),
-    //             },
-    //             connectors: [farcasterFrame()],
-    //         })
+    // Check if we're on the client side
+    useEffect(() => {
+        setIsClient(true)
+    }, [])
 
-    //         setLocalConfig(context ? newConfigForFarcaster : newConfig)
-    //     }
+    useEffect(() => {
+        // Only run Farcaster initialization on the client side
+        if (!isClient) return
 
-    //     initializeConfig()
-    // }, [])
+        const initializeConfig = async () => {
+            try {
+                await FrameSDK.actions.ready()
+                const frameContext = await FrameSDK.context
+                setContext(frameContext)
+
+                if (frameContext) {
+                    const newConfigForFarcaster = createConfig({
+                        chains: [base, sonic],
+                        transports: {
+                            [base.id]: http(),
+                            [sonic.id]: http(),
+                        },
+                        connectors: [farcasterFrame()],
+                    })
+                    setLocalConfig(newConfigForFarcaster)
+                }
+            } catch (error) {
+                console.error("Error initializing Farcaster SDK:", error)
+                // Keep using default config in case of errors
+            }
+        }
+
+        initializeConfig()
+    }, [isClient])
 
     return (
         <PrivyProvider
@@ -93,10 +104,8 @@ function ContextProvider({
             }}
         >
             <QueryClientProvider client={queryClient}>
-                <WagmiProvider config={config}>
-                    <AuthProvider>
-                        {children}
-                    </AuthProvider>
+                <WagmiProvider config={localConfig}>
+                    <AuthProvider>{children}</AuthProvider>
                 </WagmiProvider>
             </QueryClientProvider>
         </PrivyProvider>

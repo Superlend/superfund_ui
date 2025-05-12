@@ -81,6 +81,7 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
+import { VAULT_ADDRESS_MAP } from '@/lib/constants'
 
 export default function SuperVaultTxDialog({
     disabled,
@@ -111,22 +112,25 @@ export default function SuperVaultTxDialog({
     const isDesktop = screenWidth > 768
     const isDepositPositionType = positionType === 'deposit'
     const [miniappUser, setMiniAppUser] = useState<any>(null)
-    // const { data: effectiveApyData } = useGetEffectiveApy()
+    const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
+        vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        chain_id: selectedChain
+    })
 
-    // useEffect(() => {
-    //     const initializeMiniappContext = async () => {
-    //         await sdk.actions.ready()
-    //         const context = await sdk.context
-    //         if (context && context.user) {
-    //             const user = context.user
-    //             setMiniAppUser(user)
-    //         } else {
-    //             setMiniAppUser(null)
-    //         }
-    //     }
+    useEffect(() => {
+        const initializeMiniappContext = async () => {
+            await sdk.actions.ready()
+            const context = await sdk.context
+            if (context && context.user) {
+                const user = context.user
+                setMiniAppUser(user)
+            } else {
+                setMiniAppUser(null)
+            }
+        }
 
-    //     void initializeMiniappContext()
-    // }, [])
+        void initializeMiniappContext()
+    }, [])
 
     useEffect(() => {
         // Reset the tx status when the dialog is closed
@@ -248,39 +252,39 @@ export default function SuperVaultTxDialog({
     ) : null
 
     // SHARE SCREEN BUTTONS FOR MINI APP:
-    // const shareScreenButtons = [
-    //     {
-    //         buttonText: 'Share on Warpcast',
-    //         imageSrc: '/icons/share.svg',
-    //         onClick: () => {
-    //             // I just deposited $10,
-    //             const text = `I just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} $${amount}, and it's earning a ${effectiveApyData?.total_apy.toFixed(2)}% return. Park your assets on Superlend and watch them grow!`
-    //             sdk.actions.composeCast({
-    //                 text,
-    //                 embeds: ['https://funds.superlend.xyz/'],
-    //             })
-    //         },
-    //     },
-    //     {
-    //         buttonText: 'Follow us on X',
-    //         imageSrc: '/icons/x.svg',
-    //         onClick: () => sdk.actions.openUrl('https://x.com/SuperlendHQ'),
-    //     },
-    //     {
-    //         buttonText: 'Explore More',
-    //         imageSrc: '/icons/globe.svg',
-    //         onClick: () =>
-    //             sdk.actions.openUrl('https://app.superlend.xyz/discover'),
-    //     },
-    //     {
-    //         buttonText: 'Add Frame',
-    //         imageSrc: '/icons/warpcast.svg',
-    //         onClick: async () => {
-    //             await sdk.actions.addFrame()
-    //             return
-    //         },
-    //     },
-    // ]
+    const shareScreenButtons = [
+        {
+            buttonText: 'Share on Warpcast',
+            imageSrc: '/icons/share.svg',
+            onClick: () => {
+                // I just deposited $10,
+                const text = `I just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} $${amount}, and it's earning a ${effectiveApyData?.total_apy.toFixed(2)}% return. Park your assets on Superlend and watch them grow!`
+                sdk.actions.composeCast({
+                    text,
+                    embeds: ['https://funds.superlend.xyz/'],
+                })
+            },
+        },
+        {
+            buttonText: 'Follow us on X',
+            imageSrc: '/icons/x.svg',
+            onClick: () => sdk.actions.openUrl('https://x.com/SuperlendHQ'),
+        },
+        {
+            buttonText: 'Explore More',
+            imageSrc: '/icons/globe.svg',
+            onClick: () =>
+                sdk.actions.openUrl('https://app.superlend.xyz/discover'),
+        },
+        {
+            buttonText: 'Add Frame',
+            imageSrc: '/icons/warpcast.svg',
+            onClick: async () => {
+                await sdk.actions.addFrame()
+                return
+            },
+        },
+    ]
 
     // SUB_COMPONENT: Content header UI
     const contentHeader = (
@@ -717,29 +721,29 @@ export default function SuperVaultTxDialog({
                                                     </ExternalLink>
                                                 )}
                                         </div>
-                                        {/* {miniappUser && (
-                                    <div className="w-full flex items-center flex-col justify-start gap-5 my-4 mb-8 ">
-                                        {shareScreenButtons.map(
-                                            (config, index) => (
-                                                <Button
-                                                    key={index}
-                                                    variant="primary"
-                                                    size="lg"
-                                                    className={`rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
-                                                    onClick={config.onClick}
-                                                >
-                                                    <Image
-                                                        src={config.imageSrc}
-                                                        alt={''}
-                                                        width={18}
-                                                        height={18}
-                                                    />
-                                                    {config.buttonText}
-                                                </Button>
-                                            )
+                                        {miniappUser && (
+                                            <div className="w-full flex items-center flex-col justify-start gap-5 my-4 mb-8 ">
+                                                {shareScreenButtons.map(
+                                                    (config, index) => (
+                                                        <Button
+                                                            key={index}
+                                                            variant="primary"
+                                                            size="lg"
+                                                            className={`rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
+                                                            onClick={config.onClick}
+                                                        >
+                                                            <Image
+                                                                src={config.imageSrc}
+                                                                alt={''}
+                                                                width={18}
+                                                                height={18}
+                                                            />
+                                                            {config.buttonText}
+                                                        </Button>
+                                                    )
+                                                )}
+                                            </div>
                                         )}
-                                    </div>
-                                )} */}
                                     </div>
                                 )}
                         </div>
@@ -834,31 +838,31 @@ export default function SuperVaultTxDialog({
                                                     </ExternalLink>
                                                 )}
                                         </div>
-                                        {/* {miniappUser && (
-                                        <div className="w-full flex items-center flex-col justify-start gap-5 my-4 mb-8 ">
-                                            {shareScreenButtons.map(
-                                                (config, index) => (
-                                                    <Button
-                                                        key={index}
-                                                        variant="primary"
-                                                        size="lg"
-                                                        className={`rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
-                                                        onClick={config.onClick}
-                                                    >
-                                                        <Image
-                                                            src={
-                                                                config.imageSrc
-                                                            }
-                                                            alt={''}
-                                                            width={18}
-                                                            height={18}
-                                                        />
-                                                        {config.buttonText}
-                                                    </Button>
-                                                )
-                                            )}
-                                        </div>
-                                    )} */}
+                                        {miniappUser && (
+                                            <div className="w-full flex items-center flex-col justify-start gap-5 my-4 mb-8 ">
+                                                {shareScreenButtons.map(
+                                                    (config, index) => (
+                                                        <Button
+                                                            key={index}
+                                                            variant="primary"
+                                                            size="lg"
+                                                            className={`rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
+                                                            onClick={config.onClick}
+                                                        >
+                                                            <Image
+                                                                src={
+                                                                    config.imageSrc
+                                                                }
+                                                                alt={''}
+                                                                width={18}
+                                                                height={18}
+                                                            />
+                                                            {config.buttonText}
+                                                        </Button>
+                                                    )
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                         </div>

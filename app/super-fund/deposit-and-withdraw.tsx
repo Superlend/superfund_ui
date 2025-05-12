@@ -29,6 +29,7 @@ import SuperVaultTxDialog from '@/components/dialogs/SuperVaultTx'
 import { useChain } from '@/context/chain-context'
 import { VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
+import useGetBoostRewards from '@/hooks/useGetBoostRewards'
 
 export type THelperText = Record<
     string,
@@ -66,6 +67,10 @@ export default function DepositAndWithdrawAssets() {
     const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
         vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
         chain_id: selectedChain
+    })
+    const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
+        vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        chainId: selectedChain
     })
 
     useEffect(() => {
@@ -308,7 +313,7 @@ export default function DepositAndWithdrawAssets() {
                                         logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg',
                                         symbol: 'USDC',
                                     },
-                                    effective_apy: effectiveApyData?.total_apy,
+                                    effective_apy: (effectiveApyData?.total_apy ?? 0) + (boostRewardsData?.[0]?.boost_apy ?? 0),
                                 },
                                 chain_id: selectedChain,
                             }}

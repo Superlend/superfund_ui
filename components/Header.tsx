@@ -13,6 +13,7 @@ import ConnectWalletButton from './ConnectWalletButton'
 import Link from 'next/link'
 import { Badge } from './ui/badge'
 import AccessDialog from './AccessDialog'
+import sdk from '@farcaster/frame-sdk'
 
 type TTab = {
     id: number
@@ -40,16 +41,61 @@ const Header: React.FC = () => {
     const [openMenu, setOpenMenu] = useState(false)
     const isHomePage = pathname === '/' || pathname === '/super-fund'
     const isLandingPage = pathname === '/'
+    const [scrolled, setScrolled] = useState(false)
+    const [miniAppUser, setMiniAppUser] = useState<any>(null)
 
     useEffect(() => {
         setActiveTab(activeTabInitialValue(pathname))
     }, [pathname])
+
+    useEffect(() => {
+        const initializeMiniappContext = async () => {
+            await sdk.actions.ready()
+            const context = await sdk.context
+            if (context && context.user) {
+                const user = context.user
+                setMiniAppUser(user)
+            } else {
+                setMiniAppUser(null)
+            }
+        }
+
+        void initializeMiniappContext()
+    }, [])
+
+    // Add scroll event listener
+    useEffect(() => {
+        const handleScroll = () => {
+            // Check if we've scrolled past the hero section (approx 700px)
+            const isScrolled = window.scrollY > 700
+            setScrolled(isScrolled)
+        }
+
+        // Add scroll event listener
+        window.addEventListener('scroll', handleScroll)
+
+        // Check initial scroll position
+        handleScroll()
+
+        // Clean up
+        return () => {
+            window.removeEventListener('scroll', handleScroll)
+        }
+    }, [])
 
     const handleTabClick = (tab: TTab) => {
         setActiveTab(tab)
         setOpenMenu(false)
         router.push(`${tab.href}`)
     }
+
+    const HEADER_STYLES = `z-50 sticky top-0 left-0 ${isLandingPage ? (scrolled ? 'bg-white shadow-sm' : 'bg-primary') : 'md:top-5'
+        } w-full transition-all duration-300`
+
+    const NAV_BAR_STYLES = `flex overflow-hidden gap-5 max-lg:gap-10 justify-between items-center py-0 pr-[8px] pl-4 sm:pl-[20px] mb-5 md:mb-14 w-full font-semibold uppercase mx-auto ${isLandingPage
+        ? `max-w-[1400px] py-4 ${scrolled ? 'text-gray-800' : 'text-white'}`
+        : 'max-w-[1200px] md:rounded-6 bg-white bg-opacity-40 backdrop-blur shadow-[0px_2px_2px_rgba(0,0,0,0.02)] mx-auto min-h-[56px]'
+        }`
 
     const BUTTON_DEFAULT_DESKTOP_STYLES =
         'group self-stretch p-0 rounded-[14px] uppercase hover:text-primary'
@@ -93,24 +139,27 @@ const Header: React.FC = () => {
 
     return (
         <>
-            <header className="z-50 sticky top-0 md:top-5 left-0 max-w-[1200px] w-full mx-auto md:px-5">
-                <div className="flex overflow-hidden gap-5 max-lg:gap-10 justify-between items-center py-0 pr-[8px] pl-4 sm:pl-[20px] mb-5 md:mb-14 w-full font-semibold uppercase md:rounded-6 bg-white bg-opacity-40 backdrop-blur min-h-[56px] shadow-[0px_2px_2px_rgba(0,0,0,0.02)] max-md:max-w-full max-w-[1200px] mx-auto">
+            <header className={HEADER_STYLES}>
+                <nav className={NAV_BAR_STYLES}>
                     <Link
-                        href="/"
+                        href={'/'}
+                        target={(miniAppUser || isLandingPage) ? '_self' : '_blank'}
                         className="relative md:w-[24px] md:w-fit p-0"
                     >
                         <img
                             loading="lazy"
-                            src={'/images/logos/superlend-logo.webp'}
+                            src={isLandingPage && !scrolled ? '/images/logos/superlend_white_logo.svg' : '/images/logos/superlend-logo.webp'}
                             alt="Superlend logo"
-                            className="object-contain shrink-0 my-auto aspect-[6.54] w-36 cursor-pointer"
+                            className="object-contain shrink-0 my-auto aspect-[6.54] cursor-pointer"
+                            width={isLandingPage ? 180 : 144}
+                            height={isLandingPage ? 48 : 24}
                         />
-                        <Badge
+                        {/* <Badge
                             variant="blue"
                             className="absolute top-1 -right-12 w-fit rounded-full px-2 py-0"
                         >
                             Beta
-                        </Badge>
+                        </Badge> */}
                     </Link>
                     {/* <nav className="hidden md:flex gap-3 lg:gap-5 items-center self-stretch my-auto text-sm tracking-normal leading-none whitespace-nowrap min-w-[240px] text-stone-800 max-md:max-w-full">
                         {tabs.map((tab) => (
@@ -137,9 +186,13 @@ const Header: React.FC = () => {
                     <div className="flex items-center gap-[12px]">
                         {!isHomePage && <ConnectWalletButton />}
                         {isLandingPage && (
-                            <Link target="_blank" href="/super-fund">
-                                <Button size="lg" variant="primary" className="group rounded-4">
-                                    <span>Open App</span>
+                            <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base">
+                                <Button
+                                    size="lg"
+                                    variant={isLandingPage && !scrolled ? 'secondary' : 'primary'}
+                                    className={`group rounded-4 py-3 ${isLandingPage && !scrolled ? 'text-primary' : ''}`}
+                                >
+                                    <span>Launch App</span>
                                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                 </Button>
                             </Link>
@@ -148,7 +201,7 @@ const Header: React.FC = () => {
               <Menu className='text-gray-600' />
             </Button> */}
                     </div>
-                </div>
+                </nav>
             </header>
 
             {/* Footer nav */}

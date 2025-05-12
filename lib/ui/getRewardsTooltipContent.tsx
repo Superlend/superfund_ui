@@ -102,7 +102,16 @@ export function getRewardsTooltipContent({
                         style={{ gap: '70px' }}
                     >
                         <div className="flex items-center gap-1">
-                            <Percent className="text-gray-800" width={14} height={14} />
+                            {!reward.logo && <Percent className="text-gray-800" width={14} height={14} />}
+                            {reward.logo &&
+                                <ImageWithDefault
+                                    src={reward?.logo || ''}
+                                    width={16}
+                                    height={16}
+                                    alt={reward?.key_name || ''}
+                                    className="inline-block rounded-full object-contain"
+                                />
+                            }
                             <BodyText level="body3" weight="medium" className="text-gray-800">
                                 {reward.key_name}
                             </BodyText>

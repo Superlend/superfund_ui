@@ -99,7 +99,7 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
   return (
     <div className="bg-card rounded-2xl p-4 flex flex-col mt-4">
       <div className="mb-3">
-        <h3 className="text-lg font-semibold">Recent Transactions</h3>
+        <h3 className="text-lg font-semibold">Your Recent Transactions</h3>
       </div>
 
       <div className="space-y-3">
