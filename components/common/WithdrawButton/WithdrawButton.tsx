@@ -18,6 +18,7 @@ import { ArrowRightIcon } from 'lucide-react'
 import { USDC_DECIMALS, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { parseAbi } from 'viem'
 import { useChain } from '@/context/chain-context'
+import { useAnalytics } from '@/context/amplitude-analytics-provider'
 
 const VAULT_ABI = parseAbi([
     'function withdraw(uint256 _assets, address _receiver, address _owner) returns (uint256)',
@@ -43,6 +44,7 @@ const WithdrawButton = ({
         error,
     } = useWriteContract()
     const { selectedChain } = useChain()
+    const { logEvent } = useAnalytics()
     const { withdrawTx, setWithdrawTx } = useTxContext() as TTxContext
     const { address: walletAddress } = useAccount()
     const txBtnStatus: Record<string, string> = {
@@ -77,6 +79,12 @@ const WithdrawButton = ({
                 isConfirmed: isConfirmed,
             }))
 
+            logEvent('withdraw_successful', {
+                amount: amount,
+                chain: selectedChain,
+                token: asset.address,
+                walletAddress: walletAddress
+            })
             // Dispatch custom event to notify transaction is complete
             if (typeof window !== 'undefined') {
                 console.log('Dispatching transaction-complete event for withdraw');

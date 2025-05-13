@@ -19,6 +19,7 @@ import InfoTooltip from '@/components/tooltips/InfoTooltip'
 import TooltipText from '@/components/tooltips/TooltipText'
 import { useChain } from '@/context/chain-context'
 import clsx from 'clsx'
+import { useAnalytics } from '@/context/amplitude-analytics-provider'
 
 const AllocationHistoryChart = lazy(() =>
     import('@/components/allocation-history-chart').then(module => ({
@@ -47,17 +48,32 @@ const BenchmarkYieldTable = lazy(() =>
 export default function FundOverview() {
     const { allocationPoints } = useVaultAllocationPoints()
     const { selectedChain, chainDetails } = useChain()
+    const { logEvent } = useAnalytics()
     const currentChainDetails = chainDetails[selectedChain as keyof typeof chainDetails]
     const rebalancedAssetsListFiltered = rebalancedAssetsList.filter((token) => token.chainIds.includes(selectedChain))
     const gridColsClass = `md:grid-cols-${rebalancedAssetsListFiltered.length > 4 ? 4 : rebalancedAssetsListFiltered.length}`
     const CONTRACT_LINK = `${currentChainDetails?.explorerUrl}${currentChainDetails?.contractAddress}`
+
+    const logDocumentationLinkClick = () => {
+        logEvent('clicked_documentation_link', {
+            chain: selectedChain,
+            url: DOCUMENTATION_LINK
+        })
+    }
+
+    const logContractLinkClick = () => {
+        logEvent('clicked_contract_link', {
+            chain: selectedChain,
+            url: CONTRACT_LINK
+        })
+    }
 
     const footerRows = [
         {
             id: 'Documentation',
             column_1: () => <BodyText level="body1" weight="medium">Documentation</BodyText>,
             column_2: () => <BodyText level="body1" weight="medium">Updated Recently</BodyText>,
-            column_3: () => <ExternalLink href={DOCUMENTATION_LINK} className="font-medium" variant="secondary">View <span className="hidden md:inline">documentation</span></ExternalLink>
+            column_3: () => <ExternalLink href={DOCUMENTATION_LINK} className="font-medium" variant="secondary" onClick={logDocumentationLinkClick}>View <span className="hidden md:inline">documentation</span></ExternalLink>
         },
         {
             id: 'Performance Fees',
@@ -69,7 +85,7 @@ export default function FundOverview() {
             id: 'Contract',
             column_1: () => <BodyText level="body1" weight="medium">Contract</BodyText>,
             column_2: () => null,
-            column_3: () => <ExternalLink href={CONTRACT_LINK} className="font-medium" variant="secondary">View <span className="hidden md:inline">contract</span></ExternalLink>
+            column_3: () => <ExternalLink href={CONTRACT_LINK} className="font-medium" variant="secondary" onClick={logContractLinkClick}>View <span className="hidden md:inline">contract</span></ExternalLink>
         }
     ]
 
