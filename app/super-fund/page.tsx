@@ -63,7 +63,7 @@ export default function ChainSelectionPage() {
                   height={24}
                   className="rounded-full"
                 />
-                <span>Sonic Network</span>
+                <span>Sonic</span>
               </div>
             </Button>
           </Link>
@@ -81,7 +81,7 @@ export default function ChainSelectionPage() {
                   height={24}
                   className="rounded-full"
                 />
-                <span>Base Network</span>
+                <span>Base</span>
               </div>
             </Button>
           </Link>

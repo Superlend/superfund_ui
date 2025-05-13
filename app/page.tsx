@@ -789,7 +789,7 @@ export default function HomePage() {
                                         </div>
                                         <div>
                                             <HeadingText level="h3" weight="semibold">
-                                                Base Network
+                                                Base
                                             </HeadingText>
                                             <div className="flex items-center mt-1">
                                                 <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>
@@ -883,7 +883,7 @@ export default function HomePage() {
                                         </div>
                                         <div>
                                             <HeadingText level="h3" weight="semibold">
-                                                Sonic Network
+                                                Sonic
                                             </HeadingText>
                                             <div className="flex items-center mt-1">
                                                 <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>
@@ -992,7 +992,7 @@ export default function HomePage() {
                                         Reduce Risk
                                     </BodyText>
                                     <BodyText level="body3" className="text-gray-600">
-                                        Mitigate network-specific risks through diversification
+                                        Mitigate protocol-specific risks through diversification
                                     </BodyText>
                                 </motion.div>
                                 <motion.div
@@ -1149,7 +1149,7 @@ export default function HomePage() {
                                                     />
                                                 </div>
                                                 <HeadingText level="h3" weight="semibold" className="text-gray-800">
-                                                    Base Network
+                                                    Base
                                                 </HeadingText>
                                                 <div className="inline-block bg-white px-3 py-1 rounded-full shadow-sm">
                                                     <span className="text-xs font-bold text-indigo-600">Up to 8% APY</span>
@@ -1187,7 +1187,7 @@ export default function HomePage() {
                                                     />
                                                 </div>
                                                 <HeadingText level="h3" weight="semibold" className="text-gray-800">
-                                                    Sonic Network
+                                                    Sonic
                                                 </HeadingText>
                                                 <div className="inline-block bg-white px-3 py-1 rounded-full shadow-sm shrink-0">
                                                     <span className="text-xs font-bold text-blue-600">Coming soon</span>
