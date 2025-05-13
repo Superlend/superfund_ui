@@ -886,9 +886,9 @@ export default function HomePage() {
                                                 Sonic
                                             </HeadingText>
                                             <div className="flex items-center mt-1">
-                                                <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-                                                <BodyText level="body2" className="text-green-700">
-                                                    Live
+                                                <span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-2"></span>
+                                                <BodyText level="body2" className="text-blue-700">
+                                                    Coming soon
                                                 </BodyText>
                                             </div>
                                         </div>
@@ -898,7 +898,7 @@ export default function HomePage() {
                                         <span className="text-xl font-bold text-blue-600">Coming soon</span>
                                     </div>
                                     {/* Key Benefits */}
-                                    <div className="space-y-4 mb-8">
+                                    <div className="space-y-4 mb-12">
                                         <div className="flex items-start">
                                             <div className="mr-3 mt-1 text-blue-500">
                                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
