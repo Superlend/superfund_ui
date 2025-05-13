@@ -1,26 +1,16 @@
 'use client'
 
-import ImageWithDefault from '@/components/ImageWithDefault'
-import LendBorrowToggle from '@/components/LendBorrowToggle'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { TPositionType } from '@/types'
-import { PlatformTypeMap, TPlatformAsset } from '@/types/platform'
 import {
     ArrowRightIcon,
-    ArrowUpRightIcon,
     Check,
-    CircleCheckIcon,
-    CircleXIcon,
-    Earth,
-    Link,
     LoaderCircle,
     X,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import {
     abbreviateNumber,
-    capitalizeText,
     decimalPlacesCount,
     getExplorerLink,
     getLowestDisplayValue,
@@ -30,22 +20,12 @@ import {
 } from '@/lib/utils'
 import { BodyText, HeadingText, Label } from '@/components/ui/typography'
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { ChevronDownIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import CustomNumberInput from '@/components/inputs/CustomNumberInput'
-import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTrigger,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { TX_EXPLORER_LINKS } from '@/constants'
 import ActionButton from '@/components/common/ActionButton'
 import {
     TDepositTx,
@@ -54,7 +34,6 @@ import {
     useTxContext,
 } from '@/context/super-vault-tx-provider'
 import { BigNumber } from 'ethers'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import useDimensions from '@/hooks/useDimensions'
 import {
     Drawer,
@@ -62,24 +41,12 @@ import {
     DrawerHeader,
     DrawerTrigger,
 } from '@/components/ui/drawer'
-import { ChainId } from '@/types/chain'
-import {
-    checkAllowance,
-    useUserBalance,
-} from '@/hooks/vault_hooks/useUserBalanceHook'
-import { usePrivy } from '@privy-io/react-auth'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import ImageWithBadge from '@/components/ImageWithBadge'
 import ExternalLink from '@/components/ExternalLink'
 import { useChain } from '@/context/chain-context'
 import sdk from '@farcaster/frame-sdk'
 import Image from 'next/image'
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
 import { VAULT_ADDRESS_MAP } from '@/lib/constants'
 

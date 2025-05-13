@@ -842,7 +842,7 @@ export default function HomePage() {
                                             className="w-full h-12 group relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-md"
                                         >
                                             <span className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-                                            <span className="relative z-10 group-hover:text-white">Select Base Network</span>
+                                            <span className="relative z-10 group-hover:text-white">Launch SuperFund Base App</span>
                                             <ArrowRight className="relative z-10 ml-2 w-4 h-4 group-hover:translate-x-1 group-hover:text-white transition-all duration-200" />
                                         </Button>
                                     </Link>
@@ -1234,10 +1234,10 @@ export default function HomePage() {
                                 </div>
                             </div>
                             <BodyText level="body2" className="text-gray-600 mb-6">
-                                Maximized returns through optimized yield farming across multiple protocols.
+                                Earn smarter with SuperFund, an automated DeFi fund that allocates USDC across Aave, Morpho, Euler & more for optimized returns.
                             </BodyText>
                             <BodyText level="body2" className="text-gray-600 mb-6">
-                                To Lend, Borrow, and Earn across 150+ DeFi markets, visit <Link href="https://app.superlend.xyz" target="_blank" className="inline-block w-fit text-primary hover:underline hover:text-primary/80 transition-colors font-medium">
+                                To Lend, Borrow, and Earn across 350+ DeFi markets, visit <Link href="https://app.superlend.xyz" target="_blank" className="inline-block w-fit text-primary hover:underline hover:text-primary/80 transition-colors font-medium">
                                     Superlend
                                 </Link>
                             </BodyText>
@@ -1273,18 +1273,13 @@ export default function HomePage() {
                             </HeadingText>
                             <ul className="space-y-3">
                                 <li>
-                                    <Link href="https://docs.superlend.xyz" target="_blank" className="text-gray-600 hover:text-primary transition-colors">
+                                    <Link href="https://docs.superlend.xyz/superlend-vaults/superfunds" target="_blank" className="text-gray-600 hover:text-primary transition-colors">
                                         Documentation
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link href="https://github.com/Superlend" target="_blank" className="text-gray-600 hover:text-primary transition-colors">
+                                    <Link href="https://github.com/Superlend/superfund-strategies-public" target="_blank" className="text-gray-600 hover:text-primary transition-colors">
                                         GitHub
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link href="/waitlist" target="_blank" className="text-gray-600 hover:text-primary transition-colors">
-                                        Join Waitlist
                                     </Link>
                                 </li>
                             </ul>

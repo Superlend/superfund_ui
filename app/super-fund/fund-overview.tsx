@@ -92,7 +92,7 @@ export default function FundOverview() {
                     weight="normal"
                     className="text-gray-600"
                 >
-                    This SuperFund optimally allocates your USDC across trusted
+                    This USDC SuperFund optimally allocates your USDC across trusted
                     blue-chip lending protocols such as Aave, Morpho, Euler, & Fluid to
                     generate consistent and competitive returns. It is a
                     low-risk, high-reliability investment vault designed for

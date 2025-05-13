@@ -7,7 +7,6 @@ import InfoTooltip from '@/components/tooltips/InfoTooltip'
 import TooltipText from '@/components/tooltips/TooltipText'
 import { Skeleton } from '@/components/ui/skeleton'
 import { BodyText, HeadingText } from '@/components/ui/typography'
-import { SUPERLEND_REWARDS_APY } from '@/constants'
 import { useChain } from '@/context/chain-context'
 import useGetBoostRewards from '@/hooks/useGetBoostRewards'
 import useIsClient from '@/hooks/useIsClient'
@@ -80,6 +79,7 @@ export default function VaultStats() {
     })
     const { isClient } = useIsClient()
     const isLoadingSection = !isClient;
+    const TOTAL_APY = Number((effectiveApyData?.total_apy ?? 0)) + Number(boostRewardsData?.[0]?.boost_apy ?? 0)
     // const { totalAssets, spotApy, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
     // const { rewards, totalRewardApy, isLoading: isLoadingRewards, error: errorRewards } = useRewardsHook()
     // const { days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading: isLoading7DayAvg, error: error7DayAvg } = useHistoricalData({
@@ -110,7 +110,7 @@ export default function VaultStats() {
                     </>
                 )
             },
-            value: `${((effectiveApyData?.total_apy ?? 0) + SUPERLEND_REWARDS_APY).toFixed(2)}%`,
+            value: `${(TOTAL_APY).toFixed(2)}%`,
             show: true,
             hasRewards: true,
             rewardsTooltip: getRewardsTooltipContent({
@@ -123,12 +123,12 @@ export default function VaultStats() {
                     },
                     {
                         key: 'superlend_rewards_apy',
-                        key_name: boostRewardsData?.[0]?.token?.symbol ?? 'Superlend Reward',
+                        key_name: 'Superlend Reward',
                         value: abbreviateNumber(boostRewardsData?.[0]?.boost_apy ?? 0, 0),
-                        logo: "/images/tokens/usdc.webp"
+                        logo: "/images/logos/superlend-orange-circle.png"
                     },
                 ],
-                apyCurrent: Number((effectiveApyData?.total_apy ?? 0) + SUPERLEND_REWARDS_APY),
+                apyCurrent: TOTAL_APY,
                 positionTypeParam: 'lend',
             }),
             isLoading: isLoadingEffectiveApy,

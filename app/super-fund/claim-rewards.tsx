@@ -118,13 +118,13 @@ export default function ClaimRewards({
                             onClick={() => setIsSelectTokenDialogOpen(true)}
                             size={screenWidth > 1024 ? 'lg' : 'md'}
                             variant="primary"
-                            className="uppercase bg-white shadow-lg hover:shadow-md active:shadow-sm hover:bg-gray-50 rounded-5 disabled:opacity-100 disabled:cursor-not-allowed transition-all duration-200"
+                            className="uppercase bg-white shadow-lg hover:shadow-md active:shadow-sm hover:bg-gray-50 rounded-5 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200"
                             disabled={!hasUnclaimedRewards}
                         >
                             <span className={`flex items-center gap-1 tracking-wide text-white ${!hasUnclaimedRewards ? 'px-5' : 'px-2 md:px-10'}`}>
                                 <GiftIcon className="w-4 h-4 text-inherit" />
                                 Claim{hasUnclaimedRewards ? '' : 'ed'}
-                                {!hasUnclaimedRewards && <Check strokeWidth={2.5} className="w-4 h-4 text-green-500" />}</span>
+                                {!hasUnclaimedRewards && <Check strokeWidth={2.5} className="w-4 h-4 text-gray-200" />}</span>
                         </Button>
                     </motion.div>
                 </CardFooter>

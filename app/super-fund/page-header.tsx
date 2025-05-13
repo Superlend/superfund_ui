@@ -32,7 +32,7 @@ export default function PageHeader() {
                     <div className="w-full">
                         <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                             <HeadingText level="h4" weight="medium" className="mr-1 text-gray-800">
-                                SuperFund
+                                USDC SuperFund
                             </HeadingText>
                             <div className="flex items-center gap-2 flex-wrap">
                                 <Badge variant="green" size="md">

@@ -72,6 +72,7 @@ export default function DepositAndWithdrawAssets() {
         vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
         chainId: selectedChain
     })
+    const TOTAL_APY = Number(effectiveApyData?.total_apy ?? 0) + Number(boostRewardsData?.[0]?.boost_apy ?? 0)
 
     useEffect(() => {
         if (isWalletConnected) {
@@ -313,7 +314,7 @@ export default function DepositAndWithdrawAssets() {
                                         logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg',
                                         symbol: 'USDC',
                                     },
-                                    effective_apy: (effectiveApyData?.total_apy ?? 0) + (boostRewardsData?.[0]?.boost_apy ?? 0),
+                                    effective_apy: TOTAL_APY,
                                 },
                                 chain_id: selectedChain,
                             }}
