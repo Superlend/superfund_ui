@@ -36,12 +36,12 @@ export default function ChainSelectionPage() {
         <div className="flex items-center justify-center gap-2 mb-6">
           <ImageWithDefault
             src={'/images/logos/superlend-rounded.svg'}
-            alt="Bluechip Stable SuperFund"
+            alt="SuperFund"
             width={40}
             height={40}
           />
           <HeadingText level="h3" weight="medium" className="text-gray-800">
-            Bluechip Stable SuperFund
+            SuperFund
           </HeadingText>
         </div>
 

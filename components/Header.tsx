@@ -143,7 +143,7 @@ const Header: React.FC = () => {
                 <nav className={NAV_BAR_STYLES}>
                     <Link
                         href={'https://www.superlend.xyz/'}
-                        target={(miniAppUser || isLandingPage) ? '_self' : '_blank'}
+                        target={miniAppUser ? '_self' : '_blank'}
                         className="relative md:w-[24px] md:w-fit p-0"
                     >
                         <img
