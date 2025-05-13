@@ -9,7 +9,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-import { BodyText } from "@/components/ui/typography"
+import { BodyText, HeadingText } from "@/components/ui/typography"
 import ImageWithDefault from "@/components/ImageWithDefault"
 import { Button } from "@/components/ui/button"
 import ClaimRewardsTxDialog from "@/components/dialogs/ClaimRewardsTx"
@@ -66,7 +66,7 @@ export default function ClaimRewards({
 
     return (
         <>
-            <Card className="w-full max-h-[300px]">
+            <Card className="w-full max-h-[250px]">
                 {hasUnclaimedRewards && !isLoadingRewards &&
                     <CardContent className="flex flex-col divide-y divide-gray-400 px-8 pt-5 pb-4">
                         {/* <ScrollArea
@@ -102,14 +102,25 @@ export default function ClaimRewards({
                 }
                 <CardFooter className="relative overflow-hidden rounded-4 md:rounded-6 p-0">
                     <ImageWithDefault
-                        src="/banners/claim-rewards-banner.png"
+                        src="/banners/claim-rewards-banner-desktop.png"
                         alt="Claim rewards"
                         width={800}
                         height={120}
-                        className="w-full h-full max-h-[120px] object-cover"
+                        className="w-full h-full max-h-[120px] object-cover hidden md:block"
                         priority={true}
                     />
-                    <motion.div className="absolute right-2 lg:right-10 z-[5]"
+                    <ImageWithDefault
+                        src="/banners/claim-rewards-banner-mobile.png"
+                        alt="Claim rewards"
+                        width={800}
+                        height={120}
+                        className="w-full h-full max-h-[200px] object-cover md:hidden"
+                        priority={true}
+                    />
+                    <h3 className="absolute text-2xl md:text-4xl max-w-[12ch] text-center uppercase top-5 md:top-1/2 left-1/2 -translate-x-1/2 md:-translate-y-1/2 text-accent-navy font-bold leading-0">
+                        {unclaimedRewardsData.length > 0 ? "Claim your rewards" : "No rewards to claim"}
+                    </h3>
+                    <motion.div className="absolute max-md:bottom-4 md:right-5 z-[5] max-md:w-full max-md:px-4"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.3, ease: 'easeOut' }}
@@ -118,7 +129,7 @@ export default function ClaimRewards({
                             onClick={() => setIsSelectTokenDialogOpen(true)}
                             size={screenWidth > 1024 ? 'lg' : 'md'}
                             variant="primary"
-                            className="uppercase bg-white shadow-lg hover:shadow-md active:shadow-sm hover:bg-gray-50 rounded-5 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200"
+                            className="uppercase max-md:w-full bg-white shadow-lg hover:shadow-md active:shadow-sm hover:bg-gray-50 rounded-5 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200"
                             disabled={!hasUnclaimedRewards}
                         >
                             <span className={`flex items-center gap-1 tracking-wide text-white ${!hasUnclaimedRewards ? 'px-5' : 'px-2 md:px-10'}`}>

@@ -10,7 +10,7 @@ import { formatUnits } from 'ethers/lib/utils'
 import { ExternalLink, ArrowUpRight, ArrowDownRight, CheckCircle2, Copy, Filter } from 'lucide-react'
 import { ChainId } from '@/types/chain'
 import Image from 'next/image'
-import { 
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -38,7 +38,7 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
   const { walletAddress, isWalletConnected } = useWalletConnection()
   const { selectedChain, chainDetails } = useChain()
   const [currentFilter, setCurrentFilter] = useState<FilterType>('all')
-  
+
   // Get protocol identifier from chain context if not provided
   const getProtocolIdentifier = () => {
     if (protocolIdentifier) return protocolIdentifier
@@ -48,7 +48,7 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
 
   // Use the custom hook instead of direct fetch and local state
   const protocolId = getProtocolIdentifier()
-  const { transactions, isLoading, startRefreshing } = useTransactionHistory({
+  const { data: { transactions }, isLoading, startRefreshing } = useTransactionHistory({
     protocolIdentifier: protocolId,
     chainId: selectedChain || 0,
     walletAddress: walletAddress || '',
@@ -83,11 +83,11 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
   // Group transactions by month and date
   const groupTransactionsByDate = () => {
     const groups: { [key: string]: Transaction[] } = {}
-    
+
     filteredTransactions.forEach(tx => {
       const date = new Date(parseInt(tx.blockTimestamp) * 1000)
       let dateKey = ''
-      
+
       if (isToday(date)) {
         dateKey = 'Today'
       } else if (isYesterday(date)) {
@@ -98,14 +98,14 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
       } else {
         dateKey = format(date, 'MMM dd, yyyy')
       }
-      
+
       if (!groups[dateKey]) {
         groups[dateKey] = []
       }
-      
+
       groups[dateKey].push(tx)
     })
-    
+
     return groups
   }
 
@@ -129,8 +129,8 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="text-xs h-8 px-3 w-full md:w-auto">
-                {currentFilter === 'all' ? 'All Transactions' : 
-                 currentFilter === 'deposit' ? 'Deposits Only' : 'Withdrawals Only'}
+                {currentFilter === 'all' ? 'All Transactions' :
+                  currentFilter === 'deposit' ? 'Deposits Only' : 'Withdrawals Only'}
                 <Filter className="h-3 w-3 ml-1.5" />
               </Button>
             </DropdownMenuTrigger>
@@ -162,9 +162,9 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
         ) : filteredTransactions.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <p className="text-sm">No {currentFilter} transactions found</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="mt-4"
               onClick={() => setCurrentFilter('all')}
             >
@@ -195,7 +195,7 @@ function TransactionItem({ transaction, expanded = false }: { transaction: Trans
   const date = new Date(parseInt(blockTimestamp) * 1000)
   const { selectedChain, chainDetails } = useChain()
   const [copied, setCopied] = useState(false)
-  
+
   // Format the asset amount (using 1e6 decimals as specified)
   const formattedAssets = parseFloat(formatUnits(assets, 6)).toFixed(4)
   const formattedShares = parseFloat(formatUnits(shares, 6)).toFixed(4)
@@ -225,10 +225,10 @@ function TransactionItem({ transaction, expanded = false }: { transaction: Trans
 
   // USDC logo for amount display
   const USDCIcon = (
-    <Image 
-      src="https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg" 
-      alt="USDC" 
-      width={16} 
+    <Image
+      src="https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg"
+      alt="USDC"
+      width={16}
       height={16}
       className="inline-block ml-1"
     />
@@ -252,7 +252,7 @@ function TransactionItem({ transaction, expanded = false }: { transaction: Trans
                 <CheckCircle2 className="h-2.5 w-2.5 ml-0.5 text-green-500" />
               </Badge>
             </div>
-            
+
             <div className="flex flex-col gap-y-1">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs text-muted-foreground">
@@ -264,9 +264,9 @@ function TransactionItem({ transaction, expanded = false }: { transaction: Trans
                   </Badge>
                 )}
               </div>
-              
+
               <div className="flex flex-wrap items-center gap-2 mt-1">
-                <button 
+                <button
                   onClick={copyTxHash}
                   className="text-xs text-orange-500 flex items-center"
                 >
@@ -277,9 +277,9 @@ function TransactionItem({ transaction, expanded = false }: { transaction: Trans
                     <Copy className="h-3 w-3 ml-0.5" />
                   )}
                 </button>
-                
-                <Link 
-                  href={`${getExplorerUrl()}${transactionHash}`} 
+
+                <Link
+                  href={`${getExplorerUrl()}${transactionHash}`}
                   target="_blank"
                   className="text-xs text-orange-500 hover:underline flex items-center"
                 >
@@ -290,7 +290,7 @@ function TransactionItem({ transaction, expanded = false }: { transaction: Trans
             </div>
           </div>
         </div>
-        
+
         <div className="flex flex-col items-end justify-center gap-1 mt-3 md:mt-0">
           {type === 'deposit' ? (
             <>
@@ -382,10 +382,10 @@ function EmptyTransactionsState() {
   return (
     <div className="text-center py-12 px-4">
       <div className="mb-4 text-muted-foreground">
-        <Image 
-          src="https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg" 
-          alt="USDC" 
-          width={60} 
+        <Image
+          src="https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg"
+          alt="USDC"
+          width={60}
           height={60}
           className="mx-auto opacity-50 mb-4"
         />

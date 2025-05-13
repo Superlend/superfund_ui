@@ -1,6 +1,6 @@
 'use client'
 
-import { getTransactionHistory, Transaction, TransactionHistoryParams } from '@/queries/transaction-history-api'
+import { getTransactionHistory, Transaction, TransactionHistoryParams, TransactionHistoryResponse } from '@/queries/transaction-history-api'
 import { useQuery } from '@tanstack/react-query'
 import { useState, useEffect, useRef } from 'react'
 
@@ -26,7 +26,7 @@ export default function useTransactionHistory({
 
   // Query setup with minimal options
   const { data, isLoading, isError, refetch } = useQuery<
-    { transactions: Transaction[] },
+    TransactionHistoryResponse,
     Error
   >({
     queryKey: ['transaction-history', protocolIdentifier, chainId, walletAddress, isRefetching],
@@ -53,7 +53,7 @@ export default function useTransactionHistory({
         return responseData;
       } catch (error) {
         console.error('Error fetching transaction history:', error);
-        return { transactions: [] };
+        return { transactions: [], capital: '0', interest_earned: '0' };
       }
     },
     staleTime: Infinity,
@@ -117,7 +117,7 @@ export default function useTransactionHistory({
   }, []);
 
   return {
-    transactions: data?.transactions || [],
+    data: data || { transactions: [], capital: '0', interest_earned: '0' },
     isLoading,
     isError,
     refetch,

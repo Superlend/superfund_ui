@@ -12,6 +12,8 @@ export interface Transaction {
 
 export interface TransactionHistoryResponse {
   transactions: Transaction[]
+  capital: string
+  interest_earned: string
 }
 
 export interface TransactionHistoryParams {

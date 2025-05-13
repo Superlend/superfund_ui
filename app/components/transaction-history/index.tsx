@@ -30,7 +30,7 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
   const { selectedChain, chainDetails } = useChain()
   const router = useRouter()
 
-  const { transactions, isLoading, startRefreshing } = useTransactionHistory({
+  const { data: { transactions }, isLoading, startRefreshing } = useTransactionHistory({
     protocolIdentifier,
     chainId: selectedChain || 0,
     walletAddress: walletAddress || '',

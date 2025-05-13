@@ -4,7 +4,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-    'group inline-flex items-center justify-center whitespace-nowrap rounded-3 font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:select-none disabled:opacity-50 transition-transform duration-150 [&.selected]:border-1 [&.selected]:border-secondary-500 [&.selected]:ring-2 md:[&.selected]:ring-1 [&.selected]:ring-secondary-100',
+    'group inline-flex items-center justify-center whitespace-nowrap rounded-3 px-2.5 md:px-3 py-2 font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:select-none disabled:opacity-50 transition-transform duration-150 [&.selected]:border-1 [&.selected]:border-secondary-500 [&.selected]:ring-2 md:[&.selected]:ring-1 [&.selected]:ring-secondary-100',
     {
         variants: {
             variant: {
@@ -24,12 +24,12 @@ const buttonVariants = cva(
                 link: 'text-secondary-500 hover:text-secondary-500/75 active:text-secondary-500/50 rounded-none',
             },
             size: {
-                sm: 'px-2 py-1 text-[11px]',
-                md: 'px-2 py-1 text-[12px]',
-                lg: 'px-2.5 md:px-3 py-2 text-[12px] sm:text-[14px]',
-                xl: 'px-2.5 md:px-3 py-2 text-[16px] sm:text-[18px]',
-                '2xl': 'px-2.5 md:px-3 py-2 text-[20px] sm:text-[22px]',
-                '3xl': 'px-2.5 md:px-3 py-2 text-[24px] sm:text-[26px]',
+                sm: 'text-[11px]',
+                md: 'text-[12px]',
+                lg: 'text-[12px] sm:text-[14px]',
+                xl: 'text-[16px] sm:text-[18px]',
+                '2xl': 'text-[20px] sm:text-[22px]',
+                '3xl': 'text-[24px] sm:text-[26px]',
                 icon: 'h-10 w-10',
             },
         },
