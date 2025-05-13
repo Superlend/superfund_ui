@@ -21,6 +21,8 @@ import { parseAbi } from 'viem'
 import REWARD_ABI from '@/data/abi/rewardsABI.json'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useRewardsHook } from '@/hooks/vault_hooks/useRewardHook'
+import { useAnalytics } from '@/context/amplitude-analytics-provider'
+import { useChain } from '@/context/chain-context'
 
 const VAULT_ABI = parseAbi([
     'function withdraw(uint256 _assets, address _receiver, address _owner) returns (uint256)',
@@ -43,6 +45,7 @@ const ClaimRewardsButton = ({
         data: hash,
         error,
     } = useWriteContract()
+    const { logEvent } = useAnalytics()
     const { claimRewardsTx, setClaimRewardsTx } = useTxContext() as TTxContext
     const txBtnStatus: Record<string, string> = {
         pending: 'Claiming...',
@@ -51,6 +54,7 @@ const ClaimRewardsButton = ({
         error: 'Close',
         default: 'Start claiming',
     }
+    const { selectedChain } = useChain()
     const { isLoading: isConfirming, isSuccess: isConfirmed } =
         useWaitForTransactionReceipt({
             hash,
@@ -67,6 +71,13 @@ const ClaimRewardsButton = ({
                 status: 'view',
                 hash,
             }))
+            refetchClaimRewardsData()
+            logEvent('claim_rewards_successful', {
+                amount: rewardDetails.reward.claimable,
+                chain: selectedChain,
+                token: rewardDetails.reward.token.address,
+                walletAddress: walletAddress
+            })
         }
 
         if (hash && isConfirmed) {
@@ -77,6 +88,12 @@ const ClaimRewardsButton = ({
                 isConfirmed: isConfirmed,
             }))
             refetchClaimRewardsData()
+            logEvent('claim_rewards_successful', {
+                amount: rewardDetails.reward.claimable,
+                chain: selectedChain,
+                token: rewardDetails.reward.token.address,
+                walletAddress: walletAddress
+            })
         }
     }, [hash, isConfirmed])
 

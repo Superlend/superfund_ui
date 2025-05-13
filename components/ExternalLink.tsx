@@ -7,12 +7,14 @@ export default function ExternalLink({
     className,
     variant = 'secondary',
     iconSize = 16,
+    onClick,
 }: {
     href: string
     children?: React.ReactNode
     className?: string
     variant?: 'primary' | 'secondary' | 'ghost'
     iconSize?: number
+    onClick?: () => void
 }) {
     const getColor = () => {
         if (variant === 'primary') return 'text-primary'
@@ -32,6 +34,7 @@ export default function ExternalLink({
             target="_blank"
             rel="noopener noreferrer"
             className={`w-fit shrink-0 inline-flex items-center gap-1 ${getColor()} leading-[0.5] ${className || ''}`}
+            onClick={onClick ?? undefined}
         >
             {children && children}
             <ArrowRightIcon

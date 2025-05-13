@@ -15,6 +15,7 @@ import { useRouter, notFound } from 'next/navigation'
 import { ChainProvider, useChain } from '@/context/chain-context'
 import { ChainId } from '@/types/chain'
 import TransactionHistory from '@/app/components/transaction-history'
+import { useAnalytics } from '@/context/amplitude-analytics-provider'
 
 interface ChainPageProps {
   params: {
@@ -27,6 +28,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
   const { isWalletConnected, isConnectingWallet, walletAddress } = useWalletConnection()
   const router = useRouter()
   const initialized = useRef(false)
+  const { logEvent } = useAnalytics()
 
   // Validate chain parameter only once
   useEffect(() => {
@@ -69,6 +71,10 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
 
   const handleTabChange = (tab: string) => {
     setSelectedTab(tab)
+    logEvent('selected_tab', {
+      tab: tab,
+      chain: params.chain
+    })
   }
 
   if (!isClient) {

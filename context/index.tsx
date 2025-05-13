@@ -9,6 +9,7 @@ import { http } from 'wagmi'
 import { AuthProvider } from './auth-provider'
 import FrameSDK from '@farcaster/frame-sdk'
 import { farcasterFrame } from '@farcaster/frame-wagmi-connector'
+import { AnalyticsProvider } from './analytics-provider'
 
 // Set up queryClient
 const queryClient = new QueryClient()
@@ -79,36 +80,38 @@ function ContextProvider({
     }, [isClient])
 
     return (
-        <PrivyProvider
-            appId={PRIVY_APP_ID}
-            config={{
-                loginMethods: ['wallet', context && 'farcaster'],
-                appearance: {
-                    theme: 'light',
-                    accentColor: '#676FFF',
-                    logo: 'https://app.superlend.xyz/images/logos/superlend-logo.webp',
-                    landingHeader: 'Connect Wallet',
-                    loginMessage: 'Select wallet to continue',
-                    showWalletLoginFirst: true,
-                    walletList: [
-                        'metamask',
-                        'coinbase_wallet',
-                        'okx_wallet',
-                        'rainbow',
-                        'rabby_wallet',
-                        'phantom',
-                        'wallet_connect',
-                    ],
-                },
-                supportedChains: [base, sonic],
-            }}
-        >
-            <QueryClientProvider client={queryClient}>
-                <WagmiProvider config={localConfig}>
-                    <AuthProvider>{children}</AuthProvider>
-                </WagmiProvider>
-            </QueryClientProvider>
-        </PrivyProvider>
+        <AnalyticsProvider>
+            <PrivyProvider
+                appId={PRIVY_APP_ID}
+                config={{
+                    loginMethods: ['wallet', context && 'farcaster'],
+                    appearance: {
+                        theme: 'light',
+                        accentColor: '#676FFF',
+                        logo: 'https://app.superlend.xyz/images/logos/superlend-logo.webp',
+                        landingHeader: 'Connect Wallet',
+                        loginMessage: 'Select wallet to continue',
+                        showWalletLoginFirst: true,
+                        walletList: [
+                            'metamask',
+                            'coinbase_wallet',
+                            'okx_wallet',
+                            'rainbow',
+                            'rabby_wallet',
+                            'phantom',
+                            'wallet_connect',
+                        ],
+                    },
+                    supportedChains: [base, sonic],
+                }}
+            >
+                <QueryClientProvider client={queryClient}>
+                    <WagmiProvider config={localConfig}>
+                        <AuthProvider>{children}</AuthProvider>
+                    </WagmiProvider>
+                </QueryClientProvider>
+            </PrivyProvider>
+        </AnalyticsProvider>
     )
 }
 

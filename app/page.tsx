@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/accordion"
 import Container from '@/components/Container'
 import sdk from '@farcaster/frame-sdk'
+import { useAnalytics } from '@/context/amplitude-analytics-provider'
 
 // Lazy load components
 const BenchmarkYieldTable = dynamic(
@@ -115,6 +116,47 @@ export default function HomePage() {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const coinControls = useAnimation()
     const [miniAppUser, setMiniAppUser] = useState<any>(null)
+    const { logEvent } = useAnalytics()
+
+    const logXLinkClick = () => {
+        logEvent('clicked_superlend_x_link', {
+            section: 'footer',
+            title: "x",
+            url: "https://x.com/SuperlendHQ"
+        })
+    }
+
+    const logDiscordLinkClick = () => {
+        logEvent('clicked_superlend_discord_link', {
+            section: 'footer',
+            title: "Discord",
+            url: "https://discord.com/invite/superlend"
+        })
+    }
+
+    const logGitHubLinkClick = () => {
+        logEvent('clicked_superlend_github_link', {
+            section: 'footer',
+            title: "GitHub",
+            url: "https://github.com/Superlend"
+        })
+    }
+
+    const logDocsLinkClick = () => {
+        logEvent('clicked_superlend_docs_link', {
+            section: 'footer',
+            title: "Docs",
+            url: "https://docs.superlend.xyz/superlend-vaults/superfunds"
+        })
+    }
+
+    const logMainLaningPageLinkClick = () => {
+        logEvent('clicked_superlend_main_landing_page_link', {
+            section: 'footer',
+            title: "SuperFund by Superlend",
+            url: "https://superlend.xyz"
+        })
+    }
 
     // Track mouse position for parallax effect
     const handleMouseMove = (e: React.MouseEvent) => {
@@ -333,21 +375,28 @@ export default function HomePage() {
                             </div>
                         </motion.div>
                         <motion.div variants={childVariants} className="flex flex-col gap-6 md:gap-4 justify-center mb-12">
-                            <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base">
+                            <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base" onClick={() => logEvent('clicked_launch_superfund_base_app', {
+                                section: 'hero',
+                                title: "Maximize Your USDC Returns with SuperFund"
+                            })}>
                                 <Button size="lg" variant="secondary" className="px-8 py-3 rounded-4 text-lg text-primary group">
                                     <span>Launch SuperFund Base App</span>
                                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                 </Button>
                             </Link>
-                            <Button
-                                variant="outline"
-                                size="lg"
-                                className="px-8 py-3 text-lg text-gray-200 border-gray-200 rounded-4"
-                                onClick={() => window.open('/waitlist', miniAppUser ? '_self' : '_blank')}
-                            >
-                                <span>Join SuperFund Sonic Waitlist</span>
-                                <Play className="ml-2 w-4 h-4 fill-gray-200" />
-                            </Button>
+                            <Link target={miniAppUser ? '_self' : '_blank'} href="/waitlist" onClick={() => logEvent('clicked_join_superfund_sonic_waitlist', {
+                                section: 'hero',
+                                title: "Maximize Your USDC Returns with SuperFund"
+                            })}>
+                                <Button
+                                    variant="outline"
+                                    size="lg"
+                                    className="px-8 py-3 text-lg text-gray-200 border-gray-200 rounded-4"
+                                >
+                                    <span>Join SuperFund Sonic Waitlist</span>
+                                    <Play className="ml-2 w-4 h-4 fill-gray-200" />
+                                </Button>
+                            </Link>
                         </motion.div>
                         {/* <motion.div variants={statsCounterVariants} className="bg-white/60 backdrop-blur-sm px-8 py-3 rounded-full shadow-sm">
                                 <div className="flex items-center gap-3">
@@ -789,7 +838,7 @@ export default function HomePage() {
                                         </div>
                                         <div>
                                             <HeadingText level="h3" weight="semibold">
-                                                Base Network
+                                                Base
                                             </HeadingText>
                                             <div className="flex items-center mt-1">
                                                 <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>
@@ -837,12 +886,15 @@ export default function HomePage() {
                                         </div>
                                     </div>
                                     {/* CTA Button */}
-                                    <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base">
+                                    <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base" onClick={() => logEvent('clicked_launch_superfund_base_app', {
+                                        section: 'base_network_card',
+                                        title: "Available on 2 fastest growing chains"
+                                    })}>
                                         <Button
                                             className="w-full h-12 group relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-md"
                                         >
                                             <span className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-                                            <span className="relative z-10 group-hover:text-white">Select Base Network</span>
+                                            <span className="relative z-10 group-hover:text-white">Launch SuperFund Base App</span>
                                             <ArrowRight className="relative z-10 ml-2 w-4 h-4 group-hover:translate-x-1 group-hover:text-white transition-all duration-200" />
                                         </Button>
                                     </Link>
@@ -883,12 +935,12 @@ export default function HomePage() {
                                         </div>
                                         <div>
                                             <HeadingText level="h3" weight="semibold">
-                                                Sonic Network
+                                                Sonic
                                             </HeadingText>
                                             <div className="flex items-center mt-1">
-                                                <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-                                                <BodyText level="body2" className="text-green-700">
-                                                    Live
+                                                <span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-2"></span>
+                                                <BodyText level="body2" className="text-blue-700">
+                                                    Coming soon
                                                 </BodyText>
                                             </div>
                                         </div>
@@ -898,7 +950,7 @@ export default function HomePage() {
                                         <span className="text-xl font-bold text-blue-600">Coming soon</span>
                                     </div>
                                     {/* Key Benefits */}
-                                    <div className="space-y-4 mb-8">
+                                    <div className="space-y-4 mb-12">
                                         <div className="flex items-start">
                                             <div className="mr-3 mt-1 text-blue-500">
                                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -931,7 +983,10 @@ export default function HomePage() {
                                         </div>
                                     </div>
                                     {/* CTA Button */}
-                                    <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/sonic">
+                                    <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/sonic" onClick={() => logEvent('clicked_join_superfund_sonic_waitlist', {
+                                        section: 'sonic_network_card',
+                                        title: "Available on 2 fastest growing chains"
+                                    })}>
                                         <Button
                                             variant="outline"
                                             className="w-full h-12 bg-white border-indigo-200 text-indigo-800 group relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-md hover:border-indigo-300"
@@ -992,7 +1047,7 @@ export default function HomePage() {
                                         Reduce Risk
                                     </BodyText>
                                     <BodyText level="body3" className="text-gray-600">
-                                        Mitigate network-specific risks through diversification
+                                        Mitigate protocol-specific risks through diversification
                                     </BodyText>
                                 </motion.div>
                                 <motion.div
@@ -1135,7 +1190,10 @@ export default function HomePage() {
                                 variants={cardVariantsLeft}
                                 className="group"
                             >
-                                <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base" className="block h-full">
+                                <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base" className="block h-full" onClick={() => logEvent('clicked_launch_superfund_base_app', {
+                                    section: 'base_network_card',
+                                    title: "Ready to Maximize Your USDC Returns?"
+                                })}>
                                     <div className="h-full bg-gradient-to-br from-blue-50/50 to-indigo-50/50 rounded-2xl backdrop-blur-lg p-8 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.02] flex flex-col justify-between">
                                         <div>
                                             <div className="flex items-center gap-4 mb-6">
@@ -1149,7 +1207,7 @@ export default function HomePage() {
                                                     />
                                                 </div>
                                                 <HeadingText level="h3" weight="semibold" className="text-gray-800">
-                                                    Base Network
+                                                    Base
                                                 </HeadingText>
                                                 <div className="inline-block bg-white px-3 py-1 rounded-full shadow-sm">
                                                     <span className="text-xs font-bold text-indigo-600">Up to 8% APY</span>
@@ -1173,7 +1231,10 @@ export default function HomePage() {
                                 variants={cardVariantsRight}
                                 className="group"
                             >
-                                <Link target={miniAppUser ? '_self' : '_blank'} href="/waitlist" className="block h-full">
+                                <Link target={miniAppUser ? '_self' : '_blank'} href="/waitlist" className="block h-full" onClick={() => logEvent('clicked_join_superfund_sonic_waitlist', {
+                                    section: 'sonic_network_card',
+                                    title: "Ready to Maximize Your USDC Returns?"
+                                })}>
                                     <div className="h-full bg-gradient-to-br from-blue-50/50 to-blue-100/50 rounded-2xl backdrop-blur-lg p-8 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.02] flex flex-col justify-between">
                                         <div>
                                             <div className="flex items-center gap-4 mb-6">
@@ -1187,7 +1248,7 @@ export default function HomePage() {
                                                     />
                                                 </div>
                                                 <HeadingText level="h3" weight="semibold" className="text-gray-800">
-                                                    Sonic Network
+                                                    Sonic
                                                 </HeadingText>
                                                 <div className="inline-block bg-white px-3 py-1 rounded-full shadow-sm shrink-0">
                                                     <span className="text-xs font-bold text-blue-600">Coming soon</span>
@@ -1227,22 +1288,32 @@ export default function HomePage() {
                                         SuperFund
                                     </HeadingText>
                                     <BodyText level="body3" weight="medium" className="inline-block text-gray-600">
-                                        by <Link href="https://superlend.xyz" target="_blank" className="inline-block w-fit text-primary hover:underline hover:text-primary/80 transition-colors">
+                                        by <Link href="https://superlend.xyz" target="_blank" className="inline-block w-fit text-primary hover:underline hover:text-primary/80 transition-colors"
+                                            onClick={logMainLaningPageLinkClick}
+                                        >
                                             Superlend
                                         </Link>
                                     </BodyText>
                                 </div>
                             </div>
                             <BodyText level="body2" className="text-gray-600 mb-6">
-                                Maximized returns through optimized yield farming across multiple protocols.
+                                Earn smarter with SuperFund, an automated DeFi fund that allocates USDC across Aave, Morpho, Euler & more for optimized returns.
                             </BodyText>
                             <BodyText level="body2" className="text-gray-600 mb-6">
-                                To Lend, Borrow, and Earn across 150+ DeFi markets, visit <Link href="https://app.superlend.xyz" target="_blank" className="inline-block w-fit text-primary hover:underline hover:text-primary/80 transition-colors font-medium">
+                                To Lend, Borrow, and Earn across 350+ DeFi markets, visit <Link href="https://app.superlend.xyz" target="_blank" className="inline-block w-fit text-primary hover:underline hover:text-primary/80 transition-colors font-medium"
+                                    onClick={() => logEvent('clicked_superlend_app_link', {
+                                        section: 'footer',
+                                        title: "Superlend",
+                                        url: "https://app.superlend.xyz"
+                                    })}
+                                >
                                     Superlend
                                 </Link>
                             </BodyText>
                             <div className="flex gap-4">
-                                <Link href="https://x.com/SuperlendHQ" target="_blank" aria-label="X (Twitter)">
+                                <Link href="https://x.com/SuperlendHQ" target="_blank" aria-label="X (Twitter)"
+                                    onClick={logXLinkClick}
+                                >
                                     <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
                                         {/* X (formerly Twitter) logo */}
                                         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" className="text-gray-700">
@@ -1250,7 +1321,7 @@ export default function HomePage() {
                                         </svg>
                                     </div>
                                 </Link>
-                                <Link href="https://discord.com/invite/superlend" target="_blank" aria-label="Discord">
+                                <Link href="https://discord.com/invite/superlend" target="_blank" aria-label="Discord" onClick={logDiscordLinkClick}>
                                     <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
                                         {/* Discord logo */}
                                         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" className="text-gray-700">
@@ -1258,7 +1329,7 @@ export default function HomePage() {
                                         </svg>
                                     </div>
                                 </Link>
-                                <Link href="https://github.com/Superlend" target="_blank" aria-label="GitHub">
+                                <Link href="https://github.com/Superlend" target="_blank" aria-label="GitHub" onClick={logGitHubLinkClick}>
                                     <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
                                         <Github className="w-5 h-5 text-gray-700" />
                                     </div>
@@ -1273,18 +1344,13 @@ export default function HomePage() {
                             </HeadingText>
                             <ul className="space-y-3">
                                 <li>
-                                    <Link href="https://docs.superlend.xyz" target="_blank" className="text-gray-600 hover:text-primary transition-colors">
+                                    <Link href="https://docs.superlend.xyz/superlend-vaults/superfunds" target="_blank" className="text-gray-600 hover:text-primary transition-colors" onClick={logDocsLinkClick}>
                                         Documentation
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link href="https://github.com/Superlend" target="_blank" className="text-gray-600 hover:text-primary transition-colors">
+                                    <Link href="https://github.com/Superlend/superfund-strategies-public" target="_blank" className="text-gray-600 hover:text-primary transition-colors" onClick={logGitHubLinkClick}>
                                         GitHub
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link href="/waitlist" target="_blank" className="text-gray-600 hover:text-primary transition-colors">
-                                        Join Waitlist
                                     </Link>
                                 </li>
                             </ul>
@@ -1297,13 +1363,17 @@ export default function HomePage() {
                             </HeadingText>
                             <ul className="space-y-3">
                                 <li>
-                                    <Link href="https://discord.com/invite/superlend" target="_blank" className="text-gray-600 hover:text-primary transition-colors">
+                                    <Link href="https://discord.com/invite/superlend" target="_blank" className="text-gray-600 hover:text-primary transition-colors"
+                                        onClick={logDiscordLinkClick}
+                                    >
                                         Discord
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link href="https://x.com/SuperlendHQ" target="_blank" className="text-gray-600 hover:text-primary transition-colors">
-                                        Twitter
+                                    <Link href="https://x.com/SuperlendHQ" target="_blank" className="text-gray-600 hover:text-primary transition-colors"
+                                        onClick={logXLinkClick}
+                                    >
+                                        X (Twitter)
                                     </Link>
                                 </li>
                                 {/* <li>

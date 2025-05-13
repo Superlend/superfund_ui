@@ -14,6 +14,7 @@ import Link from 'next/link'
 import { Badge } from './ui/badge'
 import AccessDialog from './AccessDialog'
 import sdk from '@farcaster/frame-sdk'
+import { useAnalytics } from '@/context/amplitude-analytics-provider'
 
 type TTab = {
     id: number
@@ -43,6 +44,22 @@ const Header: React.FC = () => {
     const isLandingPage = pathname === '/'
     const [scrolled, setScrolled] = useState(false)
     const [miniAppUser, setMiniAppUser] = useState<any>(null)
+    const { logEvent } = useAnalytics()
+
+    const logLogoClick = () => {
+        logEvent('clicked_superlend_logo', {
+            section: 'header_nav',
+            url: !isLandingPage ? 'https://funds.superlend.xyz' : 'https://www.superlend.xyz'
+        })
+    }
+
+    const logLaunchAppBtnClick = () => {
+        logEvent('clicked_superlend_launch_app_btn', {
+            section: 'header_nav',
+            title: "Launch App",
+            url: "https://funds.superlend.xyz/super-fund/base"
+        })
+    }
 
     useEffect(() => {
         setActiveTab(activeTabInitialValue(pathname))
@@ -142,9 +159,10 @@ const Header: React.FC = () => {
             <header className={HEADER_STYLES}>
                 <nav className={NAV_BAR_STYLES}>
                     <Link
-                        href={'https://www.superlend.xyz/'}
-                        target={(miniAppUser || isLandingPage) ? '_self' : '_blank'}
+                        href={isLandingPage ? 'https://www.superlend.xyz' : '/'}
+                        target={miniAppUser ? '_self' : '_blank'}
                         className="relative md:w-[24px] md:w-fit p-0"
+                        onClick={logLogoClick}
                     >
                         <img
                             loading="lazy"
@@ -186,7 +204,7 @@ const Header: React.FC = () => {
                     <div className="flex items-center gap-[12px]">
                         {!isHomePage && <ConnectWalletButton />}
                         {isLandingPage && (
-                            <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base">
+                            <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base" onClick={logLaunchAppBtnClick}>
                                 <Button
                                     size="lg"
                                     variant={isLandingPage && !scrolled ? 'secondary' : 'primary'}

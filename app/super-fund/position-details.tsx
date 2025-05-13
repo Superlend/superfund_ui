@@ -7,17 +7,20 @@ import DepositHistoryChart from '@/components/deposit-history-chart'
 import ClaimRewards from "./claim-rewards"
 import { useWalletConnection } from "@/hooks/useWalletConnection"
 import DailyEarningsHistoryChart from "@/components/daily-earnings-history-chart"
-import { BodyText } from "@/components/ui/typography"
+import { BodyText, HeadingText } from "@/components/ui/typography"
 import ConnectWalletButton from "@/components/ConnectWalletButton"
 import { useRewardsHook } from "@/hooks/vault_hooks/useRewardHook"
 import useGetDailyEarningsHistory from "@/hooks/useGetDailyEarningsHistory"
 import { VAULT_ADDRESS, VAULT_ADDRESS_MAP } from "@/lib/constants"
-import { getStartTimestamp } from "@/lib/utils"
+import { abbreviateNumber, getStartTimestamp } from "@/lib/utils"
 import { TAddress } from "@/types"
 import { useTxContext } from "@/context/super-vault-tx-provider"
 import { TTxContext } from "@/context/super-vault-tx-provider"
 import { useChain } from "@/context/chain-context"
 import { ChainId } from "@/types/chain"
+import useTransactionHistory from "@/hooks/useTransactionHistory"
+import { Card, CardContent } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const variants = {
     hidden: { opacity: 0, y: 30 },
@@ -94,7 +97,18 @@ function NoActivePositionUI({
 
 function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddress }) {
     const { claimRewardsTx } = useTxContext() as TTxContext
-    const { selectedChain } = useChain()
+    const { selectedChain, chainDetails } = useChain()
+    const getProtocolIdentifier = () => {
+        if (!selectedChain) return ''
+        return chainDetails[selectedChain as keyof typeof chainDetails]?.contractAddress || ''
+    }
+    const protocolId = getProtocolIdentifier()
+    const { data: { capital, interest_earned }, isLoading: isLoadingPositionDetails } = useTransactionHistory({
+        protocolIdentifier: protocolId,
+        chainId: selectedChain || 0,
+        walletAddress: walletAddress || '',
+        refetchOnTransaction: true
+    })
     const [refetchClaimRewards, setrefetchClaimRewards] = useState(false)
     // Claim Rewards
     const { formattedClaimData: rewardsData, isLoading: isLoadingRewards, isError: isErrorRewards, refetchClaimRewardsData } = useRewardsHook({
@@ -137,6 +151,21 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
             transition={transition}
             className="flex flex-col gap-[40px]"
         >
+            <Card>
+                <CardContent className="p-4 max-md:px-2 grid grid-cols-3 place-content-center gap-4">
+                    <div className="flex flex-col items-start w-fit gap-1 m-auto">
+                        <BodyText level="body2" weight="medium" className="text-gray-600">Capital</BodyText>
+                        {!isLoadingPositionDetails && <HeadingText level="h3" weight="medium" className="text-gray-800">${abbreviateNumber(Number(capital ?? 0))}</HeadingText>}
+                        {isLoadingPositionDetails && <Skeleton className="h-10 w-16 rounded-4" />}
+                    </div>
+                    <div className="w-[1.5px] h-4 bg-secondary-100/50 rounded-full m-auto"></div>
+                    <div className="flex flex-col items-start w-fit gap-1 m-auto">
+                        <BodyText level="body2" weight="medium" className="text-gray-600">Interest Earned</BodyText>
+                        {!isLoadingPositionDetails && <HeadingText level="h3" weight="medium" className="text-gray-800">${abbreviateNumber(Number(interest_earned ?? 0))}</HeadingText>}
+                        {isLoadingPositionDetails && <Skeleton className="h-10 w-16 rounded-4" />}
+                    </div>
+                </CardContent>
+            </Card>
             {(selectedChain !== ChainId.Sonic) &&
                 <ClaimRewards
                     rewardsData={rewardsData}

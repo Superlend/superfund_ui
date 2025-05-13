@@ -28,6 +28,7 @@ import { USDC_ADDRESS_MAP, USDC_DECIMALS, VAULT_ADDRESS_MAP } from '@/lib/consta
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { parseAbi } from 'viem'
 import { useChain } from '@/context/chain-context'
+import { useAnalytics } from '@/context/amplitude-analytics-provider'
 
 interface IDepositButtonProps {
     disabled: boolean
@@ -63,6 +64,7 @@ const DepositButton = ({
         error,
     } = useWriteContract()
     const { selectedChain } = useChain()
+    const { logEvent } = useAnalytics()
 
     const { isLoading: isConfirming, isSuccess: isConfirmed } =
         useWaitForTransactionReceipt({
@@ -138,6 +140,13 @@ const DepositButton = ({
                         errorMessage: '',
                     }))
 
+                    logEvent('deposit_successful', {
+                        amount: amount,
+                        chain: selectedChain,
+                        token: underlyingAssetAdress,
+                        walletAddress: walletAddress
+                    })
+
                     // Dispatch custom event to notify transaction is complete
                     if (typeof window !== 'undefined') {
                         console.log('Dispatching transaction-complete event');
@@ -186,6 +195,13 @@ const DepositButton = ({
                 status: 'deposit',
                 allowanceBN: amountBN, // Set the allowance to the amount we just approved
             }))
+
+            logEvent('approve_successful', {
+                amount: amount,
+                chain: selectedChain,
+                token: underlyingAssetAdress,
+                walletAddress: walletAddress,
+            })
         }
     }, [isPending, isConfirming, isConfirmed])
 

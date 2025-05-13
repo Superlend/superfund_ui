@@ -24,7 +24,7 @@ export default function PageHeader() {
                 <div className="flex flex-col sm:flex-row items-start gap-2">
                     <ImageWithDefault
                         src={'/images/logos/superlend-rounded.svg'}
-                        alt="Bluechip Stable SuperFund"
+                        alt="SuperFund"
                         width={28}
                         height={28}
                         className="mt-0.5 sm:mt-0"
@@ -32,7 +32,7 @@ export default function PageHeader() {
                     <div className="w-full">
                         <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                             <HeadingText level="h4" weight="medium" className="mr-1 text-gray-800">
-                                Bluechip Stable SuperFund
+                                USDC SuperFund
                             </HeadingText>
                             <div className="flex items-center gap-2 flex-wrap">
                                 <Badge variant="green" size="md">

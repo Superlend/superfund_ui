@@ -16,36 +16,38 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import SuperFundSonicDialog from './dialogs/SuperFundSonicDialog'
 import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
+import { useAnalytics } from '@/context/amplitude-analytics-provider'
 
 // Create a wrapper component to conditionally use the useUserBalance hook
-function PortfolioChecker({ 
-    walletAddress, 
-    onPortfolioCheck 
-}: { 
-    walletAddress: `0x${string}`, 
-    onPortfolioCheck: (value: string) => void 
+function PortfolioChecker({
+    walletAddress,
+    onPortfolioCheck
+}: {
+    walletAddress: `0x${string}`,
+    onPortfolioCheck: (value: string) => void
 }) {
     const { userMaxWithdrawAmount, isLoading } = useUserBalance(walletAddress);
-    
+
     useEffect(() => {
         if (!isLoading && userMaxWithdrawAmount) {
             try {
                 const portfolioValue = parseFloat(userMaxWithdrawAmount);
-                
+
                 // Check if portfolio is greater than $1000K ($1M)
-                if (!isNaN(portfolioValue) && portfolioValue > 1000) 
+                if (!isNaN(portfolioValue) && portfolioValue > 1000)
                     onPortfolioCheck(userMaxWithdrawAmount);
             } catch (error) {
                 console.error('Error parsing portfolio value:', error);
             }
         }
     }, [isLoading, userMaxWithdrawAmount, onPortfolioCheck]);
-    
+
     return null; // This is a non-visual component
 }
 
 export default function ConnectWalletButton() {
     const { isClient } = useIsClient()
+    const { logEvent } = useAnalytics()
     const { walletAddress, isConnectingWallet } = useWalletConnection()
     const { ready, authenticated, login, logout, user } = usePrivy()
     const router = useRouter()
@@ -70,6 +72,15 @@ export default function ConnectWalletButton() {
         }
     }, [portfolioValue]);
 
+    // Once user connects wallet, log event
+    useEffect(() => {
+        if (walletAddress) {
+            logEvent('connected_wallet', {
+                walletAddress: walletAddress
+            })
+        }
+    }, [walletAddress])
+
     // Handle logout with redirection
     const handleLogout = async () => {
         await logout()
@@ -85,7 +96,7 @@ export default function ConnectWalletButton() {
         <>
             {/* Conditionally render the PortfolioChecker only when wallet is connected */}
             {walletAddress && (
-                <PortfolioChecker 
+                <PortfolioChecker
                     walletAddress={walletAddress as `0x${string}`}
                     onPortfolioCheck={handlePortfolioCheck}
                 />
@@ -93,7 +104,7 @@ export default function ConnectWalletButton() {
 
             {/* Superfund Sonic Dialog */}
             {walletAddress && (
-                <SuperFundSonicDialog 
+                <SuperFundSonicDialog
                     open={showSonicDialog}
                     setOpen={setShowSonicDialog}
                     walletAddress={walletAddress as `0x${string}`}

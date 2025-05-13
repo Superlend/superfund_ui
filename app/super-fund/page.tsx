@@ -36,12 +36,12 @@ export default function ChainSelectionPage() {
         <div className="flex items-center justify-center gap-2 mb-6">
           <ImageWithDefault
             src={'/images/logos/superlend-rounded.svg'}
-            alt="Bluechip Stable SuperFund"
+            alt="SuperFund"
             width={40}
             height={40}
           />
           <HeadingText level="h3" weight="medium" className="text-gray-800">
-            Bluechip Stable SuperFund
+            SuperFund
           </HeadingText>
         </div>
 
@@ -63,7 +63,7 @@ export default function ChainSelectionPage() {
                   height={24}
                   className="rounded-full"
                 />
-                <span>Sonic Network</span>
+                <span>Sonic</span>
               </div>
             </Button>
           </Link>
@@ -81,7 +81,7 @@ export default function ChainSelectionPage() {
                   height={24}
                   className="rounded-full"
                 />
-                <span>Base Network</span>
+                <span>Base</span>
               </div>
             </Button>
           </Link>
