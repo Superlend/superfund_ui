@@ -68,11 +68,11 @@ export default function SubscribeWithEmail() {
 
     return (
         <div className="w-full max-w-sm">
-            <HeadingText level="h5" weight="semibold" className="text-gray-900 mb-2">
+            <HeadingText level="h5" weight="semibold" className="text-gray-900">
                 Stay up to date
             </HeadingText>
             <BodyText level="body3" className="text-gray-600 mb-4">
-                Get latest updates on Superlend and SuperFund
+                Get latest updates on SuperFund
             </BodyText>
 
             {submissionStatus === 'idle' && (

@@ -16,13 +16,10 @@ import {
     TTxContext,
     useTxContext,
 } from '@/context/super-vault-tx-provider'
-import { ChainId } from '@/types/chain'
 import {
     checkAllowance,
     useUserBalance,
 } from '@/hooks/vault_hooks/useUserBalanceHook'
-import { usePrivy } from '@privy-io/react-auth'
-import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import ConnectWalletButton from '@/components/ConnectWalletButton'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import SuperVaultTxDialog from '@/components/dialogs/SuperVaultTx'
@@ -50,7 +47,6 @@ export default function DepositAndWithdrawAssets() {
 
     const isDepositPositionType = positionType === 'deposit'
     const { selectedChain } = useChain()
-    const { user } = usePrivy()
     const { walletAddress } = useWalletConnection()
 
     const {
@@ -214,15 +210,10 @@ export default function DepositAndWithdrawAssets() {
                             ) : (
                                 abbreviateNumber(
                                     Number(
-                                        getLowestDisplayValue(
-                                            Number(
-                                                isDepositPositionType
-                                                    ? (balance ?? 0)
-                                                    : (userMaxWithdrawAmount ??
-                                                        0)
-                                            ),
-                                            2
-                                        )
+                                        isDepositPositionType
+                                            ? (balance ?? 0)
+                                            : (userMaxWithdrawAmount ??
+                                                0)
                                     ),
                                     2
                                 )

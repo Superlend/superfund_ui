@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { TPositionType } from '@/types'
 import {
     ArrowRightIcon,
+    ArrowUpRightIcon,
     Check,
     LoaderCircle,
     X,
@@ -49,6 +50,8 @@ import sdk from '@farcaster/frame-sdk'
 import Image from 'next/image'
 import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
 import { VAULT_ADDRESS_MAP } from '@/lib/constants'
+import SubscribeWithEmail from '../subscribe-with-email'
+import { motion } from 'framer-motion'
 
 export default function SuperVaultTxDialog({
     disabled,
@@ -79,6 +82,7 @@ export default function SuperVaultTxDialog({
     const isDesktop = screenWidth > 768
     const isDepositPositionType = positionType === 'deposit'
     const [miniappUser, setMiniAppUser] = useState<any>(null)
+    // const [showSubscription, setShowSubscription] = useState(false)
     const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
         vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
         chain_id: selectedChain
@@ -213,7 +217,7 @@ export default function SuperVaultTxDialog({
             onClick={() => handleOpenChange(false)}
             className="h-6 w-6 flex items-center justify-center absolute right-6 top-[1.6rem] rounded-full opacity-70 bg-white ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground p-0"
         >
-            <X strokeWidth={2.5} className="h-4 w-4 text-black" />
+            <X strokeWidth={2.5} className="h-4 w-4 text-black shrink-0" />
             <span className="sr-only">Close</span>
         </Button>
     ) : null
@@ -834,6 +838,33 @@ export default function SuperVaultTxDialog({
                                 )}
                         </div>
                     )}
+                {
+                    isShowBlock({
+                        deposit: depositTx.status === 'view' && depositTx.isConfirmed && !!depositTx.hash,
+                        withdraw: false,
+                    }) && (
+                        <div className="flex flex-col items-center gap-3 my-1">
+                            {/* {!showSubscription &&
+                                <Button
+                                    variant="secondaryOutline"
+                                    onClick={() => setShowSubscription(true)}
+                                    className="w-full py-3 uppercase"
+                                >
+                                    Stay updated on SuperFund
+                                    <ArrowRightIcon className="w-4 h-4 stroke-secondary-500 ml-2" />
+                                </Button>
+                            } */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, ease: 'easeOut' }}
+                                className="bg-gray-200/50 bg-opacity-50 backdrop-blur-sm rounded-5 p-4"
+                            >
+                                <SubscribeWithEmail />
+                            </motion.div>
+                        </div>
+                    )
+                }
                 {/* Block 4 */}
                 {miniappUser &&
                     ((withdrawTx.status === 'view' && withdrawTx.isConfirmed) ||

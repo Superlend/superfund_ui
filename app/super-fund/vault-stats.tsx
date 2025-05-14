@@ -20,7 +20,7 @@ import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import { useRewardsHook } from '@/hooks/vault_hooks/vaultHook'
 import { VAULT_ADDRESS, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { getRewardsTooltipContent } from '@/lib/ui/getRewardsTooltipContent'
-import { abbreviateNumber } from '@/lib/utils'
+import { abbreviateNumber, hasNoDecimals } from '@/lib/utils'
 import { Period } from '@/types/periodButtons'
 import { Expand, Lock, Maximize2, Minimize2, Percent } from 'lucide-react'
 import { motion } from 'motion/react'
@@ -211,10 +211,10 @@ export default function VaultStats() {
                                 height={24}
                                 className="hover:-translate-y-1 transition-all duration-200"
                             />
-                            SuperFund boost rewards
+                            Boosted USDC APY
                         </BodyText>
                         <BodyText level="body2" weight="normal" className="text-gray-600">
-                            SuperFund boost rewards are additional rewards provided by SuperFund.
+                            Boosted USDC APY are additional rewards added to the APY by SuperFund.
                         </BodyText>
                     </div>
                 )
@@ -300,7 +300,7 @@ export default function VaultStats() {
                 {vaultStats.map((item, index) => (
                     <motion.div
                         key={index}
-                        className="flex-1"
+                        className="flex-1 basis-[180px]"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{
@@ -417,24 +417,28 @@ export default function VaultStats() {
                                             content={item.rewardsTooltipContent}
                                         />
                                         {(!item.isLoading && (item.id === 'effective-apy') && (BOOST_APY > 0)) && (
-                                            <div className="flex items-center gap-2">
-                                                <HeadingText level="h3" weight="medium" className="ml-1">
-                                                    <span className="mr-1.5">+</span>
-                                                    <AnimatedNumber value={BOOST_APY.toFixed(BOOST_APY > 0 ? 2 : 0)} />
-                                                </HeadingText>
-                                                <InfoTooltip
-                                                    label={
-                                                        <ImageWithDefault
-                                                            src={'/images/logos/superlend-rounded.svg'}
-                                                            alt="SuperFund logo"
-                                                            width={28}
-                                                            height={28}
-                                                            className="mt-0.5 sm:mt-0 hover:-translate-y-1 transition-all duration-200"
-                                                        />
-                                                    }
-                                                    content={item.boostRewardsTooltipContent && item.boostRewardsTooltipContent()}
-                                                />
-                                            </div>
+                                            <>
+                                                <HeadingText level="h3" weight="medium">+</HeadingText>
+                                                <div className="flex items-center gap-2">
+                                                    <HeadingText level="h3" weight="medium">
+                                                        <div className="flex items-center">
+                                                            <AnimatedNumber value={BOOST_APY.toFixed(hasNoDecimals(BOOST_APY) ? 0 : 2)} />%
+                                                        </div>
+                                                    </HeadingText>
+                                                    <InfoTooltip
+                                                        label={
+                                                            <ImageWithDefault
+                                                                src={'/images/tokens/usdc.webp'}
+                                                                alt="SuperFund logo"
+                                                                width={22}
+                                                                height={22}
+                                                                className="mt-0.5 sm:mt-0 hover:-translate-y-1 transition-all duration-200 -mb-1.5"
+                                                            />
+                                                        }
+                                                        content={item.boostRewardsTooltipContent && item.boostRewardsTooltipContent()}
+                                                    />
+                                                </div>
+                                            </>
                                         )}
                                     </div>
                                 }

@@ -441,6 +441,19 @@ export function checkDecimalPlaces(value: string, decimals: number) {
     return false
 }
 
+export function hasNoDecimals(value: string | number): boolean {
+    const stringValue = value.toString();
+    
+    // If there's no decimal point, return true
+    if (!stringValue.includes('.')) {
+        return true;
+    }
+    
+    // If there is a decimal point, check if all decimal digits are zeros
+    const decimalPart = stringValue.split('.')[1];
+    return decimalPart.length === 0 || /^0+$/.test(decimalPart);
+}
+
 export function decimalPlacesCount(value: string) {
     if (value.includes('.')) {
         const decimalPart = value.split('.')[1]
