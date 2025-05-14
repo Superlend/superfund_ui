@@ -448,7 +448,7 @@ export default function SuperVaultTxDialog({
                                     weight="normal"
                                     className="text-gray-600"
                                 >
-                                    Balance
+                                    Remaining Balance
                                 </BodyText>
                                 <BodyText
                                     level="body2"

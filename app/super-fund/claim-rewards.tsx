@@ -120,24 +120,25 @@ export default function ClaimRewards({
                     <h3 className="absolute text-2xl md:text-4xl max-w-[12ch] text-center uppercase top-5 md:top-1/2 left-1/2 -translate-x-1/2 md:-translate-y-1/2 text-accent-navy font-bold leading-0">
                         {unclaimedRewardsData.length > 0 ? "Claim your rewards" : "No rewards to claim"}
                     </h3>
-                    <motion.div className="absolute max-md:bottom-4 md:right-5 z-[5] max-md:w-full max-md:px-4"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.3, ease: 'easeOut' }}
-                    >
-                        <Button
-                            onClick={() => setIsSelectTokenDialogOpen(true)}
-                            size={screenWidth > 1024 ? 'lg' : 'md'}
-                            variant="primary"
-                            className="uppercase max-md:w-full bg-white shadow-lg hover:shadow-md active:shadow-sm hover:bg-gray-50 rounded-5 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200"
-                            disabled={!hasUnclaimedRewards}
+                    {hasUnclaimedRewards &&
+                        <motion.div className="absolute max-md:bottom-4 md:right-5 z-[5] max-md:w-full max-md:px-4"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.3, ease: 'easeOut' }}
                         >
-                            <span className={`flex items-center gap-1 tracking-wide text-white ${!hasUnclaimedRewards ? 'px-5' : 'px-2 md:px-10'}`}>
-                                <GiftIcon className="w-4 h-4 text-inherit" />
-                                Claim{hasUnclaimedRewards ? '' : 'ed'}
-                                {!hasUnclaimedRewards && <Check strokeWidth={2.5} className="w-4 h-4 text-gray-200" />}</span>
-                        </Button>
-                    </motion.div>
+                            <Button
+                                onClick={() => setIsSelectTokenDialogOpen(true)}
+                                size={screenWidth > 1024 ? 'lg' : 'md'}
+                                variant="primary"
+                                className="uppercase max-md:w-full bg-white shadow-lg hover:shadow-md active:shadow-sm hover:bg-gray-50 rounded-5 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200"
+                                disabled={!hasUnclaimedRewards}
+                            >
+                                <span className={`flex items-center gap-1 tracking-wide text-white ${!hasUnclaimedRewards ? 'px-5' : 'px-2 md:px-10'}`}>
+                                    <GiftIcon className="w-4 h-4 text-inherit" />
+                                    Claim{hasUnclaimedRewards ? '' : 'ed'}
+                                    {!hasUnclaimedRewards && <Check strokeWidth={2.5} className="w-4 h-4 text-gray-200" />}</span>
+                            </Button>
+                        </motion.div>}
                 </CardFooter>
             </Card>
             {/* Select token dialog */}

@@ -1,5 +1,6 @@
 'use client'
 
+import CustomAlert from '@/components/alerts/CustomAlert'
 import { AnimatedNumber } from '@/components/animations/animated_number'
 import ConnectWalletButton from '@/components/ConnectWalletButton'
 import ImageWithDefault from '@/components/ImageWithDefault'
@@ -20,10 +21,11 @@ import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import { useRewardsHook } from '@/hooks/vault_hooks/vaultHook'
 import { VAULT_ADDRESS, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { getRewardsTooltipContent } from '@/lib/ui/getRewardsTooltipContent'
-import { abbreviateNumber, hasNoDecimals } from '@/lib/utils'
+import { abbreviateNumber, getBoostApy, hasNoDecimals } from '@/lib/utils'
 import { Period } from '@/types/periodButtons'
 import { Expand, Lock, Maximize2, Minimize2, Percent } from 'lucide-react'
 import { motion } from 'motion/react'
+import Link from 'next/link'
 import { useEffect } from 'react'
 
 type VaultStatsProps = {
@@ -79,9 +81,6 @@ export default function VaultStats() {
         chain_id: selectedChain
     })
     const { isClient } = useIsClient()
-    const isLoadingSection = !isClient;
-    const TOTAL_APY = Number((effectiveApyData?.total_apy ?? 0))
-    const BOOST_APY = Number(boostRewardsData?.[0]?.boost_apy ?? 0)
     const getProtocolIdentifier = () => {
         if (!selectedChain) return ''
         return chainDetails[selectedChain as keyof typeof chainDetails]?.contractAddress || ''
@@ -93,11 +92,14 @@ export default function VaultStats() {
         walletAddress: walletAddress || '',
         refetchOnTransaction: true
     })
-    // const { totalAssets, spotApy, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
+    const { totalAssets, spotApy, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
     // const { rewards, totalRewardApy, isLoading: isLoadingRewards, error: errorRewards } = useRewardsHook()
     // const { days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading: isLoading7DayAvg, error: error7DayAvg } = useHistoricalData({
     //     chain_id: selectedChain
     // })
+    const isLoadingSection = !isClient;
+    const BOOST_APY = getBoostApy(Number(totalAssets))
+    const TOTAL_APY = Number((effectiveApyData?.total_apy ?? 0)) + (BOOST_APY ?? 0)
     const positionBreakdownList = [
         {
             id: 'capital',
@@ -186,15 +188,30 @@ export default function VaultStats() {
                         key_name: 'Rewards APY',
                         value: abbreviateNumber(effectiveApyData?.rewards_apy),
                     },
-                    // {
-                    //     key: 'superlend_rewards_apy',
-                    //     key_name: 'Superlend Reward',
-                    //     value: abbreviateNumber(boostRewardsData?.[0]?.boost_apy ?? 0, 0),
-                    //     logo: "/images/logos/superlend-orange-circle.png"
-                    // },
+                    {
+                        key: 'superlend_rewards_apy',
+                        key_name: 'Superlend USDC Reward',
+                        value: abbreviateNumber(BOOST_APY ?? 0, 0),
+                        logo: "/images/tokens/usdc.webp"
+                    },
                 ],
                 apyCurrent: TOTAL_APY,
                 positionTypeParam: 'lend',
+                note: () => {
+                    return (
+                        <div className="pt-2">
+                            <CustomAlert
+                                variant="info"
+                                size="xs"
+                                description={
+                                    <BodyText level="body3" weight="normal" className="text-gray-800">
+                                        Note: Superlend Rewards are for a limited period. Please connect on <Link href="https://discord.com/invite/superlend" target="_blank" className="text-secondary-500">Discord</Link> for more info.
+                                    </BodyText>
+                                }
+                            />
+                        </div>
+                    )
+                }
             }),
             boostRewardsTooltipContent: () => {
                 return (
@@ -359,14 +376,13 @@ export default function VaultStats() {
                                     <HeadingText level="h3" weight="medium">
                                         {!item.isLoading ? (
                                             <div className="flex items-center gap-2">
-                                                <div>
+                                                <div className="flex items-center">
                                                     <AnimatedNumber value={item.value} />
                                                 </div>
                                                 <InfoTooltip
                                                     label={
-                                                        <div className="group bg-secondary-100/20 hover:bg-secondary-100/30 rounded-2 h-6 w-6 p-1 hover:-translate-y-1 transition-all duration-200">
-                                                            <Maximize2 className="h-4 w-4 text-secondary-300 group-hover:hidden transition-all duration-500" />
-                                                            <Minimize2 className="h-4 w-4 text-secondary-300 group-hover:block hidden transition-all duration-500" />
+                                                        <div className="group bg-secondary-100/20 rounded-2 h-6 w-6 p-1">
+                                                            <Maximize2 className="h-4 w-4 text-secondary-300" />
                                                         </div>
                                                     }
                                                     content={item.positionDetailsTooltipContent && item.positionDetailsTooltipContent()}
@@ -393,7 +409,7 @@ export default function VaultStats() {
                                         </HeadingText>
                                         <InfoTooltip
                                             label={
-                                                <motion.svg width="22" height="22" viewBox="0 0 7 7" fill="none" xmlns="http://www.w3.org/2000/svg" className="hover:-translate-y-1 transition-all duration-200">
+                                                <motion.svg width="22" height="22" viewBox="0 0 7 7" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                     <motion.path
                                                         variants={starVariants}
                                                         animate="first"
@@ -416,7 +432,7 @@ export default function VaultStats() {
                                             }
                                             content={item.rewardsTooltipContent}
                                         />
-                                        {(!item.isLoading && (item.id === 'effective-apy') && (BOOST_APY > 0)) && (
+                                        {/* {(!item.isLoading && (item.id === 'effective-apy') && (BOOST_APY > 0)) && (
                                             <>
                                                 <HeadingText level="h3" weight="medium">+</HeadingText>
                                                 <div className="flex items-center gap-2">
@@ -439,7 +455,7 @@ export default function VaultStats() {
                                                     />
                                                 </div>
                                             </>
-                                        )}
+                                        )} */}
                                     </div>
                                 }
 

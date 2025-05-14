@@ -17,6 +17,7 @@ export function getRewardsTooltipContent({
     rewardsCustomList,
     apyCurrent,
     positionTypeParam,
+    note,
 }: {
     baseRateFormatted: string
     rewards?: TReward[]
@@ -25,6 +26,7 @@ export function getRewardsTooltipContent({
     }[]
     apyCurrent: number
     positionTypeParam?: string
+    note?: string | (() => React.ReactNode)
 }) {
     const baseRateOperator = positionTypeParam === 'lend' ? '+' : '-'
     const isLend = positionTypeParam === 'lend'
@@ -146,6 +148,12 @@ export function getRewardsTooltipContent({
                     = {abbreviateNumber(apyCurrent)}%
                 </BodyText>
             </div>
+            {note && typeof note === 'string' &&
+                <BodyText level="body3" weight="medium" className="text-gray-800 py-2 mt-2">
+                    {note}
+                </BodyText>
+            }
+            {note && typeof note === 'function' && note()}
         </div>
     )
 }
