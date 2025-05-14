@@ -30,7 +30,7 @@ export function getRewardsTooltipContent({
     const isLend = positionTypeParam === 'lend'
 
     return (
-        <div className="flex flex-col divide-y divide-gray-800">
+        <div className="flex flex-col divide-y divide-gray-400">
             <BodyText
                 level="body1"
                 weight="medium"

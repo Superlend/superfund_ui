@@ -10,6 +10,7 @@ import { BodyText, HeadingText } from '@/components/ui/typography'
 import { useChain } from '@/context/chain-context'
 import useGetBoostRewards from '@/hooks/useGetBoostRewards'
 import useIsClient from '@/hooks/useIsClient'
+import useTransactionHistory from '@/hooks/useTransactionHistory'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
 import { useHistoricalData } from '@/hooks/vault_hooks/useHistoricalDataHook'
@@ -21,7 +22,7 @@ import { VAULT_ADDRESS, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { getRewardsTooltipContent } from '@/lib/ui/getRewardsTooltipContent'
 import { abbreviateNumber } from '@/lib/utils'
 import { Period } from '@/types/periodButtons'
-import { Lock } from 'lucide-react'
+import { Expand, Lock, Maximize2, Minimize2, Percent } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useEffect } from 'react'
 
@@ -65,7 +66,7 @@ const starVariants = {
 
 export default function VaultStats() {
     const { walletAddress, isWalletConnected } = useWalletConnection()
-    const { selectedChain } = useChain()
+    const { selectedChain, chainDetails } = useChain()
     const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
         vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
         chainId: selectedChain
@@ -80,11 +81,34 @@ export default function VaultStats() {
     const { isClient } = useIsClient()
     const isLoadingSection = !isClient;
     const TOTAL_APY = Number((effectiveApyData?.total_apy ?? 0)) + Number(boostRewardsData?.[0]?.boost_apy ?? 0)
+    const getProtocolIdentifier = () => {
+        if (!selectedChain) return ''
+        return chainDetails[selectedChain as keyof typeof chainDetails]?.contractAddress || ''
+    }
+    const protocolId = getProtocolIdentifier()
+    const { data: { capital, interest_earned }, isLoading: isLoadingPositionDetails } = useTransactionHistory({
+        protocolIdentifier: protocolId,
+        chainId: selectedChain || 0,
+        walletAddress: walletAddress || '',
+        refetchOnTransaction: true
+    })
     // const { totalAssets, spotApy, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
     // const { rewards, totalRewardApy, isLoading: isLoadingRewards, error: errorRewards } = useRewardsHook()
     // const { days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading: isLoading7DayAvg, error: error7DayAvg } = useHistoricalData({
     //     chain_id: selectedChain
     // })
+    const positionBreakdownList = [
+        {
+            id: 'capital',
+            label: 'Capital',
+            value: abbreviateNumber(Number(capital))
+        },
+        {
+            id: 'interest-earned',
+            label: 'Interest earned',
+            value: abbreviateNumber(Number(interest_earned))
+        }
+    ]
 
     const vaultStats = [
         {
@@ -94,6 +118,46 @@ export default function VaultStats() {
             show: true,
             isLoading: isWalletConnected && isLoadingUserMaxWithdrawAmount,
             error: errorUserMaxWithdrawAmount,
+            titleTooltipContent: () => {
+                return (
+                    <div className="flex flex-col divide-y divide-gray-400">
+                        <BodyText
+                            level="body1"
+                            weight="medium"
+                            className="py-2 text-gray-800/75"
+                        >
+                            Position details
+                        </BodyText>
+                        {positionBreakdownList.map((item, index) => (
+                            <div
+                                key={item.id}
+                                className="flex items-center justify-between gap-[100px] py-2"
+                            >
+                                <div className="flex items-center gap-1">
+                                    <BodyText level="body3" weight="medium" className="text-gray-800">
+                                        {item.label}
+                                    </BodyText>
+                                </div>
+                                <BodyText level="body3" weight="medium" className="text-gray-800">
+                                    {index > 0 ? '+' : ''}{' '}${item.value}
+                                </BodyText>
+                            </div>
+                        ))}
+                        <div
+                            className="flex items-center justify-between gap-[100px] py-2"
+                        >
+                            <div className="flex items-center gap-1">
+                                <BodyText level="body3" weight="medium" className="text-gray-800">
+                                    Position
+                                </BodyText>
+                            </div>
+                            <BodyText level="body3" weight="medium" className="text-gray-800">
+                                ={' '}${Number(userMaxWithdrawAmount).toFixed(4)}
+                            </BodyText>
+                        </div>
+                    </div>
+                )
+            },
         },
         {
             id: 'effective-apy',
@@ -270,7 +334,20 @@ export default function VaultStats() {
                                 {(item.id === 'my-position' && isWalletConnected) && (
                                     <HeadingText level="h3" weight="medium">
                                         {!item.isLoading ? (
-                                            <AnimatedNumber value={item.value} />
+                                            <div className="flex items-center gap-2">
+                                                <div>
+                                                    <AnimatedNumber value={item.value} />
+                                                </div>
+                                                <InfoTooltip
+                                                    label={
+                                                        <div className="group bg-secondary-100/20 hover:bg-secondary-100/30 rounded-2 h-6 w-6 p-1">
+                                                            <Maximize2 className="h-4 w-4 text-secondary-300 group-hover:hidden transition-all duration-500" />
+                                                            <Minimize2 className="h-4 w-4 text-secondary-300 group-hover:block hidden transition-all duration-500" />
+                                                        </div>
+                                                    }
+                                                    content={item.titleTooltipContent()}
+                                                />
+                                            </div>
                                         ) : (
                                             <Skeleton className="h-10 w-full rounded-4" />
                                         )}
