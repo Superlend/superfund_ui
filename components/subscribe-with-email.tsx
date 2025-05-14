@@ -82,7 +82,7 @@ export default function SubscribeWithEmail() {
                             <Input
                                 type="email"
                                 placeholder="Type email here"
-                                className="pr-12 bg-gray-200/50 border-0 ring-1 ring-primary/40 focus:ring-primary rounded-4"
+                                className="pr-12 bg-gray-200/50 border-0 ring-1 ring-primary/40 focus:ring-1 focus:!ring-primary focus-visible:!ring-1 focus-visible:!ring-primary hover:!ring-primary rounded-4"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
