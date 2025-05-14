@@ -416,7 +416,7 @@ export default function SuperVaultTxDialog({
                 <div className="flex flex-col items-center justify-between px-6 bg-gray-200 lg:bg-white rounded-5 divide-y divide-gray-300">
                     {isShowBlock({
                         deposit: true,
-                        withdraw: true,
+                        withdraw: false,
                     }) && (
                             <div
                                 className={`flex items-center justify-between w-full py-4`}
