@@ -34,7 +34,7 @@ export function getRewardsTooltipContent({
             <BodyText
                 level="body1"
                 weight="medium"
-                className="py-2 text-gray-800/75"
+                className="py-2 text-gray-800"
             >
                 Rate & Rewards
             </BodyText>

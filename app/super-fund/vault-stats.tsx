@@ -80,7 +80,8 @@ export default function VaultStats() {
     })
     const { isClient } = useIsClient()
     const isLoadingSection = !isClient;
-    const TOTAL_APY = Number((effectiveApyData?.total_apy ?? 0)) + Number(boostRewardsData?.[0]?.boost_apy ?? 0)
+    const TOTAL_APY = Number((effectiveApyData?.total_apy ?? 0))
+    const BOOST_APY = Number(boostRewardsData?.[0]?.boost_apy ?? 0)
     const getProtocolIdentifier = () => {
         if (!selectedChain) return ''
         return chainDetails[selectedChain as keyof typeof chainDetails]?.contractAddress || ''
@@ -118,13 +119,13 @@ export default function VaultStats() {
             show: true,
             isLoading: isWalletConnected && isLoadingUserMaxWithdrawAmount,
             error: errorUserMaxWithdrawAmount,
-            titleTooltipContent: () => {
+            positionDetailsTooltipContent: () => {
                 return (
                     <div className="flex flex-col divide-y divide-gray-400">
                         <BodyText
                             level="body1"
                             weight="medium"
-                            className="py-2 text-gray-800/75"
+                            className="py-2 text-gray-800"
                         >
                             Position details
                         </BodyText>
@@ -177,7 +178,7 @@ export default function VaultStats() {
             value: `${(TOTAL_APY).toFixed(2)}%`,
             show: true,
             hasRewards: true,
-            rewardsTooltip: getRewardsTooltipContent({
+            rewardsTooltipContent: getRewardsTooltipContent({
                 baseRateFormatted: abbreviateNumber(effectiveApyData?.base_apy),
                 rewardsCustomList: [
                     {
@@ -185,16 +186,39 @@ export default function VaultStats() {
                         key_name: 'Rewards APY',
                         value: abbreviateNumber(effectiveApyData?.rewards_apy),
                     },
-                    {
-                        key: 'superlend_rewards_apy',
-                        key_name: 'Superlend Reward',
-                        value: abbreviateNumber(boostRewardsData?.[0]?.boost_apy ?? 0, 0),
-                        logo: "/images/logos/superlend-orange-circle.png"
-                    },
+                    // {
+                    //     key: 'superlend_rewards_apy',
+                    //     key_name: 'Superlend Reward',
+                    //     value: abbreviateNumber(boostRewardsData?.[0]?.boost_apy ?? 0, 0),
+                    //     logo: "/images/logos/superlend-orange-circle.png"
+                    // },
                 ],
                 apyCurrent: TOTAL_APY,
                 positionTypeParam: 'lend',
             }),
+            boostRewardsTooltipContent: () => {
+                return (
+                    <div>
+                        <BodyText
+                            level="body1"
+                            weight="medium"
+                            className="text-gray-800 flex items-center gap-1 mb-2"
+                        >
+                            <ImageWithDefault
+                                src={'/images/logos/superlend-rounded.svg'}
+                                alt="SuperFund logo"
+                                width={24}
+                                height={24}
+                                className="hover:-translate-y-1 transition-all duration-200"
+                            />
+                            SuperFund boost rewards
+                        </BodyText>
+                        <BodyText level="body2" weight="normal" className="text-gray-600">
+                            SuperFund boost rewards are additional rewards provided by SuperFund.
+                        </BodyText>
+                    </div>
+                )
+            },
             isLoading: isLoadingEffectiveApy,
             error: isErrorEffectiveApy,
         },
@@ -205,7 +229,7 @@ export default function VaultStats() {
         //     value: `${(Number(spotApy) + Number(totalRewardApy)).toFixed(2)}%`,
         //     show: true,
         //     hasRewards: true,
-        //     rewardsTooltip: getRewardsTooltipContent({
+        //     rewardsTooltipContent: getRewardsTooltipContent({
         //         baseRateFormatted: spotApy,
         //         rewards: rewards,
         //         apyCurrent: Number(spotApy) + Number(totalRewardApy),
@@ -232,7 +256,7 @@ export default function VaultStats() {
         //     value: `${abbreviateNumber(days_7_avg_total_apy)}%`,
         //     show: true,
         //     hasRewards: true,
-        //     rewardsTooltip: getRewardsTooltipContent({
+        //     rewardsTooltipContent: getRewardsTooltipContent({
         //         baseRateFormatted: days_7_avg_base_apy.toFixed(2),
         //         rewardsCustomList: [{
         //             key: 'rewards_apy',
@@ -340,12 +364,12 @@ export default function VaultStats() {
                                                 </div>
                                                 <InfoTooltip
                                                     label={
-                                                        <div className="group bg-secondary-100/20 hover:bg-secondary-100/30 rounded-2 h-6 w-6 p-1">
+                                                        <div className="group bg-secondary-100/20 hover:bg-secondary-100/30 rounded-2 h-6 w-6 p-1 hover:-translate-y-1 transition-all duration-200">
                                                             <Maximize2 className="h-4 w-4 text-secondary-300 group-hover:hidden transition-all duration-500" />
                                                             <Minimize2 className="h-4 w-4 text-secondary-300 group-hover:block hidden transition-all duration-500" />
                                                         </div>
                                                     }
-                                                    content={item.titleTooltipContent()}
+                                                    content={item.positionDetailsTooltipContent && item.positionDetailsTooltipContent()}
                                                 />
                                             </div>
                                         ) : (
@@ -359,7 +383,9 @@ export default function VaultStats() {
                                     <div className="flex items-center gap-2">
                                         <HeadingText level="h3" weight="medium">
                                             {!item.isLoading &&
-                                                <AnimatedNumber value={item.value} />
+                                                <div className="flex items-center">
+                                                    <AnimatedNumber value={item.value} />
+                                                </div>
                                             }
                                             {item.isLoading &&
                                                 <Skeleton className="h-7 w-full min-w-[60px] rounded-4 mt-1" />
@@ -367,7 +393,7 @@ export default function VaultStats() {
                                         </HeadingText>
                                         <InfoTooltip
                                             label={
-                                                <motion.svg width="22" height="22" viewBox="0 0 7 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <motion.svg width="22" height="22" viewBox="0 0 7 7" fill="none" xmlns="http://www.w3.org/2000/svg" className="hover:-translate-y-1 transition-all duration-200">
                                                     <motion.path
                                                         variants={starVariants}
                                                         animate="first"
@@ -388,8 +414,28 @@ export default function VaultStats() {
                                                     />
                                                 </motion.svg>
                                             }
-                                            content={item.rewardsTooltip}
+                                            content={item.rewardsTooltipContent}
                                         />
+                                        {(!item.isLoading && (item.id === 'effective-apy') && (BOOST_APY > 0)) && (
+                                            <div className="flex items-center gap-2">
+                                                <HeadingText level="h3" weight="medium" className="ml-1">
+                                                    <span className="mr-1.5">+</span>
+                                                    <AnimatedNumber value={BOOST_APY.toFixed(BOOST_APY > 0 ? 2 : 0)} />
+                                                </HeadingText>
+                                                <InfoTooltip
+                                                    label={
+                                                        <ImageWithDefault
+                                                            src={'/images/logos/superlend-rounded.svg'}
+                                                            alt="SuperFund logo"
+                                                            width={28}
+                                                            height={28}
+                                                            className="mt-0.5 sm:mt-0 hover:-translate-y-1 transition-all duration-200"
+                                                        />
+                                                    }
+                                                    content={item.boostRewardsTooltipContent && item.boostRewardsTooltipContent()}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 }
 
