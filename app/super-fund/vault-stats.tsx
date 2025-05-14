@@ -7,7 +7,7 @@ import ImageWithDefault from '@/components/ImageWithDefault'
 import InfoTooltip from '@/components/tooltips/InfoTooltip'
 import TooltipText from '@/components/tooltips/TooltipText'
 import { Skeleton } from '@/components/ui/skeleton'
-import { BodyText, HeadingText } from '@/components/ui/typography'
+import { BodyText, HeadingText, Label } from '@/components/ui/typography'
 import { useChain } from '@/context/chain-context'
 import useGetBoostRewards from '@/hooks/useGetBoostRewards'
 import useIsClient from '@/hooks/useIsClient'
@@ -137,9 +137,9 @@ export default function VaultStats() {
                                 className="flex items-center justify-between gap-[100px] py-2"
                             >
                                 <div className="flex items-center gap-1">
-                                    <BodyText level="body3" weight="medium" className="text-gray-800">
+                                    <Label weight="medium" className="text-gray-800">
                                         {item.label}
-                                    </BodyText>
+                                    </Label>
                                 </div>
                                 <BodyText level="body3" weight="medium" className="text-gray-800">
                                     {index > 0 ? '+' : ''}{' '}${item.value}
@@ -150,9 +150,9 @@ export default function VaultStats() {
                             className="flex items-center justify-between gap-[100px] py-2"
                         >
                             <div className="flex items-center gap-1">
-                                <BodyText level="body3" weight="medium" className="text-gray-800">
+                                <Label weight="medium" className="text-gray-800">
                                     Position
-                                </BodyText>
+                                </Label>
                             </div>
                             <BodyText level="body3" weight="medium" className="text-gray-800">
                                 ={' '}${Number(userMaxWithdrawAmount).toFixed(4)}

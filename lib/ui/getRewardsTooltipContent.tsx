@@ -114,9 +114,9 @@ export function getRewardsTooltipContent({
                                     className="inline-block rounded-full object-contain"
                                 />
                             }
-                            <BodyText level="body3" weight="medium" className="text-gray-800">
+                            <Label weight="medium" className="text-gray-800">
                                 {reward.key_name}
-                            </BodyText>
+                            </Label>
                         </div>
                         <BodyText level="body3" weight="medium" className="text-gray-800">
                             {reward.value}%
