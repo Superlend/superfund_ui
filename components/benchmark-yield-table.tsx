@@ -63,7 +63,7 @@ export function BenchmarkYieldTable() {
 
     // Get Superfund data
     const { historicalData: superfundData, isLoading: superfundLoading } = useHistoricalData({
-        period: apiPeriod === 'YEAR' ? Period.allTime : apiPeriod as Period,
+        period: apiPeriod === 'YEAR' ? Period.oneYear : apiPeriod as Period,
         chain_id: selectedChain
     })
 
@@ -246,8 +246,8 @@ export function BenchmarkYieldTable() {
                 days = 1;
             } else if (selectedRange === Period.oneWeek) {
                 days = 7;
-            } else if (selectedRange === Period.allTime) {
-                days = 365; // Use a full year for "All Time"
+            } else if (selectedRange === Period.oneYear) {
+                days = 365; // Use a full year for "1 Year"
             }
 
             // Calculate compound interest over the selected period
@@ -347,8 +347,8 @@ export function BenchmarkYieldTable() {
     // Handle time period change
     const handleRangeChange = (value: string) => {
         // For the "All" filter, use one year period instead for API calls
-        if (value === Period.allTime) {
-            setSelectedRange(Period.allTime); // For UI display
+        if (value === Period.oneYear) {
+            setSelectedRange(Period.oneYear); // For UI display
             setApiPeriod("YEAR"); // One year data for API calls
         } else {
             setSelectedRange(value as Period);
@@ -377,7 +377,7 @@ export function BenchmarkYieldTable() {
                     let periodText = '30D';
                     if (selectedRange === Period.oneDay) periodText = '24H';
                     if (selectedRange === Period.oneWeek) periodText = '7D';
-                    if (selectedRange === Period.allTime) periodText = 'All Time';
+                    if (selectedRange === Period.oneYear) periodText = '1Y';
 
                     return (
                         <div className="text-center w-full">
@@ -397,7 +397,7 @@ export function BenchmarkYieldTable() {
                     let periodText = '30 Days';
                     if (selectedRange === Period.oneDay) periodText = '24 Hours';
                     if (selectedRange === Period.oneWeek) periodText = '7 Days';
-                    if (selectedRange === Period.allTime) periodText = '1 Year';
+                    if (selectedRange === Period.oneYear) periodText = '1 Year';
 
                     return (
                         <div className="text-center w-full">

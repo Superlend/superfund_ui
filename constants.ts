@@ -42,7 +42,8 @@ export const PERIOD_LIST: { label: string, value: Period }[] = [
     { label: PeriodDisplay.oneMonth, value: Period.oneMonth },
     //   { label: PeriodDisplay.threeMonth, value: Period.threeMonth },
     //   { label: PeriodDisplay.sixMonth, value: Period.sixMonth },
-    { label: PeriodDisplay.allTime, value: Period.allTime },
+    { label: PeriodDisplay.oneYear, value: Period.oneYear },
+    // { label: PeriodDisplay.allTime, value: Period.allTime },
 ]
 
 export const PERIOD_DISPLAY_MAPPER: { [key in Period]: string } = {
@@ -51,7 +52,8 @@ export const PERIOD_DISPLAY_MAPPER: { [key in Period]: string } = {
     [Period.oneMonth]: 'month',
     //   [Period.threeMonth]: "3 months",
     //   [Period.sixMonth]: "6 months",
-    [Period.allTime]: 'all time',
+    [Period.oneYear]: 'year',
+    // [Period.allTime]: 'all time',
 }
 
 export const HISTORY_CHART_SELECT_OPTIONS = [

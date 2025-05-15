@@ -64,7 +64,7 @@ export function BenchmarkHistoryChart() {
 
     // Get Superfund data
     const { historicalData: superfundData, isLoading: superfundLoading } = useHistoricalData({
-        period: apiPeriod === 'YEAR' ? Period.allTime : apiPeriod as Period,
+        period: apiPeriod === 'YEAR' ? Period.oneYear : apiPeriod as Period,
         chain_id: selectedChain
     })
 
@@ -670,8 +670,8 @@ export function BenchmarkHistoryChart() {
 
     const handleRangeChange = useCallback((value: string) => {
         // For the "All" filter, use one year period instead for API calls
-        if (value === Period.allTime) {
-            setSelectedRange(Period.allTime); // For UI display
+        if (value === Period.oneYear) {
+            setSelectedRange(Period.oneYear); // For UI display
             setApiPeriod("YEAR"); // Use one month data for API calls
         } else {
             setSelectedRange(value as Period);

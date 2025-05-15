@@ -173,7 +173,11 @@ export default function SuperVaultTxDialog({
     const isWithdrawTxInProgress =
         withdrawTx.isPending || withdrawTx.isConfirming
 
+    const isDepositTxInSuccess = depositTx.isConfirmed && depositTx.hash && depositTx.status === 'view'
+    const isWithdrawTxInSuccess = withdrawTx.isConfirmed && withdrawTx.hash && withdrawTx.status === 'view'
+
     const isTxInProgress = isDepositTxInProgress || isWithdrawTxInProgress
+    const isTxInSuccess = isDepositTxInSuccess || isWithdrawTxInSuccess
     const isTxFailed = false
 
     const depositTxSpinnerColor = depositTx.isPending
@@ -271,8 +275,9 @@ export default function SuperVaultTxDialog({
                         className="text-gray-800 text-center capitalize"
                     >
                         {isDepositPositionType
-                            ? 'Review Deposit'
-                            : 'Review Withdraw'}
+                            ? `${isDepositTxInSuccess ? 'Deposit' : 'Review Deposit'}`
+                            : `${isWithdrawTxInSuccess ? 'Withdraw' : 'Review Withdraw'}`
+                        }
                     </HeadingText>
                     // </DialogTitle>
                 )}
@@ -843,7 +848,7 @@ export default function SuperVaultTxDialog({
                         deposit: depositTx.status === 'view' && depositTx.isConfirmed && !!depositTx.hash,
                         withdraw: false,
                     }) && (
-                        <div className="flex flex-col items-center gap-3 my-1">
+                        <div className="flex flex-col items-center gap-3 my-1 w-full">
                             {/* {!showSubscription &&
                                 <Button
                                     variant="secondaryOutline"
@@ -858,7 +863,7 @@ export default function SuperVaultTxDialog({
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.3, ease: 'easeOut' }}
-                                className="bg-gray-200/50 bg-opacity-50 backdrop-blur-sm rounded-5 p-4"
+                                className="bg-gray-200/50 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full"
                             >
                                 <SubscribeWithEmail />
                             </motion.div>

@@ -555,8 +555,8 @@ export function getMaxDecimalsToDisplay(tokenSymbol: string): number {
 export function getStartTimestamp(period: Period) {
     const currentTimestamp = Math.floor(Date.now() / 1000)
     switch (period) {
-        case Period.allTime:
-            return 0
+        case Period.oneYear:
+            return currentTimestamp - 86400 * 365
         case Period.oneMonth:
             return currentTimestamp - 86400 * 30
         case Period.oneWeek:
@@ -627,4 +627,8 @@ export function getBoostApy(totalAssets: number) {
         return 3
     }
     return 4
+}
+
+export function convertNegativeToZero(value: number) {
+    return value < 0 ? 0 : value
 }

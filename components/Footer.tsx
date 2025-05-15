@@ -194,7 +194,7 @@ export default function Footer() {
                             </Link>
                         </li> */}
                             <li>
-                                <Link href="https://docs.superlend.xyz/superlend-markets/security-and-audits" target="_blank" className="text-gray-600 hover:text-primary transition-colors">
+                                <Link href="https://docs.superlend.xyz/superlend-vaults/superfunds/security" target="_blank" className="text-gray-600 hover:text-primary transition-colors">
                                     Security
                                 </Link>
                             </li>
@@ -203,7 +203,9 @@ export default function Footer() {
 
                     {/* Column 5: Newsletter */}
                     <div className="lg:col-span-2">
-                        <SubscribeWithEmail />
+                        <div className="w-full max-w-sm">
+                            <SubscribeWithEmail />
+                        </div>
                     </div>
                 </div>
 

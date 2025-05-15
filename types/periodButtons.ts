@@ -4,8 +4,8 @@ export enum PeriodDisplay {
     oneMonth = '1M',
     // threeMonth = '3m',
     // sixMonth = '6m',
-    // oneYear = '1Y',
-    allTime = 'ALL',
+    oneYear = '1Y',
+    // allTime = 'ALL',
 }
 
 export enum PeriodShortDisplay {
@@ -14,8 +14,8 @@ export enum PeriodShortDisplay {
     MONTH = '1M',
     // 3MONTHS = '3m',
     // 6MONTHS = '6m',
-    // YEAR = '1Y',
-    ALL_TIME = 'ALL',
+    YEAR = '1Y',
+    // ALL_TIME = 'ALL',
 }
 
 export enum PeriodLongDisplay {
@@ -24,8 +24,8 @@ export enum PeriodLongDisplay {
     MONTH = '1 MONTH',
     // 3MONTHS = '3m',
     // 6MONTHS = '6m',
-    // YEAR = '1 YEAR',
-    ALL_TIME = 'ALL TIME',
+    YEAR = '1 YEAR',
+    // ALL_TIME = 'ALL TIME',
 }
 
 export enum Period {
@@ -34,5 +34,6 @@ export enum Period {
     oneMonth = 'MONTH',
     // threeMonth = '3MONTHS',
     // sixMonth = '6MONTHS',
-    allTime = 'ALL TIME',
+    oneYear = 'YEAR',
+    // allTime = 'ALL TIME',
 }

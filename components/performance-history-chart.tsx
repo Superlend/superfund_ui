@@ -45,20 +45,20 @@ const CustomTooltip = ({ active, payload }: any) => {
                 <div className="space-y-1">
                     <BodyText level='body3' className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full bg-[#3366CC]" />
-                            Base APY
-                        </div>
-                        <span className="font-medium">
-                            {payload[0]?.payload.baseApy}%
-                        </span>
-                    </BodyText>
-                    <BodyText level='body3' className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-1">
                             <span className="w-2 h-2 rounded-full bg-[#8A2BE2]" />
                             Total APY
                         </div>
                         <span className="font-medium">
                             {payload[0]?.payload.totalApy}%
+                        </span>
+                    </BodyText>
+                    <BodyText level='body3' className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-[#3366CC]" />
+                            Base APY
+                        </div>
+                        <span className="font-medium">
+                            {payload[0]?.payload.baseApy}%
                         </span>
                     </BodyText>
                 </div>

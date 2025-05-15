@@ -67,12 +67,12 @@ export default function SubscribeWithEmail() {
     }
 
     return (
-        <div className="w-full max-w-sm">
+        <div className="w-full">
             <HeadingText level="h5" weight="semibold" className="text-gray-900">
                 Stay up to date
             </HeadingText>
             <BodyText level="body3" className="text-gray-600 mb-4">
-                Get latest updates on SuperFund
+                Get the latest updates on SuperFund
             </BodyText>
 
             {submissionStatus === 'idle' && (
@@ -109,13 +109,13 @@ export default function SubscribeWithEmail() {
                     <div className="flex-1">
                         <p className="text-green-800 text-sm font-medium">Thank you!</p>
                         <p className="text-green-700 text-xs mt-1">Stay tuned for future updates.</p>
-                        <Button
+                        {/* <Button
                             type="button"
                             onClick={resetForm}
                             className="mt-2 text-xs h-7 bg-white hover:bg-green-50 text-green-600 border border-green-200 shadow-sm hover:shadow-md transition-all duration-200"
                         >
                             Share another email
-                        </Button>
+                        </Button> */}
                     </div>
                 </div>
             )}
@@ -124,7 +124,7 @@ export default function SubscribeWithEmail() {
                 <div className="bg-red-50/50 p-3 rounded-4 border border-red-200 flex items-start gap-2 shadow-sm">
                     <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
-                        <p className="text-red-800 text-sm font-medium">Failed to share</p>
+                        <p className="text-red-800 text-sm font-medium">That didn&apos;t work!</p>
                         <p className="text-red-700 text-xs mt-1">{errorMessage}</p>
                         <Button
                             type="button"

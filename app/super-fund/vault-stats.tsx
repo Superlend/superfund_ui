@@ -21,7 +21,7 @@ import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import { useRewardsHook } from '@/hooks/vault_hooks/vaultHook'
 import { VAULT_ADDRESS, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { getRewardsTooltipContent } from '@/lib/ui/getRewardsTooltipContent'
-import { abbreviateNumber, getBoostApy, hasNoDecimals } from '@/lib/utils'
+import { abbreviateNumber, convertNegativeToZero, getBoostApy, hasNoDecimals } from '@/lib/utils'
 import { Period } from '@/types/periodButtons'
 import { Expand, Lock, Maximize2, Minimize2, Percent } from 'lucide-react'
 import { motion } from 'motion/react'
@@ -104,12 +104,12 @@ export default function VaultStats() {
         {
             id: 'capital',
             label: 'Capital',
-            value: abbreviateNumber(Number(capital))
+            value: abbreviateNumber(convertNegativeToZero(Number(capital)))
         },
         {
             id: 'interest-earned',
             label: 'Interest earned',
-            value: abbreviateNumber(Number(interest_earned))
+            value: abbreviateNumber(convertNegativeToZero(Number(interest_earned)))
         }
     ]
 
@@ -205,7 +205,7 @@ export default function VaultStats() {
                                 size="xs"
                                 description={
                                     <BodyText level="body3" weight="normal" className="text-gray-800">
-                                        Note: Superlend Rewards are for a limited period. Please connect on <Link href="https://discord.com/invite/superlend" target="_blank" className="text-secondary-500">Discord</Link> for more info.
+                                        Note: Superlend Rewards are for a limited period. Please join our <Link href="https://discord.com/invite/superlend" target="_blank" className="text-secondary-500">Discord</Link> to get more info.
                                     </BodyText>
                                 }
                             />
