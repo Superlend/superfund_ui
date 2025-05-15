@@ -122,11 +122,11 @@ export default function VaultStats() {
             id: 'interest-earned',
             label: 'Interest earned',
             value: abbreviateNumber(convertNegativeToZero(Number(totalInterestEarned ?? 0))),
-            description: 'Total interest earned since the user\'s first deposit.',
+            description: 'Total interest earned since your first deposit.',
             tooltipContent: () => {
                 return (
                     <BodyText level="body2" weight="normal" className="text-gray-600">
-                        Total interest earned since the user&apos;s first deposit.
+                        Total interest earned since your first deposit.
                     </BodyText>
                 )
             }
