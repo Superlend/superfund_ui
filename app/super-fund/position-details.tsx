@@ -178,7 +178,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                             ${abbreviateNumber(convertNegativeToZero(Number(totalInterestEarned ?? 0)))}
                             <InfoTooltip
                                 content={<BodyText level="body2" weight="normal" className="text-gray-600">
-                                    Total interest earned since the vault&apos;s first deposit.
+                                    Total interest earned since the user&apos;s first deposit.
                                 </BodyText>}
                             />
                         </HeadingText>}
