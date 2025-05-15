@@ -11,6 +11,7 @@ import { BodyText, HeadingText, Label } from '@/components/ui/typography'
 import { useApyData } from '@/context/apy-data-provider'
 import { useChain } from '@/context/chain-context'
 import useGetBoostRewards from '@/hooks/useGetBoostRewards'
+import useGetDailyEarningsHistory from '@/hooks/useGetDailyEarningsHistory'
 import useIsClient from '@/hooks/useIsClient'
 import useTransactionHistory from '@/hooks/useTransactionHistory'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
@@ -27,7 +28,7 @@ import { Period } from '@/types/periodButtons'
 import { Expand, Lock, Maximize2, Minimize2, Percent } from 'lucide-react'
 import { motion } from 'motion/react'
 import Link from 'next/link'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 
 type VaultStatsProps = {
     days_7_avg_total_apy: number
@@ -94,6 +95,17 @@ export default function VaultStats() {
         walletAddress: walletAddress || '',
         refetchOnTransaction: true
     })
+    const {
+        data: dailyEarningsHistoryData,
+        isLoading: isLoadingDailyEarningsHistory,
+        isError: isErrorDailyEarningsHistory
+    } = useGetDailyEarningsHistory({
+        vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        user_address: walletAddress?.toLowerCase() as `0x${string}`,
+    })
+    const totalInterestEarned = useMemo(() => {
+        return dailyEarningsHistoryData?.reduce((acc: number, item: any) => acc + item.earnings, 0) ?? 0
+    }, [dailyEarningsHistoryData])
     // const { rewards, totalRewardApy, isLoading: isLoadingRewards, error: errorRewards } = useRewardsHook()
     // const { days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading: isLoading7DayAvg, error: error7DayAvg } = useHistoricalData({
     //     chain_id: selectedChain
@@ -104,12 +116,20 @@ export default function VaultStats() {
         {
             id: 'capital',
             label: 'Capital',
-            value: abbreviateNumber(convertNegativeToZero(Number(capital)))
+            value: abbreviateNumber(convertNegativeToZero(Number(capital ?? 0)))
         },
         {
             id: 'interest-earned',
             label: 'Interest earned',
-            value: abbreviateNumber(convertNegativeToZero(Number(interest_earned)))
+            value: abbreviateNumber(convertNegativeToZero(Number(totalInterestEarned ?? 0))),
+            description: 'Total interest earned since the vault\'s first deposit.',
+            tooltipContent: () => {
+                return (
+                    <BodyText level="body2" weight="normal" className="text-gray-600">
+                        Total interest earned since the vault&apos;s first deposit.
+                    </BodyText>
+                )
+            }
         }
     ]
 
@@ -137,11 +157,15 @@ export default function VaultStats() {
                                 className="flex items-center justify-between gap-[100px] py-2"
                             >
                                 <div className="flex items-center gap-1">
-                                    <Label weight="medium" className="text-gray-800">
+                                    <Label weight="medium" className="text-gray-800 shrink-0">
                                         {item.label}
                                     </Label>
+                                    {item.tooltipContent &&
+                                        <InfoTooltip
+                                            content={item.tooltipContent && item.tooltipContent()}
+                                        />}
                                 </div>
-                                <BodyText level="body3" weight="medium" className="text-gray-800">
+                                <BodyText level="body3" weight="medium" className="text-gray-800 shrink-0">
                                     {index > 0 ? '+' : ''}{' '}${item.value}
                                 </BodyText>
                             </div>
