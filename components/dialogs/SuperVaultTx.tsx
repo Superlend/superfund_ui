@@ -83,16 +83,11 @@ export default function SuperVaultTxDialog({
     const isDesktop = screenWidth > 768
     const isDepositPositionType = positionType === 'deposit'
     const [miniappUser, setMiniAppUser] = useState<any>(null)
-    // const [showSubscription, setShowSubscription] = useState(false)
-    const {
-        data: effectiveApyData,
-        isLoading: isLoadingEffectiveApy,
-        isError: isErrorEffectiveApy,
-    } = useGetEffectiveApy({
-        vault_address: VAULT_ADDRESS_MAP[
-            selectedChain as keyof typeof VAULT_ADDRESS_MAP
-        ] as `0x${string}`,
-        chain_id: selectedChain,
+    const [pendingEmail, setPendingEmail] = useState('')
+    const [showEmailReminder, setShowEmailReminder] = useState(false)
+    const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
+        vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        chain_id: selectedChain
     })
 
     useEffect(() => {
@@ -147,6 +142,13 @@ export default function SuperVaultTxDialog({
     }
 
     function handleOpenChange(open: boolean) {
+        // If trying to close AND there's an unsaved email in a successful deposit/withdraw state
+        if (!open && pendingEmail && 
+            ((isDepositPositionType && depositTx.status === 'view' && depositTx.isConfirmed))) {
+            setShowEmailReminder(true)
+            return // Prevent dialog from closing
+        }
+        
         // When opening the dialog, reset the amount and the tx status
         setOpen(open)
         // When closing the dialog, reset the amount and the tx status
@@ -156,7 +158,16 @@ export default function SuperVaultTxDialog({
         ) {
             setAmount('')
             resetDepositWithdrawTx()
+            setPendingEmail('') // Reset pendingEmail when closing
         }
+    }
+
+    function handleFinalClose() {
+        setShowEmailReminder(false)
+        setPendingEmail('')
+        setOpen(false)
+        setAmount('')
+        resetDepositWithdrawTx()
     }
 
     function isShowBlock(status: { deposit: boolean; withdraw: boolean }) {
@@ -1067,23 +1078,13 @@ export default function SuperVaultTxDialog({
                     withdraw: false,
                 }) && (
                     <div className="flex flex-col items-center gap-3 my-1 w-full">
-                        {/* {!showSubscription &&
-                                <Button
-                                    variant="secondaryOutline"
-                                    onClick={() => setShowSubscription(true)}
-                                    className="w-full py-3 uppercase"
-                                >
-                                    Stay updated on SuperFund
-                                    <ArrowRightIcon className="w-4 h-4 stroke-secondary-500 ml-2" />
-                                </Button>
-                            } */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.3, ease: 'easeOut' }}
                             className="bg-gray-200/50 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full"
                         >
-                            <SubscribeWithEmail />
+                            <SubscribeWithEmail onEmailChange={setPendingEmail} />
                         </motion.div>
                     </div>
                 )}
@@ -1103,6 +1104,41 @@ export default function SuperVaultTxDialog({
                     />
                 )}
             </div>
+            
+            {/* Add email reminder dialog */}
+            {showEmailReminder && (
+                <Dialog open={showEmailReminder} onOpenChange={setShowEmailReminder}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <HeadingText level="h4" weight="medium" className="text-gray-800 text-center">
+                                Don&apos;t miss out!
+                            </HeadingText>
+                        </DialogHeader>
+                        <div className="flex flex-col gap-4">
+                            <BodyText level="body2" weight="normal" className="text-gray-800">
+                                You&apos;ve entered an email but haven&apos;t submitted it. Would you like to submit now to stay updated on SuperFund?
+                            </BodyText>
+                            <div className="flex justify-end gap-2">
+                                <Button variant="outline" onClick={handleFinalClose}>
+                                    Close anyway
+                                </Button>
+                                <Button variant="primary" onClick={() => {
+                                    setShowEmailReminder(false)
+                                    // Find and click the submit button in the email form
+                                    setTimeout(() => {
+                                        const submitButton = document.querySelector('.subscribe-email-form button[type="submit"]');
+                                        if (submitButton instanceof HTMLElement) {
+                                            submitButton.click();
+                                        }
+                                    }, 100);
+                                }}>
+                                    Submit email
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
         </>
     )
 
