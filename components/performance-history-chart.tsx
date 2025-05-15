@@ -33,6 +33,7 @@ import { Button } from './ui/button'
 import { Expand } from 'lucide-react'
 import { BodyText, HeadingText } from './ui/typography'
 import { Skeleton } from './ui/skeleton'
+import { useApyData } from '@/context/apy-data-provider'
 
 
 const CustomTooltip = ({ active, payload }: any) => {
@@ -167,6 +168,7 @@ export function PerformanceHistoryChart() {
     })
     const [startIndex, setStartIndex] = useState(0)
     const [endIndex, setEndIndex] = useState(historicalData.length - 1)
+    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy, boostApyStartDate } = useApyData()
 
     useEffect(() => {
         setStartIndex(0)
@@ -190,6 +192,10 @@ export function PerformanceHistoryChart() {
                 dateOptions
             ).format(date)
             const time = extractTimeFromDate(date, { exclude: ['seconds'] })
+            
+            // Only add BOOST_APY if the date is on or after May 12, 2025
+            const shouldAddBoost = date.getTime() >= boostApyStartDate;
+            const totalApyValue = shouldAddBoost ? Number(item.totalApy) + BOOST_APY : Number(item.totalApy);
 
             return {
                 rawTimestamp: item.timestamp,
@@ -197,7 +203,7 @@ export function PerformanceHistoryChart() {
                 date: formattedDate.split(',')[0],
                 time: time,
                 baseApy: abbreviateNumber(item.baseApy),
-                totalApy: abbreviateNumber(item.totalApy),
+                totalApy: abbreviateNumber(totalApyValue),
                 totalAssets: abbreviateNumber(item.totalAssets),
             }
         }).sort((a, b) => new Date(a.rawTimestamp).getTime() - new Date(b.rawTimestamp).getTime())

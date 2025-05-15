@@ -33,8 +33,9 @@ import { SONIC_USDC_ADDRESS, USDC_ADDRESS } from '@/lib/constants'
 import { fetchRewardApyAaveV3 } from '@/hooks/vault_hooks/vaultHook'
 import { CHART_CONFIG, PROTOCOL_IDENTIFIERS } from '@/lib/benchmark-chart-config'
 import useGetBenchmarkHistory from '@/hooks/useGetBenchmarkHistory'
-import { abbreviateNumber } from '@/lib/utils'
+import { abbreviateNumber, getBoostApy } from '@/lib/utils'
 import ImageWithDefault from './ImageWithDefault'
+import { useApyData } from '@/context/apy-data-provider'
 
 // Add the TopMorphoInfo interface for consistency with the chart component
 interface TopMorphoInfo {
@@ -60,6 +61,7 @@ export function BenchmarkYieldTable() {
     const [benchmarkData, setBenchmarkData] = useState<BenchmarkData[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const { selectedChain } = useChain()
+    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy, boostApyStartDate } = useApyData()
 
     // Get Superfund data
     const { historicalData: superfundData, isLoading: superfundLoading } = useHistoricalData({
@@ -169,7 +171,11 @@ export function BenchmarkYieldTable() {
         }
 
         const total = data.reduce((sum: number, item: any) => {
-            return sum + (item.totalApy || 0);
+            const currentDate = new Date(item.timestamp * 1000).getTime();
+            // Only add BOOST_APY if the date is on or after May 12, 2025
+            const shouldAddBoost = currentDate >= boostApyStartDate;
+            const itemValue = shouldAddBoost ? (item.totalApy + BOOST_APY) : item.totalApy;
+            return sum + (itemValue || 0);
         }, 0);
 
         return total / data.length;
@@ -387,7 +393,7 @@ export function BenchmarkYieldTable() {
                 },
                 cell: ({ row }) => (
                     <BodyText level="body2" weight="medium" className="text-gray-800 text-center">
-                        {row.original.apy.toFixed(1)}%
+                        {abbreviateNumber(row.original.apy ?? 0, 2)}%
                     </BodyText>
                 ),
             },
@@ -407,7 +413,7 @@ export function BenchmarkYieldTable() {
                 },
                 cell: ({ row }) => (
                     <BodyText level="body2" weight="medium" className="text-gray-800 text-center">
-                        ${abbreviateNumber(row.original.totalEarned, 2)}
+                        ${abbreviateNumber(row.original.totalEarned ?? 0, 2)}
                     </BodyText>
                 ),
             },

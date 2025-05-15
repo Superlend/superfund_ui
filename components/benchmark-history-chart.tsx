@@ -47,6 +47,7 @@ import {
     TCustomXAxisTickProps,
     TCustomYAxisTickProps
 } from '@/types/benchmark-chart'
+import { useApyData } from '@/context/apy-data-provider'
 
 // Add a new type for top morpho data
 interface TopMorphoInfo {
@@ -61,6 +62,7 @@ export function BenchmarkHistoryChart() {
     const [apiPeriod, setApiPeriod] = useState<Period | 'YEAR'>(Period.oneMonth)
     const [aaveRewardApy, setAaveRewardApy] = useState<number>(0)
     const { selectedChain } = useChain()
+    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy, boostApyStartDate } = useApyData()
 
     // Get Superfund data
     const { historicalData: superfundData, isLoading: superfundLoading } = useHistoricalData({
@@ -496,6 +498,14 @@ export function BenchmarkHistoryChart() {
                 day: 'numeric'
             }).format(date);
 
+            // Check if the date is on or after boost APY start date
+            const shouldAddBoost = date.getTime() >= boostApyStartDate;
+
+            // Only add BOOST_APY to superfund value if date is on or after the start date
+            const superfundValue = shouldAddBoost && item.superfund !== null ?
+                item.superfund + BOOST_APY :
+                item.superfund;
+
             const formattedItem: TFormattedBenchmarkDataPoint = {
                 rawTimestamp: item.timestamp,
                 xValue: item.timestamp,
@@ -503,10 +513,10 @@ export function BenchmarkHistoryChart() {
                 monthDay,
                 timestamp: `${formattedDate} ${time}`,
                 timeValue: time,
-                superfund: item.superfund ?? null,
+                superfund: superfundValue ?? null,
                 aave: selectedChain === ChainId.Sonic ? ((item.aave ?? 0) + aaveRewardApy) : (item.aave ?? null),
                 isAaveApproximated: item.isAaveApproximated || false,
-                superfundDisplay: abbreviateNumber(item.superfund ?? 0),
+                superfundDisplay: abbreviateNumber(superfundValue ?? 0),
                 aaveDisplay: abbreviateNumber(selectedChain === ChainId.Sonic ? ((item.aave ?? 0) + aaveRewardApy) : (item.aave ?? 0)),
                 fluid: item.fluid ?? null,
                 isFluidApproximated: item.isFluidApproximated || false,
@@ -567,7 +577,7 @@ export function BenchmarkHistoryChart() {
 
             return formattedItem;
         }).sort((a: TFormattedBenchmarkDataPoint, b: TFormattedBenchmarkDataPoint) => a.rawTimestamp - b.rawTimestamp);
-    }, [historicalData, aaveRewardApy, selectedChain]);
+    }, [historicalData, aaveRewardApy, selectedChain, boostApyStartDate, BOOST_APY]);
 
     const { minValue, maxValue, valueRange } = useMemo(() => {
         if (!chartData || chartData.length === 0) {

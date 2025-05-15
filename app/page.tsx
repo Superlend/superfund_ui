@@ -12,7 +12,7 @@ import ImageWithDefault from '@/components/ImageWithDefault'
 import { CHAIN_DETAILS } from '@/context/chain-context'
 import { ChainId } from '@/types/chain'
 import dynamic from 'next/dynamic'
-import { ChainProvider, useChain } from '@/context/chain-context'
+import { useChain } from '@/context/chain-context'
 import {
     Accordion,
     AccordionContent,
@@ -688,9 +688,7 @@ export default function HomePage() {
                         <div className="max-w-3xl mx-auto mb-12">
                             {/* Yield Table - Left Side (3/4 width) - lg:col-span-3 */}
                             <div className="overflow-hidden relative">
-                                <ChainProvider>
                                     <ChainSelectorWithBenchmarkTable />
-                                </ChainProvider>
                             </div>
                             {/* Stats Cards - Right Side (1/4 width) - Stacked vertically */}
                             {/* <div className="flex flex-col gap-6 z-10 md:pt-16">

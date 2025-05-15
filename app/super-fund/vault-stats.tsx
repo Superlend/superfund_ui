@@ -8,6 +8,7 @@ import InfoTooltip from '@/components/tooltips/InfoTooltip'
 import TooltipText from '@/components/tooltips/TooltipText'
 import { Skeleton } from '@/components/ui/skeleton'
 import { BodyText, HeadingText, Label } from '@/components/ui/typography'
+import { useApyData } from '@/context/apy-data-provider'
 import { useChain } from '@/context/chain-context'
 import useGetBoostRewards from '@/hooks/useGetBoostRewards'
 import useIsClient from '@/hooks/useIsClient'
@@ -69,10 +70,11 @@ const starVariants = {
 export default function VaultStats() {
     const { walletAddress, isWalletConnected } = useWalletConnection()
     const { selectedChain, chainDetails } = useChain()
-    const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
-        vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
-        chainId: selectedChain
-    })
+    // const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
+    //     vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+    //     chainId: selectedChain
+    // })
+    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
     const { userMaxWithdrawAmount, isLoading: isLoadingUserMaxWithdrawAmount, error: errorUserMaxWithdrawAmount } = useUserBalance(
         walletAddress as `0x${string}`
     )
@@ -92,13 +94,11 @@ export default function VaultStats() {
         walletAddress: walletAddress || '',
         refetchOnTransaction: true
     })
-    const { totalAssets, spotApy, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
     // const { rewards, totalRewardApy, isLoading: isLoadingRewards, error: errorRewards } = useRewardsHook()
     // const { days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading: isLoading7DayAvg, error: error7DayAvg } = useHistoricalData({
     //     chain_id: selectedChain
     // })
     const isLoadingSection = !isClient;
-    const BOOST_APY = getBoostApy(Number(totalAssets))
     const TOTAL_APY = Number((effectiveApyData?.total_apy ?? 0)) + (BOOST_APY ?? 0)
     const positionBreakdownList = [
         {
