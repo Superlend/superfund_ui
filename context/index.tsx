@@ -10,6 +10,8 @@ import { AuthProvider } from './auth-provider'
 import FrameSDK from '@farcaster/frame-sdk'
 import { farcasterFrame } from '@farcaster/frame-wagmi-connector'
 import { AnalyticsProvider } from './analytics-provider'
+import { ApyDataProvider } from './apy-data-provider'
+import { ChainProvider } from './chain-context'
 
 // Set up queryClient
 const queryClient = new QueryClient()
@@ -107,7 +109,13 @@ function ContextProvider({
             >
                 <QueryClientProvider client={queryClient}>
                     <WagmiProvider config={localConfig}>
-                        <AuthProvider>{children}</AuthProvider>
+                        <AuthProvider>
+                            <ChainProvider>
+                                <ApyDataProvider>
+                                    {children}
+                                </ApyDataProvider>
+                            </ChainProvider>
+                        </AuthProvider>
                     </WagmiProvider>
                 </QueryClientProvider>
             </PrivyProvider>

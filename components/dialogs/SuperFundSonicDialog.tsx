@@ -35,6 +35,8 @@ export default function SuperFundSonicDialog({
     walletAddress,
     portfolioValue
 }: SuperFundSonicDialogProps) {
+    return null;
+    
     const [telegramUsername, setTelegramUsername] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [validationError, setValidationError] = useState('')

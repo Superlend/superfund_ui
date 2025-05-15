@@ -33,14 +33,14 @@ export const CHART_CONFIG: TChartConfig = {
         label: 'Morpho Re7',
         color: '#D4A5A5',
     },
-    // fluid: {
-    //     label: 'Fluid',
-    //     color: '#00C853',
-    // },
-    // euler: {
-    //     label: 'Euler',
-    //     color: '#08131f',
-    // },
+    fluid: {
+        label: 'Fluid',
+        color: '#00C853',
+    },
+    euler: {
+        label: 'Euler',
+        color: '#08131f',
+    },
 }
 
 export const PROTOCOL_IDENTIFIERS = {

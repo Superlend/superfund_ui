@@ -91,13 +91,6 @@ const chartConfig = {
     },
 } satisfies ChartConfig
 
-const customTicks = {
-    [Period.oneDay]: 5,
-    [Period.oneWeek]: 5,
-    [Period.oneMonth]: 5,
-    [Period.allTime]: 5,
-} satisfies Record<Period, number>
-
 enum ChartType {
     Area = 'area',
     Bar = 'bar'

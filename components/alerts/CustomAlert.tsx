@@ -6,14 +6,16 @@ export default function CustomAlert({
     variant = 'destructive',
     hasPrefixIcon = true,
     description,
+    size = 'default',
 }: {
     variant?: 'destructive' | 'warning' | 'info'
     hasPrefixIcon?: boolean
     description: React.ReactNode | string
+    size?: 'default' | 'sm' | 'xs'
 }) {
     return (
-        <Alert variant={variant}>
-            <AlertDescription className="flex items-start justify-start gap-2">
+        <Alert variant={variant} size={size}>
+            <AlertDescription className="flex items-start justify-start gap-1">
                 {/* {hasPrefixIcon && variant === 'destructive' && (
                     <DangerSquare
                         width={18}

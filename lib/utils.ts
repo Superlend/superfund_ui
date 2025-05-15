@@ -367,7 +367,7 @@ export function getPlatformWebsiteLink({
     const platformNameId = platformId?.split('-')[0].toLowerCase()
     const baseUrl =
         platformWebsiteLinks[
-            platformNameId as keyof typeof platformWebsiteLinks
+        platformNameId as keyof typeof platformWebsiteLinks
         ]
 
     const formattedNetworkName =
@@ -439,6 +439,19 @@ export function checkDecimalPlaces(value: string, decimals: number) {
     }
 
     return false
+}
+
+export function hasNoDecimals(value: string | number): boolean {
+    const stringValue = value.toString();
+
+    // If there's no decimal point, return true
+    if (!stringValue.includes('.')) {
+        return true;
+    }
+
+    // If there is a decimal point, check if all decimal digits are zeros
+    const decimalPart = stringValue.split('.')[1];
+    return decimalPart.length === 0 || /^0+$/.test(decimalPart);
 }
 
 export function decimalPlacesCount(value: string) {
@@ -542,8 +555,8 @@ export function getMaxDecimalsToDisplay(tokenSymbol: string): number {
 export function getStartTimestamp(period: Period) {
     const currentTimestamp = Math.floor(Date.now() / 1000)
     switch (period) {
-        case Period.allTime:
-            return 0
+        case Period.oneYear:
+            return currentTimestamp - 86400 * 365
         case Period.oneMonth:
             return currentTimestamp - 86400 * 30
         case Period.oneWeek:
@@ -583,7 +596,7 @@ export function getApprovedWallet(): string | null {
         if (!storedData) return null;
 
         const data: StoredWalletData = JSON.parse(storedData);
-        
+
         // Check if expired
         if (Date.now() > data.expiresAt) {
             localStorage.removeItem(WALLET_STORAGE_KEY);
@@ -607,4 +620,15 @@ export function formatAmountToDisplay(amount: string) {
     } else {
         return abbreviateNumber(Number(amount ?? 0))
     }
+}
+
+export function getBoostApy(totalAssets: number) {
+    if (totalAssets > 200000) {
+        return 3
+    }
+    return 4
+}
+
+export function convertNegativeToZero(value: number) {
+    return value < 0 ? 0 : value
 }

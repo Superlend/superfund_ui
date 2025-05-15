@@ -12,7 +12,7 @@ import PositionDetails from '../position-details'
 import FundOverview from '../fund-overview'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useRouter, notFound } from 'next/navigation'
-import { ChainProvider, useChain } from '@/context/chain-context'
+// import { ChainProvider, useChain } from '@/context/chain-context'
 import { ChainId } from '@/types/chain'
 import TransactionHistory from '@/app/components/transaction-history'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
@@ -93,38 +93,38 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
 
   // Wrap content in a chain provider with forced chain ID from URL
   return (
-    <ChainProvider initialChain={chainId}>
-      <MainContainer className="flex flex-col flex-wrap gap-[40px] w-full mx-auto md:my-14">
-        <PageHeader />
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-[16px]">
-          <div className="flex flex-col gap-10">
-            <VaultStats />
-            <div className="flex flex-col gap-4 lg:hidden">
-              <DepositAndWithdrawAssets />
-              {isWalletConnected && (
-                <TransactionHistory protocolIdentifier={getProtocolIdentifier(chainId)} />
-              )}
-            </div>
-            {isConnectingWallet &&
-              <LoadingTabs />
-            }
-            {!isConnectingWallet &&
-              <FlatTabs
-                tabs={tabs}
-                activeTab={selectedTab}
-                onTabChange={handleTabChange}
-              />
-            }
+    <MainContainer className="flex flex-col flex-wrap gap-[40px] w-full mx-auto md:my-14">
+      <PageHeader />
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-[16px]">
+        <div className="flex flex-col gap-10">
+          <VaultStats />
+          <div className="flex flex-col gap-4 lg:hidden">
+            <DepositAndWithdrawAssets />
+            {isWalletConnected && (
+              <TransactionHistory protocolIdentifier={getProtocolIdentifier(chainId)} />
+            )}
           </div>
-          <div className="hidden lg:flex lg:flex-col lg:gap-4">
+          {isConnectingWallet &&
+            <LoadingTabs />
+          }
+          {!isConnectingWallet &&
+            <FlatTabs
+              tabs={tabs}
+              activeTab={selectedTab}
+              onTabChange={handleTabChange}
+            />
+          }
+        </div>
+        <div className="hidden lg:block">
+          <div className="sticky top-20 flex flex-col gap-2 overflow-y-auto max-h-full">
             <DepositAndWithdrawAssets />
             {isWalletConnected && (
               <TransactionHistory protocolIdentifier={getProtocolIdentifier(chainId)} />
             )}
           </div>
         </div>
-      </MainContainer>
-    </ChainProvider>
+      </div>
+    </MainContainer>
   )
 }
 

@@ -33,8 +33,9 @@ import { SONIC_USDC_ADDRESS, USDC_ADDRESS } from '@/lib/constants'
 import { fetchRewardApyAaveV3 } from '@/hooks/vault_hooks/vaultHook'
 import { CHART_CONFIG, PROTOCOL_IDENTIFIERS } from '@/lib/benchmark-chart-config'
 import useGetBenchmarkHistory from '@/hooks/useGetBenchmarkHistory'
-import { abbreviateNumber } from '@/lib/utils'
+import { abbreviateNumber, getBoostApy } from '@/lib/utils'
 import ImageWithDefault from './ImageWithDefault'
+import { useApyData } from '@/context/apy-data-provider'
 
 // Add the TopMorphoInfo interface for consistency with the chart component
 interface TopMorphoInfo {
@@ -60,10 +61,11 @@ export function BenchmarkYieldTable() {
     const [benchmarkData, setBenchmarkData] = useState<BenchmarkData[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const { selectedChain } = useChain()
+    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy, boostApyStartDate } = useApyData()
 
     // Get Superfund data
     const { historicalData: superfundData, isLoading: superfundLoading } = useHistoricalData({
-        period: apiPeriod === 'YEAR' ? Period.allTime : apiPeriod as Period,
+        period: apiPeriod === 'YEAR' ? Period.oneYear : apiPeriod as Period,
         chain_id: selectedChain
     })
 
@@ -86,11 +88,11 @@ export function BenchmarkYieldTable() {
     })
 
     // Get Fluid data
-    // const { data: fluidData, isLoading: isFluidLoading } = useGetBenchmarkHistory({
-    //     protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.fluid,
-    //     period: apiPeriod,
-    //     token: USDC_ADDRESS
-    // });
+    const { data: fluidData, isLoading: isFluidLoading } = useGetBenchmarkHistory({
+        protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.fluid,
+        period: apiPeriod,
+        token: USDC_ADDRESS
+    });
 
     // Get Morpho data for Base chain - add all the ones from chart component
     const { data: morphoGauntletPrimeData, isLoading: isMorphoGauntletPrimeLoading } = useGetBenchmarkHistory({
@@ -130,11 +132,11 @@ export function BenchmarkYieldTable() {
     })
 
     // Get Euler data for Base chain
-    // const { data: eulerData, isLoading: isEulerLoading } = useGetBenchmarkHistory({
-    //     protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.euler,
-    //     period: apiPeriod,
-    //     token: USDC_ADDRESS
-    // })
+    const { data: eulerData, isLoading: isEulerLoading } = useGetBenchmarkHistory({
+        protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.euler,
+        period: apiPeriod,
+        token: USDC_ADDRESS
+    })
 
     // Calculate average APY for a dataset over the selected period
     const calculateAverageApy = (data: any) => {
@@ -169,7 +171,11 @@ export function BenchmarkYieldTable() {
         }
 
         const total = data.reduce((sum: number, item: any) => {
-            return sum + (item.totalApy || 0);
+            const currentDate = new Date(item.timestamp * 1000).getTime();
+            // Only add BOOST_APY if the date is on or after May 12, 2025
+            const shouldAddBoost = currentDate >= boostApyStartDate;
+            const itemValue = shouldAddBoost ? (item.totalApy + BOOST_APY) : item.totalApy;
+            return sum + (itemValue || 0);
         }, 0);
 
         return total / data.length;
@@ -219,14 +225,14 @@ export function BenchmarkYieldTable() {
             superfundLoading ||
             isAaveLoading ||
             (selectedChain === ChainId.Base && (
-                // isFluidLoading ||
+                isFluidLoading ||
                 isMorphoGauntletPrimeLoading ||
                 isMorphoMoonwellLoading ||
                 isMorphoGauntletCoreLoading ||
                 isMorphoSteakhouseLoading ||
                 isMorphoIonicLoading ||
-                isMorphoRe7Loading
-                // isEulerLoading
+                isMorphoRe7Loading ||
+                isEulerLoading
             ));
 
         setIsLoading(isDataLoading);
@@ -246,8 +252,8 @@ export function BenchmarkYieldTable() {
                 days = 1;
             } else if (selectedRange === Period.oneWeek) {
                 days = 7;
-            } else if (selectedRange === Period.allTime) {
-                days = 365; // Use a full year for "All Time"
+            } else if (selectedRange === Period.oneYear) {
+                days = 365; // Use a full year for "1 Year"
             }
 
             // Calculate compound interest over the selected period
@@ -282,24 +288,24 @@ export function BenchmarkYieldTable() {
         // Base chain specific protocols
         if (selectedChain === ChainId.Base) {
             // Add Fluid
-            // const fluidApy = calculateAverageApy(fluidData);
-            // newBenchmarkData.push({
-            //     platform: 'Fluid',
-            //     apy: fluidApy,
-            //     totalEarned: calculateEarningsForCurrentPeriod(fluidApy),
-            //     color: "#00C853", // Fluid color
-            //     logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/fluid_logo.png'
-            // });
+            const fluidApy = calculateAverageApy(fluidData);
+            newBenchmarkData.push({
+                platform: 'Fluid',
+                apy: fluidApy,
+                totalEarned: calculateEarningsForCurrentPeriod(fluidApy),
+                color: "#00C853", // Fluid color
+                logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/fluid_logo.png'
+            });
 
             // Add Euler
-            // const eulerApy = calculateAverageApy(eulerData);
-            // newBenchmarkData.push({
-            //     platform: 'Euler',
-            //     apy: eulerApy,
-            //     totalEarned: calculateEarningsForCurrentPeriod(eulerApy),
-            //     color: CHART_CONFIG.euler.color,
-            //     logo: '/images/logos/euler-symbol.svg'
-            // });
+            const eulerApy = calculateAverageApy(eulerData);
+            newBenchmarkData.push({
+                platform: 'Euler',
+                apy: eulerApy,
+                totalEarned: calculateEarningsForCurrentPeriod(eulerApy),
+                color: CHART_CONFIG.euler.color,
+                logo: '/images/logos/euler-symbol.svg'
+            });
 
             // Add top Morpho vault only if we found one
             const topMorpho = getTopMorphoVault;
@@ -321,24 +327,24 @@ export function BenchmarkYieldTable() {
     }, [
         superfundData,
         aaveData,
-        // fluidData,
+        fluidData,
         morphoGauntletPrimeData,
         morphoMoonwellData,
         morphoGauntletCoreData,
         morphoSteakhouseData,
         morphoIonicData,
         morphoRe7Data,
-        // eulerData,
+        eulerData,
         superfundLoading,
         isAaveLoading,
-        // isFluidLoading,
+        isFluidLoading,
         isMorphoGauntletPrimeLoading,
         isMorphoMoonwellLoading,
         isMorphoGauntletCoreLoading,
         isMorphoSteakhouseLoading,
         isMorphoIonicLoading,
         isMorphoRe7Loading,
-        // isEulerLoading,
+        isEulerLoading,
         selectedChain,
         aaveRewardApy,
         selectedRange
@@ -347,8 +353,8 @@ export function BenchmarkYieldTable() {
     // Handle time period change
     const handleRangeChange = (value: string) => {
         // For the "All" filter, use one year period instead for API calls
-        if (value === Period.allTime) {
-            setSelectedRange(Period.allTime); // For UI display
+        if (value === Period.oneYear) {
+            setSelectedRange(Period.oneYear); // For UI display
             setApiPeriod("YEAR"); // One year data for API calls
         } else {
             setSelectedRange(value as Period);
@@ -377,7 +383,7 @@ export function BenchmarkYieldTable() {
                     let periodText = '30D';
                     if (selectedRange === Period.oneDay) periodText = '24H';
                     if (selectedRange === Period.oneWeek) periodText = '7D';
-                    if (selectedRange === Period.allTime) periodText = 'All Time';
+                    if (selectedRange === Period.oneYear) periodText = '1Y';
 
                     return (
                         <div className="text-center w-full">
@@ -387,7 +393,7 @@ export function BenchmarkYieldTable() {
                 },
                 cell: ({ row }) => (
                     <BodyText level="body2" weight="medium" className="text-gray-800 text-center">
-                        {row.original.apy.toFixed(1)}%
+                        {abbreviateNumber(row.original.apy ?? 0, 2)}%
                     </BodyText>
                 ),
             },
@@ -397,7 +403,7 @@ export function BenchmarkYieldTable() {
                     let periodText = '30 Days';
                     if (selectedRange === Period.oneDay) periodText = '24 Hours';
                     if (selectedRange === Period.oneWeek) periodText = '7 Days';
-                    if (selectedRange === Period.allTime) periodText = '1 Year';
+                    if (selectedRange === Period.oneYear) periodText = '1 Year';
 
                     return (
                         <div className="text-center w-full">
@@ -407,7 +413,7 @@ export function BenchmarkYieldTable() {
                 },
                 cell: ({ row }) => (
                     <BodyText level="body2" weight="medium" className="text-gray-800 text-center">
-                        ${abbreviateNumber(row.original.totalEarned, 2)}
+                        ${abbreviateNumber(row.original.totalEarned ?? 0, 2)}
                     </BodyText>
                 ),
             },

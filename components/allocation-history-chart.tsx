@@ -259,13 +259,6 @@ export function AllocationHistoryChart() {
     const { selectedChain } = useChain()
     const chartConfig: ChartConfig = CHART_CONFIG_MAP[selectedChain as keyof typeof CHART_CONFIG_MAP]
 
-    const customTicks = {
-        [Period.oneDay]: 5,
-        [Period.oneWeek]: 5,
-        [Period.oneMonth]: 5,
-        [Period.allTime]: 5,
-    }
-
     useEffect(() => {
         setStartIndex(0)
         setEndIndex(rebalanceHistory.length - 1)
