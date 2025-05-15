@@ -742,7 +742,7 @@ export default function HomePage() {
                 </section>
             </Container>
 
-            {/* SECTION 4: Available on 2 fastest growing chains */}
+            {/* SECTION 4: Available on the fastest growing chains */}
             <Container>
                 <section className="py-8">
                     <motion.div
@@ -755,7 +755,7 @@ export default function HomePage() {
                         {/* Section Header */}
                         <motion.div variants={childVariants} className="text-center mb-16">
                             <HeadingText level="h2" weight="bold" className="mb-4">
-                                Available on 2 fastest growing chains
+                                Available on the fastest growing chains
                             </HeadingText>
                             <BodyText level="body1" weight="medium" className="text-gray-600 max-w-2xl mx-auto">
                                 SuperFund deploys your assets across multiple protocols to capture the highest yields while minimizing risk
@@ -848,7 +848,7 @@ export default function HomePage() {
                                     {/* CTA Button */}
                                     <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base" onClick={() => logEvent('clicked_launch_superfund_base_app', {
                                         section: 'base_network_card',
-                                        title: "Available on 2 fastest growing chains"
+                                        title: "Available on the fastest growing chains"
                                     })}>
                                         <Button
                                             className="w-full h-12 group relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-md"
@@ -945,7 +945,7 @@ export default function HomePage() {
                                     {/* CTA Button */}
                                     <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/sonic" onClick={() => logEvent('clicked_join_superfund_sonic_waitlist', {
                                         section: 'sonic_network_card',
-                                        title: "Available on 2 fastest growing chains"
+                                        title: "Available on the fastest growing chains"
                                     })}>
                                         <Button
                                             variant="outline"
