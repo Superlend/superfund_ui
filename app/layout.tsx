@@ -85,7 +85,7 @@ export default function RootLayout({
                 <ContextProvider cookies={cookies}>
                     <Header />
                     {children}
-                    {/* <Footer /> */}
+                    <Footer />
                 </ContextProvider>
             </body>
         </html>

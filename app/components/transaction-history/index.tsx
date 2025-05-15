@@ -72,7 +72,7 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
   const groupTransactionsByDate = () => {
     const groups: { [key: string]: Transaction[] } = {}
 
-    transactions.slice(0, 5).forEach(tx => {
+    transactions.slice(0, 3).forEach(tx => {
       const date = new Date(parseInt(tx.blockTimestamp) * 1000)
       let dateKey = ''
 
@@ -102,7 +102,7 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
         <h3 className="text-lg font-semibold">Your Recent Transactions</h3>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 overflow-y-auto max-h-[100dvh]">
         {isLoading ? (
           <TransactionSkeleton count={3} />
         ) : transactions.length === 0 ? (

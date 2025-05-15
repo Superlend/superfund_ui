@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { TPositionType } from '@/types'
 import {
     ArrowRightIcon,
+    ArrowUpRightIcon,
     Check,
     LoaderCircle,
     X,
@@ -49,6 +50,8 @@ import sdk from '@farcaster/frame-sdk'
 import Image from 'next/image'
 import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
 import { VAULT_ADDRESS_MAP } from '@/lib/constants'
+import SubscribeWithEmail from '../subscribe-with-email'
+import { motion } from 'framer-motion'
 
 export default function SuperVaultTxDialog({
     disabled,
@@ -79,6 +82,8 @@ export default function SuperVaultTxDialog({
     const isDesktop = screenWidth > 768
     const isDepositPositionType = positionType === 'deposit'
     const [miniappUser, setMiniAppUser] = useState<any>(null)
+    const [pendingEmail, setPendingEmail] = useState('')
+    const [showEmailReminder, setShowEmailReminder] = useState(false)
     const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
         vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
         chain_id: selectedChain
@@ -136,6 +141,13 @@ export default function SuperVaultTxDialog({
     }
 
     function handleOpenChange(open: boolean) {
+        // If trying to close AND there's an unsaved email in a successful deposit/withdraw state
+        if (!open && pendingEmail && 
+            ((isDepositPositionType && depositTx.status === 'view' && depositTx.isConfirmed))) {
+            setShowEmailReminder(true)
+            return // Prevent dialog from closing
+        }
+        
         // When opening the dialog, reset the amount and the tx status
         setOpen(open)
         // When closing the dialog, reset the amount and the tx status
@@ -145,7 +157,16 @@ export default function SuperVaultTxDialog({
         ) {
             setAmount('')
             resetDepositWithdrawTx()
+            setPendingEmail('') // Reset pendingEmail when closing
         }
+    }
+
+    function handleFinalClose() {
+        setShowEmailReminder(false)
+        setPendingEmail('')
+        setOpen(false)
+        setAmount('')
+        resetDepositWithdrawTx()
     }
 
     function isShowBlock(status: { deposit: boolean; withdraw: boolean }) {
@@ -169,7 +190,11 @@ export default function SuperVaultTxDialog({
     const isWithdrawTxInProgress =
         withdrawTx.isPending || withdrawTx.isConfirming
 
+    const isDepositTxInSuccess = depositTx.isConfirmed && depositTx.hash && depositTx.status === 'view'
+    const isWithdrawTxInSuccess = withdrawTx.isConfirmed && withdrawTx.hash && withdrawTx.status === 'view'
+
     const isTxInProgress = isDepositTxInProgress || isWithdrawTxInProgress
+    const isTxInSuccess = isDepositTxInSuccess || isWithdrawTxInSuccess
     const isTxFailed = false
 
     const depositTxSpinnerColor = depositTx.isPending
@@ -213,7 +238,7 @@ export default function SuperVaultTxDialog({
             onClick={() => handleOpenChange(false)}
             className="h-6 w-6 flex items-center justify-center absolute right-6 top-[1.6rem] rounded-full opacity-70 bg-white ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground p-0"
         >
-            <X strokeWidth={2.5} className="h-4 w-4 text-black" />
+            <X strokeWidth={2.5} className="h-4 w-4 text-black shrink-0" />
             <span className="sr-only">Close</span>
         </Button>
     ) : null
@@ -267,8 +292,9 @@ export default function SuperVaultTxDialog({
                         className="text-gray-800 text-center capitalize"
                     >
                         {isDepositPositionType
-                            ? 'Review Deposit'
-                            : 'Review Withdraw'}
+                            ? `${isDepositTxInSuccess ? 'Deposit' : 'Review Deposit'}`
+                            : `${isWithdrawTxInSuccess ? 'Withdraw' : 'Review Withdraw'}`
+                        }
                     </HeadingText>
                     // </DialogTitle>
                 )}
@@ -412,7 +438,7 @@ export default function SuperVaultTxDialog({
                 <div className="flex flex-col items-center justify-between px-6 bg-gray-200 lg:bg-white rounded-5 divide-y divide-gray-300">
                     {isShowBlock({
                         deposit: true,
-                        withdraw: true,
+                        withdraw: false,
                     }) && (
                             <div
                                 className={`flex items-center justify-between w-full py-4`}
@@ -444,7 +470,7 @@ export default function SuperVaultTxDialog({
                                     weight="normal"
                                     className="text-gray-600"
                                 >
-                                    Balance
+                                    Remaining Balance
                                 </BodyText>
                                 <BodyText
                                     level="body2"
@@ -834,6 +860,23 @@ export default function SuperVaultTxDialog({
                                 )}
                         </div>
                     )}
+                {
+                    isShowBlock({
+                        deposit: depositTx.status === 'view' && depositTx.isConfirmed && !!depositTx.hash,
+                        withdraw: false,
+                    }) && (
+                        <div className="flex flex-col items-center gap-3 my-1 w-full">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, ease: 'easeOut' }}
+                                className="bg-gray-200/50 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full"
+                            >
+                                <SubscribeWithEmail onEmailChange={setPendingEmail} />
+                            </motion.div>
+                        </div>
+                    )
+                }
                 {/* Block 4 */}
                 {miniappUser &&
                     ((withdrawTx.status === 'view' && withdrawTx.isConfirmed) ||
@@ -850,6 +893,41 @@ export default function SuperVaultTxDialog({
                     />
                 )}
             </div>
+            
+            {/* Add email reminder dialog */}
+            {showEmailReminder && (
+                <Dialog open={showEmailReminder} onOpenChange={setShowEmailReminder}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <HeadingText level="h4" weight="medium" className="text-gray-800 text-center">
+                                Don&apos;t miss out!
+                            </HeadingText>
+                        </DialogHeader>
+                        <div className="flex flex-col gap-4">
+                            <BodyText level="body2" weight="normal" className="text-gray-800">
+                                You&apos;ve entered an email but haven&apos;t submitted it. Would you like to submit now to stay updated on SuperFund?
+                            </BodyText>
+                            <div className="flex justify-end gap-2">
+                                <Button variant="outline" onClick={handleFinalClose}>
+                                    Close anyway
+                                </Button>
+                                <Button variant="primary" onClick={() => {
+                                    setShowEmailReminder(false)
+                                    // Find and click the submit button in the email form
+                                    setTimeout(() => {
+                                        const submitButton = document.querySelector('.subscribe-email-form button[type="submit"]');
+                                        if (submitButton instanceof HTMLElement) {
+                                            submitButton.click();
+                                        }
+                                    }, 100);
+                                }}>
+                                    Submit email
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
         </>
     )
 

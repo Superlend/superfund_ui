@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { useRouter, notFound } from 'next/navigation'
 import { Skeleton } from '@/components/ui/skeleton'
 import AllTransactions from '@/app/components/all-transactions'
-import { ChainProvider } from '@/context/chain-context'
+// import { ChainProvider } from '@/context/chain-context'
 import { ChainId } from '@/types/chain'
 
 interface ChainTxsPageProps {
@@ -44,22 +44,20 @@ export default function ChainTransactionsPage({ params }: ChainTxsPageProps) {
   const isBaseChain = chainId === ChainId.Base;
 
   return (
-    <ChainProvider initialChain={chainId}>
-      <MainContainer className="flex flex-col gap-[40px] w-full mx-auto my-14">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl font-semibold">Transactions</h1>
-        </div>
+    <MainContainer className="flex flex-col gap-[40px] w-full mx-auto my-14">
+      <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <h1 className="text-2xl font-semibold">Transactions</h1>
+      </div>
 
-        <AllTransactions />
-      </MainContainer>
-    </ChainProvider>
+      <AllTransactions />
+    </MainContainer>
   )
 }
 

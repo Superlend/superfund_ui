@@ -19,7 +19,7 @@ import { TClaimRewardsResponse } from "@/types"
 import { useWalletConnection } from "@/hooks/useWalletConnection"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useRewardsHook } from "../../hooks/vault_hooks/useRewardHook"
-import { Check, GiftIcon } from "lucide-react"
+import { Check, GiftIcon, InfoIcon } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { motion } from "motion/react"
 import useDimensions from "@/hooks/useDimensions"
@@ -117,28 +117,35 @@ export default function ClaimRewards({
                         className="w-full h-full max-h-[200px] object-cover md:hidden"
                         priority={true}
                     />
-                    <h3 className="absolute text-2xl md:text-4xl max-w-[12ch] text-center uppercase top-5 md:top-1/2 left-1/2 -translate-x-1/2 md:-translate-y-1/2 text-accent-navy font-bold leading-0">
+                    <h3 className={`absolute text-2xl md:text-4xl max-w-[12ch] text-center uppercase ${!unclaimedRewardsData.length ? '' : 'top-5'} md:top-1/2 left-1/2 -translate-x-1/2 md:-translate-y-1/2 text-accent-navy font-bold leading-0`}>
                         {unclaimedRewardsData.length > 0 ? "Claim your rewards" : "No rewards to claim"}
                     </h3>
-                    <motion.div className="absolute max-md:bottom-4 md:right-5 z-[5] max-md:w-full max-md:px-4"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.3, ease: 'easeOut' }}
-                    >
-                        <Button
-                            onClick={() => setIsSelectTokenDialogOpen(true)}
-                            size={screenWidth > 1024 ? 'lg' : 'md'}
-                            variant="primary"
-                            className="uppercase max-md:w-full bg-white shadow-lg hover:shadow-md active:shadow-sm hover:bg-gray-50 rounded-5 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200"
-                            disabled={!hasUnclaimedRewards}
+                    {hasUnclaimedRewards &&
+                        <motion.div className="absolute max-md:bottom-4 md:right-5 z-[5] max-md:w-full max-md:px-4"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.3, ease: 'easeOut' }}
                         >
-                            <span className={`flex items-center gap-1 tracking-wide text-white ${!hasUnclaimedRewards ? 'px-5' : 'px-2 md:px-10'}`}>
-                                <GiftIcon className="w-4 h-4 text-inherit" />
-                                Claim{hasUnclaimedRewards ? '' : 'ed'}
-                                {!hasUnclaimedRewards && <Check strokeWidth={2.5} className="w-4 h-4 text-gray-200" />}</span>
-                        </Button>
-                    </motion.div>
+                            <Button
+                                onClick={() => setIsSelectTokenDialogOpen(true)}
+                                size={screenWidth > 1024 ? 'lg' : 'md'}
+                                variant="primary"
+                                className="uppercase max-md:w-full bg-white shadow-lg hover:shadow-md active:shadow-sm hover:bg-gray-50 rounded-5 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200"
+                                disabled={!hasUnclaimedRewards}
+                            >
+                                <span className={`flex items-center gap-1 tracking-wide text-white ${!hasUnclaimedRewards ? 'px-5' : 'px-2 md:px-10'}`}>
+                                    <GiftIcon className="w-4 h-4 text-inherit" />
+                                    Claim{hasUnclaimedRewards ? '' : 'ed'}
+                                    {!hasUnclaimedRewards && <Check strokeWidth={2.5} className="w-4 h-4 text-gray-200" />}</span>
+                            </Button>
+                        </motion.div>}
                 </CardFooter>
+                <div className="py-3 px-4 flex items-start sm:items-center justify-center gap-1">
+                    <InfoIcon className="w-4 h-4 text-secondary-500 shrink-0" />
+                    <BodyText level="body2" weight="medium" className="text-gray-600">
+                        Rewards can be claimed weekly, based on epochs that start from May 25th.
+                    </BodyText>
+                </div>
             </Card>
             {/* Select token dialog */}
             <SelectTokenDialog

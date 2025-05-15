@@ -7,7 +7,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { TActionType, TPositionType } from '@/types'
 import { LoaderCircle } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { abbreviateNumber, getLowestDisplayValue } from '@/lib/utils'
+import { abbreviateNumber, getBoostApy, getLowestDisplayValue } from '@/lib/utils'
 import { BodyText } from '@/components/ui/typography'
 import { cn } from '@/lib/utils'
 import CustomNumberInput from '@/components/inputs/CustomNumberInput'
@@ -16,13 +16,10 @@ import {
     TTxContext,
     useTxContext,
 } from '@/context/super-vault-tx-provider'
-import { ChainId } from '@/types/chain'
 import {
     checkAllowance,
     useUserBalance,
 } from '@/hooks/vault_hooks/useUserBalanceHook'
-import { usePrivy } from '@privy-io/react-auth'
-import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import ConnectWalletButton from '@/components/ConnectWalletButton'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import SuperVaultTxDialog from '@/components/dialogs/SuperVaultTx'
@@ -30,6 +27,7 @@ import { useChain } from '@/context/chain-context'
 import { VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
 import useGetBoostRewards from '@/hooks/useGetBoostRewards'
+import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 
 export type THelperText = Record<
     string,
@@ -50,7 +48,6 @@ export default function DepositAndWithdrawAssets() {
 
     const isDepositPositionType = positionType === 'deposit'
     const { selectedChain } = useChain()
-    const { user } = usePrivy()
     const { walletAddress } = useWalletConnection()
 
     const {
@@ -68,11 +65,13 @@ export default function DepositAndWithdrawAssets() {
         vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
         chain_id: selectedChain
     })
-    const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
-        vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
-        chainId: selectedChain
-    })
-    const TOTAL_APY = Number(effectiveApyData?.total_apy ?? 0) + Number(boostRewardsData?.[0]?.boost_apy ?? 0)
+    const { totalAssets, spotApy, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
+    // const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
+    //     vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+    //     chainId: selectedChain
+    // })
+    const BOOST_APY = getBoostApy(Number(totalAssets))
+    const TOTAL_APY = Number(effectiveApyData?.total_apy ?? 0) + Number(BOOST_APY ?? 0)
 
     useEffect(() => {
         if (isWalletConnected) {
@@ -214,15 +213,10 @@ export default function DepositAndWithdrawAssets() {
                             ) : (
                                 abbreviateNumber(
                                     Number(
-                                        getLowestDisplayValue(
-                                            Number(
-                                                isDepositPositionType
-                                                    ? (balance ?? 0)
-                                                    : (userMaxWithdrawAmount ??
-                                                        0)
-                                            ),
-                                            2
-                                        )
+                                        isDepositPositionType
+                                            ? (balance ?? 0)
+                                            : (userMaxWithdrawAmount ??
+                                                0)
                                     ),
                                     2
                                 )

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase.waitlist'
 
 const waitlistSchema = z.object({
   email: z.string().email('Please provide a valid email address'),

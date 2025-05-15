@@ -17,6 +17,7 @@ export function getRewardsTooltipContent({
     rewardsCustomList,
     apyCurrent,
     positionTypeParam,
+    note,
 }: {
     baseRateFormatted: string
     rewards?: TReward[]
@@ -25,16 +26,17 @@ export function getRewardsTooltipContent({
     }[]
     apyCurrent: number
     positionTypeParam?: string
+    note?: string | (() => React.ReactNode)
 }) {
     const baseRateOperator = positionTypeParam === 'lend' ? '+' : '-'
     const isLend = positionTypeParam === 'lend'
 
     return (
-        <div className="flex flex-col divide-y divide-gray-800">
+        <div className="flex flex-col divide-y divide-gray-400">
             <BodyText
                 level="body1"
                 weight="medium"
-                className="py-2 text-gray-800/75"
+                className="py-2 text-gray-800"
             >
                 Rate & Rewards
             </BodyText>
@@ -112,9 +114,9 @@ export function getRewardsTooltipContent({
                                     className="inline-block rounded-full object-contain"
                                 />
                             }
-                            <BodyText level="body3" weight="medium" className="text-gray-800">
+                            <Label weight="medium" className="text-gray-800">
                                 {reward.key_name}
-                            </BodyText>
+                            </Label>
                         </div>
                         <BodyText level="body3" weight="medium" className="text-gray-800">
                             {reward.value}%
@@ -146,6 +148,12 @@ export function getRewardsTooltipContent({
                     = {abbreviateNumber(apyCurrent)}%
                 </BodyText>
             </div>
+            {note && typeof note === 'string' &&
+                <BodyText level="body3" weight="medium" className="text-gray-800 py-2 mt-2">
+                    {note}
+                </BodyText>
+            }
+            {note && typeof note === 'function' && note()}
         </div>
     )
 }

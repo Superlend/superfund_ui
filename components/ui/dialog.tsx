@@ -65,7 +65,7 @@ const DialogContent = React.forwardRef<
                         >
                             <X
                                 strokeWidth={2.5}
-                                className="h-4 w-4 text-black"
+                                className="h-4 w-4 text-gray-800 shrink-0"
                             />
                             <span className="sr-only">Close</span>
                         </Button>

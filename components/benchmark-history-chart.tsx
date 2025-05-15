@@ -47,6 +47,7 @@ import {
     TCustomXAxisTickProps,
     TCustomYAxisTickProps
 } from '@/types/benchmark-chart'
+import { useApyData } from '@/context/apy-data-provider'
 
 // Add a new type for top morpho data
 interface TopMorphoInfo {
@@ -61,10 +62,11 @@ export function BenchmarkHistoryChart() {
     const [apiPeriod, setApiPeriod] = useState<Period | 'YEAR'>(Period.oneMonth)
     const [aaveRewardApy, setAaveRewardApy] = useState<number>(0)
     const { selectedChain } = useChain()
+    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy, boostApyStartDate } = useApyData()
 
     // Get Superfund data
     const { historicalData: superfundData, isLoading: superfundLoading } = useHistoricalData({
-        period: apiPeriod === 'YEAR' ? Period.allTime : apiPeriod as Period,
+        period: apiPeriod === 'YEAR' ? Period.oneYear : apiPeriod as Period,
         chain_id: selectedChain
     })
 
@@ -124,18 +126,18 @@ export function BenchmarkHistoryChart() {
     })
 
     // Get Fluid data for Base chain
-    // const { data: fluidData, isLoading: isFluidLoading } = useGetBenchmarkHistory({
-    //     protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.fluid,
-    //     period: apiPeriod,
-    //     token: USDC_ADDRESS
-    // });
+    const { data: fluidData, isLoading: isFluidLoading } = useGetBenchmarkHistory({
+        protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.fluid,
+        period: apiPeriod,
+        token: USDC_ADDRESS
+    });
 
     // Get Euler data for Base chain
-    // const { data: eulerData, isLoading: isEulerLoading } = useGetBenchmarkHistory({
-    //     protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.euler,
-    //     period: apiPeriod,
-    //     token: USDC_ADDRESS
-    // });
+    const { data: eulerData, isLoading: isEulerLoading } = useGetBenchmarkHistory({
+        protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.euler,
+        period: apiPeriod,
+        token: USDC_ADDRESS
+    });
 
     const [historicalData, setHistoricalData] = useState<TBenchmarkDataPoint[]>([])
     const prevSuperfundData = useRef<any>(null)
@@ -184,8 +186,8 @@ export function BenchmarkHistoryChart() {
         };
 
         // Create individual maps for fluid and euler
-        // const fluidMap = new Map<number, number>();
-        // const eulerMap = new Map<number, number>();
+        const fluidMap = new Map<number, number>();
+        const eulerMap = new Map<number, number>();
 
         if (selectedChain === ChainId.Base) {
             // Process Morpho data
@@ -209,22 +211,22 @@ export function BenchmarkHistoryChart() {
             });
 
             // Process Fluid data
-            // if (fluidData?.processMap && Array.isArray(fluidData.processMap)) {
-            //     fluidData.processMap.forEach((item: any) => {
-            //         if (item && item.timestamp && item.data && item.data.depositRate) {
-            //             fluidMap.set(item.timestamp, item.data.depositRate);
-            //         }
-            //     });
-            // }
+            if (fluidData?.processMap && Array.isArray(fluidData.processMap)) {
+                fluidData.processMap.forEach((item: any) => {
+                    if (item && item.timestamp && item.data && item.data.depositRate) {
+                        fluidMap.set(item.timestamp, item.data.depositRate);
+                    }
+                });
+            }
 
             // Process Euler data
-            // if (eulerData?.processMap && Array.isArray(eulerData.processMap)) {
-            //     eulerData.processMap.forEach((item: any) => {
-            //         if (item && item.timestamp && item.data && item.data.depositRate) {
-            //             eulerMap.set(item.timestamp, item.data.depositRate);
-            //         }
-            //     });
-            // }
+            if (eulerData?.processMap && Array.isArray(eulerData.processMap)) {
+                eulerData.processMap.forEach((item: any) => {
+                    if (item && item.timestamp && item.data && item.data.depositRate) {
+                        eulerMap.set(item.timestamp, item.data.depositRate);
+                    }
+                });
+            }
         }
 
         // Get all timestamps
@@ -233,19 +235,19 @@ export function BenchmarkHistoryChart() {
         const morphoTimestamps = selectedChain === ChainId.Base
             ? Object.values(morphoMaps).flatMap(map => Array.from(map.keys()))
             : [];
-        // const fluidTimestamps = selectedChain === ChainId.Base 
-        //     ? Array.from(fluidMap.keys())
-        //     : [];
-        // const eulerTimestamps = selectedChain === ChainId.Base 
-        //     ? Array.from(eulerMap.keys())
-        //     : [];
+        const fluidTimestamps = selectedChain === ChainId.Base
+            ? Array.from(fluidMap.keys())
+            : [];
+        const eulerTimestamps = selectedChain === ChainId.Base
+            ? Array.from(eulerMap.keys())
+            : [];
 
         // Check if timestamps are in different formats (e.g., milliseconds vs seconds)
         const superfundFirstTimestamp = superfundTimestamps[0];
         const aaveFirstTimestamp = aaveTimestamps[0];
         const morphoFirstTimestamp = morphoTimestamps[0];
-        // const fluidFirstTimestamp = fluidTimestamps[0];
-        // const eulerFirstTimestamp = eulerTimestamps[0];
+        const fluidFirstTimestamp = fluidTimestamps[0];
+        const eulerFirstTimestamp = eulerTimestamps[0];
 
         // Log timestamp formats
         if (superfundFirstTimestamp && (aaveFirstTimestamp || morphoFirstTimestamp)) {
@@ -256,18 +258,17 @@ export function BenchmarkHistoryChart() {
             let normalizedAaveTimestamps = aaveTimestamps;
             let normalizedAaveMap = aaveMap;
             let normalizedMorphoMaps = morphoMaps;
-            // let normalizedFluidMap = fluidMap;
-            // let normalizedFluidTimestamps = fluidTimestamps;
-            // let normalizedEulerMap = eulerMap;
-            // let normalizedEulerTimestamps = eulerTimestamps;
+            let normalizedFluidMap = fluidMap;
+            let normalizedFluidTimestamps = fluidTimestamps;
+            let normalizedEulerMap = eulerMap;
+            let normalizedEulerTimestamps = eulerTimestamps;
 
             // Convert seconds to milliseconds if needed
             if (superfundFirstTimestamp.toString().length === 10 &&
                 (aaveFirstTimestamp?.toString().length === 13 ||
-                    morphoFirstTimestamp?.toString().length === 13))
-            // fluidFirstTimestamp?.toString().length === 13 ||
-            // eulerFirstTimestamp?.toString().length === 13)) 
-            {
+                    morphoFirstTimestamp?.toString().length === 13 ||
+                    fluidFirstTimestamp?.toString().length === 13 ||
+                    eulerFirstTimestamp?.toString().length === 13)) {
                 // Superfund in seconds, others in milliseconds
                 normalizedSuperfundMap = new Map();
                 normalizedSuperfundTimestamps = superfundTimestamps.map(ts => ts * 1000);
@@ -276,10 +277,9 @@ export function BenchmarkHistoryChart() {
                 });
             } else if (superfundFirstTimestamp.toString().length === 13 &&
                 (aaveFirstTimestamp?.toString().length === 10 ||
-                    morphoFirstTimestamp?.toString().length === 10))
-            // fluidFirstTimestamp?.toString().length === 10 ||
-            // eulerFirstTimestamp?.toString().length === 10)) 
-            {
+                    morphoFirstTimestamp?.toString().length === 10 ||
+                    fluidFirstTimestamp?.toString().length === 10 ||
+                    eulerFirstTimestamp?.toString().length === 10)) {
                 // Superfund in milliseconds, others in seconds
                 normalizedAaveMap = new Map();
                 normalizedAaveTimestamps = aaveTimestamps.map(ts => ts * 1000);
@@ -299,18 +299,18 @@ export function BenchmarkHistoryChart() {
                     });
 
                     // Normalize Fluid map
-                    // normalizedFluidMap = new Map();
-                    // normalizedFluidTimestamps = fluidTimestamps.map(ts => ts * 1000);
-                    // fluidMap.forEach((value, key) => {
-                    //     normalizedFluidMap.set(key * 1000, value);
-                    // });
+                    normalizedFluidMap = new Map();
+                    normalizedFluidTimestamps = fluidTimestamps.map(ts => ts * 1000);
+                    fluidMap.forEach((value, key) => {
+                        normalizedFluidMap.set(key * 1000, value);
+                    });
 
                     // Normalize Euler map
-                    // normalizedEulerMap = new Map();
-                    // normalizedEulerTimestamps = eulerTimestamps.map(ts => ts * 1000);
-                    // eulerMap.forEach((value, key) => {
-                    //     normalizedEulerMap.set(key * 1000, value);
-                    // });
+                    normalizedEulerMap = new Map();
+                    normalizedEulerTimestamps = eulerTimestamps.map(ts => ts * 1000);
+                    eulerMap.forEach((value, key) => {
+                        normalizedEulerMap.set(key * 1000, value);
+                    });
                 }
             }
 
@@ -342,8 +342,8 @@ export function BenchmarkHistoryChart() {
             const sortedMorphoTimestamps = selectedChain === ChainId.Base
                 ? Object.values(normalizedMorphoMaps).map(map => Array.from(map.keys()).sort((a, b) => a - b))
                 : [];
-            // const sortedFluidTimestamps = normalizedFluidTimestamps.sort((a, b) => a - b);
-            // const sortedEulerTimestamps = normalizedEulerTimestamps.sort((a, b) => a - b);
+            const sortedFluidTimestamps = normalizedFluidTimestamps.sort((a, b) => a - b);
+            const sortedEulerTimestamps = normalizedEulerTimestamps.sort((a, b) => a - b);
 
             const combined = normalizedSuperfundTimestamps.map(timestamp => {
                 // Get Superfund value
@@ -364,36 +364,36 @@ export function BenchmarkHistoryChart() {
                 }
 
                 // For Base chain, get Fluid value
-                // let fluidValue = null;
-                // let isFluidApproximated = false;
-                // if (selectedChain === ChainId.Base) {
-                //     if (normalizedFluidMap.has(timestamp)) {
-                //         fluidValue = normalizedFluidMap.get(timestamp);
-                //         isFluidApproximated = false;
-                //     } else {
-                //         const closestFluidTimestamp = findClosestTimestamp(timestamp, sortedFluidTimestamps);
-                //         if (closestFluidTimestamp !== null) {
-                //             fluidValue = normalizedFluidMap.get(closestFluidTimestamp);
-                //             isFluidApproximated = true;
-                //         }
-                //     }
-                // }
+                let fluidValue = null;
+                let isFluidApproximated = false;
+                if (selectedChain === ChainId.Base) {
+                    if (normalizedFluidMap.has(timestamp)) {
+                        fluidValue = normalizedFluidMap.get(timestamp);
+                        isFluidApproximated = false;
+                    } else {
+                        const closestFluidTimestamp = findClosestTimestamp(timestamp, sortedFluidTimestamps);
+                        if (closestFluidTimestamp !== null) {
+                            fluidValue = normalizedFluidMap.get(closestFluidTimestamp);
+                            isFluidApproximated = true;
+                        }
+                    }
+                }
 
                 // For Base chain, get Euler value
-                // let eulerValue = null;
-                // let isEulerApproximated = false;
-                // if (selectedChain === ChainId.Base) {
-                //     if (normalizedEulerMap.has(timestamp)) {
-                //         eulerValue = normalizedEulerMap.get(timestamp);
-                //         isEulerApproximated = false;
-                //     } else {
-                //         const closestEulerTimestamp = findClosestTimestamp(timestamp, sortedEulerTimestamps);
-                //         if (closestEulerTimestamp !== null) {
-                //             eulerValue = normalizedEulerMap.get(closestEulerTimestamp);
-                //             isEulerApproximated = true;
-                //         }
-                //     }
-                // }
+                let eulerValue = null;
+                let isEulerApproximated = false;
+                if (selectedChain === ChainId.Base) {
+                    if (normalizedEulerMap.has(timestamp)) {
+                        eulerValue = normalizedEulerMap.get(timestamp);
+                        isEulerApproximated = false;
+                    } else {
+                        const closestEulerTimestamp = findClosestTimestamp(timestamp, sortedEulerTimestamps);
+                        if (closestEulerTimestamp !== null) {
+                            eulerValue = normalizedEulerMap.get(closestEulerTimestamp);
+                            isEulerApproximated = true;
+                        }
+                    }
+                }
 
                 // For Base chain, get Morpho values
                 let morphoValues: any = {};
@@ -421,10 +421,10 @@ export function BenchmarkHistoryChart() {
                     superfund: superfundValue as number,
                     aave: aaveValue,
                     isAaveApproximated,
-                    // fluid: fluidValue,
-                    // isFluidApproximated,
-                    // euler: eulerValue,
-                    // isEulerApproximated,
+                    fluid: fluidValue,
+                    isFluidApproximated,
+                    euler: eulerValue,
+                    isEulerApproximated,
                     ...morphoValues
                 };
             });
@@ -472,8 +472,8 @@ export function BenchmarkHistoryChart() {
         superfundLoading,
         isAaveLoading,
         selectedChain,
-        // fluidData,
-        // eulerData
+        fluidData,
+        eulerData
     ]);
 
     const chartData = useMemo(() => {
@@ -498,6 +498,14 @@ export function BenchmarkHistoryChart() {
                 day: 'numeric'
             }).format(date);
 
+            // Check if the date is on or after boost APY start date
+            const shouldAddBoost = date.getTime() >= boostApyStartDate;
+
+            // Only add BOOST_APY to superfund value if date is on or after the start date
+            const superfundValue = shouldAddBoost && item.superfund !== null ?
+                item.superfund + BOOST_APY :
+                item.superfund;
+
             const formattedItem: TFormattedBenchmarkDataPoint = {
                 rawTimestamp: item.timestamp,
                 xValue: item.timestamp,
@@ -505,17 +513,17 @@ export function BenchmarkHistoryChart() {
                 monthDay,
                 timestamp: `${formattedDate} ${time}`,
                 timeValue: time,
-                superfund: item.superfund ?? null,
+                superfund: superfundValue ?? null,
                 aave: selectedChain === ChainId.Sonic ? ((item.aave ?? 0) + aaveRewardApy) : (item.aave ?? null),
                 isAaveApproximated: item.isAaveApproximated || false,
-                superfundDisplay: abbreviateNumber(item.superfund ?? 0),
+                superfundDisplay: abbreviateNumber(superfundValue ?? 0),
                 aaveDisplay: abbreviateNumber(selectedChain === ChainId.Sonic ? ((item.aave ?? 0) + aaveRewardApy) : (item.aave ?? 0)),
-                // fluid: item.fluid ?? null,
-                // isFluidApproximated: item.isFluidApproximated || false,
-                // fluidDisplay: abbreviateNumber(item.fluid ?? 0),
-                // euler: item.euler ?? null,
-                // isEulerApproximated: item.isEulerApproximated || false,
-                // eulerDisplay: abbreviateNumber(item.euler ?? 0),
+                fluid: item.fluid ?? null,
+                isFluidApproximated: item.isFluidApproximated || false,
+                fluidDisplay: abbreviateNumber(item.fluid ?? 0),
+                euler: item.euler ?? null,
+                isEulerApproximated: item.isEulerApproximated || false,
+                eulerDisplay: abbreviateNumber(item.euler ?? 0),
             } as TFormattedBenchmarkDataPoint;
 
             // Find the top performing Morpho vault
@@ -569,7 +577,7 @@ export function BenchmarkHistoryChart() {
 
             return formattedItem;
         }).sort((a: TFormattedBenchmarkDataPoint, b: TFormattedBenchmarkDataPoint) => a.rawTimestamp - b.rawTimestamp);
-    }, [historicalData, aaveRewardApy, selectedChain]);
+    }, [historicalData, aaveRewardApy, selectedChain, boostApyStartDate, BOOST_APY]);
 
     const { minValue, maxValue, valueRange } = useMemo(() => {
         if (!chartData || chartData.length === 0) {
@@ -670,8 +678,8 @@ export function BenchmarkHistoryChart() {
 
     const handleRangeChange = useCallback((value: string) => {
         // For the "All" filter, use one year period instead for API calls
-        if (value === Period.allTime) {
-            setSelectedRange(Period.allTime); // For UI display
+        if (value === Period.oneYear) {
+            setSelectedRange(Period.oneYear); // For UI display
             setApiPeriod("YEAR"); // Use one month data for API calls
         } else {
             setSelectedRange(value as Period);
@@ -839,8 +847,8 @@ export function BenchmarkHistoryChart() {
         const protocolsToShow = ['superfund', 'aave'];
 
         if (selectedChain === ChainId.Base) {
-            // protocolsToShow.push('fluid');
-            // protocolsToShow.push('euler');
+            protocolsToShow.push('fluid');
+            protocolsToShow.push('euler');
 
             // Add the top Morpho vault if available
             if (topMorphoInfo?.key) {
@@ -1015,7 +1023,7 @@ export function BenchmarkHistoryChart() {
                                             isAnimationActive={false}
                                         />
                                     )}
-                                    {/* {visibleLines.fluid && selectedChain === ChainId.Base && (
+                                    {visibleLines.fluid && selectedChain === ChainId.Base && (
                                         <Line
                                             dataKey="fluid"
                                             type="monotone"
@@ -1026,8 +1034,8 @@ export function BenchmarkHistoryChart() {
                                             connectNulls={true}
                                             isAnimationActive={false}
                                         />
-                                    )} */}
-                                    {/* {visibleLines.euler && selectedChain === ChainId.Base && (
+                                    )}
+                                    {visibleLines.euler && selectedChain === ChainId.Base && (
                                         <Line
                                             dataKey="euler"
                                             type="monotone"
@@ -1038,7 +1046,7 @@ export function BenchmarkHistoryChart() {
                                             connectNulls={true}
                                             isAnimationActive={false}
                                         />
-                                    )} */}
+                                    )}
                                     {selectedChain === ChainId.Base && topMorphoInfo?.key && visibleLines[topMorphoInfo.key] === true && (
                                         <Line
                                             key={topMorphoInfo.key}
@@ -1085,7 +1093,7 @@ export function BenchmarkHistoryChart() {
                                                     connectNulls={true}
                                                 />
                                             )}
-                                            {/* {visibleLines.fluid && selectedChain === ChainId.Base && (
+                                            {visibleLines.fluid && selectedChain === ChainId.Base && (
                                                 <Area
                                                     type="monotone"
                                                     dataKey="fluid"
@@ -1094,8 +1102,8 @@ export function BenchmarkHistoryChart() {
                                                     fill="rgba(0, 200, 83, 0.2)"
                                                     connectNulls={true}
                                                 />
-                                            )} */}
-                                            {/* {visibleLines.euler && selectedChain === ChainId.Base && (
+                                            )}
+                                            {visibleLines.euler && selectedChain === ChainId.Base && (
                                                 <Area
                                                     type="monotone"
                                                     dataKey="euler"
@@ -1104,7 +1112,7 @@ export function BenchmarkHistoryChart() {
                                                     fill={`${CHART_CONFIG.euler.color}33`} // Add 33 for 20% opacity
                                                     connectNulls={true}
                                                 />
-                                            )} */}
+                                            )}
                                             {selectedChain === ChainId.Base && topMorphoInfo?.key && visibleLines[topMorphoInfo.key] === true && (
                                                 <Area
                                                     key={topMorphoInfo.key}

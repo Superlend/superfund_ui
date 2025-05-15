@@ -15,9 +15,15 @@ const alertVariants = cva(
                     'bg-[#FFA319]/15 text-[#D19900] border-transparent [&>svg]:text-warning-foreground',
                 info: 'bg-secondary-100/15 text-secondary-500 border-transparent [&>svg]:text-info-foreground',
             },
+            size: {
+                default: 'py-3 px-4',
+                sm: 'py-2 px-3',
+                xs: 'py-1 px-2',
+            },
         },
         defaultVariants: {
             variant: 'default',
+            size: 'default',
         },
     }
 )
@@ -25,11 +31,11 @@ const alertVariants = cva(
 const Alert = React.forwardRef<
     HTMLDivElement,
     React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants>
->(({ className, variant, ...props }, ref) => (
+>(({ className, variant, size, ...props }, ref) => (
     <div
         ref={ref}
         role="alert"
-        className={cn(alertVariants({ variant }), className)}
+        className={cn(alertVariants({ variant, size }), className)}
         {...props}
     />
 ))

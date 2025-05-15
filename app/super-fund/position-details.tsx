@@ -2,7 +2,7 @@
 
 import { Period } from "@/types/periodButtons"
 import { motion } from "motion/react"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import DepositHistoryChart from '@/components/deposit-history-chart'
 import ClaimRewards from "./claim-rewards"
 import { useWalletConnection } from "@/hooks/useWalletConnection"
@@ -12,7 +12,7 @@ import ConnectWalletButton from "@/components/ConnectWalletButton"
 import { useRewardsHook } from "@/hooks/vault_hooks/useRewardHook"
 import useGetDailyEarningsHistory from "@/hooks/useGetDailyEarningsHistory"
 import { VAULT_ADDRESS, VAULT_ADDRESS_MAP } from "@/lib/constants"
-import { abbreviateNumber, getStartTimestamp } from "@/lib/utils"
+import { abbreviateNumber, convertNegativeToZero, getStartTimestamp } from "@/lib/utils"
 import { TAddress } from "@/types"
 import { useTxContext } from "@/context/super-vault-tx-provider"
 import { TTxContext } from "@/context/super-vault-tx-provider"
@@ -21,6 +21,7 @@ import { ChainId } from "@/types/chain"
 import useTransactionHistory from "@/hooks/useTransactionHistory"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import InfoTooltip from "@/components/tooltips/InfoTooltip"
 
 const variants = {
     hidden: { opacity: 0, y: 30 },
@@ -118,19 +119,29 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
     const [selectedRangeForDailyEarningsHistory, setSelectedRangeForDailyEarningsHistory] = useState(Period.oneMonth)
     const startTimeStamp = getStartTimestamp(selectedRangeForDailyEarningsHistory)
     const {
-        data: dailyEarningsHistoryData,
+        data: allDailyEarningsHistoryData,
         isLoading: isLoadingDailyEarningsHistory,
         isError: isErrorDailyEarningsHistory
     } = useGetDailyEarningsHistory({
         vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
         user_address: walletAddress.toLowerCase() as `0x${string}`,
-        start_timestamp: startTimeStamp,
     })
+
+    // Filter data based on startTimeStamp
+    const dailyEarningsHistoryData = React.useMemo(() => {
+        if (!allDailyEarningsHistoryData) return []
+        return allDailyEarningsHistoryData.filter(item => item.timestamp >= startTimeStamp)
+    }, [allDailyEarningsHistoryData, startTimeStamp, isLoadingDailyEarningsHistory, isErrorDailyEarningsHistory])
+
+    const totalInterestEarned = useMemo(() => {
+        return allDailyEarningsHistoryData?.reduce((acc: number, item: any) => acc + item.earnings, 0) ?? 0
+    }, [allDailyEarningsHistoryData, isLoadingDailyEarningsHistory, isErrorDailyEarningsHistory])
+
     const earningsSuffixText = {
         [Period.oneDay]: 'today',
         [Period.oneWeek]: 'this week',
         [Period.oneMonth]: 'this month',
-        [Period.allTime]: 'till date',
+        [Period.oneYear]: 'this year',
     } satisfies Record<Period, string>
 
     useEffect(() => {
@@ -155,13 +166,22 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                 <CardContent className="p-4 max-md:px-2 grid grid-cols-3 place-content-center gap-4">
                     <div className="flex flex-col items-start w-fit gap-1 m-auto">
                         <BodyText level="body2" weight="medium" className="text-gray-600">Capital</BodyText>
-                        {!isLoadingPositionDetails && <HeadingText level="h3" weight="medium" className="text-gray-800">${abbreviateNumber(Number(capital ?? 0))}</HeadingText>}
+                        {!isLoadingPositionDetails && <HeadingText level="h3" weight="medium" className="text-gray-800">
+                            ${abbreviateNumber(convertNegativeToZero(Number(capital ?? 0)))}
+                        </HeadingText>}
                         {isLoadingPositionDetails && <Skeleton className="h-10 w-16 rounded-4" />}
                     </div>
                     <div className="w-[1.5px] h-4 bg-secondary-100/50 rounded-full m-auto"></div>
                     <div className="flex flex-col items-start w-fit gap-1 m-auto">
                         <BodyText level="body2" weight="medium" className="text-gray-600">Interest Earned</BodyText>
-                        {!isLoadingPositionDetails && <HeadingText level="h3" weight="medium" className="text-gray-800">${abbreviateNumber(Number(interest_earned ?? 0))}</HeadingText>}
+                        {!isLoadingPositionDetails && <HeadingText level="h3" weight="medium" className="text-gray-800 flex items-center gap-1">
+                            ${abbreviateNumber(convertNegativeToZero(Number(totalInterestEarned ?? 0)))}
+                            <InfoTooltip
+                                content={<BodyText level="body2" weight="normal" className="text-gray-600">
+                                    Total interest earned since your first deposit.
+                                </BodyText>}
+                            />
+                        </HeadingText>}
                         {isLoadingPositionDetails && <Skeleton className="h-10 w-16 rounded-4" />}
                     </div>
                 </CardContent>

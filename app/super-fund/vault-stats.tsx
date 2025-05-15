@@ -1,15 +1,19 @@
 'use client'
 
+import CustomAlert from '@/components/alerts/CustomAlert'
 import { AnimatedNumber } from '@/components/animations/animated_number'
 import ConnectWalletButton from '@/components/ConnectWalletButton'
 import ImageWithDefault from '@/components/ImageWithDefault'
 import InfoTooltip from '@/components/tooltips/InfoTooltip'
 import TooltipText from '@/components/tooltips/TooltipText'
 import { Skeleton } from '@/components/ui/skeleton'
-import { BodyText, HeadingText } from '@/components/ui/typography'
+import { BodyText, HeadingText, Label } from '@/components/ui/typography'
+import { useApyData } from '@/context/apy-data-provider'
 import { useChain } from '@/context/chain-context'
 import useGetBoostRewards from '@/hooks/useGetBoostRewards'
+import useGetDailyEarningsHistory from '@/hooks/useGetDailyEarningsHistory'
 import useIsClient from '@/hooks/useIsClient'
+import useTransactionHistory from '@/hooks/useTransactionHistory'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
 import { useHistoricalData } from '@/hooks/vault_hooks/useHistoricalDataHook'
@@ -19,11 +23,12 @@ import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import { useRewardsHook } from '@/hooks/vault_hooks/vaultHook'
 import { VAULT_ADDRESS, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { getRewardsTooltipContent } from '@/lib/ui/getRewardsTooltipContent'
-import { abbreviateNumber } from '@/lib/utils'
+import { abbreviateNumber, convertNegativeToZero, getBoostApy, hasNoDecimals } from '@/lib/utils'
 import { Period } from '@/types/periodButtons'
-import { Lock } from 'lucide-react'
+import { Expand, Lock, Maximize2, Minimize2, Percent } from 'lucide-react'
 import { motion } from 'motion/react'
-import { useEffect } from 'react'
+import Link from 'next/link'
+import { useEffect, useMemo } from 'react'
 
 type VaultStatsProps = {
     days_7_avg_total_apy: number
@@ -65,11 +70,12 @@ const starVariants = {
 
 export default function VaultStats() {
     const { walletAddress, isWalletConnected } = useWalletConnection()
-    const { selectedChain } = useChain()
-    const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
-        vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
-        chainId: selectedChain
-    })
+    const { selectedChain, chainDetails } = useChain()
+    // const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
+    //     vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+    //     chainId: selectedChain
+    // })
+    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
     const { userMaxWithdrawAmount, isLoading: isLoadingUserMaxWithdrawAmount, error: errorUserMaxWithdrawAmount } = useUserBalance(
         walletAddress as `0x${string}`
     )
@@ -78,13 +84,54 @@ export default function VaultStats() {
         chain_id: selectedChain
     })
     const { isClient } = useIsClient()
-    const isLoadingSection = !isClient;
-    const TOTAL_APY = Number((effectiveApyData?.total_apy ?? 0)) + Number(boostRewardsData?.[0]?.boost_apy ?? 0)
-    // const { totalAssets, spotApy, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
+    const getProtocolIdentifier = () => {
+        if (!selectedChain) return ''
+        return chainDetails[selectedChain as keyof typeof chainDetails]?.contractAddress || ''
+    }
+    const protocolId = getProtocolIdentifier()
+    const { data: { capital, interest_earned }, isLoading: isLoadingPositionDetails } = useTransactionHistory({
+        protocolIdentifier: protocolId,
+        chainId: selectedChain || 0,
+        walletAddress: walletAddress || '',
+        refetchOnTransaction: true
+    })
+    const {
+        data: dailyEarningsHistoryData,
+        isLoading: isLoadingDailyEarningsHistory,
+        isError: isErrorDailyEarningsHistory
+    } = useGetDailyEarningsHistory({
+        vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        user_address: walletAddress?.toLowerCase() as `0x${string}`,
+    })
+    const totalInterestEarned = useMemo(() => {
+        return dailyEarningsHistoryData?.reduce((acc: number, item: any) => acc + item.earnings, 0) ?? 0
+    }, [dailyEarningsHistoryData])
     // const { rewards, totalRewardApy, isLoading: isLoadingRewards, error: errorRewards } = useRewardsHook()
     // const { days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading: isLoading7DayAvg, error: error7DayAvg } = useHistoricalData({
     //     chain_id: selectedChain
     // })
+    const isLoadingSection = !isClient;
+    const TOTAL_APY = Number((effectiveApyData?.total_apy ?? 0)) + (BOOST_APY ?? 0)
+    const positionBreakdownList = [
+        {
+            id: 'capital',
+            label: 'Capital',
+            value: abbreviateNumber(convertNegativeToZero(Number(capital ?? 0)))
+        },
+        {
+            id: 'interest-earned',
+            label: 'Interest earned',
+            value: abbreviateNumber(convertNegativeToZero(Number(totalInterestEarned ?? 0))),
+            description: 'Total interest earned since your first deposit.',
+            tooltipContent: () => {
+                return (
+                    <BodyText level="body2" weight="normal" className="text-gray-600">
+                        Total interest earned since your first deposit.
+                    </BodyText>
+                )
+            }
+        }
+    ]
 
     const vaultStats = [
         {
@@ -94,6 +141,50 @@ export default function VaultStats() {
             show: true,
             isLoading: isWalletConnected && isLoadingUserMaxWithdrawAmount,
             error: errorUserMaxWithdrawAmount,
+            positionDetailsTooltipContent: () => {
+                return (
+                    <div className="flex flex-col divide-y divide-gray-400">
+                        <BodyText
+                            level="body1"
+                            weight="medium"
+                            className="py-2 text-gray-800"
+                        >
+                            Position details
+                        </BodyText>
+                        {positionBreakdownList.map((item, index) => (
+                            <div
+                                key={item.id}
+                                className="flex items-center justify-between gap-[100px] py-2"
+                            >
+                                <div className="flex items-center gap-1">
+                                    <Label weight="medium" className="text-gray-800 shrink-0">
+                                        {item.label}
+                                    </Label>
+                                    {item.tooltipContent &&
+                                        <InfoTooltip
+                                            content={item.tooltipContent && item.tooltipContent()}
+                                        />}
+                                </div>
+                                <BodyText level="body3" weight="medium" className="text-gray-800 shrink-0">
+                                    {index > 0 ? '+' : ''}{' '}${item.value}
+                                </BodyText>
+                            </div>
+                        ))}
+                        <div
+                            className="flex items-center justify-between gap-[100px] py-2"
+                        >
+                            <div className="flex items-center gap-1">
+                                <Label weight="medium" className="text-gray-800">
+                                    Position
+                                </Label>
+                            </div>
+                            <BodyText level="body3" weight="medium" className="text-gray-800">
+                                ={' '}${Number(userMaxWithdrawAmount).toFixed(4)}
+                            </BodyText>
+                        </div>
+                    </div>
+                )
+            },
         },
         {
             id: 'effective-apy',
@@ -113,7 +204,7 @@ export default function VaultStats() {
             value: `${(TOTAL_APY).toFixed(2)}%`,
             show: true,
             hasRewards: true,
-            rewardsTooltip: getRewardsTooltipContent({
+            rewardsTooltipContent: getRewardsTooltipContent({
                 baseRateFormatted: abbreviateNumber(effectiveApyData?.base_apy),
                 rewardsCustomList: [
                     {
@@ -123,14 +214,52 @@ export default function VaultStats() {
                     },
                     {
                         key: 'superlend_rewards_apy',
-                        key_name: 'Superlend Reward',
-                        value: abbreviateNumber(boostRewardsData?.[0]?.boost_apy ?? 0, 0),
-                        logo: "/images/logos/superlend-orange-circle.png"
+                        key_name: 'Superlend USDC Reward',
+                        value: abbreviateNumber(BOOST_APY ?? 0, 0),
+                        logo: "/images/tokens/usdc.webp"
                     },
                 ],
                 apyCurrent: TOTAL_APY,
                 positionTypeParam: 'lend',
+                note: () => {
+                    return (
+                        <div className="pt-2">
+                            <CustomAlert
+                                variant="info"
+                                size="xs"
+                                description={
+                                    <BodyText level="body3" weight="normal" className="text-gray-800">
+                                        Note: Superlend Rewards are for a limited period. Please join our <Link href="https://discord.com/invite/superlend" target="_blank" className="text-secondary-500">Discord</Link> to get more info.
+                                    </BodyText>
+                                }
+                            />
+                        </div>
+                    )
+                }
             }),
+            boostRewardsTooltipContent: () => {
+                return (
+                    <div>
+                        <BodyText
+                            level="body1"
+                            weight="medium"
+                            className="text-gray-800 flex items-center gap-1 mb-2"
+                        >
+                            <ImageWithDefault
+                                src={'/images/logos/superlend-rounded.svg'}
+                                alt="SuperFund logo"
+                                width={24}
+                                height={24}
+                                className="hover:-translate-y-1 transition-all duration-200"
+                            />
+                            Boosted USDC APY
+                        </BodyText>
+                        <BodyText level="body2" weight="normal" className="text-gray-600">
+                            Boosted USDC APY are additional rewards added to the APY by SuperFund.
+                        </BodyText>
+                    </div>
+                )
+            },
             isLoading: isLoadingEffectiveApy,
             error: isErrorEffectiveApy,
         },
@@ -141,7 +270,7 @@ export default function VaultStats() {
         //     value: `${(Number(spotApy) + Number(totalRewardApy)).toFixed(2)}%`,
         //     show: true,
         //     hasRewards: true,
-        //     rewardsTooltip: getRewardsTooltipContent({
+        //     rewardsTooltipContent: getRewardsTooltipContent({
         //         baseRateFormatted: spotApy,
         //         rewards: rewards,
         //         apyCurrent: Number(spotApy) + Number(totalRewardApy),
@@ -168,7 +297,7 @@ export default function VaultStats() {
         //     value: `${abbreviateNumber(days_7_avg_total_apy)}%`,
         //     show: true,
         //     hasRewards: true,
-        //     rewardsTooltip: getRewardsTooltipContent({
+        //     rewardsTooltipContent: getRewardsTooltipContent({
         //         baseRateFormatted: days_7_avg_base_apy.toFixed(2),
         //         rewardsCustomList: [{
         //             key: 'rewards_apy',
@@ -212,7 +341,7 @@ export default function VaultStats() {
                 {vaultStats.map((item, index) => (
                     <motion.div
                         key={index}
-                        className="flex-1"
+                        className="flex-1 basis-[180px]"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{
@@ -270,7 +399,19 @@ export default function VaultStats() {
                                 {(item.id === 'my-position' && isWalletConnected) && (
                                     <HeadingText level="h3" weight="medium">
                                         {!item.isLoading ? (
-                                            <AnimatedNumber value={item.value} />
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex items-center">
+                                                    <AnimatedNumber value={item.value} />
+                                                </div>
+                                                <InfoTooltip
+                                                    label={
+                                                        <div className="group bg-secondary-100/20 rounded-2 h-6 w-6 p-1">
+                                                            <Maximize2 className="h-4 w-4 text-secondary-300" />
+                                                        </div>
+                                                    }
+                                                    content={item.positionDetailsTooltipContent && item.positionDetailsTooltipContent()}
+                                                />
+                                            </div>
                                         ) : (
                                             <Skeleton className="h-10 w-full rounded-4" />
                                         )}
@@ -282,7 +423,9 @@ export default function VaultStats() {
                                     <div className="flex items-center gap-2">
                                         <HeadingText level="h3" weight="medium">
                                             {!item.isLoading &&
-                                                <AnimatedNumber value={item.value} />
+                                                <div className="flex items-center">
+                                                    <AnimatedNumber value={item.value} />
+                                                </div>
                                             }
                                             {item.isLoading &&
                                                 <Skeleton className="h-7 w-full min-w-[60px] rounded-4 mt-1" />
@@ -311,8 +454,32 @@ export default function VaultStats() {
                                                     />
                                                 </motion.svg>
                                             }
-                                            content={item.rewardsTooltip}
+                                            content={item.rewardsTooltipContent}
                                         />
+                                        {/* {(!item.isLoading && (item.id === 'effective-apy') && (BOOST_APY > 0)) && (
+                                            <>
+                                                <HeadingText level="h3" weight="medium">+</HeadingText>
+                                                <div className="flex items-center gap-2">
+                                                    <HeadingText level="h3" weight="medium">
+                                                        <div className="flex items-center">
+                                                            <AnimatedNumber value={BOOST_APY.toFixed(hasNoDecimals(BOOST_APY) ? 0 : 2)} />%
+                                                        </div>
+                                                    </HeadingText>
+                                                    <InfoTooltip
+                                                        label={
+                                                            <ImageWithDefault
+                                                                src={'/images/tokens/usdc.webp'}
+                                                                alt="SuperFund logo"
+                                                                width={22}
+                                                                height={22}
+                                                                className="mt-0.5 sm:mt-0 hover:-translate-y-1 transition-all duration-200 -mb-1.5"
+                                                            />
+                                                        }
+                                                        content={item.boostRewardsTooltipContent && item.boostRewardsTooltipContent()}
+                                                    />
+                                                </div>
+                                            </>
+                                        )} */}
                                     </div>
                                 }
 
