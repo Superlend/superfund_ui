@@ -116,11 +116,13 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
               />
             }
           </div>
-          <div className="hidden lg:flex lg:flex-col lg:gap-4">
-            <DepositAndWithdrawAssets />
-            {isWalletConnected && (
-              <TransactionHistory protocolIdentifier={getProtocolIdentifier(chainId)} />
-            )}
+          <div className="hidden lg:block">
+            <div className="sticky top-20 flex flex-col gap-2 overflow-y-auto max-h-full">
+              <DepositAndWithdrawAssets />
+              {isWalletConnected && (
+                <TransactionHistory protocolIdentifier={getProtocolIdentifier(chainId)} />
+              )}
+            </div>
           </div>
         </div>
       </MainContainer>

@@ -34,7 +34,7 @@ export default function Footer() {
         logEvent('clicked_superlend_github_link', {
             section: 'footer',
             title: "GitHub",
-            url: "https://github.com/Superlend"
+            url: "https://docs.superlend.xyz/superlend-vaults/superfunds/developers"
         })
     }
 
@@ -117,7 +117,7 @@ export default function Footer() {
                                     </svg>
                                 </div>
                             </Link>
-                            <Link href="https://github.com/Superlend" target="_blank" aria-label="GitHub" onClick={logGitHubLinkClick}>
+                            <Link href="https://docs.superlend.xyz/superlend-vaults/superfunds/developers" target="_blank" aria-label="GitHub" onClick={logGitHubLinkClick}>
                                 <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
                                     <Github className="w-5 h-5 text-gray-700" />
                                 </div>
@@ -137,7 +137,7 @@ export default function Footer() {
                                 </Link>
                             </li>
                             <li>
-                                <Link href="https://github.com/Superlend/superfund-strategies-public" target="_blank" className="text-gray-600 hover:text-primary transition-colors" onClick={logGitHubLinkClick}>
+                                <Link href="https://docs.superlend.xyz/superlend-vaults/superfunds/developers" target="_blank" className="text-gray-600 hover:text-primary transition-colors" onClick={logGitHubLinkClick}>
                                     GitHub
                                 </Link>
                             </li>
