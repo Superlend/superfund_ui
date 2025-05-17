@@ -9,7 +9,7 @@ export default function useGetDailyEarningsHistory(params: TDailyEarningsHistory
         TDailyEarningsHistory[],
         Error
     >({
-        queryKey: ['daily-earnings-history', params.user_address, params.vault_address, params.start_timestamp],
+        queryKey: ['daily-earnings-history', params.user_address, params.vault_address, params.start_timestamp || 'all'],
         queryFn: async () => {
             try {
                 const responseData = await getDailyEarningsHistory(params)

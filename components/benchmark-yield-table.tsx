@@ -242,9 +242,11 @@ export function BenchmarkYieldTable() {
         // Local function to calculate earnings based on current selectedRange
         const calculateEarningsForCurrentPeriod = (apy: number) => {
             // Convert annual APY to daily rate
+            // APY formula: (1 + r)^n - 1 = APY
+            // Solve for r: r = (1 + APY)^(1/n) - 1
             const daysInYear = 365;
-            const dailyRate = apy / 100 / daysInYear;
-            const principal = 1000;
+            const dailyRate = Math.pow(1 + apy/100, 1/daysInYear) - 1;
+            const principal = 10000;
 
             // Determine number of days based on selected period
             let days = 30; // Default for oneMonth
@@ -253,10 +255,15 @@ export function BenchmarkYieldTable() {
             } else if (selectedRange === Period.oneWeek) {
                 days = 7;
             } else if (selectedRange === Period.oneYear) {
-                days = 365; // Use a full year for "1 Year"
+                days = 365;
             }
 
             // Calculate compound interest over the selected period
+            // A = P(1 + r)^t where:
+            // A = final amount
+            // P = principal
+            // r = daily rate
+            // t = number of days
             const totalValue = principal * Math.pow(1 + dailyRate, days);
             const earned = totalValue - principal;
 
@@ -407,7 +414,7 @@ export function BenchmarkYieldTable() {
 
                     return (
                         <div className="text-center w-full">
-                            <span className="hidden sm:inline">Total Earned on </span>$1,000<span className="hidden sm:inline"> ({periodText})</span>
+                            <span className="hidden sm:inline">Total Earned on </span>$10,000<span className="hidden sm:inline"> ({periodText})</span>
                         </div>
                     );
                 },
