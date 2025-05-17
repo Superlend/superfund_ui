@@ -275,7 +275,7 @@ export default function SuperVaultTxDialog({
                 sdk.actions.openUrl('https://app.superlend.xyz/discover'),
         },
         {
-            buttonText: 'Add Frame',
+            buttonText: 'Add to Warpcast',
             imageSrc: '/icons/warpcast.svg',
             onClick: async () => {
                 await sdk.actions.addFrame()
