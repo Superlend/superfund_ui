@@ -76,7 +76,8 @@ export default function SuperVaultTxDialog({
 }) {
     const { depositTx, setDepositTx, withdrawTx, setWithdrawTx } =
         useTxContext() as TTxContext
-    const { walletAddress, isWalletConnected, handleSwitchChain } = useWalletConnection()
+    const { walletAddress, isWalletConnected, handleSwitchChain } =
+        useWalletConnection()
     const { selectedChain, chainDetails } = useChain()
     const { width: screenWidth } = useDimensions()
     const isDesktop = screenWidth > 768
@@ -84,9 +85,15 @@ export default function SuperVaultTxDialog({
     const [miniappUser, setMiniAppUser] = useState<any>(null)
     const [pendingEmail, setPendingEmail] = useState('')
     const [showEmailReminder, setShowEmailReminder] = useState(false)
-    const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
-        vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
-        chain_id: selectedChain
+    const {
+        data: effectiveApyData,
+        isLoading: isLoadingEffectiveApy,
+        isError: isErrorEffectiveApy,
+    } = useGetEffectiveApy({
+        vault_address: VAULT_ADDRESS_MAP[
+            selectedChain as keyof typeof VAULT_ADDRESS_MAP
+        ] as `0x${string}`,
+        chain_id: selectedChain,
     })
 
     useEffect(() => {
@@ -142,12 +149,17 @@ export default function SuperVaultTxDialog({
 
     function handleOpenChange(open: boolean) {
         // If trying to close AND there's an unsaved email in a successful deposit/withdraw state
-        if (!open && pendingEmail && 
-            ((isDepositPositionType && depositTx.status === 'view' && depositTx.isConfirmed))) {
+        if (
+            !open &&
+            pendingEmail &&
+            isDepositPositionType &&
+            depositTx.status === 'view' &&
+            depositTx.isConfirmed
+        ) {
             setShowEmailReminder(true)
             return // Prevent dialog from closing
         }
-        
+
         // When opening the dialog, reset the amount and the tx status
         setOpen(open)
         // When closing the dialog, reset the amount and the tx status
@@ -190,8 +202,12 @@ export default function SuperVaultTxDialog({
     const isWithdrawTxInProgress =
         withdrawTx.isPending || withdrawTx.isConfirming
 
-    const isDepositTxInSuccess = depositTx.isConfirmed && depositTx.hash && depositTx.status === 'view'
-    const isWithdrawTxInSuccess = withdrawTx.isConfirmed && withdrawTx.hash && withdrawTx.status === 'view'
+    const isDepositTxInSuccess =
+        depositTx.isConfirmed && depositTx.hash && depositTx.status === 'view'
+    const isWithdrawTxInSuccess =
+        withdrawTx.isConfirmed &&
+        withdrawTx.hash &&
+        withdrawTx.status === 'view'
 
     const isTxInProgress = isDepositTxInProgress || isWithdrawTxInProgress
     const isTxInSuccess = isDepositTxInSuccess || isWithdrawTxInSuccess
@@ -206,9 +222,9 @@ export default function SuperVaultTxDialog({
 
     const canDisplayExplorerLinkWhileLoading = isDepositPositionType
         ? depositTx.hash.length > 0 &&
-        (depositTx.isConfirming || depositTx.isPending)
+          (depositTx.isConfirming || depositTx.isPending)
         : withdrawTx.hash.length > 0 &&
-        (withdrawTx.isConfirming || withdrawTx.isPending)
+          (withdrawTx.isConfirming || withdrawTx.isPending)
 
     const disableActionButton = disabled
 
@@ -250,7 +266,7 @@ export default function SuperVaultTxDialog({
             imageSrc: '/icons/share.svg',
             onClick: () => {
                 // I just deposited $10,
-                const text = `I just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} $${amount}, and it's earning a ${effectiveApyData?.total_apy.toFixed(2)}% return. Park your assets on Superlend and watch them grow!`
+                const text = `I just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} into Superfund. I am earning up to ${effectiveApyData?.total_apy.toFixed(2)}% APY on my USDC deposit with the best adjusted risk.`
                 sdk.actions.composeCast({
                     text,
                     embeds: ['https://funds.superlend.xyz/'],
@@ -285,19 +301,18 @@ export default function SuperVaultTxDialog({
                 deposit: true,
                 withdraw: true,
             }) && (
-                    // <DialogTitle asChild>
-                    <HeadingText
-                        level="h4"
-                        weight="medium"
-                        className="text-gray-800 text-center capitalize"
-                    >
-                        {isDepositPositionType
-                            ? `${isDepositTxInSuccess ? 'Deposit' : 'Review Deposit'}`
-                            : `${isWithdrawTxInSuccess ? 'Withdraw' : 'Review Withdraw'}`
-                        }
-                    </HeadingText>
-                    // </DialogTitle>
-                )}
+                // <DialogTitle asChild>
+                <HeadingText
+                    level="h4"
+                    weight="medium"
+                    className="text-gray-800 text-center capitalize"
+                >
+                    {isDepositPositionType
+                        ? `${isDepositTxInSuccess ? 'Deposit' : 'Review Deposit'}`
+                        : `${isWithdrawTxInSuccess ? 'Withdraw' : 'Review Withdraw'}`}
+                </HeadingText>
+                // </DialogTitle>
+            )}
             {/* Confirmation details UI */}
             {/* {isShowBlock({
                 deposit: true,
@@ -379,50 +394,65 @@ export default function SuperVaultTxDialog({
                     deposit: true,
                     withdraw: true,
                 }) && (
-                        <div className="flex items-center gap-4 px-6 py-2 bg-gray-200 lg:bg-white rounded-5 w-full">
-                            <ImageWithBadge
-                                mainImg={assetDetails?.asset?.token?.logo || ''}
-                                badgeImg={chainDetails[selectedChain as keyof typeof chainDetails]?.logo}
-                                mainImgAlt={assetDetails?.asset?.token?.symbol}
-                                badgeImgAlt={chainDetails[selectedChain as keyof typeof chainDetails]?.name}
-                                mainImgWidth={'32'}
-                                mainImgHeight={'32'}
-                                badgeImgWidth={'12'}
-                                badgeImgHeight={'12'}
-                                badgeCustomClass={'bottom-[-2px] right-[1px]'}
-                            />
-                            <div className="flex flex-col items-start gap-0 w-full">
-                                <HeadingText
-                                    level="h3"
-                                    weight="normal"
-                                    className="text-gray-800 flex items-center gap-1"
+                    <div className="flex items-center gap-4 px-6 py-2 bg-gray-200 lg:bg-white rounded-5 w-full">
+                        <ImageWithBadge
+                            mainImg={assetDetails?.asset?.token?.logo || ''}
+                            badgeImg={
+                                chainDetails[
+                                    selectedChain as keyof typeof chainDetails
+                                ]?.logo
+                            }
+                            mainImgAlt={assetDetails?.asset?.token?.symbol}
+                            badgeImgAlt={
+                                chainDetails[
+                                    selectedChain as keyof typeof chainDetails
+                                ]?.name
+                            }
+                            mainImgWidth={'32'}
+                            mainImgHeight={'32'}
+                            badgeImgWidth={'12'}
+                            badgeImgHeight={'12'}
+                            badgeCustomClass={'bottom-[-2px] right-[1px]'}
+                        />
+                        <div className="flex flex-col items-start gap-0 w-full">
+                            <HeadingText
+                                level="h3"
+                                weight="normal"
+                                className="text-gray-800 flex items-center gap-1"
+                            >
+                                {Number(amount).toFixed(
+                                    decimalPlacesCount(amount)
+                                )}
+                                <span
+                                    className="inline-block truncate max-w-[150px]"
+                                    title={assetDetails?.asset?.token?.symbol}
                                 >
-                                    {Number(amount).toFixed(
-                                        decimalPlacesCount(amount)
+                                    {assetDetails?.asset?.token?.symbol}
+                                </span>
+                            </HeadingText>
+                            <div className="flex items-center justify-start gap-1.5">
+                                <BodyText
+                                    level="body2"
+                                    weight="medium"
+                                    className="text-gray-600"
+                                >
+                                    {handleInputUsdAmount(
+                                        inputUsdAmount.toString()
                                     )}
-                                    <span className="inline-block truncate max-w-[150px]" title={assetDetails?.asset?.token?.symbol}>
-                                        {assetDetails?.asset?.token?.symbol}
-                                    </span>
-                                </HeadingText>
-                                <div className="flex items-center justify-start gap-1.5">
-                                    <BodyText
-                                        level="body2"
-                                        weight="medium"
-                                        className="text-gray-600"
-                                    >
-                                        {handleInputUsdAmount(
-                                            inputUsdAmount.toString()
-                                        )}
-                                    </BodyText>
-                                    <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
-                                    <BodyText
-                                        level="body2"
-                                        weight="medium"
-                                        className="text-gray-600 flex items-center gap-1"
-                                    >
-                                        {chainDetails[selectedChain as keyof typeof chainDetails]?.name}
-                                    </BodyText>
-                                    {/* <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
+                                </BodyText>
+                                <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
+                                <BodyText
+                                    level="body2"
+                                    weight="medium"
+                                    className="text-gray-600 flex items-center gap-1"
+                                >
+                                    {
+                                        chainDetails[
+                                            selectedChain as keyof typeof chainDetails
+                                        ]?.name
+                                    }
+                                </BodyText>
+                                {/* <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
                                     <BodyText
                                         level="body3"
                                         weight="medium"
@@ -430,62 +460,64 @@ export default function SuperVaultTxDialog({
                                     >
                                         {PlatformTypeMap[assetDetails?.protocol_type as keyof typeof PlatformTypeMap]}
                                     </BodyText> */}
-                                </div>
                             </div>
                         </div>
-                    )}
+                    </div>
+                )}
                 {/* Block 2 */}
                 <div className="flex flex-col items-center justify-between px-6 bg-gray-200 lg:bg-white rounded-5 divide-y divide-gray-300">
                     {isShowBlock({
                         deposit: true,
                         withdraw: false,
                     }) && (
-                            <div
-                                className={`flex items-center justify-between w-full py-4`}
+                        <div
+                            className={`flex items-center justify-between w-full py-4`}
+                        >
+                            <BodyText
+                                level="body2"
+                                weight="normal"
+                                className="text-gray-600"
                             >
-                                <BodyText
-                                    level="body2"
-                                    weight="normal"
-                                    className="text-gray-600"
-                                >
-                                    APY
-                                </BodyText>
-                                <Badge variant="green" size="lg">
-                                    {abbreviateNumber(
-                                        Number(assetDetails?.asset?.effective_apy) ?? 0
-                                    )}
-                                    %
-                                </Badge>
-                            </div>
-                        )}
+                                APY
+                            </BodyText>
+                            <Badge variant="green" size="lg">
+                                {abbreviateNumber(
+                                    Number(
+                                        assetDetails?.asset?.effective_apy
+                                    ) ?? 0
+                                )}
+                                %
+                            </Badge>
+                        </div>
+                    )}
                     {isShowBlock({
                         deposit: true,
                         withdraw: false,
                     }) && (
-                            <div
-                                className={`flex items-center justify-between gap-1 w-full py-4`}
+                        <div
+                            className={`flex items-center justify-between gap-1 w-full py-4`}
+                        >
+                            <BodyText
+                                level="body2"
+                                weight="normal"
+                                className="text-gray-600"
                             >
-                                <BodyText
-                                    level="body2"
-                                    weight="normal"
-                                    className="text-gray-600"
-                                >
-                                    Remaining Balance
-                                </BodyText>
-                                <BodyText
-                                    level="body2"
-                                    weight="normal"
-                                    className="text-gray-800"
-                                >
-                                    {handleSmallestValue(
-                                        (
-                                            Number(balance) - Number(amount)
-                                        ).toString()
-                                    )}{' '}
-                                    {assetDetails?.asset?.token?.symbol}
-                                </BodyText>
-                            </div>
-                        )}
+                                Remaining Balance
+                            </BodyText>
+                            <BodyText
+                                level="body2"
+                                weight="normal"
+                                className="text-gray-800"
+                            >
+                                {handleSmallestValue(
+                                    (
+                                        Number(balance) - Number(amount)
+                                    ).toString()
+                                )}{' '}
+                                {assetDetails?.asset?.token?.symbol}
+                            </BodyText>
+                        </div>
+                    )}
                     {/* {isShowBlock({
                         deposit: false,
                         withdraw: false,
@@ -542,48 +574,258 @@ export default function SuperVaultTxDialog({
                         depositTx.status === 'view',
                     withdraw: false,
                 }) && (
-                        <div className="py-1">
-                            {isDepositTxInProgress &&
-                                depositTx.status === 'approve' && (
-                                    <div className="flex items-center justify-between gap-2">
-                                        <div className="flex items-center justify-start gap-2">
-                                            <LoaderCircle className="animate-spin w-8 h-8 text-secondary-500" />
+                    <div className="py-1">
+                        {isDepositTxInProgress &&
+                            depositTx.status === 'approve' && (
+                                <div className="flex items-center justify-between gap-2">
+                                    <div className="flex items-center justify-start gap-2">
+                                        <LoaderCircle className="animate-spin w-8 h-8 text-secondary-500" />
+                                        <BodyText
+                                            level="body2"
+                                            weight="normal"
+                                            className="text-gray-600"
+                                        >
+                                            {depositTx.isPending &&
+                                                'Waiting for confirmation...'}
+                                            {depositTx.isConfirming &&
+                                                'Approving...'}
+                                        </BodyText>
+                                    </div>
+                                    {depositTx.hash &&
+                                        depositTx.status === 'approve' && (
+                                            <ExternalLink
+                                                href={getExplorerLink(
+                                                    depositTx.hash,
+                                                    assetDetails?.chain_id ||
+                                                        assetDetails?.platform
+                                                            ?.chain_id
+                                                )}
+                                            >
+                                                <BodyText
+                                                    level="body2"
+                                                    weight="normal"
+                                                    className="text-inherit"
+                                                >
+                                                    View on explorer
+                                                </BodyText>
+                                            </ExternalLink>
+                                        )}
+                                </div>
+                            )}
+                        {((!isDepositTxInProgress && depositTx.isConfirmed) ||
+                            depositTx.status === 'deposit' ||
+                            depositTx.status === 'view') && (
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center justify-start gap-2">
+                                    <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
+                                        <Check
+                                            className="w-5 h-5 stroke-[#013220]/75"
+                                            strokeWidth={1.5}
+                                        />
+                                    </div>
+                                    <BodyText
+                                        level="body2"
+                                        weight="medium"
+                                        className="text-gray-800"
+                                    >
+                                        Approval successful
+                                    </BodyText>
+                                </div>
+                                {depositTx.hash &&
+                                    depositTx.status === 'approve' && (
+                                        <ExternalLink
+                                            href={getExplorerLink(
+                                                depositTx.hash,
+                                                assetDetails?.chain_id ||
+                                                    assetDetails?.platform
+                                                        ?.chain_id
+                                            )}
+                                        >
                                             <BodyText
                                                 level="body2"
                                                 weight="normal"
-                                                className="text-gray-600"
+                                                className="text-inherit"
                                             >
-                                                {depositTx.isPending &&
-                                                    'Waiting for confirmation...'}
-                                                {depositTx.isConfirming &&
-                                                    'Approving...'}
+                                                View on explorer
                                             </BodyText>
+                                        </ExternalLink>
+                                    )}
+                            </div>
+                        )}
+                    </div>
+                )}
+                {isShowBlock({
+                    deposit:
+                        (depositTx.status === 'deposit' &&
+                            (isDepositTxInProgress ||
+                                (!isDepositTxInProgress &&
+                                    depositTx.isConfirmed))) ||
+                        depositTx.status === 'view',
+                    withdraw: false,
+                }) && (
+                    <div className="py-1">
+                        {isDepositTxInProgress && (
+                            <div className="flex items-center justify-between gap-2 w-full">
+                                <div className="flex items-center justify-start gap-2">
+                                    <LoaderCircle className="animate-spin w-8 h-8 text-secondary-500" />
+                                    <BodyText
+                                        level="body2"
+                                        weight="normal"
+                                        className="text-gray-600"
+                                    >
+                                        {depositTx.isPending &&
+                                            'Waiting for confirmation...'}
+                                        {depositTx.isConfirming &&
+                                            'Depositing...'}
+                                    </BodyText>
+                                </div>
+                                {depositTx.hash &&
+                                    (depositTx.isConfirming ||
+                                        depositTx.isConfirmed) && (
+                                        <ExternalLink
+                                            href={getExplorerLink(
+                                                depositTx.hash,
+                                                assetDetails?.chain_id ||
+                                                    assetDetails?.platform
+                                                        ?.chain_id
+                                            )}
+                                        >
+                                            <BodyText
+                                                level="body2"
+                                                weight="normal"
+                                                className="text-inherit"
+                                            >
+                                                View on explorer
+                                            </BodyText>
+                                        </ExternalLink>
+                                    )}
+                            </div>
+                        )}
+                        {((!isDepositTxInProgress && depositTx.isConfirmed) ||
+                            (depositTx.status === 'view' &&
+                                depositTx.isConfirmed)) && (
+                            <div
+                                className={`flex flex-col items-center justify-start gap-3 w-full`}
+                            >
+                                <div
+                                    className={`flex w-full items-center flex-row justify-between gap-2`}
+                                >
+                                    <div className="flex items-center justify-start gap-2">
+                                        <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
+                                            <Check
+                                                className="w-5 h-5 stroke-[#013220]/75"
+                                                strokeWidth={1.5}
+                                            />
                                         </div>
-                                        {depositTx.hash &&
-                                            depositTx.status === 'approve' && (
-                                                <ExternalLink
-                                                    href={getExplorerLink(
-                                                        depositTx.hash,
-                                                        assetDetails?.chain_id ||
+                                        <BodyText
+                                            level="body2"
+                                            weight="medium"
+                                            className="text-gray-800"
+                                        >
+                                            Deposit successful
+                                        </BodyText>
+                                    </div>
+                                    {depositTx.hash &&
+                                        (depositTx.isConfirming ||
+                                            depositTx.isConfirmed) && (
+                                            <ExternalLink
+                                                href={getExplorerLink(
+                                                    depositTx.hash,
+                                                    assetDetails?.chain_id ||
                                                         assetDetails?.platform
                                                             ?.chain_id
-                                                    )}
+                                                )}
+                                            >
+                                                <BodyText
+                                                    level="body2"
+                                                    weight="normal"
+                                                    className="text-inherit"
                                                 >
-                                                    <BodyText
-                                                        level="body2"
-                                                        weight="normal"
-                                                        className="text-inherit"
-                                                    >
-                                                        View on explorer
-                                                    </BodyText>
-                                                </ExternalLink>
-                                            )}
+                                                    View on explorer
+                                                </BodyText>
+                                            </ExternalLink>
+                                        )}
+                                </div>
+                                {miniappUser && (
+                                    <div className="w-full flex items-center flex-col justify-start gap-5 my-4 mb-8 ">
+                                        {shareScreenButtons.map(
+                                            (config, index) => (
+                                                <Button
+                                                    key={index}
+                                                    variant="primary"
+                                                    size="lg"
+                                                    className={`rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
+                                                    onClick={config.onClick}
+                                                >
+                                                    <Image
+                                                        src={config.imageSrc}
+                                                        alt={''}
+                                                        width={18}
+                                                        height={18}
+                                                    />
+                                                    {config.buttonText}
+                                                </Button>
+                                            )
+                                        )}
                                     </div>
                                 )}
-                            {((!isDepositTxInProgress && depositTx.isConfirmed) ||
-                                depositTx.status === 'deposit' ||
-                                depositTx.status === 'view') && (
-                                    <div className="flex items-center justify-between gap-2">
+                            </div>
+                        )}
+                    </div>
+                )}
+                {isShowBlock({
+                    deposit: false,
+                    withdraw:
+                        (withdrawTx.status === 'view' &&
+                            withdrawTx.isConfirmed) ||
+                        isWithdrawTxInProgress,
+                }) && (
+                    <div className="py-1">
+                        {isWithdrawTxInProgress && (
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center justify-start gap-2">
+                                    <LoaderCircle className="animate-spin w-8 h-8 text-secondary-500" />
+                                    <BodyText
+                                        level="body2"
+                                        weight="normal"
+                                        className="text-gray-600"
+                                    >
+                                        {withdrawTx.isPending &&
+                                            'Waiting for confirmation...'}
+                                        {withdrawTx.isConfirming &&
+                                            'Withdrawing...'}
+                                    </BodyText>
+                                </div>
+                                {withdrawTx.hash &&
+                                    (withdrawTx.isConfirming ||
+                                        withdrawTx.isConfirmed) && (
+                                        <ExternalLink
+                                            href={getExplorerLink(
+                                                withdrawTx.hash,
+                                                assetDetails?.chain_id ||
+                                                    assetDetails?.platform
+                                                        ?.chain_id
+                                            )}
+                                        >
+                                            <BodyText
+                                                level="body2"
+                                                weight="normal"
+                                                className="text-inherit"
+                                            >
+                                                View on explorer
+                                            </BodyText>
+                                        </ExternalLink>
+                                    )}
+                            </div>
+                        )}
+                        {withdrawTx.status === 'view' &&
+                            withdrawTx.isConfirmed && (
+                                <div
+                                    className={`flex flex-col items-center justify-start gap-3 w-full`}
+                                >
+                                    <div
+                                        className={`flex items-center flex-row justify-between gap-2 w-full`}
+                                    >
                                         <div className="flex items-center justify-start gap-2">
                                             <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
                                                 <Check
@@ -596,17 +838,19 @@ export default function SuperVaultTxDialog({
                                                 weight="medium"
                                                 className="text-gray-800"
                                             >
-                                                Approval successful
+                                                Withdraw successful
                                             </BodyText>
                                         </div>
-                                        {depositTx.hash &&
-                                            depositTx.status === 'approve' && (
+                                        {withdrawTx.hash &&
+                                            (withdrawTx.isConfirming ||
+                                                withdrawTx.isConfirmed) && (
                                                 <ExternalLink
                                                     href={getExplorerLink(
-                                                        depositTx.hash,
+                                                        withdrawTx.hash,
                                                         assetDetails?.chain_id ||
-                                                        assetDetails?.platform
-                                                            ?.chain_id
+                                                            assetDetails
+                                                                ?.platform
+                                                                ?.chain_id
                                                     )}
                                                 >
                                                     <BodyText
@@ -619,32 +863,55 @@ export default function SuperVaultTxDialog({
                                                 </ExternalLink>
                                             )}
                                     </div>
-                                )}
-                        </div>
-                    )}
-                {isShowBlock({
-                    deposit:
-                        (depositTx.status === 'deposit' &&
-                            (isDepositTxInProgress ||
-                                (!isDepositTxInProgress &&
-                                    depositTx.isConfirmed))) ||
-                        depositTx.status === 'view',
-                    withdraw: false,
-                }) && (
-                        <div className="py-1">
-                            {isDepositTxInProgress && (
-                                <div className="flex items-center justify-between gap-2 w-full">
+                                    {miniappUser && (
+                                        <div className="w-full flex items-center flex-col justify-start gap-5 my-4 mb-8 ">
+                                            {shareScreenButtons.map(
+                                                (config, index) => (
+                                                    <Button
+                                                        key={index}
+                                                        variant="primary"
+                                                        size="lg"
+                                                        className={`rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
+                                                        onClick={config.onClick}
+                                                    >
+                                                        <Image
+                                                            src={
+                                                                config.imageSrc
+                                                            }
+                                                            alt={''}
+                                                            width={18}
+                                                            height={18}
+                                                        />
+                                                        {config.buttonText}
+                                                    </Button>
+                                                )
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        {((!isDepositTxInProgress && depositTx.isConfirmed) ||
+                            (depositTx.status === 'view' &&
+                                depositTx.isConfirmed)) && (
+                            <div
+                                className={`flex flex-col items-center justify-start gap-3 w-full`}
+                            >
+                                <div
+                                    className={`flex w-full items-center flex-row justify-between gap-2`}
+                                >
                                     <div className="flex items-center justify-start gap-2">
-                                        <LoaderCircle className="animate-spin w-8 h-8 text-secondary-500" />
+                                        <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
+                                            <Check
+                                                className="w-5 h-5 stroke-[#013220]/75"
+                                                strokeWidth={1.5}
+                                            />
+                                        </div>
                                         <BodyText
                                             level="body2"
-                                            weight="normal"
-                                            className="text-gray-600"
+                                            weight="medium"
+                                            className="text-gray-800"
                                         >
-                                            {depositTx.isPending &&
-                                                'Waiting for confirmation...'}
-                                            {depositTx.isConfirming &&
-                                                'Depositing...'}
+                                            Deposit successful
                                         </BodyText>
                                     </div>
                                     {depositTx.hash &&
@@ -654,8 +921,8 @@ export default function SuperVaultTxDialog({
                                                 href={getExplorerLink(
                                                     depositTx.hash,
                                                     assetDetails?.chain_id ||
-                                                    assetDetails?.platform
-                                                        ?.chain_id
+                                                        assetDetails?.platform
+                                                            ?.chain_id
                                                 )}
                                             >
                                                 <BodyText
@@ -668,79 +935,33 @@ export default function SuperVaultTxDialog({
                                             </ExternalLink>
                                         )}
                                 </div>
-                            )}
-                            {((!isDepositTxInProgress && depositTx.isConfirmed) ||
-                                (depositTx.status === 'view' &&
-                                    depositTx.isConfirmed)) && (
-                                    <div
-                                        className={`flex flex-col items-center justify-start gap-3 w-full`}
-                                    >
-                                        <div
-                                            className={`flex w-full items-center flex-row justify-between gap-2`}
-                                        >
-                                            <div className="flex items-center justify-start gap-2">
-                                                <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
-                                                    <Check
-                                                        className="w-5 h-5 stroke-[#013220]/75"
-                                                        strokeWidth={1.5}
-                                                    />
-                                                </div>
-                                                <BodyText
-                                                    level="body2"
-                                                    weight="medium"
-                                                    className="text-gray-800"
+                                {miniappUser && (
+                                    <div className="w-full flex items-center flex-col justify-start gap-5 my-4 mb-8 ">
+                                        {shareScreenButtons.map(
+                                            (config, index) => (
+                                                <Button
+                                                    key={index}
+                                                    variant="primary"
+                                                    size="lg"
+                                                    className={`rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
+                                                    onClick={config.onClick}
                                                 >
-                                                    Deposit successful
-                                                </BodyText>
-                                            </div>
-                                            {depositTx.hash &&
-                                                (depositTx.isConfirming ||
-                                                    depositTx.isConfirmed) && (
-                                                    <ExternalLink
-                                                        href={getExplorerLink(
-                                                            depositTx.hash,
-                                                            assetDetails?.chain_id ||
-                                                            assetDetails?.platform
-                                                                ?.chain_id
-                                                        )}
-                                                    >
-                                                        <BodyText
-                                                            level="body2"
-                                                            weight="normal"
-                                                            className="text-inherit"
-                                                        >
-                                                            View on explorer
-                                                        </BodyText>
-                                                    </ExternalLink>
-                                                )}
-                                        </div>
-                                        {miniappUser && (
-                                            <div className="w-full flex items-center flex-col justify-start gap-5 my-4 mb-8 ">
-                                                {shareScreenButtons.map(
-                                                    (config, index) => (
-                                                        <Button
-                                                            key={index}
-                                                            variant="primary"
-                                                            size="lg"
-                                                            className={`rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
-                                                            onClick={config.onClick}
-                                                        >
-                                                            <Image
-                                                                src={config.imageSrc}
-                                                                alt={''}
-                                                                width={18}
-                                                                height={18}
-                                                            />
-                                                            {config.buttonText}
-                                                        </Button>
-                                                    )
-                                                )}
-                                            </div>
+                                                    <Image
+                                                        src={config.imageSrc}
+                                                        alt={''}
+                                                        width={18}
+                                                        height={18}
+                                                    />
+                                                    {config.buttonText}
+                                                </Button>
+                                            )
                                         )}
                                     </div>
                                 )}
-                        </div>
-                    )}
+                            </div>
+                        )}
+                    </div>
+                )}
                 {isShowBlock({
                     deposit: false,
                     withdraw:
@@ -748,140 +969,151 @@ export default function SuperVaultTxDialog({
                             withdrawTx.isConfirmed) ||
                         isWithdrawTxInProgress,
                 }) && (
-                        <div className="py-1">
-                            {isWithdrawTxInProgress && (
-                                <div className="flex items-center justify-between gap-2">
-                                    <div className="flex items-center justify-start gap-2">
-                                        <LoaderCircle className="animate-spin w-8 h-8 text-secondary-500" />
-                                        <BodyText
-                                            level="body2"
-                                            weight="normal"
-                                            className="text-gray-600"
-                                        >
-                                            {withdrawTx.isPending &&
-                                                'Waiting for confirmation...'}
-                                            {withdrawTx.isConfirming &&
-                                                'Withdrawing...'}
-                                        </BodyText>
-                                    </div>
-                                    {withdrawTx.hash &&
-                                        (withdrawTx.isConfirming ||
-                                            withdrawTx.isConfirmed) && (
-                                            <ExternalLink
-                                                href={getExplorerLink(
-                                                    withdrawTx.hash,
-                                                    assetDetails?.chain_id ||
+                    <div className="py-1">
+                        {isWithdrawTxInProgress && (
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center justify-start gap-2">
+                                    <LoaderCircle className="animate-spin w-8 h-8 text-secondary-500" />
+                                    <BodyText
+                                        level="body2"
+                                        weight="normal"
+                                        className="text-gray-600"
+                                    >
+                                        {withdrawTx.isPending &&
+                                            'Waiting for confirmation...'}
+                                        {withdrawTx.isConfirming &&
+                                            'Withdrawing...'}
+                                    </BodyText>
+                                </div>
+                                {withdrawTx.hash &&
+                                    (withdrawTx.isConfirming ||
+                                        withdrawTx.isConfirmed) && (
+                                        <ExternalLink
+                                            href={getExplorerLink(
+                                                withdrawTx.hash,
+                                                assetDetails?.chain_id ||
                                                     assetDetails?.platform
                                                         ?.chain_id
-                                                )}
-                                            >
-                                                <BodyText
-                                                    level="body2"
-                                                    weight="normal"
-                                                    className="text-inherit"
-                                                >
-                                                    View on explorer
-                                                </BodyText>
-                                            </ExternalLink>
-                                        )}
-                                </div>
-                            )}
-                            {withdrawTx.status === 'view' &&
-                                withdrawTx.isConfirmed && (
-                                    <div
-                                        className={`flex flex-col items-center justify-start gap-3 w-full`}
-                                    >
-                                        <div
-                                            className={`flex items-center flex-row justify-between gap-2 w-full`}
+                                            )}
                                         >
-                                            <div className="flex items-center justify-start gap-2">
-                                                <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
-                                                    <Check
-                                                        className="w-5 h-5 stroke-[#013220]/75"
-                                                        strokeWidth={1.5}
-                                                    />
-                                                </div>
-                                                <BodyText
-                                                    level="body2"
-                                                    weight="medium"
-                                                    className="text-gray-800"
-                                                >
-                                                    Withdraw successful
-                                                </BodyText>
+                                            <BodyText
+                                                level="body2"
+                                                weight="normal"
+                                                className="text-inherit"
+                                            >
+                                                View on explorer
+                                            </BodyText>
+                                        </ExternalLink>
+                                    )}
+                            </div>
+                        )}
+                        {withdrawTx.status === 'view' &&
+                            withdrawTx.isConfirmed && (
+                                <div
+                                    className={`flex flex-col items-center justify-start gap-3 w-full`}
+                                >
+                                    <div
+                                        className={`flex items-center flex-row justify-between gap-2 w-full`}
+                                    >
+                                        <div className="flex items-center justify-start gap-2">
+                                            <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
+                                                <Check
+                                                    className="w-5 h-5 stroke-[#013220]/75"
+                                                    strokeWidth={1.5}
+                                                />
                                             </div>
-                                            {withdrawTx.hash &&
-                                                (withdrawTx.isConfirming ||
-                                                    withdrawTx.isConfirmed) && (
-                                                    <ExternalLink
-                                                        href={getExplorerLink(
-                                                            withdrawTx.hash,
-                                                            assetDetails?.chain_id ||
+                                            <BodyText
+                                                level="body2"
+                                                weight="medium"
+                                                className="text-gray-800"
+                                            >
+                                                Withdraw successful
+                                            </BodyText>
+                                        </div>
+                                        {withdrawTx.hash &&
+                                            (withdrawTx.isConfirming ||
+                                                withdrawTx.isConfirmed) && (
+                                                <ExternalLink
+                                                    href={getExplorerLink(
+                                                        withdrawTx.hash,
+                                                        assetDetails?.chain_id ||
                                                             assetDetails
                                                                 ?.platform
                                                                 ?.chain_id
-                                                        )}
+                                                    )}
+                                                >
+                                                    <BodyText
+                                                        level="body2"
+                                                        weight="normal"
+                                                        className="text-inherit"
                                                     >
-                                                        <BodyText
-                                                            level="body2"
-                                                            weight="normal"
-                                                            className="text-inherit"
-                                                        >
-                                                            View on explorer
-                                                        </BodyText>
-                                                    </ExternalLink>
-                                                )}
-                                        </div>
-                                        {miniappUser && (
-                                            <div className="w-full flex items-center flex-col justify-start gap-5 my-4 mb-8 ">
-                                                {shareScreenButtons.map(
-                                                    (config, index) => (
-                                                        <Button
-                                                            key={index}
-                                                            variant="primary"
-                                                            size="lg"
-                                                            className={`rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
-                                                            onClick={config.onClick}
-                                                        >
-                                                            <Image
-                                                                src={
-                                                                    config.imageSrc
-                                                                }
-                                                                alt={''}
-                                                                width={18}
-                                                                height={18}
-                                                            />
-                                                            {config.buttonText}
-                                                        </Button>
-                                                    )
-                                                )}
-                                            </div>
-                                        )}
+                                                        View on explorer
+                                                    </BodyText>
+                                                </ExternalLink>
+                                            )}
                                     </div>
-                                )}
-                        </div>
-                    )}
-                {
-                    isShowBlock({
-                        deposit: depositTx.status === 'view' && depositTx.isConfirmed && !!depositTx.hash,
-                        withdraw: false,
-                    }) && (
-                        <div className="flex flex-col items-center gap-3 my-1 w-full">
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3, ease: 'easeOut' }}
-                                className="bg-gray-200/50 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full"
-                            >
-                                <SubscribeWithEmail onEmailChange={setPendingEmail} />
-                            </motion.div>
-                        </div>
-                    )
-                }
+                                    {miniappUser && (
+                                        <div className="w-full flex items-center flex-col justify-start gap-5 my-4 mb-8 ">
+                                            {shareScreenButtons.map(
+                                                (config, index) => (
+                                                    <Button
+                                                        key={index}
+                                                        variant="primary"
+                                                        size="lg"
+                                                        className={`rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
+                                                        onClick={config.onClick}
+                                                    >
+                                                        <Image
+                                                            src={
+                                                                config.imageSrc
+                                                            }
+                                                            alt={''}
+                                                            width={18}
+                                                            height={18}
+                                                        />
+                                                        {config.buttonText}
+                                                    </Button>
+                                                )
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                    </div>
+                )}
+                {isShowBlock({
+                    deposit:
+                        depositTx.status === 'view' &&
+                        depositTx.isConfirmed &&
+                        !!depositTx.hash,
+                    withdraw: false,
+                }) && (
+                    <div className="flex flex-col items-center gap-3 my-1 w-full">
+                        {/* {!showSubscription &&
+                                <Button
+                                    variant="secondaryOutline"
+                                    onClick={() => setShowSubscription(true)}
+                                    className="w-full py-3 uppercase"
+                                >
+                                    Stay updated on SuperFund
+                                    <ArrowRightIcon className="w-4 h-4 stroke-secondary-500 ml-2" />
+                                </Button>
+                            } */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, ease: 'easeOut' }}
+                            className="bg-gray-200/50 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full"
+                        >
+                            <SubscribeWithEmail onEmailChange={setPendingEmail} />
+                        </motion.div>
+                    </div>
+                )}
                 {/* Block 4 */}
                 {miniappUser &&
-                    ((withdrawTx.status === 'view' && withdrawTx.isConfirmed) ||
-                        (depositTx.status === 'view' &&
-                            depositTx.isConfirmed)) ? null : (
+                ((withdrawTx.status === 'view' && withdrawTx.isConfirmed) ||
+                    (depositTx.status === 'view' &&
+                        depositTx.isConfirmed)) ? null : (
                     <ActionButton
                         disabled={false}
                         handleCloseModal={handleOpenChange}
@@ -893,34 +1125,59 @@ export default function SuperVaultTxDialog({
                     />
                 )}
             </div>
-            
+
             {/* Add email reminder dialog */}
             {showEmailReminder && (
-                <Dialog open={showEmailReminder} onOpenChange={setShowEmailReminder}>
+                <Dialog
+                    open={showEmailReminder}
+                    onOpenChange={setShowEmailReminder}
+                >
                     <DialogContent className="sm:max-w-md">
                         <DialogHeader>
-                            <HeadingText level="h4" weight="medium" className="text-gray-800 text-center">
+                            <HeadingText
+                                level="h4"
+                                weight="medium"
+                                className="text-gray-800 text-center"
+                            >
                                 Don&apos;t miss out!
                             </HeadingText>
                         </DialogHeader>
                         <div className="flex flex-col gap-4">
-                            <BodyText level="body2" weight="normal" className="text-gray-800">
-                                You&apos;ve entered an email but haven&apos;t submitted it. Would you like to submit now to stay updated on SuperFund?
+                            <BodyText
+                                level="body2"
+                                weight="normal"
+                                className="text-gray-800"
+                            >
+                                You&apos;ve entered an email but haven&apos;t
+                                submitted it. Would you like to submit now to
+                                stay updated on SuperFund?
                             </BodyText>
                             <div className="flex justify-end gap-2">
-                                <Button variant="outline" onClick={handleFinalClose}>
+                                <Button
+                                    variant="outline"
+                                    onClick={handleFinalClose}
+                                >
                                     Close anyway
                                 </Button>
-                                <Button variant="primary" onClick={() => {
-                                    setShowEmailReminder(false)
-                                    // Find and click the submit button in the email form
-                                    setTimeout(() => {
-                                        const submitButton = document.querySelector('.subscribe-email-form button[type="submit"]');
-                                        if (submitButton instanceof HTMLElement) {
-                                            submitButton.click();
-                                        }
-                                    }, 100);
-                                }}>
+                                <Button
+                                    variant="primary"
+                                    onClick={() => {
+                                        setShowEmailReminder(false)
+                                        // Find and click the submit button in the email form
+                                        setTimeout(() => {
+                                            const submitButton =
+                                                document.querySelector(
+                                                    '.subscribe-email-form button[type="submit"]'
+                                                )
+                                            if (
+                                                submitButton instanceof
+                                                HTMLElement
+                                            ) {
+                                                submitButton.click()
+                                            }
+                                        }, 100)
+                                    }}
+                                >
                                     Submit email
                                 </Button>
                             </div>

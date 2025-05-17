@@ -12,13 +12,13 @@ const frame = {
     imageUrl:
         'https://superlend-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png',
     button: {
-        title: 'Check This Out',
+        title: 'Start Earning',
         action: {
             type: 'launch_frame',
             name: 'SuperFund',
             url: 'https://funds.superlend.xyz/',
             splashImageUrl:
-                'https://funds.superlend.xyz/images/logos/favicon-32x32.png',
+                'https://funds.superlend.xyz/images/logos/logo.png',
             splashBackgroundColor: '#B4E2FB',
         },
     },
