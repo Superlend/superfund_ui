@@ -1105,7 +1105,7 @@ export default function SuperVaultTxDialog({
                             transition={{ duration: 0.3, ease: 'easeOut' }}
                             className="bg-gray-200/50 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full"
                         >
-                            <SubscribeWithEmail />
+                            <SubscribeWithEmail onEmailChange={setPendingEmail} />
                         </motion.div>
                     </div>
                 )}
