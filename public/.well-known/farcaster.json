@@ -7,12 +7,12 @@
     "frame": {
       "version": "1",
       "name": "SuperFund",
-      "iconUrl": "https://funds.superlend.xyz/images/logos/logo.png",
-      "homeUrl": "https://funds.superlend.xyz",
+      "iconUrl": "https://funds.superlend.xyz/images/icons/logo.png",
+      "homeUrl": "https://funds.superlend.xyz/super-fund/base",
       "imageUrl": "https://funds.superlend.xyz/og.png",
       "buttonTitle": "Start Earning",
-      "splashImageUrl": "https://funds.superlend.xyz/images/logos/logo.png",
-      "splashBackgroundColor": "#B4E2FB",
+      "splashImageUrl": "https://funds.superlend.xyz/images/icons/logo-light.png",
+      "splashBackgroundColor": "#ff5d00",
       "webhookUrl": "https://funds.superlend.xyz/api/webhook"
     }
   }

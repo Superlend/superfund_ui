@@ -16,10 +16,10 @@ const frame = {
         action: {
             type: 'launch_frame',
             name: 'SuperFund',
-            url: 'https://funds.superlend.xyz/',
+            url: 'https://funds.superlend.xyz/super-fund/base',
             splashImageUrl:
-                'https://funds.superlend.xyz/images/logos/logo.png',
-            splashBackgroundColor: '#B4E2FB',
+                'https://funds.superlend.xyz/images/icons/logo-light.png',
+            splashBackgroundColor: '#ff5d00',
         },
     },
 }
