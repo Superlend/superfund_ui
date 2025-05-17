@@ -85,16 +85,6 @@ export default function SuperVaultTxDialog({
     const [miniappUser, setMiniAppUser] = useState<any>(null)
     const [pendingEmail, setPendingEmail] = useState('')
     const [showEmailReminder, setShowEmailReminder] = useState(false)
-    const {
-        data: effectiveApyData,
-        isLoading: isLoadingEffectiveApy,
-        isError: isErrorEffectiveApy,
-    } = useGetEffectiveApy({
-        vault_address: VAULT_ADDRESS_MAP[
-            selectedChain as keyof typeof VAULT_ADDRESS_MAP
-        ] as `0x${string}`,
-        chain_id: selectedChain,
-    })
 
     useEffect(() => {
         const initializeMiniappContext = async () => {
@@ -266,7 +256,7 @@ export default function SuperVaultTxDialog({
             imageSrc: '/icons/share.svg',
             onClick: () => {
                 // I just deposited $10,
-                const text = `I just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} into Superfund. I am earning up to ${effectiveApyData?.total_apy.toFixed(2)}% APY on my USDC deposit with the best adjusted risk.`
+                const text = `I just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} into Superfund. I am earning up to ${assetDetails?.asset?.effective_apy.toFixed(2)}% APY on my USDC deposit with the best adjusted risk.`
                 sdk.actions.composeCast({
                     text,
                     embeds: ['https://funds.superlend.xyz/'],
