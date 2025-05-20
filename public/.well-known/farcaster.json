@@ -11,8 +11,8 @@
       "homeUrl": "https://funds.superlend.xyz/super-fund/base",
       "imageUrl": "https://funds.superlend.xyz/og.png",
       "buttonTitle": "Start Earning",
-      "splashImageUrl": "https://funds.superlend.xyz/icons/logo-light.png",
-      "splashBackgroundColor": "#ff5d00",
+      "splashImageUrl": "https://funds.superlend.xyz/images/logos/superlend-logo.webp",
+      "splashBackgroundColor": "#ffffff",
       "webhookUrl": "https://funds.superlend.xyz/api/webhook"
     }
   }

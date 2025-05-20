@@ -18,8 +18,8 @@ const frame = {
             name: 'SuperFund',
             url: 'https://funds.superlend.xyz/super-fund/base',
             splashImageUrl:
-                'https://funds.superlend.xyz/icons/logo-light.png',
-            splashBackgroundColor: '#ff5d00',
+                'https://funds.superlend.xyz/images/logos/superlend-logo.webp',
+            splashBackgroundColor: '#ffffff',
         },
     },
 }
