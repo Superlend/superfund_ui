@@ -111,7 +111,7 @@ export default function VaultStats() {
     //     chain_id: selectedChain
     // })
     const isLoadingSection = !isClient;
-    const TOTAL_APY = Number((effectiveApyData?.total_apy ?? 0)) + (BOOST_APY ?? 0)
+    const TOTAL_APY = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(effectiveApyData?.base_apy ?? 0) + Number(BOOST_APY ?? 0)
     const positionBreakdownList = [
         {
             id: 'capital',
