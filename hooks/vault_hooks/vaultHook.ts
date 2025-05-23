@@ -70,11 +70,15 @@ export function useVaultHook() {
     const [error, setError] = useState<string | null>(null)
     const timeoutRef = useRef<NodeJS.Timeout | null>(null)
     const isMountedRef = useRef(true)
+    const isInitialLoadRef = useRef(true)
     const { selectedChain } = useChain()
 
     async function fetchVaultData() {
         try {
-            setIsLoading(true)
+            // Only show loading state during initial load
+            if (isInitialLoadRef.current) {
+                setIsLoading(true)
+            }
 
             // Get chain-specific config
             const config = CHAIN_CONFIGS[selectedChain as keyof typeof CHAIN_CONFIGS]
@@ -125,7 +129,11 @@ export function useVaultHook() {
             }
         } finally {
             if (isMountedRef.current) {
-                setIsLoading(false)
+                // Only set loading to false during initial load
+                if (isInitialLoadRef.current) {
+                    setIsLoading(false)
+                    isInitialLoadRef.current = false
+                }
                 // Clear any existing timeout before setting a new one
                 if (timeoutRef.current) {
                     clearTimeout(timeoutRef.current)
@@ -142,6 +150,7 @@ export function useVaultHook() {
 
     useEffect(() => {
         isMountedRef.current = true
+        isInitialLoadRef.current = true // Reset initial load flag when chain changes
         // Clear any existing timeout when chain changes
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current)
