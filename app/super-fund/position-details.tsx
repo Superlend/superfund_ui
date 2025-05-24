@@ -26,11 +26,17 @@ import { useVaultHook } from "@/hooks/vault_hooks/vaultHook"
 import { useGetEffectiveApy } from "@/hooks/vault_hooks/useGetEffectiveApy"
 import { useHistoricalData } from "@/hooks/vault_hooks/useHistoricalDataHook"
 import { Progress } from "@/components/ui/progress"
-import { TrendingUp, BarChart3, Grid3X3, List, Calendar, Target, Trophy, Activity, ChartNoAxesCombined } from "lucide-react"
+import { TrendingUp, BarChart3, Grid3X3, List, Calendar, Target, Trophy, Activity, ChartNoAxesCombined, SquareArrowOutUpRight } from "lucide-react"
 import HistoricalSpotApyChart from '@/components/historical-spot-apy-chart'
 import { Button } from "@/components/ui/button"
 import TooltipText from "@/components/tooltips/TooltipText"
 import ImageWithDefault from "@/components/ImageWithDefault"
+import { useApyData } from "@/context/apy-data-provider"
+import { getRewardsTooltipContent } from "@/lib/ui/getRewardsTooltipContent"
+import CustomAlert from "@/components/alerts/CustomAlert"
+import Link from "next/link"
+import ExternalLink from "@/components/ExternalLink"
+import { starVariants } from "@/lib/animations"
 
 const variants = {
     hidden: { opacity: 0, y: 30 },
@@ -118,6 +124,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
         walletAddress: walletAddress || '',
         refetchOnTransaction: true
     })
+    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
     // Daily Earnings History
     const [selectedRangeForDailyEarningsHistory, setSelectedRangeForDailyEarningsHistory] = useState(Period.oneMonth)
     const startTimeStamp = getStartTimestamp(selectedRangeForDailyEarningsHistory)
@@ -146,10 +153,13 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
         vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
         chain_id: selectedChain || 0
     })
+    const TOTAL_SPOT_APY = useMemo(() => {
+        return Number(spotApy) + Number(effectiveApyData?.rewards_apy) + Number(BOOST_APY ?? 0)
+    }, [spotApy, effectiveApyData, BOOST_APY])
     const {
-        historicalData,
-        isLoading: isLoadingHistoricalData,
-        error: errorHistoricalData
+        historicalData: historicalWeeklyData,
+        isLoading: isLoadingHistoricalWeeklyData,
+        error: errorHistoricalWeeklyData
     } = useHistoricalData({
         period: Period.oneWeek,
         chain_id: selectedChain
@@ -157,9 +167,21 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
 
     // Calculate 7-day average spot APY from historical data
     const days_7_avg_spot_apy = useMemo(() => {
-        if (!historicalData || historicalData.length === 0) return 0
-        return historicalData.reduce((acc: number, item: any) => acc + item.spotApy, 0) / historicalData.length
-    }, [historicalData])
+        if (!historicalWeeklyData || historicalWeeklyData.length === 0) return 0
+        return historicalWeeklyData.reduce((acc: number, item: any) => acc + item.spotApy, 0) / historicalWeeklyData.length
+    }, [historicalWeeklyData])
+
+    // Calculate 7-day average spot APY from historical data
+    const days_7_avg_base_apy = useMemo(() => {
+        if (!historicalWeeklyData || historicalWeeklyData.length === 0) return 0
+        return historicalWeeklyData.reduce((acc: number, item: any) => acc + item.baseApy, 0) / historicalWeeklyData.length
+    }, [historicalWeeklyData])
+
+    // Calculate 7-day average rewards APY from historical data
+    const days_7_avg_rewards_apy = useMemo(() => {
+        if (!historicalWeeklyData || historicalWeeklyData.length === 0) return 0
+        return historicalWeeklyData.reduce((acc: number, item: any) => acc + item.rewardsApy, 0) / historicalWeeklyData.length
+    }, [historicalWeeklyData])
 
     // Historical Spot APY Chart
     const [selectedRangeForHistoricalSpotApy, setSelectedRangeForHistoricalSpotApy] = useState(Period.oneMonth)
@@ -180,6 +202,9 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
     } satisfies Record<Period, string>
 
     const [infoCardsLayout, setInfoCardsLayout] = useState<'grid' | 'row'>('grid')
+    const TOTAL_APY = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(spotApy ?? 0) + Number(BOOST_APY ?? 0)
+    const TOTAL_VAULT_APY = Number(effectiveApyData?.total_apy ?? 0) + Number(BOOST_APY ?? 0)
+    const TOTAL_7_DAY_AVG_VAULT_APY = Number(days_7_avg_base_apy ?? 0) + Number(days_7_avg_rewards_apy ?? 0) + Number(BOOST_APY ?? 0)
 
     return (
         <motion.div
@@ -235,7 +260,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* Spot APY */}
-                        <motion.div 
+                        <motion.div
                             className="flex flex-col gap-2 p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 shadow-md hover:shadow-lg transition-all duration-300"
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
@@ -263,10 +288,55 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                     whileInView={{ scale: 1, opacity: 1 }}
                                     viewport={{ once: true }}
                                     transition={{ duration: 0.6, delay: 0.3 }}
+                                    className="flex items-center gap-2"
                                 >
                                     <HeadingText level="h3" weight="medium" className="text-blue-700">
-                                        {Number(spotApy).toFixed(2)}%
+                                        {Number(TOTAL_SPOT_APY).toFixed(2)}%
                                     </HeadingText>
+                                    <InfoTooltip
+                                        label={
+                                            <motion.svg width="22" height="22" viewBox="0 0 7 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <motion.path
+                                                    variants={starVariants}
+                                                    animate="first"
+                                                    d="M3.98987 0C3.98987 0 4.2778 1.45771 4.90909 2.08475C5.54037 2.71179 7 2.98987 7 2.98987C7 2.98987 5.54229 3.2778 4.91525 3.90909C4.28821 4.54037 4.01013 6 4.01013 6C4.01013 6 3.7222 4.54229 3.09091 3.91525C2.45963 3.28821 1 3.01013 1 3.01013C1 3.01013 2.45771 2.7222 3.08475 2.09091C3.71179 1.45963 3.98987 0 3.98987 0Z"
+                                                    fill="#FFC007"
+                                                />
+                                                <motion.path
+                                                    variants={starVariants}
+                                                    animate="second"
+                                                    d="M1.49493 4C1.49493 4 1.6389 4.72886 1.95454 5.04238C2.27019 5.35589 3 5.49493 3 5.49493C3 5.49493 2.27114 5.6389 1.95762 5.95454C1.64411 6.27019 1.50507 7 1.50507 7C1.50507 7 1.3611 6.27114 1.04546 5.95762C0.729813 5.64411 0 5.50507 0 5.50507C0 5.50507 0.728857 5.3611 1.04238 5.04546C1.35589 4.72981 1.49493 4 1.49493 4Z"
+                                                    fill="#FFC007"
+                                                />
+                                                <motion.path
+                                                    variants={starVariants}
+                                                    animate="third"
+                                                    d="M0.498311 3C0.498311 3 0.5463 3.24295 0.651514 3.34746C0.756729 3.45196 1 3.49831 1 3.49831C1 3.49831 0.757048 3.5463 0.652542 3.65151C0.548035 3.75673 0.501689 4 0.501689 4C0.501689 4 0.4537 3.75705 0.348486 3.65254C0.243271 3.54804 0 3.50169 0 3.50169C0 3.50169 0.242952 3.4537 0.347458 3.34849C0.451965 3.24327 0.498311 3 0.498311 3Z"
+                                                    fill="#FFC007"
+                                                />
+                                            </motion.svg>
+                                        }
+                                        content={
+                                            getRewardsTooltipContent({
+                                                baseRateFormatted: abbreviateNumber(Number(spotApy)),
+                                                rewardsCustomList: [
+                                                    {
+                                                        key: 'rewards_apy',
+                                                        key_name: 'Rewards APY',
+                                                        value: abbreviateNumber(effectiveApyData?.rewards_apy),
+                                                    },
+                                                    {
+                                                        key: 'superlend_rewards_apy',
+                                                        key_name: 'Superlend USDC Reward',
+                                                        value: abbreviateNumber(BOOST_APY ?? 0, 0),
+                                                        logo: "/images/tokens/usdc.webp"
+                                                    },
+                                                ],
+                                                apyCurrent: TOTAL_APY,
+                                                positionTypeParam: 'lend',
+                                            })
+                                        }
+                                    />
                                 </motion.div>
                             )}
                             {(isLoadingSpotApy || errorSpotApy) && (
@@ -275,7 +345,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                         </motion.div>
 
                         {/* Vault APY */}
-                        <motion.div 
+                        <motion.div
                             className="flex flex-col gap-2 p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 shadow-md hover:shadow-lg transition-all duration-300"
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
@@ -303,10 +373,55 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                     whileInView={{ scale: 1, opacity: 1 }}
                                     viewport={{ once: true }}
                                     transition={{ duration: 0.6, delay: 0.4 }}
+                                    className="flex items-center gap-2"
                                 >
                                     <HeadingText level="h3" weight="medium" className="text-green-700">
-                                        {Number(effectiveApyData.total_apy).toFixed(2)}%
+                                        {Number(TOTAL_VAULT_APY).toFixed(2)}%
                                     </HeadingText>
+                                    <InfoTooltip
+                                        label={
+                                            <motion.svg width="22" height="22" viewBox="0 0 7 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <motion.path
+                                                    // variants={starVariants}
+                                                    animate="first"
+                                                    d="M3.98987 0C3.98987 0 4.2778 1.45771 4.90909 2.08475C5.54037 2.71179 7 2.98987 7 2.98987C7 2.98987 5.54229 3.2778 4.91525 3.90909C4.28821 4.54037 4.01013 6 4.01013 6C4.01013 6 3.7222 4.54229 3.09091 3.91525C2.45963 3.28821 1 3.01013 1 3.01013C1 3.01013 2.45771 2.7222 3.08475 2.09091C3.71179 1.45963 3.98987 0 3.98987 0Z"
+                                                    fill="#FFC007"
+                                                />
+                                                <motion.path
+                                                    // variants={starVariants}
+                                                    animate="second"
+                                                    d="M1.49493 4C1.49493 4 1.6389 4.72886 1.95454 5.04238C2.27019 5.35589 3 5.49493 3 5.49493C3 5.49493 2.27114 5.6389 1.95762 5.95454C1.64411 6.27019 1.50507 7 1.50507 7C1.50507 7 1.3611 6.27114 1.04546 5.95762C0.729813 5.64411 0 5.50507 0 5.50507C0 5.50507 0.728857 5.3611 1.04238 5.04546C1.35589 4.72981 1.49493 4 1.49493 4Z"
+                                                    fill="#FFC007"
+                                                />
+                                                <motion.path
+                                                    // variants={starVariants}
+                                                    animate="third"
+                                                    d="M0.498311 3C0.498311 3 0.5463 3.24295 0.651514 3.34746C0.756729 3.45196 1 3.49831 1 3.49831C1 3.49831 0.757048 3.5463 0.652542 3.65151C0.548035 3.75673 0.501689 4 0.501689 4C0.501689 4 0.4537 3.75705 0.348486 3.65254C0.243271 3.54804 0 3.50169 0 3.50169C0 3.50169 0.242952 3.4537 0.347458 3.34849C0.451965 3.24327 0.498311 3 0.498311 3Z"
+                                                    fill="#FFC007"
+                                                />
+                                            </motion.svg>
+                                        }
+                                        content={
+                                            getRewardsTooltipContent({
+                                                baseRateFormatted: abbreviateNumber(Number(effectiveApyData?.base_apy)),
+                                                rewardsCustomList: [
+                                                    {
+                                                        key: 'rewards_apy',
+                                                        key_name: 'Rewards APY',
+                                                        value: abbreviateNumber(effectiveApyData?.rewards_apy),
+                                                    },
+                                                    {
+                                                        key: 'superlend_rewards_apy',
+                                                        key_name: 'Superlend USDC Reward',
+                                                        value: abbreviateNumber(BOOST_APY ?? 0, 0),
+                                                        logo: "/images/tokens/usdc.webp"
+                                                    },
+                                                ],
+                                                apyCurrent: TOTAL_VAULT_APY,
+                                                positionTypeParam: 'lend',
+                                            })
+                                        }
+                                    />
                                 </motion.div>
                             )}
                             {(isLoadingEffectiveApy || isErrorEffectiveApy) && (
@@ -315,7 +430,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                         </motion.div>
 
                         {/* 7-Day Avg Spot APY */}
-                        <motion.div 
+                        <motion.div
                             className="flex flex-col gap-2 p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 shadow-md hover:shadow-lg transition-all duration-300"
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
@@ -327,29 +442,76 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                 label={
                                     <BodyText level="body2" weight="normal" className="text-gray-600">
                                         <TooltipText>
-                                            7-Day Avg Spot APY
+                                            7-Day Avg. Vault APY
                                         </TooltipText>
                                     </BodyText>
                                 }
                                 content={
                                     <BodyText level="body2" weight="normal" className="text-gray-600">
-                                        The trailing 7-day average of the spot APY performance.
+                                        The trailing 7-day average of the vault APY performance.
                                     </BodyText>
                                 }
                             />
-                            {!isLoadingHistoricalData && !errorHistoricalData && (
+                            {!isLoadingHistoricalWeeklyData && !errorHistoricalWeeklyData && (
                                 <motion.div
                                     initial={{ scale: 0.8, opacity: 0 }}
                                     whileInView={{ scale: 1, opacity: 1 }}
                                     viewport={{ once: true }}
                                     transition={{ duration: 0.6, delay: 0.5 }}
+                                    className="flex items-center gap-2"
                                 >
                                     <HeadingText level="h3" weight="medium" className="text-purple-700">
-                                        {Number(days_7_avg_spot_apy).toFixed(2)}%
+                                        {Number(TOTAL_7_DAY_AVG_VAULT_APY).toFixed(2)}%
                                     </HeadingText>
+                                    <InfoTooltip
+                                        label={
+                                            <motion.svg width="22" height="22" viewBox="0 0 7 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <motion.path
+                                                    // variants={starVariants}
+                                                    animate="first"
+                                                    d="M3.98987 0C3.98987 0 4.2778 1.45771 4.90909 2.08475C5.54037 2.71179 7 2.98987 7 2.98987C7 2.98987 5.54229 3.2778 4.91525 3.90909C4.28821 4.54037 4.01013 6 4.01013 6C4.01013 6 3.7222 4.54229 3.09091 3.91525C2.45963 3.28821 1 3.01013 1 3.01013C1 3.01013 2.45771 2.7222 3.08475 2.09091C3.71179 1.45963 3.98987 0 3.98987 0Z"
+                                                    fill="#FFC007"
+                                                />
+                                                <motion.path
+                                                    // variants={starVariants}
+                                                    animate="second"
+                                                    d="M1.49493 4C1.49493 4 1.6389 4.72886 1.95454 5.04238C2.27019 5.35589 3 5.49493 3 5.49493C3 5.49493 2.27114 5.6389 1.95762 5.95454C1.64411 6.27019 1.50507 7 1.50507 7C1.50507 7 1.3611 6.27114 1.04546 5.95762C0.729813 5.64411 0 5.50507 0 5.50507C0 5.50507 0.728857 5.3611 1.04238 5.04546C1.35589 4.72981 1.49493 4 1.49493 4Z"
+                                                    fill="#FFC007"
+                                                />
+                                                <motion.path
+                                                    // variants={starVariants}
+                                                    animate="third"
+                                                    d="M0.498311 3C0.498311 3 0.5463 3.24295 0.651514 3.34746C0.756729 3.45196 1 3.49831 1 3.49831C1 3.49831 0.757048 3.5463 0.652542 3.65151C0.548035 3.75673 0.501689 4 0.501689 4C0.501689 4 0.4537 3.75705 0.348486 3.65254C0.243271 3.54804 0 3.50169 0 3.50169C0 3.50169 0.242952 3.4537 0.347458 3.34849C0.451965 3.24327 0.498311 3 0.498311 3Z"
+                                                    fill="#FFC007"
+                                                />
+                                            </motion.svg>
+                                        }
+                                        content={
+                                            getRewardsTooltipContent({
+                                                baseRateFormatted: abbreviateNumber(Number(days_7_avg_base_apy)),
+                                                baseRateLabel: 'Base APY Avg.',
+                                                rewardsCustomList: [
+                                                    {
+                                                        key: 'rewards_apy',
+                                                        key_name: 'Rewards APY Avg.',
+                                                        value: abbreviateNumber(days_7_avg_rewards_apy),
+                                                    },
+                                                    {
+                                                        key: 'superlend_rewards_apy',
+                                                        key_name: 'Superlend USDC Reward',
+                                                        value: abbreviateNumber(BOOST_APY ?? 0, 0),
+                                                        logo: "/images/tokens/usdc.webp"
+                                                    },
+                                                ],
+                                                apyCurrent: TOTAL_7_DAY_AVG_VAULT_APY,
+                                                positionTypeParam: 'lend',
+                                                netApyLabel: 'Net APY Avg.',
+                                            })
+                                        }
+                                    />
                                 </motion.div>
                             )}
-                            {(isLoadingHistoricalData || errorHistoricalData) && (
+                            {(isLoadingHistoricalWeeklyData || errorHistoricalWeeklyData) && (
                                 <Skeleton className="h-10 w-20 rounded-4" />
                             )}
                         </motion.div>
@@ -373,14 +535,14 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                     </BodyText>
 
                     {!isLoadingSpotApy && !isLoadingEffectiveApy && !errorSpotApy && !isErrorEffectiveApy && effectiveApyData ? (
-                        <motion.div 
+                        <motion.div
                             className="space-y-4"
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true, margin: "-50px" }}
                             transition={{ duration: 0.6, delay: 0.2 }}
                         >
-                            <motion.div 
+                            <motion.div
                                 className="flex justify-between items-center p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200"
                                 initial={{ opacity: 0, x: -30 }}
                                 whileInView={{ opacity: 1, x: 0 }}
@@ -389,7 +551,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                             >
                                 <div className="flex flex-col">
                                     <BodyText level="body2" weight="medium" className="text-gray-800">
-                                        Current: {Number(spotApy).toFixed(2)}%
+                                        Current: {Number(TOTAL_SPOT_APY).toFixed(2)}%
                                     </BodyText>
                                     <BodyText level="body3" weight="medium" className="text-gray-600">
                                         Spot APY
@@ -397,7 +559,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                 </div>
                                 <div className="flex flex-col text-right">
                                     <BodyText level="body2" weight="medium" className="text-gray-800">
-                                        Target: {Number(effectiveApyData.total_apy).toFixed(2)}%
+                                        Target: {Number(TOTAL_VAULT_APY).toFixed(2)}%
                                     </BodyText>
                                     <BodyText level="body3" weight="medium" className="text-gray-600">
                                         Vault APY
@@ -411,35 +573,35 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                         <motion.div
                                             className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full shadow-lg relative overflow-hidden"
                                             initial={{ width: "0%" }}
-                                            whileInView={{ width: `${Math.min((Number(spotApy) / Number(effectiveApyData.total_apy)) * 100, 100)}%` }}
+                                            whileInView={{ width: `${Math.min((Number(TOTAL_SPOT_APY) / Number(TOTAL_VAULT_APY)) * 100, 100)}%` }}
                                             viewport={{ once: true }}
                                             transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
                                         >
                                             <div className="absolute inset-0 bg-gradient-to-r from-green-400/50 to-transparent rounded-full"></div>
-                                            <motion.div 
+                                            <motion.div
                                                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
                                                 initial={{ x: "-100%" }}
                                                 animate={{ x: "100%" }}
-                                                transition={{ 
-                                                    duration: 2, 
-                                                    delay: 2.0, 
+                                                transition={{
+                                                    duration: 2,
+                                                    delay: 2.0,
                                                     ease: "easeInOut",
                                                     repeat: Infinity,
-                                                    repeatDelay: 4 
+                                                    repeatDelay: 4
                                                 }}
                                             />
                                             <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
                                         </motion.div>
                                     </div>
                                 </div>
-                                <motion.div 
+                                <motion.div
                                     className="flex justify-between"
                                     initial={{ opacity: 0 }}
                                     whileInView={{ opacity: 1 }}
                                     viewport={{ once: true }}
                                     transition={{ duration: 0.5, delay: 1.0 }}
                                 >
-                                    <BodyText level="body3" weight="normal" className="text-gray-500">
+                                    <BodyText level="body2" weight="normal" className="text-gray-500">
                                         0%
                                     </BodyText>
                                     <motion.div
@@ -447,12 +609,20 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                         whileInView={{ scale: 1 }}
                                         viewport={{ once: true }}
                                         transition={{ duration: 0.3, delay: 1.2 }}
+                                        className="flex items-center gap-2"
                                     >
-                                        <BodyText level="body3" weight="medium" className="text-green-600 font-semibold">
-                                            {((Number(spotApy) / Number(effectiveApyData.total_apy)) * 100).toFixed(1)}% Progress
+                                        <BodyText level="body2" weight="medium" className="text-green-600 font-semibold">
+                                            {((Number(TOTAL_SPOT_APY) / Number(TOTAL_VAULT_APY)) * 100).toFixed(1)}% Progress
                                         </BodyText>
+                                        {(((Number(TOTAL_SPOT_APY) / Number(TOTAL_VAULT_APY)) * 100) > 100) &&
+                                            <InfoTooltip
+                                                label={
+                                                    <Trophy className="w-4 h-4 text-yellow-600" />
+                                                }
+                                                content="Your APY is boosted by Loyalty Advantage"
+                                            />}
                                     </motion.div>
-                                    <BodyText level="body3" weight="normal" className="text-gray-500">
+                                    <BodyText level="body2" weight="normal" className="text-gray-500">
                                         100%
                                     </BodyText>
                                 </motion.div>
@@ -464,7 +634,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.5, delay: 1.3 }}
                             >
-                                <InfoTooltip
+                                {/* <InfoTooltip
                                     label={
                                         <BodyText level="body3" weight="medium" className="text-blue-600 cursor-help">
                                             💡 Learn about APY ramp-up
@@ -487,7 +657,17 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                             </BodyText>
                                         </div>
                                     }
-                                />
+                                /> */}
+                                <ExternalLink
+                                    className="w-4 h-4 text-yellow-600"
+                                    href="https://docs.craft.do/editor/d/71fd7b22-8910-4b24-ee21-5c14ab0a71b2/CC6AEE76-9654-4E89-94F3-8B379327BC27?s=S3onFRBLuVP1Auieom2o2rEXcKhAQqvQvxwUaPCcyEgx"
+                                    suffixIcon={<SquareArrowOutUpRight className="w-4 h-4 text-blue-600 mt-1" />}
+                                    showIcon={false}
+                                >
+                                    <span className="text-blue-600 font-medium">
+                                        💡 Learn about APY ramp-up
+                                    </span>
+                                </ExternalLink>
                             </motion.div>
                         </motion.div>
                     ) : (
@@ -551,7 +731,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
 
                     <div className="space-y-6">
                         {/* Less than a week: Red */}
-                        <motion.div 
+                        <motion.div
                             className="space-y-3"
                             initial={{ opacity: 0, x: -50 }}
                             whileInView={{ opacity: 1, x: 0 }}
@@ -586,7 +766,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                         </motion.div>
 
                         {/* Week 1-2: Yellow (Ramping up) */}
-                        <motion.div 
+                        <motion.div
                             className="space-y-3"
                             initial={{ opacity: 0, x: -50 }}
                             whileInView={{ opacity: 1, x: 0 }}
@@ -621,7 +801,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                         </motion.div>
 
                         {/* 2+ Weeks: Green (Full rate) */}
-                        <motion.div 
+                        <motion.div
                             className="space-y-3"
                             initial={{ opacity: 0, x: -50 }}
                             whileInView={{ opacity: 1, x: 0 }}
@@ -646,16 +826,16 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                         transition={{ duration: 1.6, delay: 0.5, ease: "easeOut" }}
                                     >
                                         <div className="absolute inset-0 bg-gradient-to-r from-green-400/50 to-transparent rounded-full"></div>
-                                        <motion.div 
+                                        <motion.div
                                             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
                                             initial={{ x: "-100%" }}
                                             animate={{ x: "100%" }}
-                                            transition={{ 
-                                                duration: 2, 
-                                                delay: 2.1, 
+                                            transition={{
+                                                duration: 2,
+                                                delay: 2.1,
                                                 ease: "easeInOut",
                                                 repeat: Infinity,
-                                                repeatDelay: 3 
+                                                repeatDelay: 3
                                             }}
                                         />
                                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
@@ -694,7 +874,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                         >
                             <Card className="border border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100 hover:shadow-xl hover:scale-105 transition-all duration-300 hover:border-orange-300">
                                 <CardContent className="p-4">
-                                    <motion.div 
+                                    <motion.div
                                         className="flex items-center gap-1 mb-2"
                                         initial={{ opacity: 0, x: -20 }}
                                         whileInView={{ opacity: 1, x: 0 }}
@@ -750,7 +930,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                         >
                             <Card className="border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 hover:shadow-xl hover:scale-105 transition-all duration-300 hover:border-purple-300">
                                 <CardContent className="p-4">
-                                    <motion.div 
+                                    <motion.div
                                         className="flex items-center gap-1 mb-2"
                                         initial={{ opacity: 0, x: -20 }}
                                         whileInView={{ opacity: 1, x: 0 }}
@@ -787,7 +967,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                         >
                             <Card className="border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 hover:shadow-xl hover:scale-105 transition-all duration-300 hover:border-blue-300">
                                 <CardContent className="p-4">
-                                    <motion.div 
+                                    <motion.div
                                         className="flex items-center gap-1 mb-2"
                                         initial={{ opacity: 0, x: -20 }}
                                         whileInView={{ opacity: 1, x: 0 }}

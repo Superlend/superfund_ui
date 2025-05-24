@@ -41,7 +41,7 @@ function CustomTooltip({ active, payload, label }: any) {
                 <p className="text-sm font-medium text-gray-900">{data?.timestamp}</p>
                 <p className="text-sm text-gray-600">
                     <span className="inline-block w-3 h-3 bg-[#FF5B00] rounded-full mr-2"></span>
-                    Spot APY: {data?.spotApy}%
+                    Base APY: {data?.spotApy}%
                 </p>
             </div>
         )
@@ -127,7 +127,7 @@ export default function HistoricalSpotApyChart({
             <div className="flex items-start sm:items-center justify-between max-sm:px-4 p-6 pb-4">
                 <div className="flex flex-wrap items-center gap-4">
                     <HeadingText level="h4" weight="medium" className="text-gray-800">
-                        Historical Spot APY
+                        Historical Base APY
                     </HeadingText>
                     <div className="flex gap-1 items-center w-auto p-1 tracking-normal leading-tight uppercase whitespace-nowrap rounded-4 text-stone-800 bg-white bg-opacity-40 shadow-[0px_2px_2px_rgba(0,0,0,0.02)]">
                         <Button
