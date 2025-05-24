@@ -37,6 +37,7 @@ import CustomAlert from "@/components/alerts/CustomAlert"
 import Link from "next/link"
 import ExternalLink from "@/components/ExternalLink"
 import { starVariants } from "@/lib/animations"
+// import { APY_RAMP_UP_EXPLANATION_DOCUMENTATION_LINK } from "@/constants"
 
 const variants = {
     hidden: { opacity: 0, y: 30 },
@@ -154,7 +155,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
         chain_id: selectedChain || 0
     })
     const TOTAL_SPOT_APY = useMemo(() => {
-        return Number(spotApy) + Number(effectiveApyData?.rewards_apy) + Number(BOOST_APY ?? 0)
+        return Number(spotApy ?? 0) + Number(effectiveApyData?.rewards_apy ?? 0) + Number(BOOST_APY ?? 0)
     }, [spotApy, effectiveApyData, BOOST_APY])
     const {
         historicalData: historicalWeeklyData,
@@ -628,13 +629,14 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                 </motion.div>
                             </div>
 
-                            <motion.div
+                            {/* <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.5, delay: 1.3 }}
                             >
-                                {/* <InfoTooltip
+                                // Ignore this tooltip for now
+                                <InfoTooltip
                                     label={
                                         <BodyText level="body3" weight="medium" className="text-blue-600 cursor-help">
                                             💡 Learn about APY ramp-up
@@ -647,7 +649,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                             </BodyText>
                                             <BodyText level="body3" weight="normal" className="text-gray-500">
                                                 <a
-                                                    href="https://docs.craft.do/editor/d/71fd7b22-8910-4b24-ee21-5c14ab0a71b2/CC6AEE76-9654-4E89-94F3-8B379327BC27?s=S3onFRBLuVP1Auieom2o2rEXcKhAQqvQvxwUaPCcyEgx"
+                                                    href={APY_RAMP_UP_EXPLANATION_DOCUMENTATION_LINK}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="text-blue-600 hover:underline"
@@ -657,10 +659,10 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                             </BodyText>
                                         </div>
                                     }
-                                /> */}
+                                />
                                 <ExternalLink
                                     className="text-yellow-600"
-                                    href="https://docs.craft.do/editor/d/71fd7b22-8910-4b24-ee21-5c14ab0a71b2/CC6AEE76-9654-4E89-94F3-8B379327BC27?s=S3onFRBLuVP1Auieom2o2rEXcKhAQqvQvxwUaPCcyEgx"
+                                    href={APY_RAMP_UP_EXPLANATION_DOCUMENTATION_LINK}
                                     suffixIcon={<SquareArrowOutUpRight className="w-3 h-3 text-blue-600" />}
                                     showIcon={false}
                                 >
@@ -668,7 +670,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                         💡 Learn about APY ramp-up
                                     </span>
                                 </ExternalLink>
-                            </motion.div>
+                            </motion.div> */}
                         </motion.div>
                     ) : (
                         <div className="space-y-4">
@@ -708,7 +710,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                         <HeadingText level="h4" weight="medium" className="text-gray-800">
                             Your APY Journey Timeline
                         </HeadingText>
-                        <InfoTooltip
+                        {/* <InfoTooltip
                             content={
                                 <div className="space-y-2">
                                     <BodyText level="body2" weight="normal" className="text-gray-600">
@@ -716,7 +718,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                     </BodyText>
                                     <BodyText level="body3" weight="normal" className="text-gray-500">
                                         <a
-                                            href="https://docs.craft.do/editor/d/71fd7b22-8910-4b24-ee21-5c14ab0a71b2/CC6AEE76-9654-4E89-94F3-8B379327BC27?s=S3onFRBLuVP1Auieom2o2rEXcKhAQqvQvxwUaPCcyEgx"
+                                            href={APY_RAMP_UP_EXPLANATION_DOCUMENTATION_LINK}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-blue-600 hover:underline"
@@ -726,7 +728,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                     </BodyText>
                                 </div>
                             }
-                        />
+                        /> */}
                     </div>
 
                     <div className="space-y-6">
@@ -893,16 +895,16 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                                     <BodyText level="body2" weight="normal" className="text-gray-600">
                                                         Assuming normal deposit and withdraw activities.
                                                     </BodyText>
-                                                    <BodyText level="body3" weight="normal" className="text-gray-500">
+                                                    {/* <BodyText level="body3" weight="normal" className="text-gray-500">
                                                         <a
-                                                            href="https://docs.craft.do/editor/d/71fd7b22-8910-4b24-ee21-5c14ab0a71b2/CC6AEE76-9654-4E89-94F3-8B379327BC27?s=S3onFRBLuVP1Auieom2o2rEXcKhAQqvQvxwUaPCcyEgx"
+                                                            href={APY_RAMP_UP_EXPLANATION_DOCUMENTATION_LINK}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="text-blue-600 hover:underline"
                                                         >
                                                             Learn more →
                                                         </a>
-                                                    </BodyText>
+                                                    </BodyText> */}
                                                 </div>
                                             }
                                         />
