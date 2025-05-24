@@ -21,6 +21,7 @@ import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
 import { useHistoricalDataCompat } from '@/hooks/vault_hooks/useVaultCompat'
 import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import { useRewardsHook } from '@/hooks/vault_hooks/vaultHook'
+import { starVariants } from '@/lib/animations'
 import { VAULT_ADDRESS, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { getRewardsTooltipContent } from '@/lib/ui/getRewardsTooltipContent'
 import { abbreviateNumber, convertNegativeToZero, getBoostApy, hasNoDecimals } from '@/lib/utils'
@@ -34,38 +35,6 @@ type VaultStatsProps = {
     days_7_avg_total_apy: number
     days_7_avg_base_apy: number
     days_7_avg_rewards_apy: number
-}
-
-const starVariants = {
-    first: {
-        scale: [0, 1.2, 1],
-        opacity: [0, 1, 0.8],
-        transition: {
-            duration: 2,
-            repeat: Infinity,
-            repeatDelay: 1
-        }
-    },
-    second: {
-        scale: [0, 1.2, 1],
-        opacity: [0, 1, 0.8],
-        transition: {
-            duration: 2,
-            delay: 0.5,
-            repeat: Infinity,
-            repeatDelay: 1
-        }
-    },
-    third: {
-        scale: [0, 1.2, 1],
-        opacity: [0, 1, 0.8],
-        transition: {
-            duration: 2,
-            delay: 1,
-            repeat: Infinity,
-            repeatDelay: 1
-        }
-    }
 }
 
 export default function VaultStats() {
@@ -111,7 +80,7 @@ export default function VaultStats() {
     //     chain_id: selectedChain
     // })
     const isLoadingSection = !isClient;
-    const TOTAL_APY = Number((effectiveApyData?.total_apy ?? 0)) + (BOOST_APY ?? 0)
+    const TOTAL_APY = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(effectiveApyData?.base_apy ?? 0) + Number(BOOST_APY ?? 0)
     const positionBreakdownList = [
         {
             id: 'capital',

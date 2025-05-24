@@ -20,7 +20,7 @@ export default function useGetDailyEarningsHistory(params: TDailyEarningsHistory
         },
         staleTime: Infinity,
         refetchInterval: false,
-        // enabled: !!params.user_address && !!params.vault_address,
+        enabled: !!params.user_address && !!params.vault_address,
     })
 
     return { data, isLoading, isError, refetch }

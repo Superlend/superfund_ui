@@ -13,19 +13,23 @@ import { abbreviateNumber } from "../utils"
  */
 export function getRewardsTooltipContent({
     baseRateFormatted,
+    baseRateLabel,
     rewards,
     rewardsCustomList,
     apyCurrent,
     positionTypeParam,
     note,
+    netApyLabel,
 }: {
     baseRateFormatted: string
+    baseRateLabel?: string
     rewards?: TReward[]
     rewardsCustomList?: {
         [key: string]: string
     }[]
     apyCurrent: number
     positionTypeParam?: string
+    netApyLabel?: string
     note?: string | (() => React.ReactNode)
 }) {
     const baseRateOperator = positionTypeParam === 'lend' ? '+' : '-'
@@ -47,7 +51,7 @@ export function getRewardsTooltipContent({
                 <div className="flex items-center gap-1">
                     <ChartNoAxesColumnIncreasing className="w-[16px] h-[16px] text-gray-800" />
                     <Label weight="medium" className="text-gray-800">
-                        Base Rate
+                        {baseRateLabel || 'Base Rate'}
                     </Label>
                 </div>
                 <BodyText
@@ -137,7 +141,7 @@ export function getRewardsTooltipContent({
                         className="inline-block"
                     />
                     <Label weight="medium" className="text-gray-800">
-                        Net APY
+                        {netApyLabel || 'Net APY'}
                     </Label>
                 </div>
                 <BodyText
