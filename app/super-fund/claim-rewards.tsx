@@ -24,16 +24,12 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { motion } from "motion/react"
 import useDimensions from "@/hooks/useDimensions"
 import { useChain } from "@/context/chain-context"
+import { useTxContext } from "@/context/super-vault-tx-provider"
+import { TTxContext } from "@/context/super-vault-tx-provider"
 
 export default function ClaimRewards({
-    rewardsData,
-    isLoadingRewards,
-    isErrorRewards,
     noDataUI
 }: {
-    rewardsData: TClaimRewardsResponse[],
-    isLoadingRewards: boolean,
-    isErrorRewards: boolean,
     noDataUI: React.ReactNode
 }) {
     const [isTxDialogOpen, setIsTxDialogOpen] = useState(false)
@@ -41,6 +37,21 @@ export default function ClaimRewards({
     const [selectedReward, setSelectedReward] = useState<TClaimRewardsResponse | undefined>(undefined)
     const { width: screenWidth } = useDimensions()
     const { selectedChain } = useChain()
+    const [refetchClaimRewards, setrefetchClaimRewards] = useState(false)
+    const { formattedClaimData: rewardsData, isLoading: isLoadingRewards, isError: isErrorRewards, refetchClaimRewardsData } = useRewardsHook({
+        refetchClaimRewards: refetchClaimRewards,
+    });
+    const { claimRewardsTx } = useTxContext() as TTxContext
+    useEffect(() => {
+        const shouldRefetchClaimRewards = (claimRewardsTx.status === 'view') && (claimRewardsTx.isConfirmed) && (!!claimRewardsTx.hash)
+        if (shouldRefetchClaimRewards) {
+            setrefetchClaimRewards(true)
+            refetchClaimRewardsData()
+            setTimeout(() => {
+                setrefetchClaimRewards(false)
+            }, 7000)
+        }
+    }, [claimRewardsTx.status, claimRewardsTx.isConfirmed, claimRewardsTx.hash])
 
     function handleSelectToken(token: any) {
         const tokenReward = rewardsData?.find(rd => rd.token.address === token.address);
@@ -100,7 +111,7 @@ export default function ClaimRewards({
                         <Skeleton className="w-full h-[150px] rounded-4" />
                     )
                 }
-                <CardFooter className="relative overflow-hidden rounded-4 md:rounded-6 p-0 min-h-[150px] max-h-[150px]">
+                <CardFooter className="relative overflow-hidden rounded-4 md:rounded-6 p-0 h-full min-h-[100px]">
                     <ImageWithDefault
                         src="/banners/claim-rewards-banner-desktop.png"
                         alt="Claim rewards"
@@ -140,12 +151,14 @@ export default function ClaimRewards({
                             </Button>
                         </motion.div>}
                 </CardFooter>
-                <div className="py-3 px-4 flex items-start sm:items-center justify-center gap-1">
-                    <InfoIcon className="w-4 h-4 text-secondary-500 shrink-0" />
-                    <BodyText level="body2" weight="medium" className="text-gray-600">
-                        Rewards can be claimed weekly, based on epochs that start from May 25th.
-                    </BodyText>
-                </div>
+                {!hasUnclaimedRewards &&
+                    <div className="py-3 px-4 flex items-start sm:items-center justify-center gap-1">
+                        <InfoIcon className="w-4 h-4 text-secondary-500 shrink-0" />
+                        <BodyText level="body2" weight="medium" className="text-gray-600">
+                            Rewards can be claimed weekly, based on epochs that start from May 25th.
+                        </BodyText>
+                    </div>
+                }
             </Card>
             {/* Select token dialog */}
             <SelectTokenDialog

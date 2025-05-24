@@ -106,7 +106,6 @@ function NoActivePositionUI({
 }
 
 function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddress }) {
-    const { claimRewardsTx } = useTxContext() as TTxContext
     const { selectedChain, chainDetails } = useChain()
     const getProtocolIdentifier = () => {
         if (!selectedChain) return ''
@@ -119,11 +118,6 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
         walletAddress: walletAddress || '',
         refetchOnTransaction: true
     })
-    const [refetchClaimRewards, setrefetchClaimRewards] = useState(false)
-    // Claim Rewards
-    const { formattedClaimData: rewardsData, isLoading: isLoadingRewards, isError: isErrorRewards, refetchClaimRewardsData } = useRewardsHook({
-        refetchClaimRewards: refetchClaimRewards,
-    });
     // Daily Earnings History
     const [selectedRangeForDailyEarningsHistory, setSelectedRangeForDailyEarningsHistory] = useState(Period.oneMonth)
     const startTimeStamp = getStartTimestamp(selectedRangeForDailyEarningsHistory)
@@ -185,16 +179,6 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
         [Period.oneYear]: 'this year',
     } satisfies Record<Period, string>
 
-    useEffect(() => {
-        const shouldRefetchClaimRewards = claimRewardsTx.status === 'view' && claimRewardsTx.isConfirmed && claimRewardsTx.hash
-        if (shouldRefetchClaimRewards) {
-            setrefetchClaimRewards(true)
-            setTimeout(() => {
-                setrefetchClaimRewards(false)
-            }, 7000)
-        }
-    }, [claimRewardsTx.status, claimRewardsTx.isConfirmed, claimRewardsTx.hash])
-
     const [infoCardsLayout, setInfoCardsLayout] = useState<'grid' | 'row'>('grid')
 
     return (
@@ -231,9 +215,6 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
             </Card>
             {(selectedChain !== ChainId.Sonic) &&
                 <ClaimRewards
-                    rewardsData={rewardsData}
-                    isLoadingRewards={isLoadingRewards}
-                    isErrorRewards={isErrorRewards}
                     noDataUI={
                         <NoActivePositionUI
                             description={`You have no rewards to claim`}

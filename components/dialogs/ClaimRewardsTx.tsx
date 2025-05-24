@@ -43,6 +43,7 @@ import { useWalletConnection } from '@/hooks/useWalletConnection'
 import ImageWithBadge from '@/components/ImageWithBadge'
 import ExternalLink from '@/components/ExternalLink'
 import ImageWithDefault from '../ImageWithDefault'
+import { motion } from 'motion/react'
 
 export default function ClaimRewardsTxDialog({
     disabled,
@@ -336,7 +337,12 @@ export default function ClaimRewardsTxDialog({
                 }) && (
                         <div className="py-1">
                             {isClaimRewardsTxInProgress && (
-                                <div className="flex items-center justify-between gap-2">
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                                    className="flex items-center justify-between gap-2"
+                                >
                                     <div className="flex items-center justify-start gap-2">
                                         <LoaderCircle className="animate-spin w-8 h-8 text-secondary-500" />
                                         <BodyText level="body2" weight="normal" className="text-gray-600">
@@ -355,10 +361,15 @@ export default function ClaimRewardsTxDialog({
                                             </BodyText>
                                         </ExternalLink>
                                     )}
-                                </div>
+                                </motion.div>
                             )}
                             {(claimRewardsTx.status === 'view' && claimRewardsTx.isConfirmed) && (
-                                <div className="flex items-center justify-between gap-2">
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                                    className="flex items-center justify-between gap-2"
+                                >
                                     <div className="flex items-center justify-start gap-2">
                                         <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
                                             <Check className="w-5 h-5 stroke-[#013220]/75" strokeWidth={1.5} />
@@ -374,7 +385,7 @@ export default function ClaimRewardsTxDialog({
                                             </BodyText>
                                         </ExternalLink>
                                     )}
-                                </div>
+                                </motion.div>
                             )}
                         </div>
                     )}
