@@ -659,12 +659,12 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                     }
                                 /> */}
                                 <ExternalLink
-                                    className="w-4 h-4 text-yellow-600"
+                                    className="text-yellow-600"
                                     href="https://docs.craft.do/editor/d/71fd7b22-8910-4b24-ee21-5c14ab0a71b2/CC6AEE76-9654-4E89-94F3-8B379327BC27?s=S3onFRBLuVP1Auieom2o2rEXcKhAQqvQvxwUaPCcyEgx"
-                                    suffixIcon={<SquareArrowOutUpRight className="w-4 h-4 text-blue-600 mt-1" />}
+                                    suffixIcon={<SquareArrowOutUpRight className="w-3 h-3 text-blue-600" />}
                                     showIcon={false}
                                 >
-                                    <span className="text-blue-600 font-medium">
+                                    <span className="text-blue-600 text-sm font-normal">
                                         💡 Learn about APY ramp-up
                                     </span>
                                 </ExternalLink>
