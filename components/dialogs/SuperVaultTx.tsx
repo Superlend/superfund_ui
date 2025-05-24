@@ -952,7 +952,7 @@ export default function SuperVaultTxDialog({
                         )}
                     </div>
                 )}
-                {isShowBlock({
+                {/* {isShowBlock({
                     deposit: false,
                     withdraw:
                         (withdrawTx.status === 'view' &&
@@ -1070,7 +1070,7 @@ export default function SuperVaultTxDialog({
                                 </div>
                             )}
                     </div>
-                )}
+                )} */}
                 {isShowBlock({
                     deposit:
                         depositTx.status === 'view' &&
