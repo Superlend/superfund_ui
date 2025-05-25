@@ -259,7 +259,9 @@ export default function SuperVaultTxDialog({
                 const text = `I just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} into Superfund. I am earning up to ${assetDetails?.asset?.effective_apy.toFixed(2)}% APY on my USDC deposit with the best adjusted risk.`
                 sdk.actions.composeCast({
                     text,
-                    embeds: ['https://funds.superlend.xyz/'],
+                    embeds: [
+                        `https://funds.superlend.xyz?walletAddress=${walletAddress}&txHash=${positionType === 'withdraw' ? withdrawTx.hash : depositTx.hash}`,
+                    ],
                 })
             },
         },
@@ -1095,7 +1097,9 @@ export default function SuperVaultTxDialog({
                             transition={{ duration: 0.3, ease: 'easeOut' }}
                             className="bg-gray-200/50 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full"
                         >
-                            <SubscribeWithEmail onEmailChange={setPendingEmail} />
+                            <SubscribeWithEmail
+                                onEmailChange={setPendingEmail}
+                            />
                         </motion.div>
                     </div>
                 )}
