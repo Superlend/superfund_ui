@@ -52,7 +52,8 @@ export function useHistoricalData({
                     baseApy: item.BA,
                     rewardsApy: item.RA,
                     totalApy: item.BA + item.RA,
-                    totalAssets: item.TA
+                    totalAssets: item.TA,
+                    spotApy: item.SA
                 }));
                 setHistoricalData(formattedData);
 

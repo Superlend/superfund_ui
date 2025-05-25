@@ -569,7 +569,12 @@ export default function SuperVaultTxDialog({
                     <div className="py-1">
                         {isDepositTxInProgress &&
                             depositTx.status === 'approve' && (
-                                <div className="flex items-center justify-between gap-2">
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                                    className="flex items-center justify-between gap-2"
+                                >
                                     <div className="flex items-center justify-start gap-2">
                                         <LoaderCircle className="animate-spin w-8 h-8 text-secondary-500" />
                                         <BodyText
@@ -602,12 +607,17 @@ export default function SuperVaultTxDialog({
                                                 </BodyText>
                                             </ExternalLink>
                                         )}
-                                </div>
+                                </motion.div>
                             )}
                         {((!isDepositTxInProgress && depositTx.isConfirmed) ||
                             depositTx.status === 'deposit' ||
                             depositTx.status === 'view') && (
-                            <div className="flex items-center justify-between gap-2">
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, ease: 'easeOut' }}
+                                className="flex items-center justify-between gap-2"
+                            >
                                 <div className="flex items-center justify-start gap-2">
                                     <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
                                         <Check
@@ -642,7 +652,7 @@ export default function SuperVaultTxDialog({
                                             </BodyText>
                                         </ExternalLink>
                                     )}
-                            </div>
+                            </motion.div>
                         )}
                     </div>
                 )}
@@ -657,7 +667,12 @@ export default function SuperVaultTxDialog({
                 }) && (
                     <div className="py-1">
                         {isDepositTxInProgress && (
-                            <div className="flex items-center justify-between gap-2 w-full">
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, ease: 'easeOut' }}
+                                className="flex items-center justify-between gap-2 w-full"
+                            >
                                 <div className="flex items-center justify-start gap-2">
                                     <LoaderCircle className="animate-spin w-8 h-8 text-secondary-500" />
                                     <BodyText
@@ -691,12 +706,15 @@ export default function SuperVaultTxDialog({
                                             </BodyText>
                                         </ExternalLink>
                                     )}
-                            </div>
+                            </motion.div>
                         )}
                         {((!isDepositTxInProgress && depositTx.isConfirmed) ||
                             (depositTx.status === 'view' &&
                                 depositTx.isConfirmed)) && (
-                            <div
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, ease: 'easeOut' }}
                                 className={`flex flex-col items-center justify-start gap-3 w-full`}
                             >
                                 <div
@@ -761,7 +779,7 @@ export default function SuperVaultTxDialog({
                                         )}
                                     </div>
                                 )}
-                            </div>
+                            </motion.div>
                         )}
                     </div>
                 )}
@@ -882,76 +900,6 @@ export default function SuperVaultTxDialog({
                                     )}
                                 </div>
                             )}
-                        {((!isDepositTxInProgress && depositTx.isConfirmed) ||
-                            (depositTx.status === 'view' &&
-                                depositTx.isConfirmed)) && (
-                            <div
-                                className={`flex flex-col items-center justify-start gap-3 w-full`}
-                            >
-                                <div
-                                    className={`flex w-full items-center flex-row justify-between gap-2`}
-                                >
-                                    <div className="flex items-center justify-start gap-2">
-                                        <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
-                                            <Check
-                                                className="w-5 h-5 stroke-[#013220]/75"
-                                                strokeWidth={1.5}
-                                            />
-                                        </div>
-                                        <BodyText
-                                            level="body2"
-                                            weight="medium"
-                                            className="text-gray-800"
-                                        >
-                                            Deposit successful
-                                        </BodyText>
-                                    </div>
-                                    {depositTx.hash &&
-                                        (depositTx.isConfirming ||
-                                            depositTx.isConfirmed) && (
-                                            <ExternalLink
-                                                href={getExplorerLink(
-                                                    depositTx.hash,
-                                                    assetDetails?.chain_id ||
-                                                        assetDetails?.platform
-                                                            ?.chain_id
-                                                )}
-                                            >
-                                                <BodyText
-                                                    level="body2"
-                                                    weight="normal"
-                                                    className="text-inherit"
-                                                >
-                                                    View on explorer
-                                                </BodyText>
-                                            </ExternalLink>
-                                        )}
-                                </div>
-                                {miniappUser && (
-                                    <div className="w-full flex items-center flex-col justify-start gap-5 my-4 mb-8 ">
-                                        {shareScreenButtons.map(
-                                            (config, index) => (
-                                                <Button
-                                                    key={index}
-                                                    variant="primary"
-                                                    size="lg"
-                                                    className={`rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
-                                                    onClick={config.onClick}
-                                                >
-                                                    <Image
-                                                        src={config.imageSrc}
-                                                        alt={''}
-                                                        width={18}
-                                                        height={18}
-                                                    />
-                                                    {config.buttonText}
-                                                </Button>
-                                            )
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        )}
                     </div>
                 )}
                 {/* {isShowBlock({

@@ -138,6 +138,18 @@ const ClaimRewardsButton = ({
                     rewardDetails.reward.claimable,
                     rewardDetails.reward.proof,
                 ],
+            }).then(() => {
+                setClaimRewardsTx((prev: TClaimRewardsTx) => ({
+                    ...prev,
+                    status: 'view',
+                }))
+                refetchClaimRewardsData()
+                logEvent('claim_rewards_successful', {
+                    amount: rewardDetails.reward.claimable,
+                    chain: selectedChain,
+                    token: rewardDetails.reward.token.address,
+                    walletAddress: walletAddress
+                })
             })
         } catch (error) {
             error
