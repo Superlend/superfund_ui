@@ -260,7 +260,7 @@ export default function SuperVaultTxDialog({
                 sdk.actions.composeCast({
                     text,
                     embeds: [
-                        `https://funds.superlend.xyz?walletAddress=${walletAddress}&txHash=${positionType === 'withdraw' ? withdrawTx.hash : depositTx.hash}`,
+                        `https://funds.superlend.xyz?info=${`${positionType === 'withdraw' ? withdrawTx.hash : depositTx.hash}:${walletAddress}`}`,
                     ],
                 })
             },
