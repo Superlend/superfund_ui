@@ -122,6 +122,7 @@ export async function POST(request: NextRequest) {
                             text: payload.data.text,
                             username: author.username,
                             fid: author.fid,
+                            txHash,
                         }),
                     },
                 })
