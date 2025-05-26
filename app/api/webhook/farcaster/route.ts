@@ -114,13 +114,13 @@ export async function POST(request: NextRequest) {
                     method: 'POST',
                     path: '/user/new_event_farcaster',
                     query: {
-                        wallet: author.custody_address,
+                        wallet: walletAddress,
                     },
                     body: {
-                        user_address: author.custody_address,
+                        user_address: walletAddress,
                         event_type: 'FARCASTER_CAST',
-                        platform_type: 'farcaster',
-                        protocol_identifier: txHash,
+                        platform_type: 'superlend_vault',
+                        protocol_identifier: '0x',
                         event_data: JSON.stringify({
                             text: payload.data.text,
                             username: author.username,
