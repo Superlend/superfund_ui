@@ -100,6 +100,7 @@ export async function POST(request: NextRequest) {
                 chainId: ChainId.Base,
                 walletAddress: walletAddress as `0x${string}`,
             })
+            
             // Only proceed if user has matching transaction
             const hasMatchingTx = txHistory?.transactions?.some(
                 (tx) => tx.transactionHash === txHash
@@ -107,33 +108,39 @@ export async function POST(request: NextRequest) {
 
             if (hasMatchingTx) {
                 // Make request to log the event
-                const response: EventResponse = await requestIndexer({
-                    method: 'POST',
-                    path: '/user/new_event_farcaster',
-                    query: {
-                        wallet: author.custody_address,
-                    },
-                    body: {
-                        user_address: author.custody_address,
-                        event_type: 'FARCASTER_CAST',
-                        platform_type: 'farcaster',
-                        protocol_identifier: txHash,
-                        event_data: JSON.stringify({
-                            text: payload.data.text,
-                            username: author.username,
-                            fid: author.fid,
-                            txHash,
-                        }),
-                    },
-                })
+                // const response: EventResponse = await requestIndexer({
+                //     method: 'POST',
+                //     path: '/user/new_event_farcaster',
+                //     query: {
+                //         wallet: author.custody_address,
+                //     },
+                //     body: {
+                //         user_address: author.custody_address,
+                //         event_type: 'FARCASTER_CAST',
+                //         platform_type: 'farcaster',
+                //         protocol_identifier: txHash,
+                //         event_data: JSON.stringify({
+                //             text: payload.data.text,
+                //             username: author.username,
+                //             fid: author.fid,
+                //             txHash,
+                //         }),
+                //     },
+                // })
 
-                if (!response) {
-                    throw new Error('Failed to log event')
-                }
+                // if (!response) {
+                //     throw new Error('Failed to log event')
+                // }
+
+                // return NextResponse.json({
+                //     success: true,
+                //     data: response,
+                //     message: 'Points awarded!',
+                // })
 
                 return NextResponse.json({
                     success: true,
-                    data: response,
+                    data: null,
                     message: 'Points awarded!',
                 })
             }
