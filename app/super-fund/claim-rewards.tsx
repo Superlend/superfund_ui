@@ -71,10 +71,6 @@ export default function ClaimRewards({
         return <Skeleton className="w-full h-[250px] rounded-4" />
     }
 
-    // if ((rewardsData.length === 0 && !isLoadingRewards) || (!hasUnclaimedRewards && !isLoadingRewards)) {
-    //     return noDataUI
-    // }
-
     return (
         <>
             <Card className="w-full max-h-[280px]">
