@@ -1,4 +1,4 @@
-import { requestIndexer } from '@/queries/request'
+import { requestPoints } from '@/queries/request'
 import { getTransactionHistory } from '@/queries/transaction-history-api'
 import { ChainId } from '@/types/chain'
 import { NextRequest, NextResponse } from 'next/server'
@@ -108,9 +108,9 @@ export async function POST(request: NextRequest) {
 
             if (hasMatchingTx) {
                 // Make request to log the event
-                console.log("transaction found, awarding points!");
-                
-                const response: EventResponse = await requestIndexer({
+                console.log('transaction found, awarding points!')
+
+                const response: EventResponse = await requestPoints({
                     method: 'POST',
                     path: '/user/new_event_farcaster',
                     query: {
