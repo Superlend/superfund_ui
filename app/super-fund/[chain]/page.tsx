@@ -7,6 +7,7 @@ import VaultStats from '../vault-stats'
 import PageHeader from '../page-header'
 import useIsClient from '@/hooks/useIsClient'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import FlatTabs from '@/components/tabs/flat-tabs'
 import PositionDetails from '../position-details'
 import FundOverview from '../fund-overview'
@@ -19,6 +20,7 @@ import { useAnalytics } from '@/context/amplitude-analytics-provider'
 import { usePrivy } from '@privy-io/react-auth'
 import { useLoginToFrame } from '@privy-io/react-auth/farcaster'
 import sdk from '@farcaster/frame-sdk'
+import YourApiJourney from '@/components/your-api-journey'
 
 interface ChainPageProps {
     params: {
@@ -32,6 +34,11 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
         useWalletConnection()
     const router = useRouter()
     const initialized = useRef(false)
+    const scrollAreaRef = useRef<HTMLDivElement>(null)
+    const [scrollState, setScrollState] = useState({
+        canScrollUp: false,
+        canScrollDown: false,
+    })
     const { logEvent } = useAnalytics()
     const { initLoginToFrame, loginToFrame } = useLoginToFrame()
     const { ready, authenticated } = usePrivy()
@@ -53,6 +60,32 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
         }
         login()
     }, [ready, authenticated, initLoginToFrame, loginToFrame])
+
+    // Handle scroll events to show/hide blur effects
+    useEffect(() => {
+        const scrollArea = scrollAreaRef.current
+        if (!scrollArea) return
+
+        const handleScroll = () => {
+            const viewport = scrollArea.querySelector('[data-radix-scroll-area-viewport]')
+            if (!viewport) return
+
+            const { scrollTop, scrollHeight, clientHeight } = viewport
+            const canScrollUp = scrollTop > 10
+            const canScrollDown = scrollTop < scrollHeight - clientHeight - 10
+
+            setScrollState({ canScrollUp, canScrollDown })
+        }
+
+        // Initial check
+        handleScroll()
+
+        const viewport = scrollArea.querySelector('[data-radix-scroll-area-viewport]')
+        if (viewport) {
+            viewport.addEventListener('scroll', handleScroll)
+            return () => viewport.removeEventListener('scroll', handleScroll)
+        }
+    }, [isWalletConnected]) // Re-run when wallet connection changes
 
     // Validate chain parameter only once
     useEffect(() => {
@@ -124,6 +157,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                     <VaultStats />
                     <div className="flex flex-col gap-4 lg:hidden">
                         <DepositAndWithdrawAssets />
+                        <YourApiJourney />
                         {isWalletConnected && (
                             <TransactionHistory
                                 protocolIdentifier={getProtocolIdentifier(
@@ -142,15 +176,38 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                     )}
                 </div>
                 <div className="hidden lg:block">
-                    <div className="sticky top-20 flex flex-col gap-2 overflow-y-auto max-h-full">
-                        <DepositAndWithdrawAssets />
-                        {isWalletConnected && (
-                            <TransactionHistory
-                                protocolIdentifier={getProtocolIdentifier(
-                                    chainId
+                    <div className="sticky top-20 h-[calc(100vh-5rem)] relative">
+                        {/* Top blur overlay */}
+                        <div
+                            className={`absolute top-0 left-0 right-0 h-12 z-10 pointer-events-none transition-opacity duration-300 ${scrollState.canScrollUp ? 'opacity-100' : 'opacity-0'
+                                }`}
+                            style={{
+                                background: 'linear-gradient(to bottom, hsl(var(--background-light-blue)) 0%, hsl(var(--background-light-blue) / 0.95) 25%, hsl(var(--background-light-blue) / 0.8) 50%, hsl(var(--background-light-blue) / 0.4) 75%, transparent 100%)'
+                            }}
+                        />
+
+                        <ScrollArea className="h-full" ref={scrollAreaRef}>
+                            <div className="flex flex-col gap-2 pr-4">
+                                <DepositAndWithdrawAssets />
+                                <YourApiJourney />
+                                {isWalletConnected && (
+                                    <TransactionHistory
+                                        protocolIdentifier={getProtocolIdentifier(
+                                            chainId
+                                        )}
+                                    />
                                 )}
-                            />
-                        )}
+                            </div>
+                        </ScrollArea>
+
+                        {/* Bottom blur overlay */}
+                        <div
+                            className={`absolute bottom-0 left-0 right-0 h-12 z-10 pointer-events-none transition-opacity duration-300 ${scrollState.canScrollDown ? 'opacity-100' : 'opacity-0'
+                                }`}
+                            style={{
+                                background: 'linear-gradient(to top, hsl(var(--background-light-blue)) 0%, hsl(var(--background-light-blue) / 0.95) 25%, hsl(var(--background-light-blue) / 0.8) 50%, hsl(var(--background-light-blue) / 0.4) 75%, transparent 100%)'
+                            }}
+                        />
                     </div>
                 </div>
             </div>

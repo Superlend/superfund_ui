@@ -147,14 +147,14 @@ export default function ClaimRewards({
                             </Button>
                         </motion.div>}
                 </CardFooter>
-                {!hasUnclaimedRewards &&
+                {/* {!hasUnclaimedRewards &&
                     <div className="py-3 px-4 flex items-start sm:items-center justify-center gap-1">
                         <InfoIcon className="w-4 h-4 text-secondary-500 shrink-0" />
                         <BodyText level="body2" weight="medium" className="text-gray-600">
                             Rewards can be claimed weekly, based on epochs that start from May 25th.
                         </BodyText>
                     </div>
-                }
+                } */}
             </Card>
             {/* Select token dialog */}
             <SelectTokenDialog
