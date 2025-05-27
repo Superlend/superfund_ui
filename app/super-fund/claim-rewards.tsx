@@ -16,7 +16,6 @@ import ClaimRewardsTxDialog from "@/components/dialogs/ClaimRewardsTx"
 import { SelectTokenDialog } from "@/components/dialogs/SelectToken"
 import { abbreviateNumber, formatAmountToDisplay, hasLowestDisplayValuePrefix } from "@/lib/utils"
 import { TClaimRewardsResponse } from "@/types"
-import { useWalletConnection } from "@/hooks/useWalletConnection"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useRewardsHook } from "../../hooks/vault_hooks/useRewardHook"
 import { Check, GiftIcon, InfoIcon } from "lucide-react"
@@ -35,23 +34,28 @@ export default function ClaimRewards({
     const [isTxDialogOpen, setIsTxDialogOpen] = useState(false)
     const [isSelectTokenDialogOpen, setIsSelectTokenDialogOpen] = useState(false)
     const [selectedReward, setSelectedReward] = useState<TClaimRewardsResponse | undefined>(undefined)
+    const [isRefreshingAfterClaim, setIsRefreshingAfterClaim] = useState(false)
     const { width: screenWidth } = useDimensions()
     const { selectedChain } = useChain()
-    const [refetchClaimRewards, setrefetchClaimRewards] = useState(false)
-    const { formattedClaimData: rewardsData, isLoading: isLoadingRewards, isError: isErrorRewards, refetchClaimRewardsData } = useRewardsHook({
-        refetchClaimRewards: refetchClaimRewards,
-    });
+    const { formattedClaimData: rewardsData, isLoading: isLoadingRewards, isError: isErrorRewards, refetchClaimRewardsData } = useRewardsHook();
     const { claimRewardsTx } = useTxContext() as TTxContext
+    
     useEffect(() => {
         const shouldRefetchClaimRewards = (claimRewardsTx.status === 'view') && (claimRewardsTx.isConfirmed) && (!!claimRewardsTx.hash)
         if (shouldRefetchClaimRewards) {
-            setrefetchClaimRewards(true)
-            refetchClaimRewardsData()
-            setTimeout(() => {
-                setrefetchClaimRewards(false)
-            }, 7000)
+            setIsRefreshingAfterClaim(true)
+            // Wait 5 seconds for blockchain state to update, then refetch
+            const timeoutId = setTimeout(async () => {
+                await refetchClaimRewardsData()
+                // Give additional time for the retry mechanism to complete
+                setTimeout(() => {
+                    setIsRefreshingAfterClaim(false)
+                }, 10000) // 10 seconds total refresh time
+            }, 5000)
+            
+            return () => clearTimeout(timeoutId)
         }
-    }, [claimRewardsTx.status, claimRewardsTx.isConfirmed, claimRewardsTx.hash])
+    }, [claimRewardsTx.status, claimRewardsTx.isConfirmed, claimRewardsTx.hash, refetchClaimRewardsData])
 
     function handleSelectToken(token: any) {
         const tokenReward = rewardsData?.find(rd => rd.token.address === token.address);
@@ -67,18 +71,18 @@ export default function ClaimRewards({
     const unclaimedRewardsData = useMemo(() => filterByUnclaimedRewards(rewardsData), [rewardsData]);
     const hasUnclaimedRewards = useMemo(() => unclaimedRewardsData?.length > 0, [unclaimedRewardsData]);
 
-    if (isLoadingRewards) {
+    if (isLoadingRewards && !isRefreshingAfterClaim) {
         return <Skeleton className="w-full h-[250px] rounded-4" />
     }
 
     return (
         <>
-            <Card className="w-full max-h-[280px]">
+            <Card className={`w-full max-h-[280px] ${isRefreshingAfterClaim ? 'opacity-70 transition-opacity duration-300' : ''}`}>
                 {hasUnclaimedRewards && !isLoadingRewards &&
                     <CardContent className="flex flex-col divide-y divide-gray-400 px-8 pt-5 pb-4">
                         <ScrollArea
                             type="always"
-                            className={`${unclaimedRewardsData?.length > 2 ? 'h-[120px]' : 'h-[80px]'} p-0 pr-3`}
+                            className={`${unclaimedRewardsData?.length === 1 ? 'h-[40px]' : unclaimedRewardsData?.length > 2 ? 'h-[120px]' : 'h-[80px]'} p-0 pr-3`}
                         >
                             {unclaimedRewardsData?.map(reward => (
                                 <div className="item flex items-center justify-between gap-2 py-3 first:pt-0 last:pb-0" key={reward.token.address}>
@@ -124,8 +128,8 @@ export default function ClaimRewards({
                         className="w-full h-full max-h-[150px] object-cover md:hidden"
                         priority={true}
                     />
-                    <h3 className={`absolute text-2xl md:text-4xl max-w-[12ch] text-center uppercase ${!unclaimedRewardsData.length ? '' : 'top-3'} md:top-1/2 left-1/2 -translate-x-1/2 md:-translate-y-1/2 text-accent-navy font-bold leading-0`}>
-                        {unclaimedRewardsData.length > 0 ? "Claim your rewards" : "No rewards to claim"}
+                    <h3 className={`absolute text-center uppercase ${!unclaimedRewardsData.length ? 'w-full max-w-[300px] md:max-w-[26ch] text-lg md:text-2xl' : 'max-w-[12ch] top-3 text-2xl md:text-4xl'} md:top-1/2 left-1/2 -translate-x-1/2 md:-translate-y-1/2 text-accent-navy font-bold leading-0`}>
+                        {unclaimedRewardsData.length > 0 ? "Claim your rewards" : "Token rewards are loading! Next payout in 7 days"}
                     </h3>
                     {hasUnclaimedRewards &&
                         <motion.div className="absolute max-md:bottom-8 max-md:w-full max-md:flex max-md:justify-center md:right-5 z-[5]"
