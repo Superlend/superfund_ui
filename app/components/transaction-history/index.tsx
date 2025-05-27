@@ -6,7 +6,7 @@ import { useChain } from '@/context/chain-context'
 import { Skeleton } from '@/components/ui/skeleton'
 import { format, isToday, isYesterday } from 'date-fns'
 import { Button } from '@/components/ui/button'
-import { ChevronRight, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, CheckCircle2 } from 'lucide-react'
+import { ChevronRight, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, CheckCircle2, Calendar } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { formatUnits } from 'ethers/lib/utils'
 import Link from 'next/link'
@@ -18,8 +18,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { Badge } from "@/components/ui/badge"
 import useTransactionHistory from '@/hooks/useTransactionHistory'
 import { Transaction } from '@/queries/transaction-history-api'
+import { HeadingText } from '@/components/ui/typography'
 
 interface TransactionHistoryProps {
   protocolIdentifier: string
@@ -27,7 +29,7 @@ interface TransactionHistoryProps {
 
 export default function TransactionHistory({ protocolIdentifier }: TransactionHistoryProps) {
   const { walletAddress, isWalletConnected } = useWalletConnection()
-  const { selectedChain, chainDetails } = useChain()
+  const { selectedChain } = useChain()
   const router = useRouter()
 
   const { data: { transactions }, isLoading, startRefreshing } = useTransactionHistory({
@@ -98,20 +100,26 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
 
   return (
     <div className="bg-card rounded-2xl p-4 flex flex-col mt-4">
-      <div className="mb-3">
-        <h3 className="text-lg font-semibold">Your Recent Transactions</h3>
+      <div className="mb-4">
+        <HeadingText level="h5" weight="medium" className="text-gray-800 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          Your Recent Transactions
+        </HeadingText>
       </div>
 
-      <div className="space-y-3 overflow-y-auto max-h-[100dvh]">
+      <div className="space-y-4">
         {isLoading ? (
           <TransactionSkeleton count={3} />
         ) : transactions.length === 0 ? (
           <EmptyTransactionsState />
         ) : (
           Object.entries(groupedTransactions).map(([dateGroup, txs]) => (
-            <div key={dateGroup} className="space-y-2">
-              <div className="text-xs text-muted-foreground">
-                {dateGroup}
+            <div key={dateGroup} className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground bg-gradient-to-r from-accent/10 to-accent/5 py-1.5 px-3 rounded-lg border border-accent/20">
+                  <Calendar className="w-3 h-3 text-accent" />
+                  {dateGroup}
+                </div>
+                <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
               </div>
               <div className="space-y-2">
                 {txs.map(tx => (
@@ -123,10 +131,10 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
         )}
       </div>
 
-      <div className="mt-3">
+      <div className="mt-4">
         <Button
           variant="outline"
-          className="w-full text-primary border-primary/30 hover:bg-primary/5"
+          className="w-full text-primary border-primary/30 hover:bg-primary/5 hover:shadow-md transition-all duration-200"
           onClick={() => router.push(`/super-fund/${getChainName()}/txs`)}
         >
           View all transactions
@@ -153,9 +161,6 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
     return chainDetails[selectedChain as keyof typeof chainDetails]?.explorerUrl.replace('/address/', '/tx/') || 'https://basescan.org/tx/'
   }
 
-  // Truncate hash for display (first 6 chars)
-  const shortenedHash = `0x${transactionHash.substring(2, 7)}`
-
   // Truncate transaction hash for display
   const truncatedHash = `${transactionHash.substring(0, 6)}...${transactionHash.substring(transactionHash.length - 4)}`
 
@@ -173,109 +178,145 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
     <Image
       src="https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg"
       alt="USDC"
-      width={16}
-      height={16}
+      width={14}
+      height={14}
       className="inline-block ml-1"
     />
   )
 
-  // slUSD label for display
-  const slUSDLabel = (
-    <span className="rounded-full bg-blue-500 text-white text-[10px] px-2 py-0.5 ml-1">slUSD</span>
-  )
-
-  // Direction icon
+  // Direction icon with background
   const DirectionIcon = type === 'deposit' ? (
-    <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center mr-1">
-      <ArrowUpRight className="h-3 w-3 text-green-500" />
+    <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+      <ArrowUpRight className="h-2.5 w-2.5 text-green-500" />
     </div>
   ) : (
-    <div className="h-5 w-5 rounded-full bg-red-100 flex items-center justify-center mr-1">
-      <ArrowDownRight className="h-3 w-3 text-red-500" />
+    <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
+      <ArrowDownRight className="h-2.5 w-2.5 text-red-500" />
     </div>
   )
 
   return (
     <TooltipProvider>
-      <div className="bg-background rounded-lg py-2">
-        <div className="grid grid-cols-[auto_1fr_auto] gap-x-2 items-center">
-          {/* Row 1: Type and time */}
-          <div className="flex items-center self-start pl-2">
+      <div className="group relative p-3 bg-gradient-to-r from-background to-background/50 rounded-lg hover:from-accent/5 hover:to-accent/10 transition-all duration-300 border border-border/50 hover:border-accent/30 hover:shadow-md hover:shadow-accent/5">
+        {/* Subtle gradient overlay on hover */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg pointer-events-none" />
+        
+        <div className="relative flex items-start justify-between gap-3">
+          {/* Left section */}
+          <div className="flex items-start gap-2 flex-1 min-w-0">
             {DirectionIcon}
+            <div className="flex flex-col space-y-1.5 flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className={`text-sm font-semibold capitalize ${type === 'deposit' ? 'text-green-600' : 'text-red-600'}`}>
+                  {type}
+                </span>
+                <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 h-4 font-medium whitespace-nowrap bg-green-50 border-green-200 text-green-700">
+                  <CheckCircle2 className="h-2 w-2 mr-0.5 text-green-500" />
+                  CONFIRMED
+                </Badge>
+              </div>
+
+              <div className="text-xs text-muted-foreground font-medium">
+                {format(date, 'MMM dd • HH:mm')}
+              </div>
+
+              {/* Transaction hash and explorer link */}
+              <div className="flex max-sm:flex-wrap items-center gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={copyHash}
+                      className="group/copy text-xs text-orange-500 hover:text-orange-600 active:text-orange-700 flex items-center gap-1 px-2 py-1 rounded-md hover:bg-orange-50 active:bg-orange-100 transition-all duration-200"
+                    >
+                      <span className="font-mono text-[10px]">{truncatedHash}</span>
+                      {copied ? (
+                        <CheckCircle2 className="text-green-500 h-2.5 w-2.5 transition-all duration-200" />
+                      ) : (
+                        <Copy className="h-2.5 w-2.5 group-hover/copy:scale-110 transition-transform duration-200" />
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="bg-card">
+                    <p className="text-xs">{copied ? 'Copied!' : 'Copy transaction hash'}</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href={`${getExplorerUrl()}${transactionHash}`}
+                      target="_blank"
+                      className="group/link text-xs text-orange-500 hover:text-orange-600 active:text-orange-700 flex items-center gap-1 px-2 py-1 rounded-md hover:bg-orange-50 active:bg-orange-100 transition-all duration-200"
+                    >
+                      <span className="text-[10px]">Explorer</span>
+                      <ExternalLink className="h-2.5 w-2.5 group-hover/link:scale-110 group-hover/link:translate-x-0.5 transition-all duration-200" />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="bg-card">
+                    <p className="text-xs">View on block explorer</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-col space-y-1">
-            <div className="flex items-center">
-              <span className={`text-sm font-medium capitalize ${type === 'deposit' ? 'text-green-500' : 'text-red-500'}`}>
-                {type}
-              </span>
-            </div>
 
-            {/* Hash with copy button */}
-            <div className="flex items-center text-xs text-orange-500">
-              {truncatedHash}
-              <button
-                onClick={copyHash}
-                className="ml-1 focus:outline-none"
-              >
-                {copied ? (
-                  <CheckCircle2 className="text-green-500 h-3 w-3" />
-                ) : (
-                  <Copy className="h-3 w-3 hover:text-orange-400" />
-                )}
-              </button>
-            </div>
-
-            {/* View tx link */}
-            <div>
-              <Link
-                href={`${getExplorerUrl()}${transactionHash}`}
-                target="_blank"
-                className="text-xs text-orange-500 hover:underline flex items-center w-fit"
-              >
-                View tx
-                <ExternalLink className="h-3 w-3 ml-0.5" />
-              </Link>
-            </div>
-          </div>
-
-          {/* Right Column: Time and amounts */}
-          <div className="flex flex-col space-y-1 items-end pr-2">
-            <div className="text-xs text-muted-foreground">
-              {format(date, 'HH:mm')}
-            </div>
-
-            {/* Amounts */}
-            <div className="text-right text-red-500 text-xs">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center justify-end">
-                    -{type === 'deposit' ? formattedAssets : formattedShares}
-                    {type === 'deposit' ? USDCIcon : slUSDLabel}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="left" className="bg-card">
-                  <p className="text-xs">
-                    {type === 'deposit' ? 'USDC sent to vault' : 'Shares redeemed'}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-
-            <div className="text-right text-green-500 text-xs">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center justify-end">
-                    +{type === 'deposit' ? formattedShares : formattedAssets}
-                    {type === 'deposit' ? slUSDLabel : USDCIcon}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="left" className="bg-card">
-                  <p className="text-xs">
-                    {type === 'deposit' ? 'Shares received' : 'USDC received from vault'}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
+          {/* Right section - amounts */}
+          <div className="flex flex-col gap-1.5 items-end">
+            {type === 'deposit' ? (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-red-50/70 border border-red-100/70 hover:bg-red-50 hover:border-red-200 transition-colors duration-200 cursor-pointer">
+                      <span className="text-red-500 font-medium tabular-nums text-xs">-{formattedAssets}</span>
+                      {USDCIcon}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="bg-card border shadow-lg">
+                    <p className="text-xs font-medium">USDC sent to vault</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-green-50/70 border border-green-100/70 hover:bg-green-50 hover:border-green-200 transition-colors duration-200 cursor-pointer">
+                      <span className="text-green-500 font-medium tabular-nums text-xs">+{formattedShares}</span>
+                      <span className="text-[9px] font-medium text-green-600/80 bg-green-100/50 px-1 py-0.5 rounded">
+                        slUSD
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="bg-card border shadow-lg">
+                    <p className="text-xs font-medium">Shares received</p>
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            ) : (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-red-50/70 border border-red-100/70 hover:bg-red-50 hover:border-red-200 transition-colors duration-200 cursor-pointer">
+                      <span className="text-red-500 font-medium tabular-nums text-xs">-{formattedShares}</span>
+                      <span className="text-[9px] font-medium text-red-600/80 bg-red-100/50 px-1 py-0.5 rounded">
+                        slUSD
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="bg-card border shadow-lg">
+                    <p className="text-xs font-medium">Shares redeemed</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-green-50/70 border border-green-100/70 hover:bg-green-50 hover:border-green-200 transition-colors duration-200 cursor-pointer">
+                      <span className="text-green-500 font-medium tabular-nums text-xs">+{formattedAssets}</span>
+                      {USDCIcon}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="bg-card border shadow-lg">
+                    <p className="text-xs font-medium">USDC received from vault</p>
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -289,11 +330,11 @@ function TransactionSkeleton({ count = 3 }: { count?: number }) {
       {Array(count)
         .fill(0)
         .map((_, index) => (
-          <div key={index} className="space-y-1">
+          <div key={index} className="space-y-2">
             {index === 0 && (
               <Skeleton className="h-4 w-16 rounded-md" />
             )}
-            <Skeleton className="h-[76px] w-full rounded-lg" />
+            <Skeleton className="h-[88px] w-full rounded-lg" />
           </div>
         ))}
     </>
@@ -302,17 +343,26 @@ function TransactionSkeleton({ count = 3 }: { count?: number }) {
 
 function EmptyTransactionsState() {
   return (
-    <div className="text-center py-4 px-2">
-      <div className="mb-2 text-muted-foreground">
-        <Image
-          src="https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg"
-          alt="USDC"
-          width={32}
-          height={32}
-          className="mx-auto opacity-50 mb-2"
-        />
-        <p className="text-sm">No transactions found</p>
-        <p className="text-xs">Deposit funds to start earning yield</p>
+    <div className="text-center py-8 px-2">
+      <div className="mb-4 text-muted-foreground">
+        <div className="relative mx-auto mb-4 w-12 h-12 rounded-full bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center">
+          <Image
+            src="https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg"
+            alt="USDC"
+            width={24}
+            height={24}
+            className="opacity-60"
+          />
+          <div className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center">
+            <ArrowUpRight className="w-2 h-2 text-white" />
+          </div>
+        </div>
+        <p className="text-sm font-semibold mb-2 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          No transactions yet
+        </p>
+        <p className="text-xs leading-relaxed">
+          Your transaction history will appear here after your first deposit or withdrawal
+        </p>
       </div>
     </div>
   )
