@@ -33,6 +33,8 @@ const TxInitialState: TTxContext = {
         isConfirmed: false,
     },
     setClaimRewardsTx: () => { },
+    initialPosition: 0,
+    setInitialPosition: () => { },
 }
 
 export const TxContext = createContext<TTxContext>(TxInitialState)
@@ -73,6 +75,8 @@ export type TTxContext = {
     setWithdrawTx: any
     claimRewardsTx: TClaimRewardsTx
     setClaimRewardsTx: any
+    initialPosition: number
+    setInitialPosition: (position: number) => void
 }
 
 export default function TxProvider({
@@ -109,6 +113,8 @@ export default function TxProvider({
         isConfirmed: false,
     })
 
+    const [initialPosition, setInitialPosition] = useState<number>(0)
+
     return (
         <TxContext.Provider
             value={{
@@ -118,6 +124,8 @@ export default function TxProvider({
                 setWithdrawTx,
                 claimRewardsTx,
                 setClaimRewardsTx,
+                initialPosition,
+                setInitialPosition,
             }}
         >
             {children}
