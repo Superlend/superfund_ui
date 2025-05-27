@@ -157,7 +157,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                     <VaultStats />
                     <div className="flex flex-col gap-4 lg:hidden">
                         <DepositAndWithdrawAssets />
-                        <YourApiJourney />
+                        {isWalletConnected && <YourApiJourney />}
                         {isWalletConnected && (
                             <TransactionHistory
                                 protocolIdentifier={getProtocolIdentifier(
@@ -189,7 +189,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                         <ScrollArea className="h-full" ref={scrollAreaRef}>
                             <div className="flex flex-col gap-2 pr-4">
                                 <DepositAndWithdrawAssets />
-                                <YourApiJourney />
+                                {isWalletConnected && <YourApiJourney />}
                                 {isWalletConnected && (
                                     <TransactionHistory
                                         protocolIdentifier={getProtocolIdentifier(

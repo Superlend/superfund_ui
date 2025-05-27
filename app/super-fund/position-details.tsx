@@ -269,7 +269,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                 }
                                 content={
                                     <BodyText level="body2" weight="normal" className="text-gray-600">
-                                        The current instantaneous APY rate being earned by the vault.
+                                        The current annualized yield (APY) the vault is earning right now, based on real-time data. This rate can change frequently as conditions change.
                                     </BodyText>
                                 }
                             />
@@ -354,7 +354,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                 }
                                 content={
                                     <BodyText level="body2" weight="normal" className="text-gray-600">
-                                        The effective APY calculated as weighted average of underlying protocols.
+                                        The overall annual yield (APY) currently earned by the vault, calculated as a weighted average of all the strategies and protocols it&apos;s using.
                                     </BodyText>
                                 }
                             />
@@ -439,8 +439,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                 }
                                 content={
                                     <BodyText level="body2" weight="normal" className="text-gray-600">
-                                        The trailing 7-day average of the vault APY performance.
-                                    </BodyText>
+                                        The average Vault APY over the past 7 days. This smooths out short-term changes and shows recent performance trends.                                    </BodyText>
                                 }
                             />
                             {!isLoadingHistoricalWeeklyData && !errorHistoricalWeeklyData && (
