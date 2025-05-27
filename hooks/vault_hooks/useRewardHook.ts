@@ -16,11 +16,7 @@ const publicClient = createPublicClient({
 
 const CHAIN_ID = 8453
 
-export function useRewardsHook({
-    refetchClaimRewards = false,
-}: {
-    refetchClaimRewards?: boolean
-} = {}) {
+export function useRewardsHook() {
     const { walletAddress } = useWalletConnection()
 
     const {
@@ -31,7 +27,6 @@ export function useRewardsHook({
     } = useGetClaimRewards({
         user_address: walletAddress,
         chain_id: CHAIN_ID,
-        refetchClaimRewards,
     })
 
     const [formattedClaimData, setFormattedClaimData] = useState<
@@ -40,7 +35,7 @@ export function useRewardsHook({
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [isError, setIsError] = useState<boolean>(false)
 
-    const fetchFormattedClaimData = useCallback(async () => {
+    const fetchFormattedClaimData = useCallback(async (retryCount = 0) => {
         if (
             !walletAddress ||
             !rewardsData ||
@@ -90,6 +85,14 @@ export function useRewardsHook({
             )
 
             setFormattedClaimData(formattedData)
+            
+            // If this is a retry and we still have unclaimed rewards, try again after a delay
+            const hasUnclaimedRewards = formattedData.some(reward => Number(reward.availabeToClaim) > 0)
+            if (retryCount > 0 && hasUnclaimedRewards && retryCount < 3) {
+                setTimeout(() => {
+                    fetchFormattedClaimData(retryCount + 1)
+                }, 3000) // Wait 3 seconds before retrying
+            }
         } catch (error) {
             console.error('Error fetching claimed token data:', error)
             setIsError(true)
@@ -103,12 +106,20 @@ export function useRewardsHook({
         fetchFormattedClaimData()
     }, [fetchFormattedClaimData])
 
+    // Enhanced refetch function that includes retry mechanism for post-transaction updates
+    const refetchWithRetry = useCallback(async () => {
+        await refetchClaimRewardsData()
+        // Start retry mechanism to ensure blockchain state is updated
+        setTimeout(() => {
+            fetchFormattedClaimData(1) // Start with retry count 1
+        }, 2000)
+    }, [refetchClaimRewardsData, fetchFormattedClaimData])
+
     return {
         formattedClaimData,
         isLoading,
         isError,
         fetchFormattedClaimData,
-        refetchClaimRewardsData,
-        // claimRewards
+        refetchClaimRewardsData: refetchWithRetry,
     }
 }
