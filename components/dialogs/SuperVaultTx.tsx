@@ -85,6 +85,27 @@ export default function SuperVaultTxDialog({
     const [miniappUser, setMiniAppUser] = useState<any>(null)
     const [pendingEmail, setPendingEmail] = useState('')
     const [showEmailReminder, setShowEmailReminder] = useState(false)
+    const [hasSubscribed, setHasSubscribed] = useState(false)
+
+    useEffect(() => {
+        if (open) {
+            try {
+                const hasEverSubscribed = localStorage.getItem('hasSubscribedToNewsletter') === 'true'
+                setHasSubscribed(hasEverSubscribed)
+            } catch (error) {
+                console.warn('Failed to read subscription status from localStorage:', error)
+            }
+        }
+    }, [open])
+
+    const handleSubscriptionSuccess = () => {
+        try {
+            localStorage.setItem('hasSubscribedToNewsletter', 'true')
+        } catch (error) {
+            console.warn('Failed to save subscription status to localStorage:', error)
+            setHasSubscribed(true)
+        }
+    }
 
     useEffect(() => {
         const initializeMiniappContext = async () => {
@@ -1027,18 +1048,8 @@ export default function SuperVaultTxDialog({
                         depositTx.isConfirmed &&
                         !!depositTx.hash,
                     withdraw: false,
-                }) && (
+                }) && !hasSubscribed && (
                     <div className="flex flex-col items-center gap-3 my-1 w-full">
-                        {/* {!showSubscription &&
-                                <Button
-                                    variant="secondaryOutline"
-                                    onClick={() => setShowSubscription(true)}
-                                    className="w-full py-3 uppercase"
-                                >
-                                    Stay updated on SuperFund
-                                    <ArrowRightIcon className="w-4 h-4 stroke-secondary-500 ml-2" />
-                                </Button>
-                            } */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -1047,6 +1058,7 @@ export default function SuperVaultTxDialog({
                         >
                             <SubscribeWithEmail
                                 onEmailChange={setPendingEmail}
+                                onSubscriptionSuccess={handleSubscriptionSuccess}
                             />
                         </motion.div>
                     </div>
