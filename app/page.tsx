@@ -22,6 +22,10 @@ import {
 import Container from '@/components/Container'
 import sdk from '@farcaster/frame-sdk'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
+import { VAULT_ADDRESS_MAP } from '@/lib/constants'
+import { useApyData } from '@/context/apy-data-provider'
+import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
+import { abbreviateNumber } from '@/lib/utils'
 
 // Lazy load components
 const BenchmarkYieldTable = dynamic(
@@ -117,6 +121,13 @@ export default function HomePage() {
     const coinControls = useAnimation()
     const [miniAppUser, setMiniAppUser] = useState<any>(null)
     const { logEvent } = useAnalytics()
+    const { selectedChain, chainDetails } = useChain()
+    const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
+        vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        chain_id: selectedChain || 0
+    })
+    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
+    const TOTAL_VAULT_APY = abbreviateNumber(Number(effectiveApyData?.total_apy ?? 0) + Number(BOOST_APY ?? 0))
 
     // Track mouse position for parallax effect
     const handleMouseMove = (e: React.MouseEvent) => {
@@ -505,7 +516,7 @@ export default function HomePage() {
                                     </motion.div>
                                     <div>
                                         <HeadingText level="h4" weight="semibold" className="mb-1">
-                                            Up to 8% APY on USDC
+                                            Up to {TOTAL_VAULT_APY}% APY on USDC
                                         </HeadingText>
                                         <BodyText level="body2" className="text-gray-600">
                                             Earn competitive yields that outpace inflation and traditional banking products.
@@ -688,7 +699,7 @@ export default function HomePage() {
                         <div className="max-w-3xl mx-auto mb-12">
                             {/* Yield Table - Left Side (3/4 width) - lg:col-span-3 */}
                             <div className="overflow-hidden relative">
-                                    <ChainSelectorWithBenchmarkTable />
+                                <ChainSelectorWithBenchmarkTable />
                             </div>
                             {/* Stats Cards - Right Side (1/4 width) - Stacked vertically */}
                             {/* <div className="flex flex-col gap-6 z-10 md:pt-16">
@@ -808,7 +819,7 @@ export default function HomePage() {
                                     </div>
                                     {/* APY Badge */}
                                     <div className="inline-block bg-white px-4 py-2 rounded-full shadow-sm mb-6">
-                                        <span className="text-xl font-bold text-indigo-600">Up to 8% APY</span>
+                                        <span className="text-xl font-bold text-indigo-600">Up to {TOTAL_VAULT_APY}% APY</span>
                                     </div>
                                     {/* Key Benefits */}
                                     <div className="space-y-4 mb-8">
@@ -1168,7 +1179,7 @@ export default function HomePage() {
                                                     Base
                                                 </HeadingText>
                                                 <div className="inline-block bg-white px-3 py-1 rounded-full shadow-sm">
-                                                    <span className="text-xs font-bold text-indigo-600">Up to 8% APY</span>
+                                                    <span className="text-xs font-bold text-indigo-600">Up to {TOTAL_VAULT_APY}% APY</span>
                                                 </div>
                                             </div>
                                         </div>
