@@ -52,6 +52,7 @@ import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
 import { VAULT_ADDRESS_MAP } from '@/lib/constants'
 import SubscribeWithEmail from '../subscribe-with-email'
 import { motion } from 'framer-motion'
+import { checkUserPointsClaimStatus } from '@/app/actions/points'
 
 export default function SuperVaultTxDialog({
     disabled,
@@ -85,6 +86,7 @@ export default function SuperVaultTxDialog({
     const [miniappUser, setMiniAppUser] = useState<any>(null)
     const [pendingEmail, setPendingEmail] = useState('')
     const [showEmailReminder, setShowEmailReminder] = useState(false)
+    const [isPointsClaimed, setIsPointsClaimed] = useState(false)
 
     useEffect(() => {
         const initializeMiniappContext = async () => {
@@ -100,6 +102,16 @@ export default function SuperVaultTxDialog({
 
         void initializeMiniappContext()
     }, [])
+
+    useEffect(() => {
+        const checkPointsStatus = async () => {
+            if (walletAddress) {
+                const claimed = await checkUserPointsClaimStatus(walletAddress, walletAddress)
+                setIsPointsClaimed(claimed)
+            }
+        }
+        void checkPointsStatus()
+    }, [walletAddress])
 
     useEffect(() => {
         // Reset the tx status when the dialog is closed
@@ -252,7 +264,7 @@ export default function SuperVaultTxDialog({
     // SHARE SCREEN BUTTONS FOR MINI APP:
     const shareScreenButtons = [
         {
-            buttonText: 'Share on Warpcast',
+            buttonText: isPointsClaimed ? 'Share on Warpcast' : 'Share and Claim',
             imageSrc: '/icons/share.svg',
             onClick: () => {
                 // I just deposited $10,
