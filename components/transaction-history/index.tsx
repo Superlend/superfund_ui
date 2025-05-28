@@ -99,7 +99,7 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
   const groupedTransactions = groupTransactionsByDate()
 
   return (
-    <div className="bg-card rounded-2xl p-4 flex flex-col mt-4">
+    <div className="bg-card rounded-2xl p-4 flex flex-col">
       <div className="mb-4">
         <HeadingText level="h5" weight="medium" className="text-gray-800 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
           Your Recent Transactions

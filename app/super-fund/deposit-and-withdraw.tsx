@@ -329,6 +329,7 @@ export default function DepositAndWithdrawAssets() {
                             }
                             open={isConfirmationDialogOpen}
                             setOpen={setIsConfirmationDialogOpen}
+                            userMaxWithdrawAmount={Number(userMaxWithdrawAmount)}
                         />
                     )}
                 </CardFooter>

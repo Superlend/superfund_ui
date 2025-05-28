@@ -3,6 +3,10 @@ import { TChartConfig } from '@/types/benchmark-chart'
 export const CHART_CONFIG: TChartConfig = {
     superfund: {
         label: 'Superfund',
+        color: '#ff8533',
+    },
+    superfundReward: {
+        label: 'Superfund + Reward',
         color: '#fb5900',
     },
     aave: {

@@ -53,6 +53,9 @@ import { VAULT_ADDRESS_MAP } from '@/lib/constants'
 import SubscribeWithEmail from '../subscribe-with-email'
 import { motion } from 'framer-motion'
 import { checkUserPointsClaimStatus } from '@/app/actions/points'
+import toast from 'react-hot-toast'
+import FirstDepositToast from '@/components/toasts/FirstDepositToast'
+import { useAnalytics } from '@/context/amplitude-analytics-provider'
 
 export default function SuperVaultTxDialog({
     disabled,
@@ -64,6 +67,7 @@ export default function SuperVaultTxDialog({
     open,
     setOpen,
     setActionType,
+    userMaxWithdrawAmount,
 }: {
     disabled: boolean
     positionType: TPositionType
@@ -74,8 +78,9 @@ export default function SuperVaultTxDialog({
     open: boolean
     setOpen: (open: boolean) => void
     setActionType?: (actionType: TPositionType) => void
+    userMaxWithdrawAmount?: number
 }) {
-    const { depositTx, setDepositTx, withdrawTx, setWithdrawTx } =
+    const { depositTx, setDepositTx, withdrawTx, setWithdrawTx, initialPosition, setInitialPosition } =
         useTxContext() as TTxContext
     const { walletAddress, isWalletConnected, handleSwitchChain } =
         useWalletConnection()
@@ -86,7 +91,81 @@ export default function SuperVaultTxDialog({
     const [miniappUser, setMiniAppUser] = useState<any>(null)
     const [pendingEmail, setPendingEmail] = useState('')
     const [showEmailReminder, setShowEmailReminder] = useState(false)
+    const [hasSubscribed, setHasSubscribed] = useState(false)
     const [isPointsClaimed, setIsPointsClaimed] = useState(false)
+    const [hasShownFirstDepositToast, setHasShownFirstDepositToast] = useState(false)
+    const [hasEverSeenFirstDepositToast, setHasEverSeenFirstDepositToast] = useState(false)
+    const { logEvent } = useAnalytics()
+
+    useEffect(() => {
+        if (open) {
+            try {
+                const hasEverSubscribed = localStorage.getItem('hasSubscribedToNewsletter') === 'true'
+                setHasSubscribed(hasEverSubscribed)
+                
+                // Check if user has ever seen the first deposit toast
+                const hasSeenToast = localStorage.getItem('hasSeenFirstDepositToast') === 'true'
+                setHasEverSeenFirstDepositToast(hasSeenToast)
+            } catch (error) {
+                console.warn('Failed to read subscription status from localStorage:', error)
+            }
+        }
+    }, [open])
+
+    useEffect(() => {
+        if (open && isDepositPositionType && userMaxWithdrawAmount !== undefined) {
+            setInitialPosition(userMaxWithdrawAmount)
+            setHasShownFirstDepositToast(false)
+        }
+    }, [open, isDepositPositionType, userMaxWithdrawAmount, setInitialPosition])
+
+    useEffect(() => {
+        if (
+            !hasShownFirstDepositToast &&
+            !hasEverSeenFirstDepositToast &&
+            isDepositPositionType &&
+            depositTx.status === 'view' &&
+            depositTx.isConfirmed &&
+            depositTx.hash &&
+            initialPosition < 0.01
+        ) {
+            logEvent('first_deposit_toast_viewed', {
+                walletAddress,
+                amount,
+                positionType,
+            })
+            const showFirstDepositToast = () => {
+                toast.custom((t) => (
+                    <FirstDepositToast
+                        onDismiss={() => toast.dismiss(t.id)}
+                    />
+                ), {
+                    position: 'bottom-right',
+                })
+                
+                setHasShownFirstDepositToast(true)
+                
+                try {
+                    localStorage.setItem('hasSeenFirstDepositToast', 'true')
+                    setHasEverSeenFirstDepositToast(true)
+                } catch (error) {
+                    console.warn('Failed to save first deposit toast status to localStorage:', error)
+                }
+            }
+
+            const timeoutId = setTimeout(showFirstDepositToast, 1000)
+            return () => clearTimeout(timeoutId)
+        }
+    }, [hasShownFirstDepositToast, hasEverSeenFirstDepositToast, isDepositPositionType, depositTx.status, depositTx.isConfirmed, depositTx.hash, initialPosition])
+
+    const handleSubscriptionSuccess = () => {
+        try {
+            localStorage.setItem('hasSubscribedToNewsletter', 'true')
+        } catch (error) {
+            console.warn('Failed to save subscription status to localStorage:', error)
+            setHasSubscribed(true)
+        }
+    }
 
     useEffect(() => {
         const initializeMiniappContext = async () => {
@@ -1039,18 +1118,8 @@ export default function SuperVaultTxDialog({
                         depositTx.isConfirmed &&
                         !!depositTx.hash,
                     withdraw: false,
-                }) && (
+                }) && !hasSubscribed && (
                     <div className="flex flex-col items-center gap-3 my-1 w-full">
-                        {/* {!showSubscription &&
-                                <Button
-                                    variant="secondaryOutline"
-                                    onClick={() => setShowSubscription(true)}
-                                    className="w-full py-3 uppercase"
-                                >
-                                    Stay updated on SuperFund
-                                    <ArrowRightIcon className="w-4 h-4 stroke-secondary-500 ml-2" />
-                                </Button>
-                            } */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -1059,6 +1128,7 @@ export default function SuperVaultTxDialog({
                         >
                             <SubscribeWithEmail
                                 onEmailChange={setPendingEmail}
+                                onSubscriptionSuccess={handleSubscriptionSuccess}
                             />
                         </motion.div>
                     </div>

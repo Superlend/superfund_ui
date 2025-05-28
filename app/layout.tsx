@@ -6,6 +6,7 @@ import ContextProvider from '@/context'
 import Footer from '@/components/Footer'
 import { GoogleTagManager } from '@next/third-parties/google'
 import ScrollToTop from '@/components/ScrollToTop'
+import { Toaster } from 'react-hot-toast'
 
 const frame = {
     version: 'next',
@@ -87,6 +88,22 @@ export default function RootLayout({
                     {children}
                     <Footer />
                 </ContextProvider>
+                <Toaster
+                    position="bottom-right"
+                    toastOptions={{
+                        duration: Infinity,
+                        style: {
+                            background: '#fff',
+                            color: '#374151',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '12px',
+                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                            padding: '16px',
+                            fontSize: '14px',
+                            maxWidth: '400px',
+                        },
+                    }}
+                />
             </body>
         </html>
     )
