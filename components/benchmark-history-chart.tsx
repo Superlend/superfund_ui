@@ -501,10 +501,8 @@ export function BenchmarkHistoryChart() {
             // Check if the date is on or after boost APY start date
             const shouldAddBoost = date.getTime() >= boostApyStartDate;
 
-            const superfundValue = item.superfund;
-            const superfundRewardValue = shouldAddBoost && item.superfund !== null ?
-                item.superfund + BOOST_APY :
-                item.superfund;
+            const superfundValue = (item.superfund != null) ? item.superfund - (BOOST_APY ?? 0) : null
+            const superfundRewardValue = item.superfund;
 
             const formattedItem: TFormattedBenchmarkDataPoint = {
                 rawTimestamp: item.timestamp,
