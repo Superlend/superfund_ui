@@ -129,7 +129,10 @@ const config = {
 				'4': 'calc(var(--radius) + 0.625rem)',
 				'5': 'calc(var(--radius) + 0.875rem)',
 				'6': 'calc(var(--radius) + 1.125rem)',
-				'7': 'calc(var(--radius) + 1.375rem)'
+				'7': 'calc(var(--radius) + 1.375rem)',
+				lg: 'var(--radius)',
+				md: 'calc(var(--radius) - 2px)',
+				sm: 'calc(var(--radius) - 4px)',
 			},
 			keyframes: {
 				'accordion-down': {
@@ -168,14 +171,50 @@ const config = {
 					'100%': {
 						transform: 'translateX(200%) skewX(-20deg)'
 					}
-				}
+				},
+				'spin-slow': {
+					from: { transform: 'rotate(0deg)' },
+					to: { transform: 'rotate(360deg)' },
+				},
+				'spin-reverse-slow': {
+					from: { transform: 'rotate(360deg)' },
+					to: { transform: 'rotate(0deg)' },
+				},
+				'bounce-slow': {
+					'0%, 100%': {
+						transform: 'translateY(0)',
+						animationTimingFunction: 'cubic-bezier(0.8, 0, 1, 1)',
+					},
+					'50%': {
+						transform: 'translateY(-8px)',
+						animationTimingFunction: 'cubic-bezier(0, 0, 0.2, 1)',
+					},
+				},
+				'wiggle': {
+					'0%, 100%': { transform: 'rotate(-3deg)' },
+					'50%': { transform: 'rotate(3deg)' },
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0px)' },
+					'50%': { transform: 'translateY(-10px)' },
+				},
+				'glow': {
+					'0%, 100%': { opacity: '0.5' },
+					'50%': { opacity: '1' },
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				scroll: 'scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite',
 				pulse: 'pulse var(--duration) ease-out infinite',
-				shimmer: 'shimmer 1.5s infinite'
+				shimmer: 'shimmer 1.5s infinite',
+				'spin-slow': 'spin-slow 20s linear infinite',
+				'spin-reverse-slow': 'spin-reverse-slow 25s linear infinite',
+				'bounce-slow': 'bounce-slow 3s ease-in-out infinite',
+				'wiggle': 'wiggle 4s ease-in-out infinite',
+				'float': 'float 6s ease-in-out infinite',
+				'glow': 'glow 2s ease-in-out infinite',
 			}
 		}
 	},

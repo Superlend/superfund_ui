@@ -91,96 +91,37 @@ const ProblemSolutionSection = lazy(() =>
                             <HeadingText level="h2" weight="bold" className="mb-4 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 bg-clip-text text-transparent">
                                 Traditional Banking Is Failing Your Money
                             </HeadingText>
-                            <BodyText level="body1" weight="medium" className="text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                            <BodyText level="body1" weight="medium" className="text-slate-600 max-w-lg mx-auto leading-relaxed">
                                 While inflation erodes your savings, traditional financial institutions are offering minimal returns
                             </BodyText>
                         </motion.div>
 
                         {/* Enhanced Problems Grid */}
                         <div className="relative mb-16">
-                            {/* Animated Background Elements */}
-                            {!shouldReduceMotion && (
-                                <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                                    <motion.div
-                                        animate={{
-                                            rotate: [0, 360],
-                                            scale: [1, 1.1, 1],
-                                        }}
-                                        transition={{
-                                            duration: 25,
-                                            repeat: Infinity,
-                                            ease: "linear"
-                                        }}
-                                        className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-red-400/5 to-orange-400/5 rounded-full blur-xl"
-                                    />
-                                    <motion.div
-                                        animate={{
-                                            rotate: [360, 0],
-                                            scale: [1, 1.2, 1],
-                                        }}
-                                        transition={{
-                                            duration: 30,
-                                            repeat: Infinity,
-                                            ease: "linear"
-                                        }}
-                                        className="absolute -bottom-10 -left-10 w-24 h-24 bg-gradient-to-br from-orange-400/5 to-red-400/5 rounded-full blur-xl"
-                                    />
-                                </div>
-                            )}
+                            {/* Animated Background Elements - Replaced with CSS */}
+                            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-red-400/5 to-orange-400/5 rounded-full blur-xl animate-spin-slow" />
+                                <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-gradient-to-br from-orange-400/5 to-red-400/5 rounded-full blur-xl animate-spin-reverse-slow" />
+                            </div>
 
                             <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8">
                                 {/* Problem 1 - Enhanced */}
                                 <motion.div
                                     variants={cardVariantsLeft}
-                                    whileHover={{
-                                        scale: 1.02,
-                                        rotateY: 2,
-                                        z: 20
-                                    }}
-                                    className="group relative h-full"
+                                    className="group relative h-full hover:scale-105 transition-transform duration-300"
                                 >
-                                    <div className="relative bg-white/60 backdrop-blur-sm rounded-2xl p-8 border border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500 transform-gpu perspective-1000 h-full flex flex-col">
-                                        {/* 3D Icon Container */}
-                                        <motion.div
-                                            variants={iconVariants}
-                                            whileHover={{
-                                                rotateY: 15,
-                                                rotateX: 10,
-                                                scale: 1.1
-                                            }}
-                                            className="relative w-16 h-16 mx-auto mb-6 transform-gpu preserve-3d"
-                                        >
+                                    <div className="relative bg-white/60 backdrop-blur-sm rounded-2xl p-8 border border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500 h-full flex flex-col">
+                                        {/* 3D Icon Container - Simplified */}
+                                        <div className="relative w-16 h-16 mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                                             <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl shadow-lg group-hover:shadow-red-500/25 transition-all duration-300" />
                                             <div className="absolute inset-0.5 bg-gradient-to-br from-red-400 to-rose-500 rounded-2xl flex items-center justify-center">
-                                                <motion.div
-                                                    animate={shouldReduceMotion ? {} : {
-                                                        y: [-2, 2, -2],
-                                                    }}
-                                                    transition={shouldReduceMotion ? {} : {
-                                                        duration: 3,
-                                                        repeat: Infinity,
-                                                        ease: "easeInOut"
-                                                    }}
-                                                >
+                                                <div className="animate-bounce-slow">
                                                     <TrendingUp className="w-8 h-8 text-white transform rotate-180" />
-                                                </motion.div>
+                                                </div>
                                             </div>
-                                            {/* Floating particles */}
-                                            {!shouldReduceMotion && (
-                                                <motion.div
-                                                    animate={{
-                                                        y: [-2, 2, -2],
-                                                        opacity: [0.5, 1, 0.5],
-                                                    }}
-                                                    transition={{
-                                                        duration: 3,
-                                                        repeat: Infinity,
-                                                        ease: "easeInOut"
-                                                    }}
-                                                    className="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full blur-sm"
-                                                />
-                                            )}
-                                        </motion.div>
+                                            {/* Floating particles - CSS only */}
+                                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full blur-sm animate-pulse" />
+                                        </div>
 
                                         <div className="text-center flex-1 flex flex-col justify-center">
                                             <HeadingText level="h3" weight="bold" className="mb-3 text-slate-800 group-hover:text-red-700 transition-colors">
@@ -199,53 +140,20 @@ const ProblemSolutionSection = lazy(() =>
                                 {/* Problem 2 - Enhanced */}
                                 <motion.div
                                     variants={cardVariants}
-                                    whileHover={{
-                                        scale: 1.02,
-                                        rotateY: 2,
-                                        z: 20
-                                    }}
-                                    className="group relative h-full"
+                                    className="group relative h-full hover:scale-105 transition-transform duration-300"
                                 >
-                                    <div className="relative bg-white/60 backdrop-blur-sm rounded-2xl p-8 border border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500 transform-gpu perspective-1000 h-full flex flex-col">
-                                        {/* 3D Icon Container */}
-                                        <motion.div
-                                            variants={iconVariants}
-                                            whileHover={{
-                                                rotateY: 15,
-                                                rotateX: 10,
-                                                scale: 1.1
-                                            }}
-                                            className="relative w-16 h-16 mx-auto mb-6 transform-gpu preserve-3d"
-                                        >
+                                    <div className="relative bg-white/60 backdrop-blur-sm rounded-2xl p-8 border border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500 h-full flex flex-col">
+                                        {/* 3D Icon Container - Simplified */}
+                                        <div className="relative w-16 h-16 mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                                             <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl shadow-lg group-hover:shadow-orange-500/25 transition-all duration-300" />
                                             <div className="absolute inset-0.5 bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl flex items-center justify-center">
-                                                <motion.div
-                                                    animate={{
-                                                        scale: [1, 1.1, 1],
-                                                    }}
-                                                    transition={{
-                                                        duration: 2,
-                                                        repeat: Infinity,
-                                                        ease: "easeInOut"
-                                                    }}
-                                                >
+                                                <div className="animate-pulse">
                                                     <AlertTriangle className="w-8 h-8 text-white" />
-                                                </motion.div>
+                                                </div>
                                             </div>
-                                            {/* Floating particles */}
-                                            <motion.div
-                                                animate={{
-                                                    x: [-2, 2, -2],
-                                                    opacity: [0.5, 1, 0.5],
-                                                }}
-                                                transition={{
-                                                    duration: 4,
-                                                    repeat: Infinity,
-                                                    ease: "easeInOut"
-                                                }}
-                                                className="absolute -top-1 -left-1 w-3 h-3 bg-orange-400 rounded-full blur-sm"
-                                            />
-                                        </motion.div>
+                                            {/* Floating particles - CSS only */}
+                                            <div className="absolute -top-1 -left-1 w-3 h-3 bg-orange-400 rounded-full blur-sm animate-ping" />
+                                        </div>
 
                                         <div className="text-center flex-1 flex flex-col justify-center">
                                             <HeadingText level="h3" weight="bold" className="mb-3 text-slate-800 group-hover:text-orange-700 transition-colors">
@@ -264,53 +172,20 @@ const ProblemSolutionSection = lazy(() =>
                                 {/* Problem 3 - Enhanced */}
                                 <motion.div
                                     variants={cardVariantsRight}
-                                    whileHover={{
-                                        scale: 1.02,
-                                        rotateY: 2,
-                                        z: 20
-                                    }}
-                                    className="group relative h-full"
+                                    className="group relative h-full hover:scale-105 transition-transform duration-300"
                                 >
-                                    <div className="relative bg-white/60 backdrop-blur-sm rounded-2xl p-8 border border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500 transform-gpu perspective-1000 h-full flex flex-col">
-                                        {/* 3D Icon Container */}
-                                        <motion.div
-                                            variants={iconVariants}
-                                            whileHover={{
-                                                rotateY: 15,
-                                                rotateX: 10,
-                                                scale: 1.1
-                                            }}
-                                            className="relative w-16 h-16 mx-auto mb-6 transform-gpu preserve-3d"
-                                        >
+                                    <div className="relative bg-white/60 backdrop-blur-sm rounded-2xl p-8 border border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500 h-full flex flex-col">
+                                        {/* 3D Icon Container - Simplified */}
+                                        <div className="relative w-16 h-16 mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                                             <div className="absolute inset-0 bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl shadow-lg group-hover:shadow-rose-500/25 transition-all duration-300" />
                                             <div className="absolute inset-0.5 bg-gradient-to-br from-rose-400 to-pink-500 rounded-2xl flex items-center justify-center">
-                                                <motion.div
-                                                    animate={{
-                                                        rotate: [0, 10, -10, 0],
-                                                    }}
-                                                    transition={{
-                                                        duration: 4,
-                                                        repeat: Infinity,
-                                                        ease: "easeInOut"
-                                                    }}
-                                                >
+                                                <div className="animate-wiggle">
                                                     <Lock className="w-8 h-8 text-white" />
-                                                </motion.div>
+                                                </div>
                                             </div>
-                                            {/* Floating particles */}
-                                            <motion.div
-                                                animate={{
-                                                    rotate: [0, 360],
-                                                    opacity: [0.5, 1, 0.5],
-                                                }}
-                                                transition={{
-                                                    duration: 5,
-                                                    repeat: Infinity,
-                                                    ease: "easeInOut"
-                                                }}
-                                                className="absolute -bottom-1 -right-1 w-3 h-3 bg-rose-400 rounded-full blur-sm"
-                                            />
-                                        </motion.div>
+                                            {/* Floating particles - CSS only */}
+                                            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-rose-400 rounded-full blur-sm animate-spin" />
+                                        </div>
 
                                         <div className="text-center flex-1 flex flex-col justify-center">
                                             <HeadingText level="h3" weight="bold" className="mb-3 text-slate-800 group-hover:text-rose-700 transition-colors">
@@ -327,94 +202,29 @@ const ProblemSolutionSection = lazy(() =>
                                 </motion.div>
                             </div>
                         </div>
-                        {/* Enhanced Divider with Animation */}
+                        {/* Enhanced Divider with Animation - Simplified */}
                         <motion.div
                             variants={childVariants}
                             className="flex items-center justify-center my-16"
                         >
-                            <motion.div
-                                animate={{
-                                    rotate: [0, 360],
-                                    scale: [1, 1.2, 1],
-                                }}
-                                transition={{
-                                    duration: 8,
-                                    repeat: Infinity,
-                                    ease: "linear"
-                                }}
-                                className="relative"
-                            >
+                            <div className="relative">
                                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center backdrop-blur-sm border border-white/30">
-                                    <motion.div
-                                        animate={{
-                                            y: [-2, 2, -2],
-                                        }}
-                                        transition={{
-                                            duration: 3,
-                                            repeat: Infinity,
-                                            ease: "easeInOut"
-                                        }}
-                                        className="text-primary"
-                                    >
+                                    <div className="text-primary animate-bounce-slow">
                                         <ArrowRight className="w-8 h-8 transform rotate-90" />
-                                    </motion.div>
+                                    </div>
                                 </div>
-                                {/* Floating particles around divider */}
-                                <motion.div
-                                    animate={{
-                                        rotate: [0, 360],
-                                        opacity: [0.3, 0.8, 0.3],
-                                    }}
-                                    transition={{
-                                        duration: 6,
-                                        repeat: Infinity,
-                                        ease: "easeInOut"
-                                    }}
-                                    className="absolute -top-2 -right-2 w-3 h-3 bg-primary/40 rounded-full blur-sm"
-                                />
-                                <motion.div
-                                    animate={{
-                                        rotate: [360, 0],
-                                        opacity: [0.3, 0.8, 0.3],
-                                    }}
-                                    transition={{
-                                        duration: 8,
-                                        repeat: Infinity,
-                                        ease: "easeInOut"
-                                    }}
-                                    className="absolute -bottom-2 -left-2 w-2 h-2 bg-blue-500/40 rounded-full blur-sm"
-                                />
-                            </motion.div>
+                                {/* Floating particles around divider - CSS only */}
+                                <div className="absolute -top-2 -right-2 w-3 h-3 bg-primary/40 rounded-full blur-sm animate-ping" />
+                                <div className="absolute -bottom-2 -left-2 w-2 h-2 bg-blue-500/40 rounded-full blur-sm animate-pulse" />
+                            </div>
                         </motion.div>
 
                         {/* Enhanced Solution Section */}
                         <div className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-blue-50/50 to-indigo-50/30 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl p-8 md:p-12 mb-16">
-                            {/* Animated Background Elements */}
+                            {/* Animated Background Elements - CSS only */}
                             <div className="absolute inset-0 overflow-hidden">
-                                <motion.div
-                                    animate={{
-                                        rotate: [0, 360],
-                                        scale: [1, 1.1, 1],
-                                    }}
-                                    transition={{
-                                        duration: 20,
-                                        repeat: Infinity,
-                                        ease: "linear"
-                                    }}
-                                    className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-primary/10 to-blue-400/10 rounded-full blur-xl"
-                                />
-                                <motion.div
-                                    animate={{
-                                        rotate: [360, 0],
-                                        scale: [1, 1.2, 1],
-                                    }}
-                                    transition={{
-                                        duration: 25,
-                                        repeat: Infinity,
-                                        ease: "linear"
-                                    }}
-                                    className="absolute -bottom-16 -left-16 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full blur-xl"
-                                />
+                                <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-primary/10 to-blue-400/10 rounded-full blur-xl animate-spin-slow" />
+                                <div className="absolute -bottom-16 -left-16 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full blur-xl animate-spin-reverse-slow" />
                             </div>
 
                             <div className="relative z-10">
@@ -442,34 +252,15 @@ const ProblemSolutionSection = lazy(() =>
                                     {/* Enhanced Solution Details */}
                                     <motion.div variants={cardVariantsLeft} className="space-y-8">
                                         {/* Benefit 1 */}
-                                        <motion.div
-                                            className="group flex items-start p-6 rounded-2xl bg-white/40 backdrop-blur-sm border border-white/30 hover:bg-white/60 transition-all duration-300"
-                                            whileHover={{ scale: 1.02, x: 5 }}
-                                        >
-                                            <motion.div
-                                                variants={iconVariants}
-                                                whileHover={{
-                                                    rotateY: 15,
-                                                    scale: 1.1
-                                                }}
-                                                className="relative w-12 h-12 mr-4 mt-1 transform-gpu preserve-3d"
-                                            >
+                                        <div className="group flex items-start p-6 rounded-2xl bg-white/40 backdrop-blur-sm border border-white/30 hover:bg-white/60 transition-all duration-300 hover:scale-105">
+                                            <div className="relative w-12 h-12 mr-4 mt-1 group-hover:scale-110 transition-transform duration-300">
                                                 <div className="absolute inset-0 bg-gradient-to-br from-primary to-blue-600 rounded-xl shadow-lg group-hover:shadow-primary/25 transition-all duration-300" />
                                                 <div className="absolute inset-0.5 bg-gradient-to-br from-primary/90 to-blue-500/90 rounded-xl flex items-center justify-center">
-                                                    <motion.div
-                                                        animate={{
-                                                            rotate: [0, 360],
-                                                        }}
-                                                        transition={{
-                                                            duration: 8,
-                                                            repeat: Infinity,
-                                                            ease: "linear"
-                                                        }}
-                                                    >
+                                                    <div className="">
                                                         <TrendingUp className="w-6 h-6 text-white" />
-                                                    </motion.div>
+                                                    </div>
                                                 </div>
-                                            </motion.div>
+                                            </div>
                                             <div className="flex-1">
                                                 <HeadingText level="h4" weight="bold" className="mb-2 text-slate-800 group-hover:text-primary transition-colors">
                                                     Up to {TOTAL_VAULT_APY}% APY on USDC
@@ -478,37 +269,18 @@ const ProblemSolutionSection = lazy(() =>
                                                     Earn competitive yields that outpace inflation and traditional banking products.
                                                 </BodyText>
                                             </div>
-                                        </motion.div>
+                                        </div>
 
                                         {/* Benefit 2 */}
-                                        <motion.div
-                                            className="group flex items-start p-6 rounded-2xl bg-white/40 backdrop-blur-sm border border-white/30 hover:bg-white/60 transition-all duration-300"
-                                            whileHover={{ scale: 1.02, x: 5 }}
-                                        >
-                                            <motion.div
-                                                variants={iconVariants}
-                                                whileHover={{
-                                                    rotateY: 15,
-                                                    scale: 1.1
-                                                }}
-                                                className="relative w-12 h-12 mr-4 mt-1 transform-gpu preserve-3d"
-                                            >
+                                        <div className="group flex items-start p-6 rounded-2xl bg-white/40 backdrop-blur-sm border border-white/30 hover:bg-white/60 transition-all duration-300 hover:scale-105">
+                                            <div className="relative w-12 h-12 mr-4 mt-1 group-hover:scale-110 transition-transform duration-300">
                                                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg group-hover:shadow-blue-500/25 transition-all duration-300" />
                                                 <div className="absolute inset-0.5 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center">
-                                                    <motion.div
-                                                        animate={{
-                                                            scale: [1, 1.1, 1],
-                                                        }}
-                                                        transition={{
-                                                            duration: 2,
-                                                            repeat: Infinity,
-                                                            ease: "easeInOut"
-                                                        }}
-                                                    >
+                                                    <div className="animate-pulse">
                                                         <BarChart3 className="w-6 h-6 text-white" />
-                                                    </motion.div>
+                                                    </div>
                                                 </div>
-                                            </motion.div>
+                                            </div>
                                             <div className="flex-1">
                                                 <HeadingText level="h4" weight="bold" className="mb-2 text-slate-800 group-hover:text-blue-600 transition-colors">
                                                     Optimal Rebalancing
@@ -517,37 +289,18 @@ const ProblemSolutionSection = lazy(() =>
                                                     Funds are allocated across Sonic and Base networks to maximize returns while minimizing risks.
                                                 </BodyText>
                                             </div>
-                                        </motion.div>
+                                        </div>
 
                                         {/* Benefit 3 */}
-                                        <motion.div
-                                            className="group flex items-start p-6 rounded-2xl bg-white/40 backdrop-blur-sm border border-white/30 hover:bg-white/60 transition-all duration-300"
-                                            whileHover={{ scale: 1.02, x: 5 }}
-                                        >
-                                            <motion.div
-                                                variants={iconVariants}
-                                                whileHover={{
-                                                    rotateY: 15,
-                                                    scale: 1.1
-                                                }}
-                                                className="relative w-12 h-12 mr-4 mt-1 transform-gpu preserve-3d"
-                                            >
+                                        <div className="group flex items-start p-6 rounded-2xl bg-white/40 backdrop-blur-sm border border-white/30 hover:bg-white/60 transition-all duration-300 hover:scale-105">
+                                            <div className="relative w-12 h-12 mr-4 mt-1 group-hover:scale-110 transition-transform duration-300">
                                                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg group-hover:shadow-indigo-500/25 transition-all duration-300" />
                                                 <div className="absolute inset-0.5 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-xl flex items-center justify-center">
-                                                    <motion.div
-                                                        animate={{
-                                                            y: [-1, 1, -1],
-                                                        }}
-                                                        transition={{
-                                                            duration: 3,
-                                                            repeat: Infinity,
-                                                            ease: "easeInOut"
-                                                        }}
-                                                    >
+                                                    <div className="animate-bounce-slow">
                                                         <Shield className="w-6 h-6 text-white" />
-                                                    </motion.div>
+                                                    </div>
                                                 </div>
-                                            </motion.div>
+                                            </div>
                                             <div className="flex-1">
                                                 <HeadingText level="h4" weight="bold" className="mb-2 text-slate-800 group-hover:text-indigo-600 transition-colors">
                                                     Trusted Protocols
@@ -556,7 +309,7 @@ const ProblemSolutionSection = lazy(() =>
                                                     Your USDC is deployed across established lending platforms like Aave, Morpho, Euler, and Fluid.
                                                 </BodyText>
                                             </div>
-                                        </motion.div>
+                                        </div>
                                     </motion.div>
 
                                     {/* Enhanced Comparison Chart */}
@@ -589,21 +342,9 @@ const ProblemSolutionSection = lazy(() =>
                                                     </div>
                                                     <BodyText level="body2" weight="bold" className="text-primary">8.0%</BodyText>
                                                 </div>
-                                                <motion.div
-                                                    className="w-full bg-slate-100 rounded-full h-3 overflow-hidden"
-                                                    initial={{ width: 0 }}
-                                                    whileInView={{ width: "100%" }}
-                                                    transition={{ duration: 0.5, delay: 0.1 }}
-                                                    viewport={{ once: true }}
-                                                >
-                                                    <motion.div
-                                                        className="bg-gradient-to-r from-primary to-blue-500 h-3 rounded-full shadow-sm"
-                                                        initial={{ width: 0 }}
-                                                        whileInView={{ width: '80%' }}
-                                                        transition={{ duration: 1.2, delay: 0.3 }}
-                                                        viewport={{ once: true }}
-                                                    ></motion.div>
-                                                </motion.div>
+                                                <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                                                    <div className="bg-gradient-to-r from-primary to-blue-500 h-3 rounded-full shadow-sm w-4/5 animate-pulse"></div>
+                                                </div>
                                             </motion.div>
 
                                             {/* Competing DeFi */}
@@ -619,21 +360,9 @@ const ProblemSolutionSection = lazy(() =>
                                                     </div>
                                                     <BodyText level="body2" weight="bold" className="text-blue-600">5%</BodyText>
                                                 </div>
-                                                <motion.div
-                                                    className="w-full bg-slate-100 rounded-full h-3 overflow-hidden"
-                                                    initial={{ width: 0 }}
-                                                    whileInView={{ width: "100%" }}
-                                                    transition={{ duration: 0.5, delay: 0.2 }}
-                                                    viewport={{ once: true }}
-                                                >
-                                                    <motion.div
-                                                        className="bg-blue-500 h-3 rounded-full shadow-sm"
-                                                        initial={{ width: 0 }}
-                                                        whileInView={{ width: '50%' }}
-                                                        transition={{ duration: 1.2, delay: 0.4 }}
-                                                        viewport={{ once: true }}
-                                                    ></motion.div>
-                                                </motion.div>
+                                                <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                                                    <div className="bg-blue-500 h-3 rounded-full shadow-sm w-1/2"></div>
+                                                </div>
                                             </motion.div>
 
                                             {/* Traditional Bank */}
@@ -649,21 +378,9 @@ const ProblemSolutionSection = lazy(() =>
                                                     </div>
                                                     <BodyText level="body2" weight="bold" className="text-slate-500">4%</BodyText>
                                                 </div>
-                                                <motion.div
-                                                    className="w-full bg-slate-100 rounded-full h-3 overflow-hidden"
-                                                    initial={{ width: 0 }}
-                                                    whileInView={{ width: "100%" }}
-                                                    transition={{ duration: 0.5, delay: 0.4 }}
-                                                    viewport={{ once: true }}
-                                                >
-                                                    <motion.div
-                                                        className="bg-slate-400 h-3 rounded-full shadow-sm"
-                                                        initial={{ width: 0 }}
-                                                        whileInView={{ width: '32%' }}
-                                                        transition={{ duration: 1.2, delay: 0.6 }}
-                                                        viewport={{ once: true }}
-                                                    ></motion.div>
-                                                </motion.div>
+                                                <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                                                    <div className="bg-slate-400 h-3 rounded-full shadow-sm w-1/3"></div>
+                                                </div>
                                             </motion.div>
                                         </div>
 
@@ -675,7 +392,7 @@ const ProblemSolutionSection = lazy(() =>
                                             className="mt-8 p-4 bg-gradient-to-r from-primary/10 to-blue-500/10 rounded-xl border border-primary/20"
                                         >
                                             <div className="flex items-center gap-2 mb-2">
-                                                <Zap className="w-4 h-4 text-primary" />
+                                                <Zap className="w-4 h-4 text-primary animate-pulse" />
                                                 <BodyText level="body3" weight="medium" className="text-primary">Performance Advantage</BodyText>
                                             </div>
                                             <BodyText level="body3" className="text-slate-600">
@@ -737,83 +454,28 @@ const NetworksSection = lazy(() =>
                         </motion.div>
                         {/* Enhanced Chain Cards */}
                         <div className="relative mb-16">
-                            {/* Animated Background Elements */}
+                            {/* Animated Background Elements - CSS only */}
                             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                                <motion.div
-                                    animate={{
-                                        rotate: [0, 360],
-                                        scale: [1, 1.1, 1],
-                                    }}
-                                    transition={{
-                                        duration: 25,
-                                        repeat: Infinity,
-                                        ease: "linear"
-                                    }}
-                                    className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-blue-400/5 to-indigo-400/5 rounded-full blur-xl"
-                                />
-                                <motion.div
-                                    animate={{
-                                        rotate: [360, 0],
-                                        scale: [1, 1.2, 1],
-                                    }}
-                                    transition={{
-                                        duration: 30,
-                                        repeat: Infinity,
-                                        ease: "linear"
-                                    }}
-                                    className="absolute -bottom-10 -left-10 w-24 h-24 bg-gradient-to-br from-indigo-400/5 to-blue-400/5 rounded-full blur-xl"
-                                />
+                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-blue-400/5 to-indigo-400/5 rounded-full blur-xl animate-spin-slow" />
+                                <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-gradient-to-br from-indigo-400/5 to-blue-400/5 rounded-full blur-xl animate-spin-reverse-slow" />
                             </div>
 
                             <div className="relative grid grid-cols-1 md:grid-cols-2 gap-12">
                                 {/* Enhanced Base Network Card */}
                                 <motion.div
                                     variants={cardVariantsRight}
-                                    whileHover={{
-                                        scale: 1.02,
-                                        rotateY: 2,
-                                        z: 20
-                                    }}
-                                    className="group relative"
+                                    className="group relative hover:scale-105 transition-transform duration-300"
                                 >
-                                    <div className="relative overflow-hidden bg-white/60 backdrop-blur-sm rounded-2xl p-8 border border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500 transform-gpu perspective-1000">
-                                        {/* Enhanced Background Decoration */}
-                                        <motion.div
-                                            animate={{
-                                                rotate: [0, 360],
-                                                scale: [1, 1.1, 1],
-                                            }}
-                                            transition={{
-                                                duration: 20,
-                                                repeat: Infinity,
-                                                ease: "linear"
-                                            }}
-                                            className="absolute -top-16 -right-16 w-48 h-48 bg-gradient-to-br from-primary/10 to-blue-400/10 rounded-full blur-xl"
-                                        />
-                                        <motion.div
-                                            animate={{
-                                                rotate: [360, 0],
-                                                scale: [1, 1.2, 1],
-                                            }}
-                                            transition={{
-                                                duration: 25,
-                                                repeat: Infinity,
-                                                ease: "linear"
-                                            }}
-                                            className="absolute bottom-16 -left-16 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full blur-xl"
-                                        />
+                                    <div className="relative overflow-hidden bg-white/60 backdrop-blur-sm rounded-2xl p-8 border border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500">
+                                        {/* Enhanced Background Decoration - CSS only */}
+                                        <div className="absolute -top-16 -right-16 w-48 h-48 bg-gradient-to-br from-primary/10 to-blue-400/10 rounded-full blur-xl animate-spin-slow" />
+                                        <div className="absolute bottom-16 -left-16 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full blur-xl animate-spin-reverse-slow" />
 
                                         {/* Enhanced Content */}
                                         <div className="relative z-10">
                                             {/* Enhanced Header with 3D Logo */}
                                             <div className="flex items-center mb-6">
-                                                <motion.div
-                                                    whileHover={{
-                                                        rotateY: 15,
-                                                        scale: 1.1
-                                                    }}
-                                                    className="relative w-16 h-16 mr-4 transform-gpu preserve-3d"
-                                                >
+                                                <div className="relative w-16 h-16 mr-4 group-hover:scale-110 transition-transform duration-300">
                                                     <div className="absolute inset-0 bg-gradient-to-br from-primary to-blue-600 rounded-2xl shadow-lg group-hover:shadow-primary/25 transition-all duration-300" />
                                                     <div className="absolute inset-0.5 bg-white rounded-2xl flex items-center justify-center shadow-inner">
                                                         <ImageWithDefault
@@ -824,30 +486,15 @@ const NetworksSection = lazy(() =>
                                                             className="rounded-full"
                                                         />
                                                     </div>
-                                                    {/* Floating particles */}
-                                                    <motion.div
-                                                        animate={{
-                                                            y: [-2, 2, -2],
-                                                            opacity: [0.5, 1, 0.5],
-                                                        }}
-                                                        transition={{
-                                                            duration: 3,
-                                                            repeat: Infinity,
-                                                            ease: "easeInOut"
-                                                        }}
-                                                        className="absolute -top-1 -right-1 w-3 h-3 bg-primary/40 rounded-full blur-sm"
-                                                    />
-                                                </motion.div>
+                                                    {/* Floating particles - CSS only */}
+                                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary/40 rounded-full blur-sm animate-pulse" />
+                                                </div>
                                                 <div>
                                                     <HeadingText level="h3" weight="semibold" className="text-slate-800 group-hover:text-primary transition-colors">
                                                         Base
                                                     </HeadingText>
                                                     <div className="flex items-center mt-1">
-                                                        <motion.span
-                                                            animate={{ scale: [1, 1.2, 1] }}
-                                                            transition={{ duration: 2, repeat: Infinity }}
-                                                            className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"
-                                                        />
+                                                        <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse" />
                                                         <BodyText level="body2" className="text-green-700 font-medium">
                                                             Live
                                                         </BodyText>
@@ -856,59 +503,38 @@ const NetworksSection = lazy(() =>
                                             </div>
 
                                             {/* Enhanced APY Badge */}
-                                            <motion.div
-                                                whileHover={{ scale: 1.05 }}
-                                                className="inline-block bg-gradient-to-r from-primary/10 to-blue-500/10 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg border border-primary/20 mb-6"
-                                            >
+                                            <div className="inline-block bg-gradient-to-r from-primary/10 to-blue-500/10 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg border border-primary/20 mb-6 hover:scale-105 transition-transform duration-300">
                                                 <span className="text-xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
                                                     Up to {TOTAL_VAULT_APY}% APY
                                                 </span>
-                                            </motion.div>
+                                            </div>
 
                                             {/* Enhanced Key Benefits */}
                                             <div className="space-y-4 mb-8">
-                                                <motion.div
-                                                    className="flex items-start group/benefit"
-                                                    whileHover={{ x: 5 }}
-                                                >
-                                                    <motion.div
-                                                        whileHover={{ scale: 1.2, rotate: 5 }}
-                                                        className="mr-3 mt-1 text-primary"
-                                                    >
+                                                <div className="flex items-start group/benefit hover:translate-x-1 transition-transform duration-200">
+                                                    <div className="mr-3 mt-1 text-primary group-hover/benefit:scale-110 transition-transform duration-200">
                                                         <CheckCircle className="w-5 h-5" />
-                                                    </motion.div>
+                                                    </div>
                                                     <BodyText level="body2" className="text-slate-700 group-hover/benefit:text-slate-800 transition-colors">
                                                         Ethereum-grade security with low fees
                                                     </BodyText>
-                                                </motion.div>
-                                                <motion.div
-                                                    className="flex items-start group/benefit"
-                                                    whileHover={{ x: 5 }}
-                                                >
-                                                    <motion.div
-                                                        whileHover={{ scale: 1.2, rotate: 5 }}
-                                                        className="mr-3 mt-1 text-primary"
-                                                    >
+                                                </div>
+                                                <div className="flex items-start group/benefit hover:translate-x-1 transition-transform duration-200">
+                                                    <div className="mr-3 mt-1 text-primary group-hover/benefit:scale-110 transition-transform duration-200">
                                                         <CheckCircle className="w-5 h-5" />
-                                                    </motion.div>
+                                                    </div>
                                                     <BodyText level="body2" className="text-slate-700 group-hover/benefit:text-slate-800 transition-colors">
                                                         Access to leading lending markets and deep liquidity
                                                     </BodyText>
-                                                </motion.div>
-                                                <motion.div
-                                                    className="flex items-start group/benefit"
-                                                    whileHover={{ x: 5 }}
-                                                >
-                                                    <motion.div
-                                                        whileHover={{ scale: 1.2, rotate: 5 }}
-                                                        className="mr-3 mt-1 text-primary"
-                                                    >
+                                                </div>
+                                                <div className="flex items-start group/benefit hover:translate-x-1 transition-transform duration-200">
+                                                    <div className="mr-3 mt-1 text-primary group-hover/benefit:scale-110 transition-transform duration-200">
                                                         <CheckCircle className="w-5 h-5" />
-                                                    </motion.div>
+                                                    </div>
                                                     <BodyText level="body2" className="text-slate-700 group-hover/benefit:text-slate-800 transition-colors">
                                                         Base offers the best of Ethereum but at a fraction of the cost (10–100x cheaper)
                                                     </BodyText>
-                                                </motion.div>
+                                                </div>
                                             </div>
 
                                             {/* Enhanced CTA Button */}
@@ -916,31 +542,15 @@ const NetworksSection = lazy(() =>
                                                 section: 'base_network_card',
                                                 title: "Available on the fastest growing chains"
                                             })}>
-                                                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                                                    <Button
-                                                        className="w-full h-12 group relative overflow-hidden bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-lg hover:shadow-xl transition-all duration-300"
-                                                    >
-                                                        <motion.span
-                                                            className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                                            animate={{
-                                                                x: ["-100%", "100%"],
-                                                            }}
-                                                            transition={{
-                                                                duration: 2,
-                                                                repeat: Infinity,
-                                                                ease: "linear"
-                                                            }}
-                                                        />
+                                                <div className="hover:scale-105 transition-transform duration-200">
+                                                    <Button className="w-full h-12 group relative overflow-hidden bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-lg hover:shadow-xl transition-all duration-300">
+                                                        {/* <span className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" /> */}
                                                         <span className="relative z-10 text-white font-medium">Launch SuperFund Base App</span>
-                                                        <motion.div
-                                                            animate={{ x: [0, 3, 0] }}
-                                                            transition={{ duration: 2, repeat: Infinity }}
-                                                            className="relative z-10 ml-2"
-                                                        >
+                                                        <div className="relative z-10 ml-2 group-hover:translate-x-1 transition-transform duration-200">
                                                             <ArrowRight className="w-4 h-4 text-white" />
-                                                        </motion.div>
+                                                        </div>
                                                     </Button>
-                                                </motion.div>
+                                                </div>
                                             </Link>
                                         </div>
 
@@ -951,51 +561,18 @@ const NetworksSection = lazy(() =>
                                 {/* Enhanced Sonic Network Card */}
                                 <motion.div
                                     variants={cardVariantsLeft}
-                                    whileHover={{
-                                        scale: 1.02,
-                                        rotateY: 2,
-                                        z: 20
-                                    }}
-                                    className="group relative"
+                                    className="group relative hover:scale-105 transition-transform duration-300"
                                 >
-                                    <div className="relative overflow-hidden bg-white/60 backdrop-blur-sm rounded-2xl p-8 border border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500 transform-gpu perspective-1000">
-                                        {/* Enhanced Background Decoration */}
-                                        <motion.div
-                                            animate={{
-                                                rotate: [0, 360],
-                                                scale: [1, 1.1, 1],
-                                            }}
-                                            transition={{
-                                                duration: 20,
-                                                repeat: Infinity,
-                                                ease: "linear"
-                                            }}
-                                            className="absolute -top-16 -right-16 w-48 h-48 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full blur-xl"
-                                        />
-                                        <motion.div
-                                            animate={{
-                                                rotate: [360, 0],
-                                                scale: [1, 1.2, 1],
-                                            }}
-                                            transition={{
-                                                duration: 25,
-                                                repeat: Infinity,
-                                                ease: "linear"
-                                            }}
-                                            className="absolute bottom-16 -left-16 w-32 h-32 bg-gradient-to-br from-indigo-400/10 to-blue-400/10 rounded-full blur-xl"
-                                        />
+                                    <div className="relative overflow-hidden bg-white/60 backdrop-blur-sm rounded-2xl p-8 border border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500">
+                                        {/* Enhanced Background Decoration - CSS only */}
+                                        <div className="absolute -top-16 -right-16 w-48 h-48 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full blur-xl animate-spin-slow" />
+                                        <div className="absolute bottom-16 -left-16 w-32 h-32 bg-gradient-to-br from-indigo-400/10 to-blue-400/10 rounded-full blur-xl animate-spin-reverse-slow" />
 
                                         {/* Enhanced Content */}
                                         <div className="relative z-10">
                                             {/* Enhanced Header with 3D Logo */}
                                             <div className="flex items-center mb-6">
-                                                <motion.div
-                                                    whileHover={{
-                                                        rotateY: 15,
-                                                        scale: 1.1
-                                                    }}
-                                                    className="relative w-16 h-16 mr-4 transform-gpu preserve-3d"
-                                                >
+                                                <div className="relative w-16 h-16 mr-4 group-hover:scale-110 transition-transform duration-300">
                                                     <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg group-hover:shadow-blue-500/25 transition-all duration-300" />
                                                     <div className="absolute inset-0.5 bg-white rounded-2xl flex items-center justify-center shadow-inner">
                                                         <ImageWithDefault
@@ -1006,30 +583,15 @@ const NetworksSection = lazy(() =>
                                                             className="rounded-full"
                                                         />
                                                     </div>
-                                                    {/* Floating particles */}
-                                                    <motion.div
-                                                        animate={{
-                                                            y: [-2, 2, -2],
-                                                            opacity: [0.5, 1, 0.5],
-                                                        }}
-                                                        transition={{
-                                                            duration: 3,
-                                                            repeat: Infinity,
-                                                            ease: "easeInOut"
-                                                        }}
-                                                        className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400/40 rounded-full blur-sm"
-                                                    />
-                                                </motion.div>
+                                                    {/* Floating particles - CSS only */}
+                                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400/40 rounded-full blur-sm animate-pulse" />
+                                                </div>
                                                 <div>
                                                     <HeadingText level="h3" weight="semibold" className="text-slate-800 group-hover:text-blue-600 transition-colors">
                                                         Sonic
                                                     </HeadingText>
                                                     <div className="flex items-center mt-1">
-                                                        <motion.span
-                                                            animate={{ scale: [1, 1.2, 1] }}
-                                                            transition={{ duration: 2, repeat: Infinity }}
-                                                            className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-2"
-                                                        />
+                                                        <span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse" />
                                                         <BodyText level="body2" className="text-blue-700 font-medium">
                                                             Coming soon
                                                         </BodyText>
@@ -1038,59 +600,38 @@ const NetworksSection = lazy(() =>
                                             </div>
 
                                             {/* Enhanced APY Badge */}
-                                            <motion.div
-                                                whileHover={{ scale: 1.05 }}
-                                                className="inline-block bg-gradient-to-r from-blue-500/10 to-indigo-500/10 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg border border-blue-500/20 mb-6"
-                                            >
+                                            <div className="inline-block bg-gradient-to-r from-blue-500/10 to-indigo-500/10 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg border border-blue-500/20 mb-6 hover:scale-105 transition-transform duration-300">
                                                 <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                                                     Coming soon
                                                 </span>
-                                            </motion.div>
+                                            </div>
 
                                             {/* Enhanced Key Benefits */}
                                             <div className="space-y-4 mb-12">
-                                                <motion.div
-                                                    className="flex items-start group/benefit"
-                                                    whileHover={{ x: 5 }}
-                                                >
-                                                    <motion.div
-                                                        whileHover={{ scale: 1.2, rotate: 5 }}
-                                                        className="mr-3 mt-1 text-blue-600"
-                                                    >
+                                                <div className="flex items-start group/benefit hover:translate-x-1 transition-transform duration-200">
+                                                    <div className="mr-3 mt-1 text-blue-600 group-hover/benefit:scale-110 transition-transform duration-200">
                                                         <CheckCircle className="w-5 h-5" />
-                                                    </motion.div>
+                                                    </div>
                                                     <BodyText level="body2" className="text-slate-700 group-hover/benefit:text-slate-800 transition-colors">
                                                         Sonic is the highest-performing EVM L1
                                                     </BodyText>
-                                                </motion.div>
-                                                <motion.div
-                                                    className="flex items-start group/benefit"
-                                                    whileHover={{ x: 5 }}
-                                                >
-                                                    <motion.div
-                                                        whileHover={{ scale: 1.2, rotate: 5 }}
-                                                        className="mr-3 mt-1 text-blue-600"
-                                                    >
+                                                </div>
+                                                <div className="flex items-start group/benefit hover:translate-x-1 transition-transform duration-200">
+                                                    <div className="mr-3 mt-1 text-blue-600 group-hover/benefit:scale-110 transition-transform duration-200">
                                                         <CheckCircle className="w-5 h-5" />
-                                                    </motion.div>
+                                                    </div>
                                                     <BodyText level="body2" className="text-slate-700 group-hover/benefit:text-slate-800 transition-colors">
                                                         Higher APY potential with optimized protocol selection
                                                     </BodyText>
-                                                </motion.div>
-                                                <motion.div
-                                                    className="flex items-start group/benefit"
-                                                    whileHover={{ x: 5 }}
-                                                >
-                                                    <motion.div
-                                                        whileHover={{ scale: 1.2, rotate: 5 }}
-                                                        className="mr-3 mt-1 text-blue-600"
-                                                    >
+                                                </div>
+                                                <div className="flex items-start group/benefit hover:translate-x-1 transition-transform duration-200">
+                                                    <div className="mr-3 mt-1 text-blue-600 group-hover/benefit:scale-110 transition-transform duration-200">
                                                         <CheckCircle className="w-5 h-5" />
-                                                    </motion.div>
+                                                    </div>
                                                     <BodyText level="body2" className="text-slate-700 group-hover/benefit:text-slate-800 transition-colors">
                                                         Real sub-second confirmation times
                                                     </BodyText>
-                                                </motion.div>
+                                                </div>
                                             </div>
 
                                             {/* Enhanced CTA Button */}
@@ -1098,32 +639,18 @@ const NetworksSection = lazy(() =>
                                                 section: 'sonic_network_card',
                                                 title: "Available on the fastest growing chains"
                                             })}>
-                                                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                                                <div className="hover:scale-105 transition-transform duration-200">
                                                     <Button
                                                         variant="outline"
                                                         className="w-full h-12 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 text-blue-800 group relative overflow-hidden hover:from-blue-100 hover:to-indigo-100 hover:border-blue-300 shadow-lg hover:shadow-xl transition-all duration-300"
                                                     >
-                                                        <motion.span
-                                                            className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                                            animate={{
-                                                                x: ["-100%", "100%"],
-                                                            }}
-                                                            transition={{
-                                                                duration: 2,
-                                                                repeat: Infinity,
-                                                                ease: "linear"
-                                                            }}
-                                                        />
+                                                        {/* <span className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" /> */}
                                                         <span className="relative z-10 font-medium">Join Waitlist</span>
-                                                        <motion.div
-                                                            animate={{ x: [0, 3, 0] }}
-                                                            transition={{ duration: 2, repeat: Infinity }}
-                                                            className="relative z-10 ml-2"
-                                                        >
+                                                        <div className="relative z-10 ml-2 group-hover:translate-x-1 transition-transform duration-200">
                                                             <ArrowRight className="w-4 h-4" />
-                                                        </motion.div>
+                                                        </div>
                                                     </Button>
-                                                </motion.div>
+                                                </div>
                                             </Link>
                                         </div>
 
@@ -1138,44 +665,11 @@ const NetworksSection = lazy(() =>
                             variants={cardVariants}
                             className="relative overflow-hidden bg-gradient-to-br from-slate-50/80 via-white/90 to-blue-50/80 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl max-w-5xl mx-auto"
                         >
-                            {/* Animated Background Elements */}
+                            {/* Animated Background Elements - CSS only */}
                             <div className="absolute inset-0 overflow-hidden">
-                                <motion.div
-                                    animate={{
-                                        rotate: [0, 360],
-                                        scale: [1, 1.1, 1],
-                                    }}
-                                    transition={{
-                                        duration: 20,
-                                        repeat: Infinity,
-                                        ease: "linear"
-                                    }}
-                                    className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-xl"
-                                />
-                                <motion.div
-                                    animate={{
-                                        rotate: [360, 0],
-                                        scale: [1, 1.2, 1],
-                                    }}
-                                    transition={{
-                                        duration: 25,
-                                        repeat: Infinity,
-                                        ease: "linear"
-                                    }}
-                                    className="absolute -bottom-16 -left-16 w-32 h-32 bg-gradient-to-br from-green-400/10 to-blue-400/10 rounded-full blur-xl"
-                                />
-                                <motion.div
-                                    animate={{
-                                        y: [-10, 10, -10],
-                                        opacity: [0.3, 0.6, 0.3],
-                                    }}
-                                    transition={{
-                                        duration: 8,
-                                        repeat: Infinity,
-                                        ease: "easeInOut"
-                                    }}
-                                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-indigo-400/5 to-cyan-400/5 rounded-full blur-3xl"
-                                />
+                                <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-xl animate-spin-slow" />
+                                <div className="absolute -bottom-16 -left-16 w-32 h-32 bg-gradient-to-br from-green-400/10 to-blue-400/10 rounded-full blur-xl animate-spin-reverse-slow" />
+                                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-indigo-400/5 to-cyan-400/5 rounded-full blur-3xl animate-float" />
                             </div>
 
                             <div className="relative z-10 p-8 md:p-12">
@@ -1206,53 +700,20 @@ const NetworksSection = lazy(() =>
                                     {/* Maximize Yield Card */}
                                     <motion.div
                                         variants={statVariants}
-                                        whileHover={{
-                                            scale: 1.05,
-                                            rotateY: 5,
-                                            z: 50
-                                        }}
-                                        className="group relative"
+                                        className="group relative hover:scale-105 transition-transform duration-300"
                                     >
-                                        <div className="relative bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500 transform-gpu perspective-1000">
-                                            {/* 3D Icon Container */}
-                                            <motion.div
-                                                variants={iconVariants}
-                                                whileHover={{
-                                                    rotateY: 15,
-                                                    rotateX: 10,
-                                                    scale: 1.1
-                                                }}
-                                                className="relative w-16 h-16 mx-auto mb-6 transform-gpu preserve-3d"
-                                            >
+                                        <div className="relative bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500">
+                                            {/* 3D Icon Container - Simplified */}
+                                            <div className="relative w-16 h-16 mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                                                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg group-hover:shadow-blue-500/25 transition-all duration-300" />
                                                 <div className="absolute inset-0.5 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-2xl flex items-center justify-center">
-                                                    <motion.div
-                                                        animate={{
-                                                            rotateY: [0, 360],
-                                                        }}
-                                                        transition={{
-                                                            duration: 8,
-                                                            repeat: Infinity,
-                                                            ease: "linear"
-                                                        }}
-                                                    >
+                                                    <div className="">
                                                         <TrendingUp className="w-8 h-8 text-white" />
-                                                    </motion.div>
+                                                    </div>
                                                 </div>
-                                                {/* Floating particles */}
-                                                <motion.div
-                                                    animate={{
-                                                        y: [-2, 2, -2],
-                                                        opacity: [0.5, 1, 0.5],
-                                                    }}
-                                                    transition={{
-                                                        duration: 3,
-                                                        repeat: Infinity,
-                                                        ease: "easeInOut"
-                                                    }}
-                                                    className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full blur-sm"
-                                                />
-                                            </motion.div>
+                                                {/* Floating particles - CSS only */}
+                                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full blur-sm animate-pulse" />
+                                            </div>
 
                                             <div className="text-center">
                                                 <HeadingText level="h4" weight="bold" className="mb-3 text-slate-800 group-hover:text-blue-700 transition-colors">
@@ -1272,53 +733,20 @@ const NetworksSection = lazy(() =>
                                     <motion.div
                                         variants={statVariants}
                                         transition={{ delay: 0.1 }}
-                                        whileHover={{
-                                            scale: 1.05,
-                                            rotateY: 5,
-                                            z: 50
-                                        }}
-                                        className="group relative"
+                                        className="group relative hover:scale-105 transition-transform duration-300"
                                     >
-                                        <div className="relative bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500 transform-gpu perspective-1000">
-                                            {/* 3D Icon Container */}
-                                            <motion.div
-                                                variants={iconVariants}
-                                                whileHover={{
-                                                    rotateY: 15,
-                                                    rotateX: 10,
-                                                    scale: 1.1
-                                                }}
-                                                className="relative w-16 h-16 mx-auto mb-6 transform-gpu preserve-3d"
-                                            >
+                                        <div className="relative bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500">
+                                            {/* 3D Icon Container - Simplified */}
+                                            <div className="relative w-16 h-16 mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                                                 <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg group-hover:shadow-green-500/25 transition-all duration-300" />
                                                 <div className="absolute inset-0.5 bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center">
-                                                    <motion.div
-                                                        animate={{
-                                                            scale: [1, 1.1, 1],
-                                                        }}
-                                                        transition={{
-                                                            duration: 2,
-                                                            repeat: Infinity,
-                                                            ease: "easeInOut"
-                                                        }}
-                                                    >
+                                                    <div className="animate-pulse">
                                                         <Shield className="w-8 h-8 text-white" />
-                                                    </motion.div>
+                                                    </div>
                                                 </div>
-                                                {/* Floating particles */}
-                                                <motion.div
-                                                    animate={{
-                                                        x: [-2, 2, -2],
-                                                        opacity: [0.5, 1, 0.5],
-                                                    }}
-                                                    transition={{
-                                                        duration: 4,
-                                                        repeat: Infinity,
-                                                        ease: "easeInOut"
-                                                    }}
-                                                    className="absolute -top-1 -left-1 w-3 h-3 bg-green-400 rounded-full blur-sm"
-                                                />
-                                            </motion.div>
+                                                {/* Floating particles - CSS only */}
+                                                <div className="absolute -top-1 -left-1 w-3 h-3 bg-green-400 rounded-full blur-sm animate-ping" />
+                                            </div>
 
                                             <div className="text-center">
                                                 <HeadingText level="h4" weight="bold" className="mb-3 text-slate-800 group-hover:text-green-700 transition-colors">
@@ -1338,56 +766,23 @@ const NetworksSection = lazy(() =>
                                     <motion.div
                                         variants={statVariants}
                                         transition={{ delay: 0.2 }}
-                                        whileHover={{
-                                            scale: 1.05,
-                                            rotateY: 5,
-                                            z: 50
-                                        }}
-                                        className="group relative"
+                                        className="group relative hover:scale-105 transition-transform duration-300"
                                     >
-                                        <div className="relative bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500 transform-gpu perspective-1000">
-                                            {/* 3D Icon Container */}
-                                            <motion.div
-                                                variants={iconVariants}
-                                                whileHover={{
-                                                    rotateY: 15,
-                                                    rotateX: 10,
-                                                    scale: 1.1
-                                                }}
-                                                className="relative w-16 h-16 mx-auto mb-6 transform-gpu preserve-3d"
-                                            >
+                                        <div className="relative bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500">
+                                            {/* 3D Icon Container - Simplified */}
+                                            <div className="relative w-16 h-16 mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                                                 <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl shadow-lg group-hover:shadow-purple-500/25 transition-all duration-300" />
                                                 <div className="absolute inset-0.5 bg-gradient-to-br from-purple-400 to-violet-500 rounded-2xl flex items-center justify-center">
-                                                    <motion.div
-                                                        animate={{
-                                                            rotate: [0, 360],
-                                                        }}
-                                                        transition={{
-                                                            duration: 6,
-                                                            repeat: Infinity,
-                                                            ease: "linear"
-                                                        }}
-                                                    >
+                                                    <div className="animate-spin-slow">
                                                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white">
                                                             <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
                                                             <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1" stroke="currentColor" strokeWidth="2" />
                                                         </svg>
-                                                    </motion.div>
+                                                    </div>
                                                 </div>
-                                                {/* Floating particles */}
-                                                <motion.div
-                                                    animate={{
-                                                        rotate: [0, 360],
-                                                        opacity: [0.5, 1, 0.5],
-                                                    }}
-                                                    transition={{
-                                                        duration: 5,
-                                                        repeat: Infinity,
-                                                        ease: "easeInOut"
-                                                    }}
-                                                    className="absolute -bottom-1 -right-1 w-3 h-3 bg-purple-400 rounded-full blur-sm"
-                                                />
-                                            </motion.div>
+                                                {/* Floating particles - CSS only */}
+                                                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-purple-400 rounded-full blur-sm animate-spin" />
+                                            </div>
 
                                             <div className="text-center">
                                                 <HeadingText level="h4" weight="bold" className="mb-3 text-slate-800 group-hover:text-purple-700 transition-colors">
@@ -1403,44 +798,6 @@ const NetworksSection = lazy(() =>
                                         </div>
                                     </motion.div>
                                 </div>
-
-                                {/* Bottom Stats Bar */}
-                                {/* <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.6, delay: 0.4 }}
-                                    className="mt-12 pt-8 border-t border-slate-200/50"
-                                >
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                                        <motion.div
-                                            whileHover={{ scale: 1.05 }}
-                                            className="group"
-                                        >
-                                            <div className="text-2xl font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
-                                                4
-                                            </div>
-                                            <div className="text-sm text-slate-600">Protocols Integrated</div>
-                                        </motion.div>
-                                        <motion.div
-                                            whileHover={{ scale: 1.05 }}
-                                            className="group"
-                                        >
-                                            <div className="text-2xl font-bold text-slate-800 group-hover:text-green-600 transition-colors">
-                                                99.9%
-                                            </div>
-                                            <div className="text-sm text-slate-600">Uptime Guarantee</div>
-                                        </motion.div>
-                                        <motion.div
-                                            whileHover={{ scale: 1.05 }}
-                                            className="group"
-                                        >
-                                            <div className="text-2xl font-bold text-slate-800 group-hover:text-purple-600 transition-colors">
-                                                &lt;1s
-                                            </div>
-                                            <div className="text-sm text-slate-600">Response Time</div>
-                                        </motion.div>
-                                    </div>
-                                </motion.div> */}
                             </div>
                         </motion.div>
                     </motion.div>
@@ -1460,44 +817,11 @@ const FAQSection = lazy(() =>
         }: any) => (
             <Container>
                 <section className="pb-8 relative">
-                    {/* Animated Background Elements */}
+                    {/* Animated Background Elements - CSS only */}
                     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                        <motion.div
-                            animate={{
-                                rotate: [0, 360],
-                                scale: [1, 1.1, 1],
-                            }}
-                            transition={{
-                                duration: 25,
-                                repeat: Infinity,
-                                ease: "linear"
-                            }}
-                            className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-purple-400/5 to-indigo-400/5 rounded-full blur-xl"
-                        />
-                        <motion.div
-                            animate={{
-                                rotate: [360, 0],
-                                scale: [1, 1.2, 1],
-                            }}
-                            transition={{
-                                duration: 30,
-                                repeat: Infinity,
-                                ease: "linear"
-                            }}
-                            className="absolute -bottom-10 -left-10 w-24 h-24 bg-gradient-to-br from-indigo-400/5 to-purple-400/5 rounded-full blur-xl"
-                        />
-                        <motion.div
-                            animate={{
-                                y: [-10, 10, -10],
-                                opacity: [0.3, 0.6, 0.3],
-                            }}
-                            transition={{
-                                duration: 8,
-                                repeat: Infinity,
-                                ease: "easeInOut"
-                            }}
-                            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-purple-400/5 to-blue-400/5 rounded-full blur-3xl"
-                        />
+                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-purple-400/5 to-indigo-400/5 rounded-full blur-xl animate-spin-slow" />
+                        <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-gradient-to-br from-indigo-400/5 to-purple-400/5 rounded-full blur-xl animate-spin-reverse-slow" />
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-purple-400/5 to-blue-400/5 rounded-full blur-3xl animate-float" />
                     </div>
 
                     <motion.div
@@ -1529,31 +853,9 @@ const FAQSection = lazy(() =>
                             className="relative max-w-4xl mx-auto"
                         >
                             <div className="relative bg-white/60 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/40">
-                                {/* Enhanced Background Decoration */}
-                                <motion.div
-                                    animate={{
-                                        rotate: [0, 360],
-                                        scale: [1, 1.1, 1],
-                                    }}
-                                    transition={{
-                                        duration: 20,
-                                        repeat: Infinity,
-                                        ease: "linear"
-                                    }}
-                                    className="absolute -top-16 -right-16 w-48 h-48 bg-gradient-to-br from-purple-400/10 to-indigo-400/10 rounded-full blur-xl"
-                                />
-                                <motion.div
-                                    animate={{
-                                        rotate: [360, 0],
-                                        scale: [1, 1.2, 1],
-                                    }}
-                                    transition={{
-                                        duration: 25,
-                                        repeat: Infinity,
-                                        ease: "linear"
-                                    }}
-                                    className="absolute bottom-16 -left-16 w-32 h-32 bg-gradient-to-br from-indigo-400/10 to-purple-400/10 rounded-full blur-xl"
-                                />
+                                {/* Enhanced Background Decoration - CSS only */}
+                                <div className="absolute -top-16 -right-16 w-48 h-48 bg-gradient-to-br from-purple-400/10 to-indigo-400/10 rounded-full blur-xl animate-spin-slow" />
+                                <div className="absolute bottom-16 -left-16 w-32 h-32 bg-gradient-to-br from-indigo-400/10 to-purple-400/10 rounded-full blur-xl animate-spin-reverse-slow" />
 
                                 <div className="relative z-10 p-8">
                                     <Accordion type="single" collapsible className="w-full space-y-4">
@@ -1564,44 +866,18 @@ const FAQSection = lazy(() =>
                                                 value={faq.value}
                                                 className="relative bg-white/40 backdrop-blur-sm rounded-2xl border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300 group"
                                             >
-                                                {/* 3D Icon Container for each FAQ */}
+                                                {/* 3D Icon Container for each FAQ - Simplified */}
                                                 <div className="absolute top-6 left-6 z-10 pointer-events-none">
-                                                    <motion.div
-                                                        whileHover={{
-                                                            rotateY: 15,
-                                                            scale: 1.1
-                                                        }}
-                                                        className="relative w-8 h-8 transform-gpu preserve-3d"
-                                                    >
-                                                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg shadow-lg group-hover:shadow-purple-500/25 transition-all duration-300" />
-                                                        <div className="absolute inset-0.5 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-lg flex items-center justify-center">
-                                                            <motion.div
-                                                                animate={{
-                                                                    scale: [1, 1.1, 1],
-                                                                }}
-                                                                transition={{
-                                                                    duration: 2,
-                                                                    repeat: Infinity,
-                                                                    ease: "easeInOut"
-                                                                }}
-                                                            >
+                                                    <div className="relative w-8 h-8 group-hover:scale-110 transition-transform duration-300">
+                                                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-3 shadow-lg group-hover:shadow-purple-500/25 transition-all duration-300" />
+                                                        <div className="absolute inset-0.5 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-3 flex items-center justify-center">
+                                                            <div className="">
                                                                 <MessageCircleQuestion className="w-4 h-4 text-white" />
-                                                            </motion.div>
+                                                            </div>
                                                         </div>
-                                                        {/* Floating particles */}
-                                                        <motion.div
-                                                            animate={{
-                                                                y: [-1, 1, -1],
-                                                                opacity: [0.5, 1, 0.5],
-                                                            }}
-                                                            transition={{
-                                                                duration: 3,
-                                                                repeat: Infinity,
-                                                                ease: "easeInOut"
-                                                            }}
-                                                            className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-purple-400/40 rounded-full blur-sm"
-                                                        />
-                                                    </motion.div>
+                                                        {/* Floating particles - CSS only */}
+                                                        <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-purple-400/40 rounded-full blur-sm animate-pulse" />
+                                                    </div>
                                                 </div>
 
                                                 <AccordionTrigger className="text-left py-6 pl-20 pr-6 text-slate-800 font-medium hover:no-underline group-hover:text-purple-700 transition-colors duration-300">
@@ -1724,16 +1000,16 @@ export default function HomePage() {
         return (e: React.MouseEvent) => {
             clearTimeout(timeoutId)
             timeoutId = setTimeout(() => {
-                const { clientX, clientY } = e
-                const { innerWidth, innerHeight } = window
+        const { clientX, clientY } = e
+        const { innerWidth, innerHeight } = window
 
-                // Calculate position as percentage of container
-                const x = (clientX / innerWidth - 0.5) * 20
-                const y = (clientY / innerHeight - 0.5) * 20
+        // Calculate position as percentage of container
+        const x = (clientX / innerWidth - 0.5) * 20
+        const y = (clientY / innerHeight - 0.5) * 20
 
-                setMousePosition({ x, y })
+        setMousePosition({ x, y })
             }, 16) // ~60fps throttling
-        }
+    }
     }, [shouldReduceMotion])
 
     useEffect(() => {
@@ -1794,10 +1070,10 @@ export default function HomePage() {
         return {
             containerVariants: {
                 hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 20 },
-                visible: {
-                    opacity: 1,
-                    y: 0,
-                    transition: {
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
                         ...baseTransition,
                         staggerChildren: shouldReduceMotion ? 0 : 0.2
                     }
@@ -1805,81 +1081,81 @@ export default function HomePage() {
             },
             childVariants: {
                 hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 20 },
-                visible: {
-                    opacity: 1,
-                    y: 0,
+        visible: {
+            opacity: 1,
+            y: 0,
                     transition: shouldReduceMotion ? { duration: 0.1 } : { duration: 0.5 }
                 }
             },
             cardVariants: {
                 hidden: { opacity: 0, scale: shouldReduceMotion ? 1 : 0.8, y: shouldReduceMotion ? 0 : 20 },
-                visible: {
-                    opacity: 1,
-                    scale: 1,
-                    y: 0,
+        visible: {
+            opacity: 1,
+            scale: 1,
+            y: 0,
                     transition: shouldReduceMotion ? { duration: 0.1 } : {
-                        duration: 0.5,
-                        ease: "easeOut",
-                        type: "spring",
-                        stiffness: 100
-                    }
-                }
+                duration: 0.5,
+                ease: "easeOut",
+                type: "spring",
+                stiffness: 100
+            }
+        }
             },
             cardVariantsLeft: {
                 hidden: { opacity: 0, x: shouldReduceMotion ? 0 : -40 },
-                visible: {
-                    opacity: 1,
-                    x: 0,
+        visible: {
+            opacity: 1,
+            x: 0,
                     transition: shouldReduceMotion ? { duration: 0.1 } : {
-                        duration: 0.6,
-                        ease: "easeOut",
-                        type: "spring"
-                    }
-                }
+                duration: 0.6,
+                ease: "easeOut",
+                type: "spring"
+            }
+        }
             },
             cardVariantsRight: {
                 hidden: { opacity: 0, x: shouldReduceMotion ? 0 : 40 },
-                visible: {
-                    opacity: 1,
-                    x: 0,
+        visible: {
+            opacity: 1,
+            x: 0,
                     transition: shouldReduceMotion ? { duration: 0.1 } : {
-                        duration: 0.6,
-                        ease: "easeOut",
-                        type: "spring"
-                    }
-                }
+                duration: 0.6,
+                ease: "easeOut",
+                type: "spring"
+            }
+        }
             },
             statVariants: {
                 hidden: { opacity: 0, scale: shouldReduceMotion ? 1 : 0.7 },
-                visible: {
-                    opacity: 1,
-                    scale: 1,
+        visible: {
+            opacity: 1,
+            scale: 1,
                     transition: shouldReduceMotion ? { duration: 0.1 } : {
-                        duration: 0.6,
-                        ease: "backOut",
-                        type: "spring",
-                        bounce: 0.4
-                    }
-                }
+                duration: 0.6,
+                ease: "backOut",
+                type: "spring",
+                bounce: 0.4
+            }
+        }
             },
             iconVariants: {
                 hidden: { opacity: 0, rotate: shouldReduceMotion ? 0 : -15, scale: shouldReduceMotion ? 1 : 0.8 },
-                visible: {
-                    opacity: 1,
-                    rotate: 0,
-                    scale: 1,
+        visible: {
+            opacity: 1,
+            rotate: 0,
+            scale: 1,
                     transition: shouldReduceMotion ? { duration: 0.1 } : {
-                        duration: 0.5,
-                        ease: "easeOut",
-                        type: "spring",
-                        stiffness: 200
-                    }
-                }
+                duration: 0.5,
+                ease: "easeOut",
+                type: "spring",
+                stiffness: 200
+            }
+        }
             },
             fadeInVariants: {
-                hidden: { opacity: 0 },
-                visible: {
-                    opacity: 1,
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
                     transition: shouldReduceMotion ? { duration: 0.1 } : { duration: 0.6 }
                 }
             }
@@ -1946,7 +1222,7 @@ export default function HomePage() {
                                 </Button>
                             </Link>
                         </motion.div>
-                    </div>
+                                </div>
                     {/* Scroll Indicator */}
                     <motion.div
                         variants={childVariants}
@@ -2037,32 +1313,10 @@ export default function HomePage() {
             {/* Enhanced Call To Action Section */}
             <Container>
                 <section className="py-16 relative overflow-hidden">
-                    {/* Animated Background Elements */}
+                    {/* Animated Background Elements - CSS only */}
                     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                        <motion.div
-                            animate={{
-                                rotate: [0, 360],
-                                scale: [1, 1.1, 1],
-                            }}
-                            transition={{
-                                duration: 25,
-                                repeat: Infinity,
-                                ease: "linear"
-                            }}
-                            className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-primary/5 to-blue-400/5 rounded-full blur-xl"
-                        />
-                        <motion.div
-                            animate={{
-                                rotate: [360, 0],
-                                scale: [1, 1.2, 1],
-                            }}
-                            transition={{
-                                duration: 30,
-                                repeat: Infinity,
-                                ease: "linear"
-                            }}
-                            className="absolute -bottom-10 -left-10 w-24 h-24 bg-gradient-to-br from-blue-400/5 to-indigo-400/5 rounded-full blur-xl"
-                        />
+                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-primary/5 to-blue-400/5 rounded-full blur-xl animate-spin-slow" />
+                        <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-gradient-to-br from-blue-400/5 to-indigo-400/5 rounded-full blur-xl animate-spin-reverse-slow" />
                     </div>
 
                     <motion.div
@@ -2074,7 +1328,7 @@ export default function HomePage() {
                     >
                         {/* Enhanced Section Header */}
                         <motion.div variants={childVariants} className="text-center mb-10">
-                            <motion.div
+                                    <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.6 }}
@@ -2082,7 +1336,7 @@ export default function HomePage() {
                             >
                                 <div className="w-2 h-2 bg-gradient-to-r from-primary to-blue-500 rounded-full animate-pulse" />
                                 <span className="text-sm font-medium text-slate-700">Get Started</span>
-                            </motion.div>
+                                    </motion.div>
                             <HeadingText level="h2" weight="bold" className="mb-4 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 bg-clip-text text-transparent">
                                 Ready to Maximize Your USDC Returns?
                             </HeadingText>
@@ -2093,247 +1347,134 @@ export default function HomePage() {
 
                         {/* Enhanced Network Cards */}
                         <div className="relative">
-                            {/* Additional Background Elements */}
+                            {/* Additional Background Elements - CSS only */}
                             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                                <motion.div
-                                    animate={{
-                                        y: [-10, 10, -10],
-                                        opacity: [0.3, 0.6, 0.3],
-                                    }}
-                                    transition={{
-                                        duration: 8,
-                                        repeat: Infinity,
-                                        ease: "easeInOut"
-                                    }}
-                                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-primary/5 to-blue-400/5 rounded-full blur-3xl"
-                                />
+                                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-primary/5 to-blue-400/5 rounded-full blur-3xl animate-float" />
                             </div>
 
                             <div className="relative grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
                                 {/* Enhanced Base Network Card */}
-                                <motion.div
-                                    variants={cardVariantsLeft}
-                                    whileHover={{
-                                        scale: 1.02,
-                                        rotateY: 2,
-                                        z: 20
-                                    }}
-                                    className="group relative"
-                                >
-                                    <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base" className="block h-full" onClick={() => logEvent('clicked_launch_superfund_base_app', {
-                                        section: 'base_network_card',
-                                        title: "Ready to Maximize Your USDC Returns?"
-                                    })}>
-                                        <div className="relative h-full bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform-gpu perspective-1000 border border-white/40 flex flex-col justify-between">
-                                            {/* Enhanced Background Decoration */}
-                                            <motion.div
-                                                animate={{
-                                                    rotate: [0, 360],
-                                                    scale: [1, 1.1, 1],
-                                                }}
-                                                transition={{
-                                                    duration: 20,
-                                                    repeat: Infinity,
-                                                    ease: "linear"
-                                                }}
-                                                className="absolute -top-8 -right-8 w-24 h-24 bg-gradient-to-br from-primary/10 to-blue-400/10 rounded-full blur-xl"
-                                            />
-                                            <motion.div
-                                                animate={{
-                                                    rotate: [360, 0],
-                                                    scale: [1, 1.2, 1],
-                                                }}
-                                                transition={{
-                                                    duration: 25,
-                                                    repeat: Infinity,
-                                                    ease: "linear"
-                                                }}
-                                                className="absolute bottom-8 -left-8 w-16 h-16 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full blur-xl"
-                                            />
+                            <motion.div
+                                variants={cardVariantsLeft}
+                                    className="group relative hover:scale-105 transition-transform duration-300"
+                            >
+                                <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base" className="block h-full" onClick={() => logEvent('clicked_launch_superfund_base_app', {
+                                    section: 'base_network_card',
+                                    title: "Ready to Maximize Your USDC Returns?"
+                                })}>
+                                        <div className="relative h-full bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/40 flex flex-col justify-between">
+                                            {/* Enhanced Background Decoration - CSS only */}
+                                            <div className="absolute -top-8 -right-8 w-24 h-24 bg-gradient-to-br from-primary/10 to-blue-400/10 rounded-full blur-xl animate-spin-slow" />
+                                            <div className="absolute bottom-8 -left-8 w-16 h-16 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full blur-xl animate-spin-reverse-slow" />
 
                                             <div className="relative z-10">
                                                 {/* Enhanced Header with 3D Logo */}
-                                                <div className="flex items-center gap-4 mb-6">
-                                                    <motion.div
-                                                        whileHover={{
-                                                            rotateY: 15,
-                                                            scale: 1.1
-                                                        }}
-                                                        className="relative w-12 h-12 transform-gpu preserve-3d"
-                                                    >
+                                            <div className="flex items-center gap-4 mb-6">
+                                                    <div className="relative w-12 h-12 group-hover:scale-110 transition-transform duration-300">
                                                         <div className="absolute inset-0 bg-gradient-to-br from-primary to-blue-600 rounded-xl shadow-lg group-hover:shadow-primary/25 transition-all duration-300" />
                                                         <div className="absolute inset-0.5 bg-white rounded-xl flex items-center justify-center shadow-inner">
-                                                            <ImageWithDefault
-                                                                src={CHAIN_DETAILS[ChainId.Base].logo}
-                                                                alt="Base"
+                                                    <ImageWithDefault
+                                                        src={CHAIN_DETAILS[ChainId.Base].logo}
+                                                        alt="Base"
                                                                 width={24}
                                                                 height={24}
-                                                                className="rounded-full"
-                                                            />
-                                                        </div>
-                                                        {/* Floating particles */}
-                                                        <motion.div
-                                                            animate={{
-                                                                y: [-1, 1, -1],
-                                                                opacity: [0.5, 1, 0.5],
-                                                            }}
-                                                            transition={{
-                                                                duration: 3,
-                                                                repeat: Infinity,
-                                                                ease: "easeInOut"
-                                                            }}
-                                                            className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-primary/40 rounded-full blur-sm"
-                                                        />
-                                                    </motion.div>
+                                                        className="rounded-full"
+                                                    />
+                                                </div>
+                                                        {/* Floating particles - CSS only */}
+                                                        <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-primary/40 rounded-full blur-sm animate-pulse" />
+                                                    </div>
                                                     <HeadingText level="h3" weight="semibold" className="text-slate-800 group-hover:text-primary transition-colors">
-                                                        Base
-                                                    </HeadingText>
-                                                    <motion.div
-                                                        whileHover={{ scale: 1.05 }}
-                                                        className="inline-block bg-gradient-to-r from-primary/10 to-blue-500/10 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-primary/20"
-                                                    >
+                                                    Base
+                                                </HeadingText>
+                                                    <div className="inline-block bg-gradient-to-r from-primary/10 to-blue-500/10 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-primary/20 hover:scale-105 transition-transform duration-300">
                                                         <span className="text-xs font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
                                                             Up to {TOTAL_VAULT_APY}% APY
                                                         </span>
-                                                    </motion.div>
                                                 </div>
                                             </div>
+                                        </div>
 
                                             {/* Enhanced CTA Button */}
-                                            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                                                <Button
-                                                    size="lg"
-                                                    variant="secondary"
+                                            <div className="hover:scale-105 transition-transform duration-200">
+                                        <Button
+                                            size="lg"
+                                            variant="secondary"
                                                     className="w-full h-12 mt-4 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white shadow-lg hover:shadow-xl transition-all duration-300"
                                                 >
                                                     <span className="font-medium">Launch SuperFund Base App</span>
-                                                    <motion.div
-                                                        animate={{ x: [0, 3, 0] }}
-                                                        transition={{ duration: 2, repeat: Infinity }}
-                                                        className="ml-2"
-                                                    >
+                                                    <div className="ml-2 group-hover:translate-x-1 transition-transform duration-200">
                                                         <ArrowRight className="w-5 h-5" />
-                                                    </motion.div>
-                                                </Button>
-                                            </motion.div>
+                                                    </div>
+                                        </Button>
+                                            </div>
 
                                             {/* Hover Effect Overlay */}
                                             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-blue-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                        </div>
-                                    </Link>
-                                </motion.div>
+                                    </div>
+                                </Link>
+                            </motion.div>
 
                                 {/* Enhanced Sonic Network Card */}
-                                <motion.div
-                                    variants={cardVariantsRight}
-                                    whileHover={{
-                                        scale: 1.02,
-                                        rotateY: 2,
-                                        z: 20
-                                    }}
-                                    className="group relative"
-                                >
-                                    <Link target={miniAppUser ? '_self' : '_blank'} href="/waitlist" className="block h-full" onClick={() => logEvent('clicked_join_superfund_sonic_waitlist', {
-                                        section: 'sonic_network_card',
-                                        title: "Ready to Maximize Your USDC Returns?"
-                                    })}>
-                                        <div className="relative h-full bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform-gpu perspective-1000 border border-white/40 flex flex-col justify-between">
-                                            {/* Enhanced Background Decoration */}
-                                            <motion.div
-                                                animate={{
-                                                    rotate: [0, 360],
-                                                    scale: [1, 1.1, 1],
-                                                }}
-                                                transition={{
-                                                    duration: 20,
-                                                    repeat: Infinity,
-                                                    ease: "linear"
-                                                }}
-                                                className="absolute -top-8 -right-8 w-24 h-24 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full blur-xl"
-                                            />
-                                            <motion.div
-                                                animate={{
-                                                    rotate: [360, 0],
-                                                    scale: [1, 1.2, 1],
-                                                }}
-                                                transition={{
-                                                    duration: 25,
-                                                    repeat: Infinity,
-                                                    ease: "linear"
-                                                }}
-                                                className="absolute bottom-8 -left-8 w-16 h-16 bg-gradient-to-br from-indigo-400/10 to-blue-400/10 rounded-full blur-xl"
-                                            />
+                            <motion.div
+                                variants={cardVariantsRight}
+                                    className="group relative hover:scale-105 transition-transform duration-300"
+                            >
+                                <Link target={miniAppUser ? '_self' : '_blank'} href="/waitlist" className="block h-full" onClick={() => logEvent('clicked_join_superfund_sonic_waitlist', {
+                                    section: 'sonic_network_card',
+                                    title: "Ready to Maximize Your USDC Returns?"
+                                })}>
+                                        <div className="relative h-full bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/40 flex flex-col justify-between">
+                                            {/* Enhanced Background Decoration - CSS only */}
+                                            <div className="absolute -top-8 -right-8 w-24 h-24 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full blur-xl animate-spin-slow" />
+                                            <div className="absolute bottom-8 -left-8 w-16 h-16 bg-gradient-to-br from-indigo-400/10 to-blue-400/10 rounded-full blur-xl animate-spin-reverse-slow" />
 
                                             <div className="relative z-10">
                                                 {/* Enhanced Header with 3D Logo */}
-                                                <div className="flex items-center gap-4 mb-6">
-                                                    <motion.div
-                                                        whileHover={{
-                                                            rotateY: 15,
-                                                            scale: 1.1
-                                                        }}
-                                                        className="relative w-12 h-12 transform-gpu preserve-3d"
-                                                    >
+                                            <div className="flex items-center gap-4 mb-6">
+                                                    <div className="relative w-12 h-12 group-hover:scale-110 transition-transform duration-300">
                                                         <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg group-hover:shadow-blue-500/25 transition-all duration-300" />
                                                         <div className="absolute inset-0.5 bg-white rounded-xl flex items-center justify-center shadow-inner">
-                                                            <ImageWithDefault
-                                                                src={CHAIN_DETAILS[ChainId.Sonic].logo}
-                                                                alt="Sonic"
+                                                    <ImageWithDefault
+                                                        src={CHAIN_DETAILS[ChainId.Sonic].logo}
+                                                        alt="Sonic"
                                                                 width={24}
                                                                 height={24}
-                                                                className="rounded-full"
-                                                            />
-                                                        </div>
-                                                        {/* Floating particles */}
-                                                        <motion.div
-                                                            animate={{
-                                                                y: [-1, 1, -1],
-                                                                opacity: [0.5, 1, 0.5],
-                                                            }}
-                                                            transition={{
-                                                                duration: 3,
-                                                                repeat: Infinity,
-                                                                ease: "easeInOut"
-                                                            }}
-                                                            className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-blue-400/40 rounded-full blur-sm"
-                                                        />
-                                                    </motion.div>
+                                                        className="rounded-full"
+                                                    />
+                                                </div>
+                                                        {/* Floating particles - CSS only */}
+                                                        <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-blue-400/40 rounded-full blur-sm animate-pulse" />
+                                                    </div>
                                                     <HeadingText level="h3" weight="semibold" className="text-slate-800 group-hover:text-blue-600 transition-colors">
-                                                        Sonic
-                                                    </HeadingText>
-                                                    <motion.div
-                                                        whileHover={{ scale: 1.05 }}
-                                                        className="inline-block bg-gradient-to-r from-blue-500/10 to-indigo-500/10 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-blue-500/20 shrink-0"
-                                                    >
+                                                    Sonic
+                                                </HeadingText>
+                                                    <div className="inline-block bg-gradient-to-r from-blue-500/10 to-indigo-500/10 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-blue-500/20 shrink-0 hover:scale-105 transition-transform duration-300">
                                                         <span className="text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                                                             Coming soon
                                                         </span>
-                                                    </motion.div>
                                                 </div>
                                             </div>
+                                        </div>
 
                                             {/* Enhanced CTA Button */}
-                                            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                                                <Button
-                                                    size="lg"
+                                            <div className="hover:scale-105 transition-transform duration-200">
+                                        <Button
+                                            size="lg"
                                                     className="w-full h-12 mt-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 text-blue-800 hover:from-blue-100 hover:to-indigo-100 hover:border-blue-300 shadow-lg hover:shadow-xl transition-all duration-300"
                                                 >
                                                     <span className="font-medium">Join SuperFund Sonic Waitlist</span>
-                                                    <motion.div
-                                                        animate={{ x: [0, 3, 0] }}
-                                                        transition={{ duration: 2, repeat: Infinity }}
-                                                        className="ml-2"
-                                                    >
+                                                    <div className="ml-2 group-hover:translate-x-1 transition-transform duration-200">
                                                         <Play className="w-4 h-4 fill-current" />
-                                                    </motion.div>
-                                                </Button>
-                                            </motion.div>
+                                                    </div>
+                                        </Button>
+                                            </div>
 
                                             {/* Hover Effect Overlay */}
                                             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                        </div>
-                                    </Link>
-                                </motion.div>
+                                    </div>
+                                </Link>
+                            </motion.div>
                             </div>
                         </div>
                     </motion.div>
