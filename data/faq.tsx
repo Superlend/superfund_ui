@@ -53,28 +53,27 @@ const FAQ = [
         ),
         delay: 0.5
     },
-    // {
-    //     value: "item-6",
-    //     question: "Want to Learn More?",
-    //     answer: (
-    //         <div>
-    //             Check out our quick explainer video! 🎥 
-    //             <br />
-    //             <a 
-    //                 href="#" 
-    //                 className="text-primary hover:text-primary/80 underline mt-2 inline-block"
-    //                 onClick={(e) => {
-    //                     e.preventDefault();
-    //                     // YouTube link will be added here
-    //                     console.log('YouTube video link to be added');
-    //                 }}
-    //             >
-    //                 Watch Explainer Video →
-    //             </a>
-    //         </div>
-    //     ),
-    //     delay: 0.6
-    // }
+    {
+        value: "item-6",
+        question: "Want to Learn More?",
+        answer: (
+            <div>
+                Check out our quick explainer video! 🎥 
+                <br />
+                <a 
+                    href="#" 
+                    className="text-secondary-500 hover:text-secondary-500/80 underline mt-2 inline-block"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        window.open("https://youtu.be/IISyN2WDQho", "_blank");
+                    }}
+                >
+                    Watch Explainer Video →
+                </a>
+            </div>
+        ),
+        delay: 0.6
+    }
 ]
 
 export default FAQ;
