@@ -11,6 +11,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Period } from '@/types/periodButtons'
 import { abbreviateNumber, extractTimeFromDate } from '@/lib/utils'
 import { TimelineFilterTabs } from '@/components/tabs/timeline-filter-tabs'
+import { useApyData } from '@/context/apy-data-provider'
+import { getRewardsTooltipContent } from '@/lib/ui/getRewardsTooltipContent'
 
 enum ChartType {
     Area = 'area',
@@ -37,12 +39,39 @@ function CustomTooltip({ active, payload, label }: any) {
     if (active && payload && payload.length) {
         const data = payload[0]?.payload
         return (
-            <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-                <p className="text-sm font-medium text-gray-900">{data?.timestamp}</p>
-                <p className="text-sm text-gray-600">
-                    <span className="inline-block w-3 h-3 bg-[#FF5B00] rounded-full mr-2"></span>
-                    Spot APY: {data?.spotApy}%
-                </p>
+            <div className="bg-white p-3 rounded-4 shadow-lg overflow-hidden">
+                {
+                    getRewardsTooltipContent({
+                        title: () => (
+                            <div className="flex items-center justify-between gap-2 mb-2">
+                                {/* <BodyText level="body1" weight="medium" className="text-gray-800">
+                                    Spot APY
+                                </BodyText> */}
+                                <BodyText level="body3" weight="normal" className="text-gray-800">
+                                    {data?.timestamp}
+                                </BodyText>
+                            </div>
+                        ),
+                        baseRateFormatted: abbreviateNumber(Number(data?.spotApy)),
+                        baseRateLabel: "Base Rate (Day avg.)",
+                        rewardsCustomList: [
+                            {
+                                key: 'rewards_apy',
+                                key_name: 'Rewards APY',
+                                value: abbreviateNumber(Number(data?.rewardsApy)),
+                            },
+                            {
+                                key: 'superlend_rewards_apy',
+                                key_name: 'Superlend USDC Reward',
+                                value: abbreviateNumber(Number(data?.boostApy)),
+                                logo: "/images/tokens/usdc.webp"
+                            },
+                        ],
+                        apyCurrent: Number(data?.totalApy),
+                        positionTypeParam: 'lend',
+                        netApyLabel: "Net Spot APY"
+                    })
+                }
             </div>
         )
     }
@@ -50,9 +79,9 @@ function CustomTooltip({ active, payload, label }: any) {
 }
 
 function CustomXAxisTick({ payload, x, y, selectedRange, index, length }: any) {
-    const shouldShow = selectedRange === Period.oneDay || 
-                      selectedRange === Period.oneWeek || 
-                      index % Math.max(1, Math.floor(length / 5)) === 0
+    const shouldShow = selectedRange === Period.oneDay ||
+        selectedRange === Period.oneWeek ||
+        index % Math.max(1, Math.floor(length / 5)) === 0
 
     if (!shouldShow) return null
 
@@ -81,10 +110,16 @@ export default function HistoricalSpotApyChart({
     noDataUI
 }: THistoricalSpotApyChartProps) {
     const [chartType, setChartType] = useState<ChartType>(ChartType.Area)
-
+    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy, boostApyStartDate } = useApyData()
     const averageSpotApy = useMemo(() => {
         if (!historicalData || historicalData.length === 0) return 0
-        return historicalData.reduce((acc: number, item: any) => acc + item.spotApy, 0) / historicalData.length
+        return historicalData.reduce((acc: number, item: any) => {
+            const date = new Date(item.timestamp * 1000)
+            // Only add BOOST_APY if the date is on or after May 12, 2025
+            const shouldAddBoost = date.getTime() >= boostApyStartDate;
+            const TOTAL_SPOT_APY = Number(item.spotApy) + Number(item.rewardsApy) + (shouldAddBoost ? Number(BOOST_APY ?? 0) : 0);
+            return acc + TOTAL_SPOT_APY
+        }, 0) / historicalData.length
     }, [historicalData])
 
     const chartData = useMemo(() => {
@@ -101,12 +136,19 @@ export default function HistoricalSpotApyChart({
             ).format(date)
             const time = extractTimeFromDate(date, { exclude: ['seconds'] })
 
+            // Only add BOOST_APY if the date is on or after May 12, 2025
+            const shouldAddBoost = date.getTime() >= boostApyStartDate;
+            const TOTAL_SPOT_APY = Number(item.spotApy) + Number(item.rewardsApy) + (shouldAddBoost ? Number(BOOST_APY ?? 0) : 0);
+
             return {
                 rawTimestamp: item.timestamp,
                 timestamp: `${formattedDate}`,
                 date: formattedDate.split(',')[0],
                 time: time,
                 spotApy: Number(item.spotApy).toFixed(2),
+                rewardsApy: Number(item.rewardsApy).toFixed(2),
+                boostApy: shouldAddBoost ? Number(BOOST_APY ?? 0).toFixed(2) : '0',
+                totalApy: Number(TOTAL_SPOT_APY).toFixed(2),
             }
         }).sort((a, b) => new Date(a.rawTimestamp).getTime() - new Date(b.rawTimestamp).getTime())
     }, [historicalData])
