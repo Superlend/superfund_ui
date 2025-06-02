@@ -14,7 +14,7 @@
         "@amplitude/engagement-browser": "^1.0.0",
         "@amplitude/plugin-session-replay-browser": "^1.16.7",
         "@farcaster/frame-sdk": "^0.0.53",
-        "@farcaster/frame-wagmi-connector": "^0.0.22",
+        "@farcaster/frame-wagmi-connector": "^0.0.42",
         "@next/third-parties": "^14.2.15",
         "@privy-io/react-auth": "^2.13.5",
         "@privy-io/server-auth": "^1.18.12",
