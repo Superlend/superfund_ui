@@ -206,31 +206,31 @@ const DepositButton = ({
     }, [isPending, isConfirming, isConfirmed])
 
     // Check allowance for initial state
-    useEffect(() => {
-        if (depositTx.status === 'view') return
+    // useEffect(() => {
+    //     if (depositTx.status === 'view') return
 
-        if (
-            !depositTx.isConfirmed &&
-            !depositTx.isPending &&
-            !depositTx.isConfirming
-        ) {
-            if (depositTx.allowanceBN.gte(amountBN)) {
-                setDepositTx((prev: TDepositTx) => ({
-                    ...prev,
-                    status: 'deposit',
-                    hash: '',
-                    errorMessage: '',
-                }))
-            } else {
-                setDepositTx((prev: TDepositTx) => ({
-                    ...prev,
-                    status: 'approve',
-                    hash: '',
-                    errorMessage: '',
-                }))
-            }
-        }
-    }, [depositTx.allowanceBN])
+    //     if (
+    //         !depositTx.isConfirmed &&
+    //         !depositTx.isPending &&
+    //         !depositTx.isConfirming
+    //     ) {
+    //         if (depositTx.allowanceBN.gte(amountBN)) {
+    //             setDepositTx((prev: TDepositTx) => ({
+    //                 ...prev,
+    //                 status: 'deposit',
+    //                 hash: '',
+    //                 errorMessage: '',
+    //             }))
+    //         } else {
+    //             setDepositTx((prev: TDepositTx) => ({
+    //                 ...prev,
+    //                 status: 'approve',
+    //                 hash: '',
+    //                 errorMessage: '',
+    //             }))
+    //         }
+    //     }
+    // }, [depositTx.allowanceBN])
 
     useEffect(() => {
         if (

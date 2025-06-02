@@ -9,7 +9,13 @@ import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
 // import { useAnalytics } from '@/context/amplitude-analytics-provider'
 
-export default function SubscribeWithEmail({ onEmailChange }: { onEmailChange?: (email: string) => void }) {
+export default function SubscribeWithEmail({ 
+    onEmailChange, 
+    onSubscriptionSuccess 
+}: { 
+    onEmailChange?: (email: string) => void
+    onSubscriptionSuccess?: () => void 
+}) {
     // const { logEvent } = useAnalytics()
     const { walletAddress } = useWalletConnection()
     const [email, setEmail] = useState('')
@@ -53,9 +59,7 @@ export default function SubscribeWithEmail({ onEmailChange }: { onEmailChange?: 
                 setEmail('')
                 setSubmissionStatus('success')
                 if (onEmailChange) onEmailChange('') // Clear the parent's tracked email
-                // logEvent('newsletter_subscribed', {
-                //     section: 'footer'
-                // })
+                if (onSubscriptionSuccess) onSubscriptionSuccess() // Notify parent of successful subscription
             } else {
                 const error = await response.json()
                 throw new Error(error.message || 'Something went wrong')

@@ -15,7 +15,7 @@ import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useRouter, notFound } from 'next/navigation'
 // import { ChainProvider, useChain } from '@/context/chain-context'
 import { ChainId } from '@/types/chain'
-import TransactionHistory from '@/app/components/transaction-history'
+import TransactionHistory from '@/components/transaction-history'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
 import { usePrivy } from '@privy-io/react-auth'
 import { useLoginToFrame } from '@privy-io/react-auth/farcaster'
@@ -157,7 +157,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                     <VaultStats />
                     <div className="flex flex-col gap-4 lg:hidden">
                         <DepositAndWithdrawAssets />
-                        <YourApiJourney />
+                        {isWalletConnected && <YourApiJourney />}
                         {isWalletConnected && (
                             <TransactionHistory
                                 protocolIdentifier={getProtocolIdentifier(
@@ -189,7 +189,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                         <ScrollArea className="h-full" ref={scrollAreaRef}>
                             <div className="flex flex-col gap-2 pr-4">
                                 <DepositAndWithdrawAssets />
-                                <YourApiJourney />
+                                {isWalletConnected && <YourApiJourney />}
                                 {isWalletConnected && (
                                     <TransactionHistory
                                         protocolIdentifier={getProtocolIdentifier(

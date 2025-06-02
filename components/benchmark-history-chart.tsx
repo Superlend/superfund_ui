@@ -501,10 +501,8 @@ export function BenchmarkHistoryChart() {
             // Check if the date is on or after boost APY start date
             const shouldAddBoost = date.getTime() >= boostApyStartDate;
 
-            // Only add BOOST_APY to superfund value if date is on or after the start date
-            const superfundValue = shouldAddBoost && item.superfund !== null ?
-                item.superfund + BOOST_APY :
-                item.superfund;
+            const superfundValue = item.superfund
+            const superfundRewardValue = (shouldAddBoost && (item.superfund != null)) ? (item.superfund + (BOOST_APY ?? 0)) : item.superfund;
 
             const formattedItem: TFormattedBenchmarkDataPoint = {
                 rawTimestamp: item.timestamp,
@@ -514,9 +512,11 @@ export function BenchmarkHistoryChart() {
                 timestamp: `${formattedDate} ${time}`,
                 timeValue: time,
                 superfund: superfundValue ?? null,
+                superfundReward: superfundRewardValue ?? null,
                 aave: selectedChain === ChainId.Sonic ? ((item.aave ?? 0) + aaveRewardApy) : (item.aave ?? null),
                 isAaveApproximated: item.isAaveApproximated || false,
                 superfundDisplay: abbreviateNumber(superfundValue ?? 0),
+                superfundRewardDisplay: abbreviateNumber(superfundRewardValue ?? 0),
                 aaveDisplay: abbreviateNumber(selectedChain === ChainId.Sonic ? ((item.aave ?? 0) + aaveRewardApy) : (item.aave ?? 0)),
                 fluid: item.fluid ?? null,
                 isFluidApproximated: item.isFluidApproximated || false,
@@ -589,7 +589,7 @@ export function BenchmarkHistoryChart() {
         }
 
         const allValues = chartData.flatMap((d: TFormattedBenchmarkDataPoint) => {
-            const values = [Number(d.superfund), Number(d.aave)];
+            const values = [Number(d.superfund), Number(d.superfundReward), Number(d.aave)];
             if (selectedChain === ChainId.Base) {
                 values.push(
                     Number(d.morphoGauntletPrime),
@@ -720,6 +720,7 @@ export function BenchmarkHistoryChart() {
     // Legend toggle state
     const [visibleLines, setVisibleLines] = useState<Record<string, boolean>>({
         superfund: true,
+        superfundReward: true,
         aave: true,
         fluid: true,
         euler: true,
@@ -844,7 +845,7 @@ export function BenchmarkHistoryChart() {
     // Custom legend component
     const CustomLegend = () => {
         // Determine which protocols to show based on selectedChain
-        const protocolsToShow = ['superfund', 'aave'];
+        const protocolsToShow = ['superfund', 'superfundReward', 'aave'];
 
         if (selectedChain === ChainId.Base) {
             protocolsToShow.push('fluid');
@@ -884,7 +885,7 @@ export function BenchmarkHistoryChart() {
                                 background: config.color,
                                 display: 'inline-block',
                                 marginRight: 4,
-                                border: visibleLines[key] ? '2px solid #222' : '2px solid #ccc',
+                                // border: visibleLines[key] ? '1px solid #222' : '1px solid #ccc',
                                 transition: 'border 0.2s',
                             }} />
                             {config.label}
@@ -1011,6 +1012,18 @@ export function BenchmarkHistoryChart() {
                                             isAnimationActive={false}
                                         />
                                     )}
+                                    {visibleLines.superfundReward && (
+                                        <Line
+                                            dataKey="superfundReward"
+                                            type="monotone"
+                                            stroke="var(--color-superfundReward)"
+                                            strokeWidth={2}
+                                            dot={false}
+                                            activeDot={{ r: 5, strokeWidth: 1 }}
+                                            connectNulls={true}
+                                            isAnimationActive={false}
+                                        />
+                                    )}
                                     {visibleLines.aave && (
                                         <Line
                                             dataKey="aave"
@@ -1080,6 +1093,16 @@ export function BenchmarkHistoryChart() {
                                                     stroke="var(--color-superfund)"
                                                     strokeWidth={1}
                                                     fill="rgba(251, 89, 0, 0.2)"
+                                                    connectNulls={true}
+                                                />
+                                            )}
+                                            {visibleLines.superfundReward && (
+                                                <Area
+                                                    type="monotone"
+                                                    dataKey="superfundReward"
+                                                    stroke="var(--color-superfundReward)"
+                                                    strokeWidth={1}
+                                                    fill="rgba(255, 133, 51, 0.2)"
                                                     connectNulls={true}
                                                 />
                                             )}

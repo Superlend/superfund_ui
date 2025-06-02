@@ -37,7 +37,7 @@ const VAULT_ABI = parseAbi([
 const CHAIN_CONFIGS = {
     [ChainId.Base]: {
         chain: base,
-        rpcUrl: process.env.NEXT_PUBLIC_BASE_RPC_URL || '',
+        rpcUrl: 'https://base.llamarpc.com',
         vaultAddress: VAULT_ADDRESS,
         fluidLendingResolverAddress: BASE_FLUID_LENDING_RESOLVER_ADDRESS,
     },
@@ -53,7 +53,7 @@ const CHAIN_CONFIGS = {
 const publicClients = {
     [ChainId.Base]: createPublicClient({
         chain: base,
-        transport: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || ''),
+        transport: http('https://base.llamarpc.com'),
         batch: { multicall: true },
     }),
     [ChainId.Sonic]: createPublicClient({
@@ -143,7 +143,7 @@ export function useVaultHook() {
                     if (isMountedRef.current) {
                         fetchVaultData()
                     }
-                }, 5000)
+                }, 15000)
             }
         }
     }
@@ -311,7 +311,7 @@ export function useRewardsHook() {
                     if (isMountedRef.current) {
                         fetchRewards()
                     }
-                }, 5000)
+                }, 15000)
             }
         }
     }

@@ -8,7 +8,7 @@ import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useRouter, notFound } from 'next/navigation'
 import { Skeleton } from '@/components/ui/skeleton'
-import AllTransactions from '@/app/components/all-transactions'
+import AllTransactions from '@/components/all-transactions'
 // import { ChainProvider } from '@/context/chain-context'
 import { ChainId } from '@/types/chain'
 

@@ -6,7 +6,7 @@ import { BodyText, HeadingText } from "@/components/ui/typography"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import InfoTooltip from "@/components/tooltips/InfoTooltip"
-import { Trophy, ChartNoAxesCombined } from "lucide-react"
+import { Trophy, ChartNoAxesCombined, Info } from "lucide-react"
 import { useVaultHook } from "@/hooks/vault_hooks/vaultHook"
 import { useGetEffectiveApy } from "@/hooks/vault_hooks/useGetEffectiveApy"
 import { VAULT_ADDRESS_MAP } from "@/lib/constants"
@@ -27,14 +27,37 @@ export default function YourApiJourney() {
     const TOTAL_VAULT_APY = Number(effectiveApyData?.total_apy ?? 0) + Number(BOOST_APY ?? 0)
 
     return (
-        < Card >
+        <Card>
             <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                     <div className="relative p-2 bg-gradient-to-br from-green-100 to-green-200 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:rotate-12 hover:scale-110">
                         <ChartNoAxesCombined className="h-5 w-5 text-green-600 drop-shadow-sm animate-pulse" />
                     </div>
-                    <HeadingText level="h5" weight="medium" className="text-gray-800">
+                    <HeadingText level="h5" weight="medium" className="text-gray-800 flex items-center gap-1">
                         Your APY Journey
+                        <InfoTooltip
+                            label={
+                                <BodyText level="body2" weight="medium" className="cursor-help">
+                                    💡
+                                </BodyText>
+                            }
+                            content={
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center space-x-1">
+                                        <Info className="text-secondary-500 w-4 h-4" />
+                                        <HeadingText level="h5" weight="medium" className="text-gray-800">
+                                            Understanding Your APY
+                                        </HeadingText>
+                                    </div>
+                                    <BodyText level="body2" weight="normal" className="text-gray-600">
+                                        When you deposit into SuperFund, your earnings (APY) don&apos;t start at the full rate right away.
+                                    </BodyText>
+                                    <BodyText level="body2" weight="normal" className="text-gray-600">
+                                        This is due to our yield smearing system, which gradually releases yield over 7 days for stability.
+                                    </BodyText>
+                                </div>
+                            }
+                        />
                     </HeadingText>
                 </div>
                 <BodyText level="body2" weight="normal" className="text-gray-600 mb-6">
@@ -190,6 +213,6 @@ export default function YourApiJourney() {
                     </div>
                 )}
             </CardContent>
-        </Card >
+        </Card>
     )
 }
