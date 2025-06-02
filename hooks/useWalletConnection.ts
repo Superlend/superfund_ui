@@ -23,7 +23,7 @@ export const useWalletConnection = () => {
     const walletAddress = authenticated
         ? (activeWallet?.address as `0x${string}`) ||
           (user?.wallet?.address as `0x${string}`)
-        : undefined
+        : "undefined" as `0x${string}`
 
     // Set the latest connected wallet as active
     useEffect(() => {
