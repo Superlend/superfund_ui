@@ -16,7 +16,6 @@ import ClaimRewardsTxDialog from "@/components/dialogs/ClaimRewardsTx"
 import { SelectTokenDialog } from "@/components/dialogs/SelectToken"
 import { abbreviateNumber, formatAmountToDisplay, hasLowestDisplayValuePrefix } from "@/lib/utils"
 import { TClaimRewardsResponse } from "@/types"
-import { useWalletConnection } from "@/hooks/useWalletConnection"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useRewardsHook } from "../../hooks/vault_hooks/useRewardHook"
 import { Check, GiftIcon, InfoIcon } from "lucide-react"
@@ -24,23 +23,39 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { motion } from "motion/react"
 import useDimensions from "@/hooks/useDimensions"
 import { useChain } from "@/context/chain-context"
+import { useTxContext } from "@/context/super-vault-tx-provider"
+import { TTxContext } from "@/context/super-vault-tx-provider"
 
 export default function ClaimRewards({
-    rewardsData,
-    isLoadingRewards,
-    isErrorRewards,
     noDataUI
 }: {
-    rewardsData: TClaimRewardsResponse[],
-    isLoadingRewards: boolean,
-    isErrorRewards: boolean,
     noDataUI: React.ReactNode
 }) {
     const [isTxDialogOpen, setIsTxDialogOpen] = useState(false)
     const [isSelectTokenDialogOpen, setIsSelectTokenDialogOpen] = useState(false)
     const [selectedReward, setSelectedReward] = useState<TClaimRewardsResponse | undefined>(undefined)
+    const [isRefreshingAfterClaim, setIsRefreshingAfterClaim] = useState(false)
     const { width: screenWidth } = useDimensions()
     const { selectedChain } = useChain()
+    const { formattedClaimData: rewardsData, isLoading: isLoadingRewards, isError: isErrorRewards, refetchClaimRewardsData } = useRewardsHook();
+    const { claimRewardsTx } = useTxContext() as TTxContext
+    
+    useEffect(() => {
+        const shouldRefetchClaimRewards = (claimRewardsTx.status === 'view') && (claimRewardsTx.isConfirmed) && (!!claimRewardsTx.hash)
+        if (shouldRefetchClaimRewards) {
+            setIsRefreshingAfterClaim(true)
+            // Wait 5 seconds for blockchain state to update, then refetch
+            const timeoutId = setTimeout(async () => {
+                await refetchClaimRewardsData()
+                // Give additional time for the retry mechanism to complete
+                setTimeout(() => {
+                    setIsRefreshingAfterClaim(false)
+                }, 10000) // 10 seconds total refresh time
+            }, 5000)
+            
+            return () => clearTimeout(timeoutId)
+        }
+    }, [claimRewardsTx.status, claimRewardsTx.isConfirmed, claimRewardsTx.hash, refetchClaimRewardsData])
 
     function handleSelectToken(token: any) {
         const tokenReward = rewardsData?.find(rd => rd.token.address === token.address);
@@ -56,43 +71,39 @@ export default function ClaimRewards({
     const unclaimedRewardsData = useMemo(() => filterByUnclaimedRewards(rewardsData), [rewardsData]);
     const hasUnclaimedRewards = useMemo(() => unclaimedRewardsData?.length > 0, [unclaimedRewardsData]);
 
-    if (isLoadingRewards) {
+    if (isLoadingRewards && !isRefreshingAfterClaim) {
         return <Skeleton className="w-full h-[250px] rounded-4" />
     }
 
-    // if ((rewardsData.length === 0 && !isLoadingRewards) || (!hasUnclaimedRewards && !isLoadingRewards)) {
-    //     return noDataUI
-    // }
-
     return (
         <>
-            <Card className="w-full max-h-[250px]">
+            <Card className={`w-full max-h-[280px] ${isRefreshingAfterClaim ? 'opacity-70 transition-opacity duration-300' : ''}`}>
                 {hasUnclaimedRewards && !isLoadingRewards &&
                     <CardContent className="flex flex-col divide-y divide-gray-400 px-8 pt-5 pb-4">
-                        {/* <ScrollArea
-                                    type="always"
-                                    className={`${unclaimedRewardsData?.length > 2 ? 'h-[120px]' : 'h-[80px]'} p-0 pr-3`}
-                                > */}
-                        {unclaimedRewardsData?.map(reward => (
-                            <div className="item flex items-center justify-between gap-2 py-3 first:pt-0 last:pb-0" key={reward.token.address}>
-                                <div className="flex items-center gap-2">
-                                    <ImageWithDefault
-                                        src={reward.token?.logo || ''}
-                                        alt={reward.token.symbol}
-                                        width={24}
-                                        height={24}
-                                        className="rounded-full h-[24px] w-[24px] max-w-[24px] max-h-[24px]"
-                                    />
+                        <ScrollArea
+                            type="always"
+                            className={`${unclaimedRewardsData?.length === 1 ? 'h-[40px]' : unclaimedRewardsData?.length > 2 ? 'h-[120px]' : 'h-[80px]'} p-0 pr-3`}
+                        >
+                            {unclaimedRewardsData?.map(reward => (
+                                <div className="item flex items-center justify-between gap-2 py-3 first:pt-0 last:pb-0" key={reward.token.address}>
+                                    <div className="flex items-center gap-2">
+                                        <ImageWithDefault
+                                            src={reward.token?.logo || ''}
+                                            alt={reward.token.symbol}
+                                            width={24}
+                                            height={24}
+                                            className="rounded-full h-[24px] w-[24px] max-w-[24px] max-h-[24px]"
+                                        />
+                                        <BodyText level="body1" weight="medium">
+                                            {reward.token.symbol}
+                                        </BodyText>
+                                    </div>
                                     <BodyText level="body1" weight="medium">
-                                        {reward.token.symbol}
+                                        {`${hasLowestDisplayValuePrefix(Number(reward.availabeToClaimFormatted))} ${formatAmountToDisplay(reward.availabeToClaimFormatted)}`}
                                     </BodyText>
                                 </div>
-                                <BodyText level="body1" weight="medium">
-                                    {`${hasLowestDisplayValuePrefix(Number(reward.availabeToClaimFormatted))} ${formatAmountToDisplay(reward.availabeToClaimFormatted)}`}
-                                </BodyText>
-                            </div>
-                        ))}
-                        {/* </ScrollArea> */}
+                            ))}
+                        </ScrollArea>
                     </CardContent>
                 }
                 {
@@ -100,13 +111,13 @@ export default function ClaimRewards({
                         <Skeleton className="w-full h-[150px] rounded-4" />
                     )
                 }
-                <CardFooter className="relative overflow-hidden rounded-4 md:rounded-6 p-0">
+                <CardFooter className="relative overflow-hidden rounded-4 md:rounded-6 p-0 h-full min-h-[100px]">
                     <ImageWithDefault
                         src="/banners/claim-rewards-banner-desktop.png"
                         alt="Claim rewards"
                         width={800}
                         height={120}
-                        className="w-full h-full max-h-[120px] object-cover hidden md:block"
+                        className="w-full h-full max-h-[150px] object-cover hidden md:block"
                         priority={true}
                     />
                     <ImageWithDefault
@@ -114,14 +125,14 @@ export default function ClaimRewards({
                         alt="Claim rewards"
                         width={800}
                         height={120}
-                        className="w-full h-full max-h-[200px] object-cover md:hidden"
+                        className="w-full h-full max-h-[150px] object-cover md:hidden"
                         priority={true}
                     />
-                    <h3 className={`absolute text-2xl md:text-4xl max-w-[12ch] text-center uppercase ${!unclaimedRewardsData.length ? '' : 'top-5'} md:top-1/2 left-1/2 -translate-x-1/2 md:-translate-y-1/2 text-accent-navy font-bold leading-0`}>
-                        {unclaimedRewardsData.length > 0 ? "Claim your rewards" : "No rewards to claim"}
+                    <h3 className={`absolute text-center uppercase ${!unclaimedRewardsData.length ? 'w-full max-w-[300px] md:max-w-[26ch] text-lg md:text-2xl' : 'max-w-[12ch] top-3 text-2xl md:text-4xl'} md:top-1/2 left-1/2 -translate-x-1/2 md:-translate-y-1/2 text-accent-navy font-bold leading-0`}>
+                        {unclaimedRewardsData.length > 0 ? "Claim your rewards" : "Token rewards are loading! Next payout in 7 days"}
                     </h3>
                     {hasUnclaimedRewards &&
-                        <motion.div className="absolute max-md:bottom-4 md:right-5 z-[5] max-md:w-full max-md:px-4"
+                        <motion.div className="absolute max-md:bottom-8 max-md:w-full max-md:flex max-md:justify-center md:right-5 z-[5]"
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.3, ease: 'easeOut' }}
@@ -130,22 +141,24 @@ export default function ClaimRewards({
                                 onClick={() => setIsSelectTokenDialogOpen(true)}
                                 size={screenWidth > 1024 ? 'lg' : 'md'}
                                 variant="primary"
-                                className="uppercase max-md:w-full bg-white shadow-lg hover:shadow-md active:shadow-sm hover:bg-gray-50 rounded-5 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200"
+                                className="uppercase bg-white shadow-lg hover:shadow-md active:shadow-sm hover:bg-gray-50 rounded-5 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200"
                                 disabled={!hasUnclaimedRewards}
                             >
-                                <span className={`flex items-center gap-1 tracking-wide text-white ${!hasUnclaimedRewards ? 'px-5' : 'px-2 md:px-10'}`}>
+                                <span className={`flex items-center gap-1 tracking-wide text-white px-10`}>
                                     <GiftIcon className="w-4 h-4 text-inherit" />
                                     Claim{hasUnclaimedRewards ? '' : 'ed'}
                                     {!hasUnclaimedRewards && <Check strokeWidth={2.5} className="w-4 h-4 text-gray-200" />}</span>
                             </Button>
                         </motion.div>}
                 </CardFooter>
-                <div className="py-3 px-4 flex items-start sm:items-center justify-center gap-1">
-                    <InfoIcon className="w-4 h-4 text-secondary-500 shrink-0" />
-                    <BodyText level="body2" weight="medium" className="text-gray-600">
-                        Rewards can be claimed weekly, based on epochs that start from May 25th.
-                    </BodyText>
-                </div>
+                {/* {!hasUnclaimedRewards &&
+                    <div className="py-3 px-4 flex items-start sm:items-center justify-center gap-1">
+                        <InfoIcon className="w-4 h-4 text-secondary-500 shrink-0" />
+                        <BodyText level="body2" weight="medium" className="text-gray-600">
+                            Rewards can be claimed weekly, based on epochs that start from May 25th.
+                        </BodyText>
+                    </div>
+                } */}
             </Card>
             {/* Select token dialog */}
             <SelectTokenDialog

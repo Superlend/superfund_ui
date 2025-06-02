@@ -20,7 +20,6 @@ import { USDC_DECIMALS, VAULT_ADDRESS } from '@/lib/constants'
 import { parseAbi } from 'viem'
 import REWARD_ABI from '@/data/abi/rewardsABI.json'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
-import { useRewardsHook } from '@/hooks/vault_hooks/useRewardHook'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
 import { useChain } from '@/context/chain-context'
 
@@ -60,7 +59,6 @@ const ClaimRewardsButton = ({
             hash,
         })
     const { walletAddress } = useWalletConnection()
-    const { refetchClaimRewardsData } = useRewardsHook();
 
     useEffect(() => {
         if (claimRewardsTx.status === 'view') return
@@ -68,26 +66,17 @@ const ClaimRewardsButton = ({
         if (hash) {
             setClaimRewardsTx((prev: TClaimRewardsTx) => ({
                 ...prev,
-                status: 'view',
                 hash,
             }))
-            refetchClaimRewardsData()
-            logEvent('claim_rewards_successful', {
-                amount: rewardDetails.reward.claimable,
-                chain: selectedChain,
-                token: rewardDetails.reward.token.address,
-                walletAddress: walletAddress
-            })
         }
-
-        if (hash && isConfirmed) {
+        
+        if (isConfirmed) {
             setClaimRewardsTx((prev: TClaimRewardsTx) => ({
                 ...prev,
                 status: 'view',
                 hash,
                 isConfirmed: isConfirmed,
             }))
-            refetchClaimRewardsData()
             logEvent('claim_rewards_successful', {
                 amount: rewardDetails.reward.claimable,
                 chain: selectedChain,

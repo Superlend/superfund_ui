@@ -43,6 +43,7 @@ import { useWalletConnection } from '@/hooks/useWalletConnection'
 import ImageWithBadge from '@/components/ImageWithBadge'
 import ExternalLink from '@/components/ExternalLink'
 import ImageWithDefault from '../ImageWithDefault'
+import { motion } from 'motion/react'
 
 export default function ClaimRewardsTxDialog({
     disabled,
@@ -125,7 +126,7 @@ export default function ClaimRewardsTxDialog({
             onClick={() => handleOpenChange(false)}
             className="h-6 w-6 flex items-center justify-center absolute right-6 top-[1.6rem] rounded-full opacity-70 bg-white ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground p-0"
         >
-            <X strokeWidth={2.5} className="h-4 w-4 text-black" />
+            <X strokeWidth={2.5} className="h-4 w-4 text-gray-800 shrink-0" />
             <span className="sr-only">Close</span>
         </Button>
     ) : null
@@ -336,7 +337,12 @@ export default function ClaimRewardsTxDialog({
                 }) && (
                         <div className="py-1">
                             {isClaimRewardsTxInProgress && (
-                                <div className="flex items-center justify-between gap-2">
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                                    className="flex items-center justify-between gap-2"
+                                >
                                     <div className="flex items-center justify-start gap-2">
                                         <LoaderCircle className="animate-spin w-8 h-8 text-secondary-500" />
                                         <BodyText level="body2" weight="normal" className="text-gray-600">
@@ -355,10 +361,15 @@ export default function ClaimRewardsTxDialog({
                                             </BodyText>
                                         </ExternalLink>
                                     )}
-                                </div>
+                                </motion.div>
                             )}
                             {(claimRewardsTx.status === 'view' && claimRewardsTx.isConfirmed) && (
-                                <div className="flex items-center justify-between gap-2">
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                                    className="flex items-center justify-between gap-2"
+                                >
                                     <div className="flex items-center justify-start gap-2">
                                         <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
                                             <Check className="w-5 h-5 stroke-[#013220]/75" strokeWidth={1.5} />
@@ -374,7 +385,7 @@ export default function ClaimRewardsTxDialog({
                                             </BodyText>
                                         </ExternalLink>
                                     )}
-                                </div>
+                                </motion.div>
                             )}
                         </div>
                     )}

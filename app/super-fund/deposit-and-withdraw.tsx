@@ -71,7 +71,7 @@ export default function DepositAndWithdrawAssets() {
     //     chainId: selectedChain
     // })
     const BOOST_APY = getBoostApy(Number(totalAssets))
-    const TOTAL_APY = Number(effectiveApyData?.total_apy ?? 0) + Number(BOOST_APY ?? 0)
+    const TOTAL_APY = Number(effectiveApyData?.rewards_apy ?? 0) + Number(BOOST_APY ?? 0) + Number(effectiveApyData?.base_apy ?? 0)
 
     useEffect(() => {
         if (isWalletConnected) {
@@ -329,6 +329,7 @@ export default function DepositAndWithdrawAssets() {
                             }
                             open={isConfirmationDialogOpen}
                             setOpen={setIsConfirmationDialogOpen}
+                            userMaxWithdrawAmount={Number(userMaxWithdrawAmount)}
                         />
                     )}
                 </CardFooter>

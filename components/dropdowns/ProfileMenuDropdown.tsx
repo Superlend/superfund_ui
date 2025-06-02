@@ -28,8 +28,11 @@ import { getLowestDisplayValue } from '@/lib/utils'
 import { isLowestValue } from '@/lib/utils'
 import { abbreviateNumber } from '@/lib/utils'
 import { Button } from '../ui/button'
-import { Check, Copy, LoaderCircle, LogOut, X } from 'lucide-react'
+import { ArrowRightLeft, Check, Copy, LoaderCircle, LogOut, X } from 'lucide-react'
 import AccessDialog from '../AccessDialog'
+import { useRouter } from 'next/navigation'
+import { useChain } from '@/context/chain-context'
+import { ChainId } from '@/types/chain'
 
 interface ProfileMenuDropdownProps {
     open: boolean
@@ -52,6 +55,15 @@ export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
     const [isLoggingOut, setIsLoggingOut] = useState(false)
     const [dialogOpen, setDialogOpen] = useState(false)
     const [connectionError, setConnectionError] = useState(false)
+    const { selectedChain } = useChain()
+    const router = useRouter()
+
+    // Get the chain name for routing
+    const getChainName = () => {
+        if (selectedChain === ChainId.Base) return 'base'
+        if (selectedChain === ChainId.Sonic) return 'sonic'
+        return 'sonic'
+    }
 
     function handleAddressCopy() {
         copyToClipboard(walletAddress)
@@ -71,6 +83,11 @@ export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
             .finally(() => {
                 setIsLoggingOut(false)
             })
+    }
+
+    const handleViewTransactions = () => {
+        router.push(`/super-fund/${getChainName()}/txs`)
+        setOpen(false)
     }
 
     const handleError = () => {
@@ -207,6 +224,15 @@ export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
                 >
                     Add new wallet
                 </Button> */}
+                <Button
+                    variant="secondaryOutline"
+                    size="lg"
+                    className="w-full capitalize rounded-4 flex items-center justify-center gap-2"
+                    onClick={handleViewTransactions}
+                >
+                    View transactions
+                    <ArrowRightLeft className="w-4 h-4 text-secondary-500" />
+                </Button>
                 <Button
                     variant="outline"
                     size="lg"

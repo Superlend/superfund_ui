@@ -37,7 +37,7 @@ const VAULT_ABI = parseAbi([
 const CHAIN_CONFIGS = {
     [ChainId.Base]: {
         chain: base,
-        rpcUrl: process.env.NEXT_PUBLIC_BASE_RPC_URL || '',
+        rpcUrl: 'https://base.llamarpc.com',
         vaultAddress: VAULT_ADDRESS,
         fluidLendingResolverAddress: BASE_FLUID_LENDING_RESOLVER_ADDRESS,
     },
@@ -53,7 +53,7 @@ const CHAIN_CONFIGS = {
 const publicClients = {
     [ChainId.Base]: createPublicClient({
         chain: base,
-        transport: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || ''),
+        transport: http('https://base.llamarpc.com'),
         batch: { multicall: true },
     }),
     [ChainId.Sonic]: createPublicClient({
@@ -70,11 +70,15 @@ export function useVaultHook() {
     const [error, setError] = useState<string | null>(null)
     const timeoutRef = useRef<NodeJS.Timeout | null>(null)
     const isMountedRef = useRef(true)
+    const isInitialLoadRef = useRef(true)
     const { selectedChain } = useChain()
 
     async function fetchVaultData() {
         try {
-            setIsLoading(true)
+            // Only show loading state during initial load
+            if (isInitialLoadRef.current) {
+                setIsLoading(true)
+            }
 
             // Get chain-specific config
             const config = CHAIN_CONFIGS[selectedChain as keyof typeof CHAIN_CONFIGS]
@@ -125,7 +129,11 @@ export function useVaultHook() {
             }
         } finally {
             if (isMountedRef.current) {
-                setIsLoading(false)
+                // Only set loading to false during initial load
+                if (isInitialLoadRef.current) {
+                    setIsLoading(false)
+                    isInitialLoadRef.current = false
+                }
                 // Clear any existing timeout before setting a new one
                 if (timeoutRef.current) {
                     clearTimeout(timeoutRef.current)
@@ -135,13 +143,14 @@ export function useVaultHook() {
                     if (isMountedRef.current) {
                         fetchVaultData()
                     }
-                }, 5000)
+                }, 15000)
             }
         }
     }
 
     useEffect(() => {
         isMountedRef.current = true
+        isInitialLoadRef.current = true // Reset initial load flag when chain changes
         // Clear any existing timeout when chain changes
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current)
@@ -302,7 +311,7 @@ export function useRewardsHook() {
                     if (isMountedRef.current) {
                         fetchRewards()
                     }
-                }, 5000)
+                }, 15000)
             }
         }
     }
