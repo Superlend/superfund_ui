@@ -44,22 +44,22 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
     const { ready, authenticated } = usePrivy()
 
     // Log user in to Farcaster Frame
-    useEffect(() => {
-        const login = async () => {
-            const frameContext = await sdk.context
-            if (ready && !authenticated && frameContext) {
-                const { nonce } = await initLoginToFrame()
-                const result = await sdk.actions.signIn({
-                    nonce: nonce,
-                })
-                await loginToFrame({
-                    message: result.message,
-                    signature: result.signature,
-                })
-            }
-        }
-        login()
-    }, [ready, authenticated, initLoginToFrame, loginToFrame])
+    // useEffect(() => {
+    //     const login = async () => {
+    //         const frameContext = await sdk.context
+    //         if (ready && !authenticated && frameContext) {
+    //             const { nonce } = await initLoginToFrame()
+    //             const result = await sdk.actions.signIn({
+    //                 nonce: nonce,
+    //             })
+    //             await loginToFrame({
+    //                 message: result.message,
+    //                 signature: result.signature,
+    //             })
+    //         }
+    //     }
+    //     login()
+    // }, [ready, authenticated, initLoginToFrame, loginToFrame])
 
     // Handle scroll events to show/hide blur effects
     useEffect(() => {
