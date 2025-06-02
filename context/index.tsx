@@ -45,6 +45,7 @@ function ContextProvider({
     const [localConfig, setLocalConfig] = useState(defaultConfig)
     const [context, setContext] = useState<any>(null)
     const [isClient, setIsClient] = useState(false)
+    const [isMiniApp, setIsMiniApp] = useState(false)
 
     // Check if we're on the client side
     useEffect(() => {
@@ -58,10 +59,12 @@ function ContextProvider({
         const initializeConfig = async () => {
             try {
                 await FrameSDK.actions.ready()
-                const frameContext = await FrameSDK.context
-                setContext(frameContext)
+                const isMiniApp = await FrameSDK.isInMiniApp()
+                const context = await FrameSDK.context
+                setContext(context)
+                setIsMiniApp(isMiniApp)
 
-                if (frameContext) {
+                if (isMiniApp) {
                     const newConfigForFarcaster = createConfig({
                         chains: [base, sonic],
                         transports: {
@@ -73,7 +76,7 @@ function ContextProvider({
                     setLocalConfig(newConfigForFarcaster)
                 }
             } catch (error) {
-                console.error("Error initializing Farcaster SDK:", error)
+                console.error('Error initializing Farcaster SDK:', error)
                 // Keep using default config in case of errors
             }
         }
@@ -86,7 +89,7 @@ function ContextProvider({
             <PrivyProvider
                 appId={PRIVY_APP_ID}
                 config={{
-                    loginMethods: ['wallet', context && 'farcaster'],
+                    loginMethods: ['wallet'],
                     appearance: {
                         theme: 'light',
                         accentColor: '#676FFF',
@@ -94,15 +97,17 @@ function ContextProvider({
                         landingHeader: 'Connect Wallet',
                         loginMessage: 'Select wallet to continue',
                         showWalletLoginFirst: true,
-                        walletList: [
-                            'metamask',
-                            'coinbase_wallet',
-                            'okx_wallet',
-                            'rainbow',
-                            'rabby_wallet',
-                            'phantom',
-                            'wallet_connect',
-                        ],
+                        walletList: context
+                            ? undefined
+                            : [
+                                  'metamask',
+                                  'coinbase_wallet',
+                                  'okx_wallet',
+                                  'rainbow',
+                                  'rabby_wallet',
+                                  'phantom',
+                                  'wallet_connect',
+                              ],
                     },
                     supportedChains: [base, sonic],
                 }}
@@ -111,9 +116,7 @@ function ContextProvider({
                     <WagmiProvider config={localConfig}>
                         <AuthProvider>
                             <ChainProvider>
-                                <ApyDataProvider>
-                                    {children}
-                                </ApyDataProvider>
+                                <ApyDataProvider>{children}</ApyDataProvider>
                             </ChainProvider>
                         </AuthProvider>
                     </WagmiProvider>

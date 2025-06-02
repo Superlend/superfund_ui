@@ -1,7 +1,7 @@
 // components/ConnectWalletButton.tsx
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from './ui/button'
 import useIsClient from '@/hooks/useIsClient'
@@ -14,28 +14,28 @@ import { useAnalytics } from '@/context/amplitude-analytics-provider'
 // Create a wrapper component to conditionally use the useUserBalance hook
 function PortfolioChecker({
     walletAddress,
-    onPortfolioCheck
+    onPortfolioCheck,
 }: {
-    walletAddress: `0x${string}`,
+    walletAddress: `0x${string}`
     onPortfolioCheck: (value: string) => void
 }) {
-    const { userMaxWithdrawAmount, isLoading } = useUserBalance(walletAddress);
+    const { userMaxWithdrawAmount, isLoading } = useUserBalance(walletAddress)
 
     useEffect(() => {
         if (!isLoading && userMaxWithdrawAmount) {
             try {
-                const portfolioValue = parseFloat(userMaxWithdrawAmount);
+                const portfolioValue = parseFloat(userMaxWithdrawAmount)
 
                 // Check if portfolio is greater than $1000K ($1M)
                 if (!isNaN(portfolioValue) && portfolioValue > 1000)
-                    onPortfolioCheck(userMaxWithdrawAmount);
+                    onPortfolioCheck(userMaxWithdrawAmount)
             } catch (error) {
-                console.error('Error parsing portfolio value:', error);
+                console.error('Error parsing portfolio value:', error)
             }
         }
-    }, [isLoading, userMaxWithdrawAmount, onPortfolioCheck]);
+    }, [isLoading, userMaxWithdrawAmount, onPortfolioCheck])
 
-    return null; // This is a non-visual component
+    return null // This is a non-visual component
 }
 
 export default function ConnectWalletButton() {
@@ -46,15 +46,17 @@ export default function ConnectWalletButton() {
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
     // const [showSonicDialog, setShowSonicDialog] = useState(false)
     // const [portfolioValue, setPortfolioValue] = useState('0')
+
     const disableLogin = !ready || (ready && authenticated)
     const disableLogout = !ready || (ready && !authenticated)
     const isDisabled = walletAddress ? disableLogout : disableLogin
-    const displayText =
-        isConnectingWallet
+    const displayText = useMemo(() => {
+        return isConnectingWallet
             ? 'Connecting...'
             : walletAddress
-                ? `${walletAddress?.slice(0, 5)}...${walletAddress?.slice(-5)}`
-                : 'Connect Wallet'
+              ? `${walletAddress?.slice(0, 5)}...${walletAddress?.slice(-5)}`
+              : 'Connect Wallet'
+    }, [isConnectingWallet, walletAddress])
 
     // Handle showing dialog when portfolio value is set
     // useEffect(() => {
@@ -67,7 +69,7 @@ export default function ConnectWalletButton() {
     useEffect(() => {
         if (walletAddress) {
             logEvent('connected_wallet', {
-                walletAddress: walletAddress
+                walletAddress: walletAddress,
             })
         }
     }, [walletAddress])
