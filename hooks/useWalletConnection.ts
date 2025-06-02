@@ -20,10 +20,9 @@ export const useWalletConnection = () => {
     const activeWallet = isWalletConnected
         ? wallets.find((wallet) => wallet.isConnected)
         : undefined
-    const walletAddress = authenticated
-        ? (activeWallet?.address as `0x${string}`) ||
-          (user?.wallet?.address as `0x${string}`)
-        : "undefined" as `0x${string}`
+    const walletAddress =
+        (activeWallet?.address as `0x${string}`) ||
+        (user?.wallet?.address as `0x${string}`)
 
     // Set the latest connected wallet as active
     useEffect(() => {
@@ -43,7 +42,7 @@ export const useWalletConnection = () => {
     const wallet = wallets.find(
         (wallet: any) => wallet.address === walletAddress
     )
-    
+
     useEffect(() => {
         const load = async () => {
             const isMiniApp = await FrameSDK.isInMiniApp()
