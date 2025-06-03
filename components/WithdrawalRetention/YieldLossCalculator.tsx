@@ -174,11 +174,12 @@ export default function YieldLossCalculator({
             {/* Summary */}
             <div className="bg-blue-50 border border-blue-200 rounded-4 p-3">
                 <BodyText level="body3" weight="normal" className="text-blue-800">
-                    <span className="font-medium">Summary:</span> Early withdrawal will cost you{' '}
+                    {/* <span className="font-medium">Summary:</span> Early withdrawal will cost you{' '}
                     <span className="font-medium text-red-600">
                         {formatCurrency(yieldData.totalYieldLoss)}
                     </span>{' '}
-                    in yield penalties. Waiting {Math.max(0, smearingPeriodDays - currentDayInPeriod)} more days could earn you an additional{' '}
+                    in yield penalties.  */}
+                    Waiting {Math.max(0, smearingPeriodDays - currentDayInPeriod)} more days could earn you an additional{' '}
                     <span className="font-medium text-green-600">
                         {formatCurrency(yieldData.projectedYieldIfWait)}
                     </span>.
