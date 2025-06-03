@@ -56,6 +56,7 @@ import { checkUserPointsClaimStatus } from '@/app/actions/points'
 import toast from 'react-hot-toast'
 import FirstDepositToast from '@/components/toasts/FirstDepositToast'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
+import WithdrawalAlertFlow from '../WithdrawalRetention/WithdrawalAlertFlow'
 
 export default function SuperVaultTxDialog({
     disabled,
@@ -97,20 +98,36 @@ export default function SuperVaultTxDialog({
     const [hasEverSeenFirstDepositToast, setHasEverSeenFirstDepositToast] = useState(false)
     const { logEvent } = useAnalytics()
 
+    // Withdrawal retention flow state
+    const [hasConsentedToWithdrawal, setHasConsentedToWithdrawal] = useState(false)
+    const [showWithdrawalRetention, setShowWithdrawalRetention] = useState(false)
+
     useEffect(() => {
         if (open) {
             try {
                 const hasEverSubscribed = localStorage.getItem('hasSubscribedToNewsletter') === 'true'
                 setHasSubscribed(hasEverSubscribed)
-                
+
                 // Check if user has ever seen the first deposit toast
                 const hasSeenToast = localStorage.getItem('hasSeenFirstDepositToast') === 'true'
                 setHasEverSeenFirstDepositToast(hasSeenToast)
+
+                // Show withdrawal retention flow for withdrawals
+                if (!isDepositPositionType && Number(amount) > 0) {
+                    setShowWithdrawalRetention(true)
+                } else {
+                    setShowWithdrawalRetention(false)
+                    setHasConsentedToWithdrawal(false)
+                }
             } catch (error) {
                 console.warn('Failed to read subscription status from localStorage:', error)
             }
+        } else {
+            // Reset withdrawal retention state when dialog closes
+            setShowWithdrawalRetention(false)
+            setHasConsentedToWithdrawal(false)
         }
-    }, [open])
+    }, [open, isDepositPositionType, amount])
 
     useEffect(() => {
         if (open && isDepositPositionType && userMaxWithdrawAmount !== undefined) {
@@ -142,9 +159,9 @@ export default function SuperVaultTxDialog({
                 ), {
                     position: 'bottom-right',
                 })
-                
+
                 setHasShownFirstDepositToast(true)
-                
+
                 try {
                     localStorage.setItem('hasSeenFirstDepositToast', 'true')
                     setHasEverSeenFirstDepositToast(true)
@@ -226,6 +243,9 @@ export default function SuperVaultTxDialog({
             isConfirmed: false,
             errorMessage: '',
         }))
+        // Reset withdrawal retention state
+        setHasConsentedToWithdrawal(false)
+        setShowWithdrawalRetention(false)
     }
 
     function handleOpenChange(open: boolean) {
@@ -294,6 +314,9 @@ export default function SuperVaultTxDialog({
     const isTxInSuccess = isDepositTxInSuccess || isWithdrawTxInSuccess
     const isTxFailed = false
 
+    const hasDepositTxStarted = depositTx.status === 'deposit'
+    const hasWithdrawTxStarted = withdrawTx.status === 'view'
+
     const depositTxSpinnerColor = depositTx.isPending
         ? 'text-secondary-500'
         : 'text-primary'
@@ -303,11 +326,11 @@ export default function SuperVaultTxDialog({
 
     const canDisplayExplorerLinkWhileLoading = isDepositPositionType
         ? depositTx.hash.length > 0 &&
-          (depositTx.isConfirming || depositTx.isPending)
+        (depositTx.isConfirming || depositTx.isPending)
         : withdrawTx.hash.length > 0 &&
-          (withdrawTx.isConfirming || withdrawTx.isPending)
+        (withdrawTx.isConfirming || withdrawTx.isPending)
 
-    const disableActionButton = disabled
+    const disableActionButton = disabled || (!isDepositPositionType && showWithdrawalRetention && !hasConsentedToWithdrawal)
 
     // SUB_COMPONENT: Trigger button to open the dialog
     const triggerButton = (
@@ -384,18 +407,18 @@ export default function SuperVaultTxDialog({
                 deposit: true,
                 withdraw: true,
             }) && (
-                // <DialogTitle asChild>
-                <HeadingText
-                    level="h4"
-                    weight="medium"
-                    className="text-gray-800 text-center capitalize"
-                >
-                    {isDepositPositionType
-                        ? `${isDepositTxInSuccess ? 'Deposit' : 'Review Deposit'}`
-                        : `${isWithdrawTxInSuccess ? 'Withdraw' : 'Review Withdraw'}`}
-                </HeadingText>
-                // </DialogTitle>
-            )}
+                    // <DialogTitle asChild>
+                    <HeadingText
+                        level="h4"
+                        weight="medium"
+                        className="text-gray-800 text-center capitalize"
+                    >
+                        {isDepositPositionType
+                            ? `${isDepositTxInSuccess ? 'Deposit' : 'Review Deposit'}`
+                            : `${isWithdrawTxInSuccess ? 'Withdraw' : 'Review Withdraw'}`}
+                    </HeadingText>
+                    // </DialogTitle>
+                )}
             {/* Confirmation details UI */}
             {/* {isShowBlock({
                 deposit: true,
@@ -477,65 +500,65 @@ export default function SuperVaultTxDialog({
                     deposit: true,
                     withdraw: true,
                 }) && (
-                    <div className="flex items-center gap-4 px-6 py-2 bg-gray-200 lg:bg-white rounded-5 w-full">
-                        <ImageWithBadge
-                            mainImg={assetDetails?.asset?.token?.logo || ''}
-                            badgeImg={
-                                chainDetails[
-                                    selectedChain as keyof typeof chainDetails
-                                ]?.logo
-                            }
-                            mainImgAlt={assetDetails?.asset?.token?.symbol}
-                            badgeImgAlt={
-                                chainDetails[
-                                    selectedChain as keyof typeof chainDetails
-                                ]?.name
-                            }
-                            mainImgWidth={'32'}
-                            mainImgHeight={'32'}
-                            badgeImgWidth={'12'}
-                            badgeImgHeight={'12'}
-                            badgeCustomClass={'bottom-[-2px] right-[1px]'}
-                        />
-                        <div className="flex flex-col items-start gap-0 w-full">
-                            <HeadingText
-                                level="h3"
-                                weight="normal"
-                                className="text-gray-800 flex items-center gap-1"
-                            >
-                                {Number(amount).toFixed(
-                                    decimalPlacesCount(amount)
-                                )}
-                                <span
-                                    className="inline-block truncate max-w-[150px]"
-                                    title={assetDetails?.asset?.token?.symbol}
+                        <div className="flex items-center gap-4 px-6 py-2 bg-gray-200 lg:bg-white rounded-5 w-full">
+                            <ImageWithBadge
+                                mainImg={assetDetails?.asset?.token?.logo || ''}
+                                badgeImg={
+                                    chainDetails[
+                                        selectedChain as keyof typeof chainDetails
+                                    ]?.logo
+                                }
+                                mainImgAlt={assetDetails?.asset?.token?.symbol}
+                                badgeImgAlt={
+                                    chainDetails[
+                                        selectedChain as keyof typeof chainDetails
+                                    ]?.name
+                                }
+                                mainImgWidth={'32'}
+                                mainImgHeight={'32'}
+                                badgeImgWidth={'12'}
+                                badgeImgHeight={'12'}
+                                badgeCustomClass={'bottom-[-2px] right-[1px]'}
+                            />
+                            <div className="flex flex-col items-start gap-0 w-full">
+                                <HeadingText
+                                    level="h3"
+                                    weight="normal"
+                                    className="text-gray-800 flex items-center gap-1"
                                 >
-                                    {assetDetails?.asset?.token?.symbol}
-                                </span>
-                            </HeadingText>
-                            <div className="flex items-center justify-start gap-1.5">
-                                <BodyText
-                                    level="body2"
-                                    weight="medium"
-                                    className="text-gray-600"
-                                >
-                                    {handleInputUsdAmount(
-                                        inputUsdAmount.toString()
+                                    {Number(amount).toFixed(
+                                        decimalPlacesCount(amount)
                                     )}
-                                </BodyText>
-                                <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
-                                <BodyText
-                                    level="body2"
-                                    weight="medium"
-                                    className="text-gray-600 flex items-center gap-1"
-                                >
-                                    {
-                                        chainDetails[
-                                            selectedChain as keyof typeof chainDetails
-                                        ]?.name
-                                    }
-                                </BodyText>
-                                {/* <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
+                                    <span
+                                        className="inline-block truncate max-w-[150px]"
+                                        title={assetDetails?.asset?.token?.symbol}
+                                    >
+                                        {assetDetails?.asset?.token?.symbol}
+                                    </span>
+                                </HeadingText>
+                                <div className="flex items-center justify-start gap-1.5">
+                                    <BodyText
+                                        level="body2"
+                                        weight="medium"
+                                        className="text-gray-600"
+                                    >
+                                        {handleInputUsdAmount(
+                                            inputUsdAmount.toString()
+                                        )}
+                                    </BodyText>
+                                    <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
+                                    <BodyText
+                                        level="body2"
+                                        weight="medium"
+                                        className="text-gray-600 flex items-center gap-1"
+                                    >
+                                        {
+                                            chainDetails[
+                                                selectedChain as keyof typeof chainDetails
+                                            ]?.name
+                                        }
+                                    </BodyText>
+                                    {/* <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
                                     <BodyText
                                         level="body3"
                                         weight="medium"
@@ -543,16 +566,16 @@ export default function SuperVaultTxDialog({
                                     >
                                         {PlatformTypeMap[assetDetails?.protocol_type as keyof typeof PlatformTypeMap]}
                                     </BodyText> */}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
                 {/* Block 2 */}
-                <div className="flex flex-col items-center justify-between px-6 bg-gray-200 lg:bg-white rounded-5 divide-y divide-gray-300">
-                    {isShowBlock({
-                        deposit: true,
-                        withdraw: false,
-                    }) && (
+                {isShowBlock({
+                    deposit: true,
+                    withdraw: false,
+                }) &&
+                    (<div className="flex flex-col items-center justify-between px-6 bg-gray-200 lg:bg-white rounded-5 divide-y divide-gray-300">
                         <div
                             className={`flex items-center justify-between w-full py-4`}
                         >
@@ -572,11 +595,6 @@ export default function SuperVaultTxDialog({
                                 %
                             </Badge>
                         </div>
-                    )}
-                    {isShowBlock({
-                        deposit: true,
-                        withdraw: false,
-                    }) && (
                         <div
                             className={`flex items-center justify-between gap-1 w-full py-4`}
                         >
@@ -600,67 +618,29 @@ export default function SuperVaultTxDialog({
                                 {assetDetails?.asset?.token?.symbol}
                             </BodyText>
                         </div>
-                    )}
-                    {/* {isShowBlock({
-                        deposit: false,
-                        withdraw: false,
-                    }) && (
-                            <div className="flex items-center justify-between w-full py-[16px]">
-                                <BodyText
-                                    level="body2"
-                                    weight="normal"
-                                    className="text-gray-600"
-                                >
-                                    View on explorer
-                                </BodyText>
-                                <div className="flex items-center gap-[4px]">
-                                    <BodyText
-                                        level="body2"
-                                        weight="medium"
-                                        className="text-gray-800 flex items-center gap-[4px]"
-                                    >
-                                        <a
-                                            href={getExplorerLink(
-                                                isDepositPositionType(positionType)
-                                                    ? depositTx.hash
-                                                    : withdrawTx.hash,
-                                                assetDetails?.chain_id
-                                            )}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="text-secondary-500"
-                                        >
-                                            {getTruncatedTxHash(
-                                                isDepositPositionType(positionType)
-                                                    ? depositTx.hash
-                                                    : withdrawTx.hash
-                                            )}
-                                        </a>
-                                        <ArrowUpRightIcon
-                                            width={16}
-                                            height={16}
-                                            className="stroke-secondary-500"
-                                        />
-                                    </BodyText>
-                                </div>
-                            </div>
-                        )} */}
-                </div>
-                {/* Block 3 - Deposit and withdraw loading state */}
-                {isShowBlock({
-                    deposit:
-                        (depositTx.status === 'approve' &&
-                            (isDepositTxInProgress ||
-                                (!isDepositTxInProgress &&
-                                    depositTx.isConfirmed))) ||
-                        depositTx.status === 'deposit' ||
-                        depositTx.status === 'view',
-                    withdraw: false,
-                }) && (
+                    </div>)}
+            </div>
+        </>
+    )
+
+    // SUB_COMPONENT: Transaction progress and status sections
+    const transactionStatusContent = (isTxInProgress || hasDepositTxStarted || hasWithdrawTxStarted) ? (
+        <div className="flex flex-col gap-[12px] pt-2">
+            {/* Block 3 - Deposit and withdraw loading state */}
+            {isShowBlock({
+                deposit:
+                    (depositTx.status === 'approve' &&
+                        (isDepositTxInProgress ||
+                            (!isDepositTxInProgress &&
+                                depositTx.isConfirmed))) ||
+                    depositTx.status === 'deposit' ||
+                    depositTx.status === 'view',
+                withdraw: false,
+            }) && (
                     <div className="py-1">
                         {isDepositTxInProgress &&
                             depositTx.status === 'approve' && (
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -685,8 +665,8 @@ export default function SuperVaultTxDialog({
                                                 href={getExplorerLink(
                                                     depositTx.hash,
                                                     assetDetails?.chain_id ||
-                                                        assetDetails?.platform
-                                                            ?.chain_id
+                                                    assetDetails?.platform
+                                                        ?.chain_id
                                                 )}
                                             >
                                                 <BodyText
@@ -703,62 +683,64 @@ export default function SuperVaultTxDialog({
                         {((!isDepositTxInProgress && depositTx.isConfirmed) ||
                             depositTx.status === 'deposit' ||
                             depositTx.status === 'view') && (
-                            <motion.div 
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3, ease: 'easeOut' }}
-                                className="flex items-center justify-between gap-2"
-                            >
-                                <div className="flex items-center justify-start gap-2">
-                                    <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
-                                        <Check
-                                            className="w-5 h-5 stroke-[#013220]/75"
-                                            strokeWidth={1.5}
-                                        />
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                                    className="flex items-center justify-between gap-2"
+                                >
+                                    <div className="flex items-center justify-start gap-2">
+                                        <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
+                                            <Check
+                                                className="w-5 h-5 stroke-[#013220]/75"
+                                                strokeWidth={1.5}
+                                            />
+                                        </div>
+                                        <BodyText
+                                            level="body2"
+                                            weight="medium"
+                                            className="text-gray-800"
+                                        >
+                                            Approval successful
+                                        </BodyText>
                                     </div>
-                                    <BodyText
-                                        level="body2"
-                                        weight="medium"
-                                        className="text-gray-800"
-                                    >
-                                        Approval successful
-                                    </BodyText>
-                                </div>
-                                {depositTx.hash &&
-                                    depositTx.status === 'approve' && (
-                                        <ExternalLink
-                                            href={getExplorerLink(
-                                                depositTx.hash,
-                                                assetDetails?.chain_id ||
+                                    {depositTx.hash &&
+                                        depositTx.status === 'approve' && (
+                                            <ExternalLink
+                                                href={getExplorerLink(
+                                                    depositTx.hash,
+                                                    assetDetails?.chain_id ||
                                                     assetDetails?.platform
                                                         ?.chain_id
-                                            )}
-                                        >
-                                            <BodyText
-                                                level="body2"
-                                                weight="normal"
-                                                className="text-inherit"
+                                                )}
                                             >
-                                                View on explorer
-                                            </BodyText>
-                                        </ExternalLink>
-                                    )}
-                            </motion.div>
-                        )}
+                                                <BodyText
+                                                    level="body2"
+                                                    weight="normal"
+                                                    className="text-inherit"
+                                                >
+                                                    View on explorer
+                                                </BodyText>
+                                            </ExternalLink>
+                                        )}
+                                </motion.div>
+                            )}
                     </div>
                 )}
-                {isShowBlock({
-                    deposit:
-                        (depositTx.status === 'deposit' &&
-                            (isDepositTxInProgress ||
-                                (!isDepositTxInProgress &&
-                                    depositTx.isConfirmed))) ||
-                        depositTx.status === 'view',
-                    withdraw: false,
-                }) && (
+
+            {/* Deposit flow continued */}
+            {isShowBlock({
+                deposit:
+                    (depositTx.status === 'deposit' &&
+                        (isDepositTxInProgress ||
+                            (!isDepositTxInProgress &&
+                                depositTx.isConfirmed))) ||
+                    depositTx.status === 'view',
+                withdraw: false,
+            }) && (
                     <div className="py-1">
                         {isDepositTxInProgress && (
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -784,8 +766,8 @@ export default function SuperVaultTxDialog({
                                             href={getExplorerLink(
                                                 depositTx.hash,
                                                 assetDetails?.chain_id ||
-                                                    assetDetails?.platform
-                                                        ?.chain_id
+                                                assetDetails?.platform
+                                                    ?.chain_id
                                             )}
                                         >
                                             <BodyText
@@ -802,85 +784,87 @@ export default function SuperVaultTxDialog({
                         {((!isDepositTxInProgress && depositTx.isConfirmed) ||
                             (depositTx.status === 'view' &&
                                 depositTx.isConfirmed)) && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3, ease: 'easeOut' }}
-                                className={`flex flex-col items-center justify-start gap-3 w-full`}
-                            >
-                                <div
-                                    className={`flex w-full items-center flex-row justify-between gap-2`}
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                                    className={`flex flex-col items-center justify-start gap-3 w-full`}
                                 >
-                                    <div className="flex items-center justify-start gap-2">
-                                        <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
-                                            <Check
-                                                className="w-5 h-5 stroke-[#013220]/75"
-                                                strokeWidth={1.5}
-                                            />
+                                    <div
+                                        className={`flex w-full items-center flex-row justify-between gap-2`}
+                                    >
+                                        <div className="flex items-center justify-start gap-2">
+                                            <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
+                                                <Check
+                                                    className="w-5 h-5 stroke-[#013220]/75"
+                                                    strokeWidth={1.5}
+                                                />
+                                            </div>
+                                            <BodyText
+                                                level="body2"
+                                                weight="medium"
+                                                className="text-gray-800"
+                                            >
+                                                Deposit successful
+                                            </BodyText>
                                         </div>
-                                        <BodyText
-                                            level="body2"
-                                            weight="medium"
-                                            className="text-gray-800"
-                                        >
-                                            Deposit successful
-                                        </BodyText>
-                                    </div>
-                                    {depositTx.hash &&
-                                        (depositTx.isConfirming ||
-                                            depositTx.isConfirmed) && (
-                                            <ExternalLink
-                                                href={getExplorerLink(
-                                                    depositTx.hash,
-                                                    assetDetails?.chain_id ||
+                                        {depositTx.hash &&
+                                            (depositTx.isConfirming ||
+                                                depositTx.isConfirmed) && (
+                                                <ExternalLink
+                                                    href={getExplorerLink(
+                                                        depositTx.hash,
+                                                        assetDetails?.chain_id ||
                                                         assetDetails?.platform
                                                             ?.chain_id
-                                                )}
-                                            >
-                                                <BodyText
-                                                    level="body2"
-                                                    weight="normal"
-                                                    className="text-inherit"
+                                                    )}
                                                 >
-                                                    View on explorer
-                                                </BodyText>
-                                            </ExternalLink>
-                                        )}
-                                </div>
-                                {miniappUser && (
-                                    <div className="w-full flex items-center flex-col justify-start gap-5 my-4 mb-8 ">
-                                        {shareScreenButtons.map(
-                                            (config, index) => (
-                                                <Button
-                                                    key={index}
-                                                    variant="primary"
-                                                    size="lg"
-                                                    className={`rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
-                                                    onClick={config.onClick}
-                                                >
-                                                    <Image
-                                                        src={config.imageSrc}
-                                                        alt={''}
-                                                        width={18}
-                                                        height={18}
-                                                    />
-                                                    {config.buttonText}
-                                                </Button>
-                                            )
-                                        )}
+                                                    <BodyText
+                                                        level="body2"
+                                                        weight="normal"
+                                                        className="text-inherit"
+                                                    >
+                                                        View on explorer
+                                                    </BodyText>
+                                                </ExternalLink>
+                                            )}
                                     </div>
-                                )}
-                            </motion.div>
-                        )}
+                                    {miniappUser && (
+                                        <div className="w-full flex items-center flex-col justify-start gap-5 my-4 mb-8 ">
+                                            {shareScreenButtons.map(
+                                                (config, index) => (
+                                                    <Button
+                                                        key={index}
+                                                        variant="primary"
+                                                        size="lg"
+                                                        className={`rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
+                                                        onClick={config.onClick}
+                                                    >
+                                                        <Image
+                                                            src={config.imageSrc}
+                                                            alt={''}
+                                                            width={18}
+                                                            height={18}
+                                                        />
+                                                        {config.buttonText}
+                                                    </Button>
+                                                )
+                                            )}
+                                        </div>
+                                    )}
+                                </motion.div>
+                            )}
                     </div>
                 )}
-                {isShowBlock({
-                    deposit: false,
-                    withdraw:
-                        (withdrawTx.status === 'view' &&
-                            withdrawTx.isConfirmed) ||
-                        isWithdrawTxInProgress,
-                }) && (
+
+            {/* Withdrawal flow */}
+            {isShowBlock({
+                deposit: false,
+                withdraw:
+                    (withdrawTx.status === 'view' &&
+                        withdrawTx.isConfirmed) ||
+                    isWithdrawTxInProgress,
+            }) && (
                     <div className="py-1">
                         {isWithdrawTxInProgress && (
                             <div className="flex items-center justify-between gap-2">
@@ -904,8 +888,8 @@ export default function SuperVaultTxDialog({
                                             href={getExplorerLink(
                                                 withdrawTx.hash,
                                                 assetDetails?.chain_id ||
-                                                    assetDetails?.platform
-                                                        ?.chain_id
+                                                assetDetails?.platform
+                                                    ?.chain_id
                                             )}
                                         >
                                             <BodyText
@@ -949,9 +933,9 @@ export default function SuperVaultTxDialog({
                                                     href={getExplorerLink(
                                                         withdrawTx.hash,
                                                         assetDetails?.chain_id ||
-                                                            assetDetails
-                                                                ?.platform
-                                                                ?.chain_id
+                                                        assetDetails
+                                                            ?.platform
+                                                            ?.chain_id
                                                     )}
                                                 >
                                                     <BodyText
@@ -993,132 +977,15 @@ export default function SuperVaultTxDialog({
                             )}
                     </div>
                 )}
-                {/* {isShowBlock({
-                    deposit: false,
-                    withdraw:
-                        (withdrawTx.status === 'view' &&
-                            withdrawTx.isConfirmed) ||
-                        isWithdrawTxInProgress,
-                }) && (
-                    <div className="py-1">
-                        {isWithdrawTxInProgress && (
-                            <div className="flex items-center justify-between gap-2">
-                                <div className="flex items-center justify-start gap-2">
-                                    <LoaderCircle className="animate-spin w-8 h-8 text-secondary-500" />
-                                    <BodyText
-                                        level="body2"
-                                        weight="normal"
-                                        className="text-gray-600"
-                                    >
-                                        {withdrawTx.isPending &&
-                                            'Waiting for confirmation...'}
-                                        {withdrawTx.isConfirming &&
-                                            'Withdrawing...'}
-                                    </BodyText>
-                                </div>
-                                {withdrawTx.hash &&
-                                    (withdrawTx.isConfirming ||
-                                        withdrawTx.isConfirmed) && (
-                                        <ExternalLink
-                                            href={getExplorerLink(
-                                                withdrawTx.hash,
-                                                assetDetails?.chain_id ||
-                                                    assetDetails?.platform
-                                                        ?.chain_id
-                                            )}
-                                        >
-                                            <BodyText
-                                                level="body2"
-                                                weight="normal"
-                                                className="text-inherit"
-                                            >
-                                                View on explorer
-                                            </BodyText>
-                                        </ExternalLink>
-                                    )}
-                            </div>
-                        )}
-                        {withdrawTx.status === 'view' &&
-                            withdrawTx.isConfirmed && (
-                                <div
-                                    className={`flex flex-col items-center justify-start gap-3 w-full`}
-                                >
-                                    <div
-                                        className={`flex items-center flex-row justify-between gap-2 w-full`}
-                                    >
-                                        <div className="flex items-center justify-start gap-2">
-                                            <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
-                                                <Check
-                                                    className="w-5 h-5 stroke-[#013220]/75"
-                                                    strokeWidth={1.5}
-                                                />
-                                            </div>
-                                            <BodyText
-                                                level="body2"
-                                                weight="medium"
-                                                className="text-gray-800"
-                                            >
-                                                Withdraw successful
-                                            </BodyText>
-                                        </div>
-                                        {withdrawTx.hash &&
-                                            (withdrawTx.isConfirming ||
-                                                withdrawTx.isConfirmed) && (
-                                                <ExternalLink
-                                                    href={getExplorerLink(
-                                                        withdrawTx.hash,
-                                                        assetDetails?.chain_id ||
-                                                            assetDetails
-                                                                ?.platform
-                                                                ?.chain_id
-                                                    )}
-                                                >
-                                                    <BodyText
-                                                        level="body2"
-                                                        weight="normal"
-                                                        className="text-inherit"
-                                                    >
-                                                        View on explorer
-                                                    </BodyText>
-                                                </ExternalLink>
-                                            )}
-                                    </div>
-                                    {miniappUser && (
-                                        <div className="w-full flex items-center flex-col justify-start gap-5 my-4 mb-8 ">
-                                            {shareScreenButtons.map(
-                                                (config, index) => (
-                                                    <Button
-                                                        key={index}
-                                                        variant="primary"
-                                                        size="lg"
-                                                        className={`rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]`}
-                                                        onClick={config.onClick}
-                                                    >
-                                                        <Image
-                                                            src={
-                                                                config.imageSrc
-                                                            }
-                                                            alt={''}
-                                                            width={18}
-                                                            height={18}
-                                                        />
-                                                        {config.buttonText}
-                                                    </Button>
-                                                )
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                    </div>
-                )} */}
-                {isShowBlock({
-                    deposit:
-                        depositTx.status === 'view' &&
-                        depositTx.isConfirmed &&
-                        !!depositTx.hash,
-                    withdraw: false,
-                }) && !hasSubscribed && (
+
+            {/* Email subscription for successful deposits */}
+            {isShowBlock({
+                deposit:
+                    depositTx.status === 'view' &&
+                    depositTx.isConfirmed &&
+                    !!depositTx.hash,
+                withdraw: false,
+            }) && !hasSubscribed && (
                     <div className="flex flex-col items-center gap-3 my-1 w-full">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -1133,22 +1000,176 @@ export default function SuperVaultTxDialog({
                         </motion.div>
                     </div>
                 )}
-                {/* Block 4 */}
-                {miniappUser &&
-                ((withdrawTx.status === 'view' && withdrawTx.isConfirmed) ||
-                    (depositTx.status === 'view' &&
-                        depositTx.isConfirmed)) ? null : (
-                    <ActionButton
-                        disabled={false}
-                        handleCloseModal={handleOpenChange}
-                        asset={assetDetails}
-                        amount={amount}
-                        setActionType={setActionType}
-                        actionType={positionType}
-                        walletAddress={walletAddress as `0x${string}`}
-                    />
+        </div>
+    ) : null;
+
+    // SUB_COMPONENT: Scrollable withdrawal retention content
+    const withdrawalRetentionContent = (
+        <>
+            {!isDepositPositionType && showWithdrawalRetention && (
+                <WithdrawalAlertFlow
+                    withdrawalAmount={Number(amount)}
+                    currentApy={assetDetails?.asset?.effective_apy || 0}
+                    tokenSymbol={assetDetails?.asset?.token?.symbol || 'USDC'}
+                    onConsentChange={setHasConsentedToWithdrawal}
+                    isVisible={showWithdrawalRetention}
+                    smearingPeriodDays={30} // This could be made dynamic based on vault settings
+                    currentDayInPeriod={15} // This should come from actual vault data
+                />
+            )}
+        </>
+    )
+
+    // SUB_COMPONENT: Action button section
+    const actionButtonContent = (
+        <>
+            {((withdrawTx.status === 'view' && withdrawTx.isConfirmed) ||
+                (depositTx.status === 'view' &&
+                    depositTx.isConfirmed)) ? null : (
+                <ActionButton
+                    disabled={disableActionButton}
+                    handleCloseModal={handleOpenChange}
+                    asset={assetDetails}
+                    amount={amount}
+                    setActionType={setActionType}
+                    actionType={positionType}
+                    walletAddress={walletAddress as `0x${string}`}
+                />
+            )}
+        </>
+    )
+
+    // Desktop UI
+    if (isDesktop) {
+        return (
+            <>
+                <Dialog open={open}>
+                    <DialogTrigger asChild>{triggerButton}</DialogTrigger>
+                    <DialogContent
+                        aria-describedby={undefined}
+                        className="pt-[25px] max-w-[450px] max-h-[90vh] md:max-h-[500px] flex flex-col"
+                        showCloseButton={false}
+                    >
+                        {/* X Icon to close the dialog */}
+                        {closeContentButton}
+
+                        {/* Fixed Header */}
+                        <DialogHeader className="flex-shrink-0">{contentHeader}</DialogHeader>
+
+                        {/* Fixed Top - Transaction Details */}
+                        <div className="flex-shrink-0">
+                            {contentBody}
+                            {transactionStatusContent}
+                        </div>
+
+                        {/* Scrollable Middle - Withdrawal Retention Flow */}
+                        {!isDepositPositionType && showWithdrawalRetention ? (
+                            <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll border-y border-gray-100 pr-2 py-2">
+                                {withdrawalRetentionContent}
+                            </div>
+                        ) : null}
+
+                        {/* Fixed Bottom - Action Button */}
+                        <div className={`flex-shrink-0`}>
+                            {actionButtonContent}
+                        </div>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Add email reminder dialog */}
+                {showEmailReminder && (
+                    <Dialog
+                        open={showEmailReminder}
+                        onOpenChange={setShowEmailReminder}
+                    >
+                        <DialogContent className="sm:max-w-md">
+                            <DialogHeader>
+                                <HeadingText
+                                    level="h4"
+                                    weight="medium"
+                                    className="text-gray-800 text-center"
+                                >
+                                    Don&apos;t miss out!
+                                </HeadingText>
+                            </DialogHeader>
+                            <div className="flex flex-col gap-4">
+                                <BodyText
+                                    level="body2"
+                                    weight="normal"
+                                    className="text-gray-800"
+                                >
+                                    You&apos;ve entered an email but haven&apos;t
+                                    submitted it. Would you like to submit now to
+                                    stay updated on SuperFund?
+                                </BodyText>
+                                <div className="flex justify-end gap-2">
+                                    <Button
+                                        variant="outline"
+                                        onClick={handleFinalClose}
+                                    >
+                                        Close anyway
+                                    </Button>
+                                    <Button
+                                        variant="primary"
+                                        onClick={() => {
+                                            setShowEmailReminder(false)
+                                            // Find and click the submit button in the email form
+                                            setTimeout(() => {
+                                                const submitButton =
+                                                    document.querySelector(
+                                                        '.subscribe-email-form button[type="submit"]'
+                                                    )
+                                                if (
+                                                    submitButton instanceof
+                                                    HTMLElement
+                                                ) {
+                                                    submitButton.click()
+                                                }
+                                            }, 100)
+                                        }}
+                                    >
+                                        Submit email
+                                    </Button>
+                                </div>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
                 )}
-            </div>
+            </>
+        )
+    }
+
+    // Mobile UI
+    return (
+        <>
+            <Drawer open={open} dismissible={false}>
+                <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
+                <DrawerContent className="w-full p-5 pt-2 dismissible-false max-h-[90vh] flex flex-col">
+                    {/* X Icon to close the drawer */}
+                    {closeContentButton}
+
+                    {/* Fixed Header */}
+                    <DrawerHeader className="flex-shrink-0">{contentHeader}</DrawerHeader>
+
+                    {/* Fixed Top - Transaction Details */}
+                    <div className="flex-shrink-0">
+                        {contentBody}
+                        {transactionStatusContent}
+                    </div>
+
+                    {/* Scrollable Middle - Withdrawal Retention Flow */}
+                    {!isDepositPositionType && showWithdrawalRetention ? (
+                        <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-1 py-2">
+                            {withdrawalRetentionContent}
+                        </div>
+                    ) : null}
+
+                    {/* Fixed Bottom - Action Button */}
+                    <div className={`flex-shrink-0`}>
+                        {actionButtonContent}
+                    </div>
+                </DrawerContent>
+            </Drawer>
 
             {/* Add email reminder dialog */}
             {showEmailReminder && (
@@ -1210,50 +1231,6 @@ export default function SuperVaultTxDialog({
                 </Dialog>
             )}
         </>
-    )
-
-    // Desktop UI
-    if (isDesktop) {
-        return (
-            <Dialog open={open}>
-                <DialogTrigger asChild>{triggerButton}</DialogTrigger>
-                <DialogContent
-                    aria-describedby={undefined}
-                    className="pt-[25px] max-w-[450px]"
-                    showCloseButton={false}
-                >
-                    {/* X Icon to close the dialog */}
-                    {closeContentButton}
-                    {/* Tx in progress - Loading state UI */}
-                    {/* {txInProgressLoadingState} */}
-                    {/* Initial Confirmation UI */}
-                    <DialogHeader>{contentHeader}</DialogHeader>
-
-                    {contentBody}
-                </DialogContent>
-            </Dialog>
-        )
-    }
-
-    // Mobile UI
-    return (
-        <Drawer open={open} dismissible={false}>
-            <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
-            <DrawerContent className="w-full p-5 pt-2 dismissible-false">
-                {/* X Icon to close the drawer */}
-                {closeContentButton}
-                {/* Tx in progress - Loading state UI */}
-                {/* {txInProgressLoadingState} */}
-                <DrawerHeader>{contentHeader}</DrawerHeader>
-                {/* <DrawerFooter>
-                    <Button>Submit</Button>
-                    <DrawerClose>
-                        <Button variant="outline">Cancel</Button>
-                    </DrawerClose>
-                </DrawerFooter> */}
-                {contentBody}
-            </DrawerContent>
-        </Drawer>
     )
 }
 
