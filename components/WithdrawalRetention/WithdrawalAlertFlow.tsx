@@ -78,7 +78,7 @@ export default function WithdrawalAlertFlow({
             />
 
             {/* Yield Loss Calculator */}
-            {showCalculator && (
+            {/* {showCalculator && (
                 <YieldLossCalculator
                     withdrawalAmount={withdrawalAmount}
                     currentApy={currentApy}
@@ -86,11 +86,11 @@ export default function WithdrawalAlertFlow({
                     currentDayInPeriod={currentDayInPeriod}
                     tokenSymbol={tokenSymbol}
                 />
-            )}
+            )} */}
 
             {/* Alternative Actions Suggestion */}
             {/* {hasConsented && ( */}
-                <motion.div
+                {/* <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, ease: 'easeOut', delay: 0.3 }}
@@ -104,7 +104,7 @@ export default function WithdrawalAlertFlow({
                             Set a calendar reminder to withdraw after the smearing period ends for maximum yield retention.
                         </p>
                     </div>
-                </motion.div>
+                </motion.div> */}
             {/* )} */}
 
             {/* Consent Checkbox */}

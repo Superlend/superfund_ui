@@ -4,6 +4,12 @@ import { AlertTriangle, Clock, TrendingDown } from 'lucide-react'
 import { BodyText, HeadingText } from '@/components/ui/typography'
 import { Badge } from '@/components/ui/badge'
 import { motion } from 'framer-motion'
+import { useMemo } from 'react'
+import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
+import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
+import { VAULT_ADDRESS_MAP } from '@/lib/constants'
+import { useChain } from '@/context/chain-context'
+import { useApyData } from '@/context/apy-data-provider'
 
 interface EarlyWithdrawalWarningProps {
     smearingPeriodDays: number
@@ -14,8 +20,22 @@ export default function EarlyWithdrawalWarning({
     smearingPeriodDays,
     currentDayInPeriod,
 }: EarlyWithdrawalWarningProps) {
+    const { selectedChain } = useChain()
+    const { spotApy, isLoading: isLoadingSpotApy, error: errorSpotApy } = useVaultHook()
+    const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
+        vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        chain_id: selectedChain || 0
+    })
+    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
+    
+    const TOTAL_SPOT_APY = useMemo(() => {
+        return Number(spotApy ?? 0) + Number(effectiveApyData?.rewards_apy ?? 0) + Number(BOOST_APY ?? 0)
+    }, [spotApy, effectiveApyData, BOOST_APY])
+    
+    const TOTAL_VAULT_APY = Number(effectiveApyData?.total_apy ?? 0) + Number(BOOST_APY ?? 0)
+    
     const remainingDays = Math.max(0, smearingPeriodDays - currentDayInPeriod)
-    const progressPercentage = (currentDayInPeriod / smearingPeriodDays) * 100
+    const apyProgressPercentage = TOTAL_VAULT_APY > 0 ? Math.min((TOTAL_SPOT_APY / TOTAL_VAULT_APY) * 100, 100) : 0
 
     return (
         <motion.div
@@ -51,22 +71,37 @@ export default function EarlyWithdrawalWarning({
             <div className="space-y-2">
                 <div className="flex items-center justify-between">
                     <BodyText level="body3" weight="medium" className="text-amber-700">
-                        Smearing Period Progress
+                        APY Progress
                     </BodyText>
                     <Badge variant="outline" className="text-amber-700 border-amber-300">
                         {remainingDays} days remaining
                     </Badge>
                 </div>
-                <div className="w-full bg-amber-200 rounded-full h-2">
-                    <div
-                        className="bg-amber-500 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${Math.min(progressPercentage, 100)}%` }}
-                    />
-                </div>
-                <div className="flex items-center justify-between text-xs text-amber-600">
-                    <span>Day {currentDayInPeriod}</span>
-                    <span>Day {smearingPeriodDays}</span>
-                </div>
+                
+                {!isLoadingSpotApy && !isLoadingEffectiveApy && !errorSpotApy && !isErrorEffectiveApy && effectiveApyData ? (
+                    <>
+                        <div className="w-full bg-amber-200 rounded-full h-2">
+                            <div
+                                className="bg-amber-500 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${apyProgressPercentage}%` }}
+                            />
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-amber-600">
+                            <span>Current: {TOTAL_SPOT_APY.toFixed(2)}%</span>
+                            <span>Target: {TOTAL_VAULT_APY.toFixed(2)}%</span>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div className="w-full bg-amber-200 rounded-full h-2">
+                            <div className="bg-amber-300 h-2 rounded-full animate-pulse w-1/2" />
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-amber-600">
+                            <span>Loading...</span>
+                            <span>Loading...</span>
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Key Points */}

@@ -86,7 +86,7 @@ export default function ConsentCheckbox({
                             weight="normal"
                             className="inherit"
                         >
-                            By checking this box, you acknowledge that you have read and understood the yield impact calculation above.
+                            By checking this box, you acknowledge that you have read and understood the yield impact due to our smearing period mechanism.
                         </BodyText>
                     </div>
                 </div>
