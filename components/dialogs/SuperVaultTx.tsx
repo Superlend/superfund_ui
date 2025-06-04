@@ -58,7 +58,7 @@ import toast from 'react-hot-toast'
 import FirstDepositToast from '@/components/toasts/FirstDepositToast'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
 import WithdrawalAlertFlow from '../WithdrawalRetention/WithdrawalAlertFlow'
-import { SuccessEnhancement } from '../PostDepositEngagement'
+import PostDepositEngagementToast from '@/components/toasts/PostDepositEngagementToast'
 
 export default function SuperVaultTxDialog({
     disabled,
@@ -104,8 +104,8 @@ export default function SuperVaultTxDialog({
     const [hasConsentedToWithdrawal, setHasConsentedToWithdrawal] = useState(false)
     const [showWithdrawalRetention, setShowWithdrawalRetention] = useState(false)
 
-    // Post-deposit engagement flow state
-    const [showPostDepositEngagement, setShowPostDepositEngagement] = useState(false)
+    // Post-deposit engagement flow state - now for toast trigger only
+    const [hasTriggeredPostDepositToast, setHasTriggeredPostDepositToast] = useState(false)
 
     useEffect(() => {
         if (open) {
@@ -131,28 +131,43 @@ export default function SuperVaultTxDialog({
             // Reset withdrawal retention state when dialog closes
             setShowWithdrawalRetention(false)
             setHasConsentedToWithdrawal(false)
-            // Reset post-deposit engagement state when dialog closes
-            setShowPostDepositEngagement(false)
+            // Reset post-deposit toast trigger state when dialog closes
+            setHasTriggeredPostDepositToast(false)
         }
     }, [open, isDepositPositionType, amount])
 
-    // Separate useEffect to monitor deposit success state for post-deposit engagement
+    // Separate useEffect to monitor deposit success state for post-deposit toast
     useEffect(() => {
         if (open &&
             isDepositPositionType &&
             depositTx.status === 'view' &&
             depositTx.isConfirmed &&
             depositTx.hash &&
-            Number(amount) > 0) {
-            // Small delay to let success animations complete first
+            Number(amount) > 0 &&
+            !hasTriggeredPostDepositToast) {
+
+            // Delay to let success animations complete and dialog settle
             const timer = setTimeout(() => {
-                setShowPostDepositEngagement(true)
-            }, 500)
+                // Show post-deposit engagement toast
+                toast.custom((t) => (
+                    <PostDepositEngagementToast
+                        depositAmount={Number(amount)}
+                        currentApy={assetDetails?.asset?.effective_apy || 0}
+                        tokenSymbol={assetDetails?.asset?.token?.symbol || 'USDC'}
+                        walletAddress={walletAddress}
+                        onDismiss={() => toast.dismiss(t.id)}
+                    />
+                ), {
+                    position: 'bottom-right',
+                    duration: Infinity, // Keep until manually dismissed
+                })
+
+                setHasTriggeredPostDepositToast(true)
+            }, 2000) // 2 second delay
+
             return () => clearTimeout(timer)
-        } else if (!isDepositPositionType || !open) {
-            setShowPostDepositEngagement(false)
         }
-    }, [open, isDepositPositionType, depositTx.status, depositTx.isConfirmed, depositTx.hash, amount])
+    }, [open, isDepositPositionType, depositTx.status, depositTx.isConfirmed, depositTx.hash, amount, hasTriggeredPostDepositToast, assetDetails, walletAddress])
 
     useEffect(() => {
         if (open && isDepositPositionType && userMaxWithdrawAmount !== undefined) {
@@ -271,8 +286,8 @@ export default function SuperVaultTxDialog({
         // Reset withdrawal retention state
         setHasConsentedToWithdrawal(false)
         setShowWithdrawalRetention(false)
-        // Reset post-deposit engagement state
-        setShowPostDepositEngagement(false)
+        // Reset post-deposit toast trigger state
+        setHasTriggeredPostDepositToast(false)
     }
 
     function handleOpenChange(open: boolean) {
@@ -646,6 +661,27 @@ export default function SuperVaultTxDialog({
                             </BodyText>
                         </div>
                     </div>)}
+                {/* Block 3 */}
+                {/* Email subscription for successful deposits */}
+                {isShowBlock({
+                    deposit:
+                        depositTx.status === 'view' &&
+                        depositTx.isConfirmed &&
+                        !!depositTx.hash,
+                    withdraw: false,
+                }) && !hasSubscribed && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, ease: 'easeOut' }}
+                            className="bg-gray-200/50 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full my-2"
+                        >
+                            <SubscribeWithEmail
+                                onEmailChange={setPendingEmail}
+                                onSubscriptionSuccess={handleSubscriptionSuccess}
+                            />
+                        </motion.div>
+                    )}
             </div>
         </>
     )
@@ -1020,21 +1056,6 @@ export default function SuperVaultTxDialog({
         </>
     )
 
-    // SUB_COMPONENT: Scrollable post-deposit engagement content
-    const postDepositEngagementContent = (
-        <>
-            {isDepositPositionType && showPostDepositEngagement && (
-                <SuccessEnhancement
-                    depositAmount={Number(amount)}
-                    currentApy={assetDetails?.asset?.effective_apy || 0}
-                    tokenSymbol={assetDetails?.asset?.token?.symbol || 'USDC'}
-                    isVisible={showPostDepositEngagement}
-                    walletAddress={walletAddress}
-                />
-            )}
-        </>
-    )
-
     // SUB_COMPONENT: Action button section
     const actionButtonContent = (
         <ActionButton
@@ -1056,7 +1077,7 @@ export default function SuperVaultTxDialog({
                     <DialogTrigger asChild>{triggerButton}</DialogTrigger>
                     <DialogContent
                         aria-describedby={undefined}
-                        className="pt-[25px] max-w-[450px] max-h-[90vh] md:max-h-[500px] flex flex-col"
+                        className="pt-[25px] max-w-[450px] max-h-[90vh] md:max-h-[600px] flex flex-col"
                         showCloseButton={false}
                     >
                         {/* X Icon to close the dialog */}
@@ -1070,26 +1091,18 @@ export default function SuperVaultTxDialog({
                             {contentBody}
                         </div>
 
-                        {/* Scrollable Middle - Withdrawal Retention Flow OR Post-Deposit Engagement */}
+                        {/* Scrollable Middle - Withdrawal Retention Flow OR Success Content */}
                         {!isDepositPositionType && showWithdrawalRetention ? (
                             <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll border-y border-gray-100 pr-2 py-2">
                                 {withdrawalRetentionContent}
                             </div>
-                        ) : isDepositPositionType && showPostDepositEngagement ? (
-                            <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll border-y border-gray-100 pr-2 py-2">
-                                <div className="space-y-4">
-                                    {/* Success-specific content first (sharing, email) */}
-                                    {successSpecificContent}
+                        ) : null}
 
-                                    {/* Post-deposit engagement components */}
-                                    {postDepositEngagementContent}
-                                </div>
-                            </div>
-                        ) : (isTxInSuccess && successSpecificContent) ? (
+                        {/* (isTxInSuccess && successSpecificContent) ? (
                             <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll border-y border-gray-100 pr-2 py-2">
                                 {successSpecificContent}
                             </div>
-                        ) : null}
+                        ) */}
 
                         {/* Fixed Bottom - Action Button */}
                         {transactionStatusContent}
@@ -1183,20 +1196,10 @@ export default function SuperVaultTxDialog({
                         {transactionStatusContent}
                     </div>
 
-                    {/* Scrollable Middle - Withdrawal Retention Flow OR Post-Deposit Engagement */}
+                    {/* Scrollable Middle - Withdrawal Retention Flow OR Success Content */}
                     {!isDepositPositionType && showWithdrawalRetention ? (
                         <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-1 py-2">
                             {withdrawalRetentionContent}
-                        </div>
-                    ) : isDepositPositionType && showPostDepositEngagement ? (
-                        <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-1 py-2">
-                            <div className="space-y-4">
-                                {/* Success-specific content first (sharing, email) */}
-                                {successSpecificContent}
-
-                                {/* Post-deposit engagement components */}
-                                {postDepositEngagementContent}
-                            </div>
                         </div>
                     ) : (isTxInSuccess && successSpecificContent) ? (
                         <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-1 py-2">
