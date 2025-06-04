@@ -38,6 +38,7 @@ import { BigNumber } from 'ethers'
 import useDimensions from '@/hooks/useDimensions'
 import {
     Drawer,
+    DrawerClose,
     DrawerContent,
     DrawerHeader,
     DrawerTrigger,
@@ -1285,7 +1286,7 @@ export default function SuperVaultTxDialog({
         <Drawer open={open} dismissible={false}>
             <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
             <DrawerContent className="w-full p-5 pt-2 dismissible-false">
-                <ScrollArea className="max-h-[550px] overflow-y-auto overflow-x-hidden relative">
+                <ScrollArea className="max-h-[550px] overflow-y-auto overflow-x-hidden relative hide-scrollbar">
                     {/* X Icon to close the drawer */}
                     {closeContentButton}
                     {/* Tx in progress - Loading state UI */}
