@@ -56,6 +56,7 @@ import { checkUserPointsClaimStatus } from '@/app/actions/points'
 import toast from 'react-hot-toast'
 import FirstDepositToast from '@/components/toasts/FirstDepositToast'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
+import { ScrollArea } from '@radix-ui/react-scroll-area'
 
 export default function SuperVaultTxDialog({
     disabled,
@@ -80,8 +81,14 @@ export default function SuperVaultTxDialog({
     setActionType?: (actionType: TPositionType) => void
     userMaxWithdrawAmount?: number
 }) {
-    const { depositTx, setDepositTx, withdrawTx, setWithdrawTx, initialPosition, setInitialPosition } =
-        useTxContext() as TTxContext
+    const {
+        depositTx,
+        setDepositTx,
+        withdrawTx,
+        setWithdrawTx,
+        initialPosition,
+        setInitialPosition,
+    } = useTxContext() as TTxContext
     const { walletAddress, isWalletConnected, handleSwitchChain } =
         useWalletConnection()
     const { selectedChain, chainDetails } = useChain()
@@ -93,27 +100,38 @@ export default function SuperVaultTxDialog({
     const [showEmailReminder, setShowEmailReminder] = useState(false)
     const [hasSubscribed, setHasSubscribed] = useState(false)
     const [isPointsClaimed, setIsPointsClaimed] = useState(false)
-    const [hasShownFirstDepositToast, setHasShownFirstDepositToast] = useState(false)
-    const [hasEverSeenFirstDepositToast, setHasEverSeenFirstDepositToast] = useState(false)
+    const [hasShownFirstDepositToast, setHasShownFirstDepositToast] =
+        useState(false)
+    const [hasEverSeenFirstDepositToast, setHasEverSeenFirstDepositToast] =
+        useState(false)
     const { logEvent } = useAnalytics()
 
     useEffect(() => {
         if (open) {
             try {
-                const hasEverSubscribed = localStorage.getItem('hasSubscribedToNewsletter') === 'true'
+                const hasEverSubscribed =
+                    localStorage.getItem('hasSubscribedToNewsletter') === 'true'
                 setHasSubscribed(hasEverSubscribed)
-                
+
                 // Check if user has ever seen the first deposit toast
-                const hasSeenToast = localStorage.getItem('hasSeenFirstDepositToast') === 'true'
+                const hasSeenToast =
+                    localStorage.getItem('hasSeenFirstDepositToast') === 'true'
                 setHasEverSeenFirstDepositToast(hasSeenToast)
             } catch (error) {
-                console.warn('Failed to read subscription status from localStorage:', error)
+                console.warn(
+                    'Failed to read subscription status from localStorage:',
+                    error
+                )
             }
         }
     }, [open])
 
     useEffect(() => {
-        if (open && isDepositPositionType && userMaxWithdrawAmount !== undefined) {
+        if (
+            open &&
+            isDepositPositionType &&
+            userMaxWithdrawAmount !== undefined
+        ) {
             setInitialPosition(userMaxWithdrawAmount)
             setHasShownFirstDepositToast(false)
         }
@@ -135,34 +153,51 @@ export default function SuperVaultTxDialog({
                 positionType,
             })
             const showFirstDepositToast = () => {
-                toast.custom((t) => (
-                    <FirstDepositToast
-                        onDismiss={() => toast.dismiss(t.id)}
-                    />
-                ), {
-                    position: 'bottom-right',
-                })
-                
+                toast.custom(
+                    (t) => (
+                        <FirstDepositToast
+                            onDismiss={() => toast.dismiss(t.id)}
+                        />
+                    ),
+                    {
+                        position: 'bottom-right',
+                    }
+                )
+
                 setHasShownFirstDepositToast(true)
-                
+
                 try {
                     localStorage.setItem('hasSeenFirstDepositToast', 'true')
                     setHasEverSeenFirstDepositToast(true)
                 } catch (error) {
-                    console.warn('Failed to save first deposit toast status to localStorage:', error)
+                    console.warn(
+                        'Failed to save first deposit toast status to localStorage:',
+                        error
+                    )
                 }
             }
 
             const timeoutId = setTimeout(showFirstDepositToast, 1000)
             return () => clearTimeout(timeoutId)
         }
-    }, [hasShownFirstDepositToast, hasEverSeenFirstDepositToast, isDepositPositionType, depositTx.status, depositTx.isConfirmed, depositTx.hash, initialPosition])
+    }, [
+        hasShownFirstDepositToast,
+        hasEverSeenFirstDepositToast,
+        isDepositPositionType,
+        depositTx.status,
+        depositTx.isConfirmed,
+        depositTx.hash,
+        initialPosition,
+    ])
 
     const handleSubscriptionSuccess = () => {
         try {
             localStorage.setItem('hasSubscribedToNewsletter', 'true')
         } catch (error) {
-            console.warn('Failed to save subscription status to localStorage:', error)
+            console.warn(
+                'Failed to save subscription status to localStorage:',
+                error
+            )
             setHasSubscribed(true)
         }
     }
@@ -185,7 +220,10 @@ export default function SuperVaultTxDialog({
     useEffect(() => {
         const checkPointsStatus = async () => {
             if (walletAddress) {
-                const claimed = await checkUserPointsClaimStatus(walletAddress, walletAddress)
+                const claimed = await checkUserPointsClaimStatus(
+                    walletAddress,
+                    walletAddress
+                )
                 setIsPointsClaimed(claimed)
             }
         }
@@ -333,7 +371,7 @@ export default function SuperVaultTxDialog({
         <Button
             variant="ghost"
             onClick={() => handleOpenChange(false)}
-            className="h-6 w-6 flex items-center justify-center absolute right-6 top-[1.6rem] rounded-full opacity-70 bg-white ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground p-0"
+            className="h-6 w-6 flex items-center justify-center absolute right-1.5 top-[1rem] rounded-full opacity-70 bg-white ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground p-0"
         >
             <X strokeWidth={2.5} className="h-4 w-4 text-black shrink-0" />
             <span className="sr-only">Close</span>
@@ -343,11 +381,12 @@ export default function SuperVaultTxDialog({
     // SHARE SCREEN BUTTONS FOR MINI APP:
     const shareScreenButtons = [
         {
-            buttonText: isPointsClaimed ? 'Share on Warpcast' : 'Share and Claim',
+            buttonText: isPointsClaimed
+                ? 'Share on Warpcast'
+                : 'Share for a surprise',
             imageSrc: '/icons/share.svg',
             onClick: () => {
-                // I just deposited $10,
-                const text = `I just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} into Superfund. I am earning up to ${assetDetails?.asset?.effective_apy.toFixed(2)}% APY on my USDC deposit with the best adjusted risk.`
+                const text = `Just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} ${positionType === 'withdraw' ? 'from' : 'into'} Superfund by @superlend 📈 Earning ${assetDetails?.asset?.effective_apy.toFixed(2)}% APY on USDC with intelligent, risk-adjusted vaults. Let your capital work smarter.`
                 sdk.actions.composeCast({
                     text,
                     embeds: [
@@ -471,7 +510,7 @@ export default function SuperVaultTxDialog({
     // SUB_COMPONENT: Content body UI
     const contentBody = (
         <>
-            <div className="flex flex-col gap-[12px]">
+            <div className="flex flex-col gap-[12px] justify-start">
                 {/* Block 1 */}
                 {isShowBlock({
                     deposit: true,
@@ -660,10 +699,13 @@ export default function SuperVaultTxDialog({
                     <div className="py-1">
                         {isDepositTxInProgress &&
                             depositTx.status === 'approve' && (
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                                    transition={{
+                                        duration: 0.3,
+                                        ease: 'easeOut',
+                                    }}
                                     className="flex items-center justify-between gap-2"
                                 >
                                     <div className="flex items-center justify-start gap-2">
@@ -703,7 +745,7 @@ export default function SuperVaultTxDialog({
                         {((!isDepositTxInProgress && depositTx.isConfirmed) ||
                             depositTx.status === 'deposit' ||
                             depositTx.status === 'view') && (
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -758,7 +800,7 @@ export default function SuperVaultTxDialog({
                 }) && (
                     <div className="py-1">
                         {isDepositTxInProgress && (
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -1118,21 +1160,24 @@ export default function SuperVaultTxDialog({
                         depositTx.isConfirmed &&
                         !!depositTx.hash,
                     withdraw: false,
-                }) && !hasSubscribed && (
-                    <div className="flex flex-col items-center gap-3 my-1 w-full">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3, ease: 'easeOut' }}
-                            className="bg-gray-200/50 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full"
-                        >
-                            <SubscribeWithEmail
-                                onEmailChange={setPendingEmail}
-                                onSubscriptionSuccess={handleSubscriptionSuccess}
-                            />
-                        </motion.div>
-                    </div>
-                )}
+                }) &&
+                    !hasSubscribed && (
+                        <div className="flex flex-col items-center gap-3 my-1 w-full">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, ease: 'easeOut' }}
+                                className="bg-gray-200/50 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full"
+                            >
+                                <SubscribeWithEmail
+                                    onEmailChange={setPendingEmail}
+                                    onSubscriptionSuccess={
+                                        handleSubscriptionSuccess
+                                    }
+                                />
+                            </motion.div>
+                        </div>
+                    )}
                 {/* Block 4 */}
                 {miniappUser &&
                 ((withdrawTx.status === 'view' && withdrawTx.isConfirmed) ||
@@ -1240,18 +1285,22 @@ export default function SuperVaultTxDialog({
         <Drawer open={open} dismissible={false}>
             <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
             <DrawerContent className="w-full p-5 pt-2 dismissible-false">
-                {/* X Icon to close the drawer */}
-                {closeContentButton}
-                {/* Tx in progress - Loading state UI */}
-                {/* {txInProgressLoadingState} */}
-                <DrawerHeader>{contentHeader}</DrawerHeader>
-                {/* <DrawerFooter>
+                <ScrollArea className="max-h-[550px] overflow-y-auto overflow-x-hidden relative">
+                    {/* X Icon to close the drawer */}
+                    {closeContentButton}
+                    {/* Tx in progress - Loading state UI */}
+                    {/* {txInProgressLoadingState} */}
+                    <DrawerHeader>{contentHeader}</DrawerHeader>
+                    {/* 
+                    <DrawerFooter>
                     <Button>Submit</Button>
                     <DrawerClose>
-                        <Button variant="outline">Cancel</Button>
+                    <Button variant="outline">Cancel</Button>
                     </DrawerClose>
-                </DrawerFooter> */}
-                {contentBody}
+                    </DrawerFooter>
+                    */}
+                    {contentBody}
+                </ScrollArea>
             </DrawerContent>
         </Drawer>
     )
