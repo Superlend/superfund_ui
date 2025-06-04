@@ -398,7 +398,8 @@ export default function SuperVaultTxDialog({
                     : 'Share for a surprise',
             imageSrc: '/icons/share.svg',
             onClick: () => {
-                const text = `Just deposited into Superfund by @superlend 📈 Earning ${assetDetails?.asset?.effective_apy.toFixed(2)}% APY on USDC with intelligent, risk-adjusted vaults. Let your capital work smarter.`
+                const text = `Just deposited into Superfund by @superlend 📈\nEarning ${assetDetails?.asset?.effective_apy.toFixed(2)}% APY on USDC with intelligent, risk-adjusted vaults.\nLet your capital work smarter.`
+
                 sdk.actions.composeCast({
                     text,
                     embeds:
