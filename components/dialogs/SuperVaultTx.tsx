@@ -8,7 +8,10 @@ import {
     Check,
     InfoIcon,
     LoaderCircle,
+    Trophy,
+    TrendingUp,
     X,
+    Zap,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import {
@@ -137,37 +140,35 @@ export default function SuperVaultTxDialog({
     }, [open, isDepositPositionType, amount])
 
     // Separate useEffect to monitor deposit success state for post-deposit toast
-    useEffect(() => {
-        if (open &&
-            isDepositPositionType &&
-            depositTx.status === 'view' &&
-            depositTx.isConfirmed &&
-            depositTx.hash &&
-            Number(amount) > 0 &&
-            !hasTriggeredPostDepositToast) {
+    // useEffect(() => {
+    //     if (open &&
+    //         isDepositPositionType &&
+    //         depositTx.status === 'view' &&
+    //         depositTx.isConfirmed &&
+    //         depositTx.hash &&
+    //         Number(amount) > 0 &&
+    //         !hasTriggeredPostDepositToast) {
 
-            // Delay to let success animations complete and dialog settle
-            const timer = setTimeout(() => {
-                // Show post-deposit engagement toast
-                toast.custom((t) => (
-                    <PostDepositEngagementToast
-                        depositAmount={Number(amount)}
-                        currentApy={assetDetails?.asset?.effective_apy || 0}
-                        tokenSymbol={assetDetails?.asset?.token?.symbol || 'USDC'}
-                        walletAddress={walletAddress}
-                        onDismiss={() => toast.dismiss(t.id)}
-                    />
-                ), {
-                    position: 'bottom-right',
-                    duration: Infinity, // Keep until manually dismissed
-                })
+    //         const timer = setTimeout(() => {
+    //             toast.custom((t) => (
+    //                 <PostDepositEngagementToast
+    //                     depositAmount={Number(amount)}
+    //                     currentApy={assetDetails?.asset?.effective_apy || 0}
+    //                     tokenSymbol={assetDetails?.asset?.token?.symbol || 'USDC'}
+    //                     walletAddress={walletAddress}
+    //                     onDismiss={() => toast.dismiss(t.id)}
+    //                 />
+    //             ), {
+    //                 position: 'bottom-right',
+    //                 duration: Infinity,
+    //             })
 
-                setHasTriggeredPostDepositToast(true)
-            }, 2000) // 2 second delay
+    //             setHasTriggeredPostDepositToast(true)
+    //         }, 2000)
 
-            return () => clearTimeout(timer)
-        }
-    }, [open, isDepositPositionType, depositTx.status, depositTx.isConfirmed, depositTx.hash, amount, hasTriggeredPostDepositToast, assetDetails, walletAddress])
+    //         return () => clearTimeout(timer)
+    //     }
+    // }, [open, isDepositPositionType, depositTx.status, depositTx.isConfirmed, depositTx.hash, amount, hasTriggeredPostDepositToast, assetDetails, walletAddress])
 
     useEffect(() => {
         if (open && isDepositPositionType && userMaxWithdrawAmount !== undefined) {
@@ -287,7 +288,7 @@ export default function SuperVaultTxDialog({
         setHasConsentedToWithdrawal(false)
         setShowWithdrawalRetention(false)
         // Reset post-deposit toast trigger state
-        setHasTriggeredPostDepositToast(false)
+        // setHasTriggeredPostDepositToast(false)
     }
 
     function handleOpenChange(open: boolean) {
@@ -441,6 +442,40 @@ export default function SuperVaultTxDialog({
             },
         },
     ]
+
+    const handleExploreAggregator = () => {
+        logEvent('cross_sell_aggregator_clicked', {
+            depositAmount: Number(amount),
+            tokenSymbol: assetDetails?.asset?.token?.symbol,
+            walletAddress,
+            source: 'post_deposit_alert',
+        })
+        window.open('https://app.superlend.xyz', '_blank')
+    }
+
+    const handleSetReminder = () => {
+        const depositAmount = Number(amount)
+        const tokenSymbol = assetDetails?.asset?.token?.symbol
+
+        logEvent('calendar_reminder_clicked', {
+            depositAmount,
+            tokenSymbol,
+            walletAddress,
+            source: 'post_deposit_alert',
+        })
+
+        // Create calendar event
+        const reminderDate = new Date()
+        reminderDate.setDate(reminderDate.getDate() + 7)
+        const eventTitle = `Claim SuperFund Rewards - ${depositAmount} ${tokenSymbol}`
+        const eventDescription = `Time to claim your accrued rewards from your SuperFund deposit.`
+        const startDate = reminderDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+        const endDate = new Date(reminderDate.getTime() + 60 * 60 * 1000).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+
+        const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(eventTitle)}&dates=${startDate}/${endDate}&details=${encodeURIComponent(eventDescription)}&location=${encodeURIComponent('https://funds.superlend.xyz')}`
+
+        window.open(googleCalendarUrl, '_blank')
+    }
 
     // SUB_COMPONENT: Content header UI
     const contentHeader = (
@@ -663,7 +698,7 @@ export default function SuperVaultTxDialog({
                     </div>)}
                 {/* Block 3 */}
                 {/* Email subscription for successful deposits */}
-                {isShowBlock({
+                {/* {isShowBlock({
                     deposit:
                         depositTx.status === 'view' &&
                         depositTx.isConfirmed &&
@@ -681,7 +716,7 @@ export default function SuperVaultTxDialog({
                                 onSubscriptionSuccess={handleSubscriptionSuccess}
                             />
                         </motion.div>
-                    )}
+                    )} */}
             </div>
         </>
     )
@@ -994,7 +1029,7 @@ export default function SuperVaultTxDialog({
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, ease: 'easeOut' }}
-                    className="w-full flex items-center flex-col justify-start gap-3 my-4"
+                    className="w-full flex items-center flex-col justify-start gap-3"
                 >
                     {shareScreenButtons.map((config, index) => (
                         <Button
@@ -1016,8 +1051,97 @@ export default function SuperVaultTxDialog({
                 </motion.div>
             )}
 
+            {isShowBlock({
+                deposit:
+                    depositTx.status === 'view' &&
+                    depositTx.isConfirmed &&
+                    !!depositTx.hash,
+                withdraw: false,
+            }) && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeOut' }}
+                        className="bg-gray-200/50 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full my-2"
+                    >
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-start gap-2">
+                                <div className="flex items-center justify-center w-8 h-8 bg-blue-50 rounded-4 shrink-0">
+                                    <Trophy className="w-4 h-4 text-blue-600" />
+                                </div>
+                                <BodyText level="body2" weight="medium" className="text-gray-800">
+                                    Check back in a week for claiming rewards
+                                </BodyText>
+                            </div>
+                            <div className="bg-amber-50 rounded-4 p-2 border border-amber-100">
+                                <BodyText level="body3" weight="normal" className="text-amber-800">
+                                    💡 Set a reminder to claim rewards in a week.
+                                </BodyText>
+                            </div>
+                            <Button
+                                variant="primaryOutline"
+                                size="sm"
+                                onClick={handleSetReminder}
+                                className="w-full h-9 rounded-4 capitalize"
+                            >
+                                Set Reminder
+                            </Button>
+                        </div>
+                    </motion.div>
+                )}
+
+            {isShowBlock({
+                deposit:
+                    depositTx.status === 'view' &&
+                    depositTx.isConfirmed &&
+                    !!depositTx.hash,
+                withdraw: false,
+            }) && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeOut' }}
+                        className="bg-gray-200/50 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full my-2"
+                    >
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-start gap-2">
+                                <div className="flex items-center justify-center w-8 h-8 bg-blue-50 rounded-4 shrink-0">
+                                    <TrendingUp className="w-4 h-4 text-blue-600" />
+                                </div>
+                                <BodyText level="body2" weight="medium" className="text-gray-800">
+                                    Explore our Aggregator
+                                </BodyText>
+                            </div>
+
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-1 h-1 bg-blue-400 rounded-full" />
+                                    <BodyText level="body3" weight="normal" className="text-gray-600">
+                                        Explore 350+ markets
+                                    </BodyText>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-1 h-1 bg-blue-400 rounded-full" />
+                                    <BodyText level="body3" weight="normal" className="text-gray-600">
+                                        Best yields across protocols
+                                    </BodyText>
+                                </div>
+                            </div>
+
+                            <Button
+                                variant="primaryOutline"
+                                size="sm"
+                                onClick={handleExploreAggregator}
+                                className="w-full h-9 rounded-4 capitalize"
+                            >
+                                Launch App
+                            </Button>
+                        </div>
+                    </motion.div>
+                )}
+
             {/* Email subscription for successful deposits */}
-            {/* {isShowBlock({
+            {isShowBlock({
                 deposit:
                     depositTx.status === 'view' &&
                     depositTx.isConfirmed &&
@@ -1035,12 +1159,12 @@ export default function SuperVaultTxDialog({
                             onSubscriptionSuccess={handleSubscriptionSuccess}
                         />
                     </motion.div>
-                )} */}
+                )}
         </>
     )
 
     // SUB_COMPONENT: Scrollable withdrawal retention content
-    const withdrawalRetentionContent = (
+    const withdrawalAlertContent = (
         <>
             {!isDepositPositionType && showWithdrawalRetention && (
                 <WithdrawalAlertFlow
@@ -1049,8 +1173,6 @@ export default function SuperVaultTxDialog({
                     tokenSymbol={assetDetails?.asset?.token?.symbol || 'USDC'}
                     onConsentChange={setHasConsentedToWithdrawal}
                     isVisible={showWithdrawalRetention}
-                    smearingPeriodDays={30} // This could be made dynamic based on vault settings
-                    currentDayInPeriod={15} // This should come from actual vault data
                 />
             )}
         </>
@@ -1077,7 +1199,7 @@ export default function SuperVaultTxDialog({
                     <DialogTrigger asChild>{triggerButton}</DialogTrigger>
                     <DialogContent
                         aria-describedby={undefined}
-                        className="pt-[25px] max-w-[450px] max-h-[90vh] md:max-h-[600px] flex flex-col"
+                        className="pt-[25px] max-w-[450px] max-h-[100vh] flex flex-col"
                         showCloseButton={false}
                     >
                         {/* X Icon to close the dialog */}
@@ -1093,16 +1215,14 @@ export default function SuperVaultTxDialog({
 
                         {/* Scrollable Middle - Withdrawal Retention Flow OR Success Content */}
                         {!isDepositPositionType && showWithdrawalRetention ? (
-                            <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll border-y border-gray-100 pr-2 py-2">
-                                {withdrawalRetentionContent}
+                            <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-2">
+                                {withdrawalAlertContent}
                             </div>
-                        ) : null}
-
-                        {/* (isTxInSuccess && successSpecificContent) ? (
-                            <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll border-y border-gray-100 pr-2 py-2">
+                        ) : (isTxInSuccess && successSpecificContent) ? (
+                            <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-2">
                                 {successSpecificContent}
                             </div>
-                        ) */}
+                        ) : null}
 
                         {/* Fixed Bottom - Action Button */}
                         {transactionStatusContent}
@@ -1183,7 +1303,7 @@ export default function SuperVaultTxDialog({
         <>
             <Drawer open={open} dismissible={false}>
                 <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
-                <DrawerContent className="w-full p-5 pt-2 dismissible-false max-h-[90vh] flex flex-col">
+                <DrawerContent className="w-full p-5 pt-2 dismissible-false max-h-[90vh] flex flex-col gap-3">
                     {/* X Icon to close the drawer */}
                     {closeContentButton}
 
@@ -1193,21 +1313,21 @@ export default function SuperVaultTxDialog({
                     {/* Fixed Top - Transaction Details */}
                     <div className="flex-shrink-0">
                         {contentBody}
-                        {transactionStatusContent}
                     </div>
 
                     {/* Scrollable Middle - Withdrawal Retention Flow OR Success Content */}
                     {!isDepositPositionType && showWithdrawalRetention ? (
-                        <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-1 py-2">
-                            {withdrawalRetentionContent}
+                        <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-1">
+                            {withdrawalAlertContent}
                         </div>
                     ) : (isTxInSuccess && successSpecificContent) ? (
-                        <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-1 py-2">
+                        <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-1">
                             {successSpecificContent}
                         </div>
                     ) : null}
 
                     {/* Fixed Bottom - Action Button */}
+                    {transactionStatusContent}
                     <div className={`flex-shrink-0`}>
                         {actionButtonContent}
                     </div>

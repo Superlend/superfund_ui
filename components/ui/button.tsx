@@ -12,6 +12,8 @@ const buttonVariants = cva(
                     'bg-white text-gray-800 border border-gray-300 hover:bg-gray-200 active:opacity-75 disabled:text-gray-800',
                 primary:
                     'bg-gradient-to-b from-primary-gradientStart to-primary-gradientEnd text-primary-foreground hover:to-primary-gradientEndHover active:to-primary-gradientEndActive active:text-primary-foreground/75 disabled:text-primary-foreground/75 border-2 border-orange-600',
+                primaryOutline:
+                    'border border-primary text-primary bg-transparent hover:bg-primary/15 active:bg-primary/15 active:text-primary/75 active:border-primary/75 disabled:border-primary/75',
                 destructive:
                     'bg-destructive text-destructive-foreground hover:opacity-75 active:opacity-50',
                 outline:

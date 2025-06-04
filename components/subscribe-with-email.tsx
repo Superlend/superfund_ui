@@ -102,7 +102,7 @@ export default function SubscribeWithEmail({
                             />
                             <Button
                                 type="submit"
-                                className="absolute right-1 top-1/2 -translate-y-1/2 p-1 h-8 w-fit shrink-0 bg-primary hover:bg-primary/90 text-white rounded-4 flex items-center justify-center gap-1"
+                                className="absolute right-1 top-1/2 -translate-y-1/2 p-1 h-8 w-fit shrink-0 bg-primary hover:bg-primary/90 text-white rounded-4 flex items-center justify-center gap-1 px-2"
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? "Submitting..." : "Submit"}
@@ -110,9 +110,9 @@ export default function SubscribeWithEmail({
                             </Button>
                         </div>
                     </form>
-                    <BodyText level="body3" className="text-gray-600 mt-2 ml-1">
+                    {/* <BodyText level="body3" className="text-gray-600 mt-2 ml-1">
                         Your email will be used to share announcements and keep you updated on upgrades on our vault.
-                    </BodyText>
+                    </BodyText> */}
                 </>
             )}
 

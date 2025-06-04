@@ -24,8 +24,8 @@ export default function WithdrawalAlertFlow({
     tokenSymbol,
     onConsentChange,
     isVisible,
-    smearingPeriodDays = 30, // Default to 30 days if not provided
-    currentDayInPeriod = 15, // Default to day 15 if not provided
+    smearingPeriodDays = 7, // Default to 30 days if not provided
+    currentDayInPeriod = 1, // Default to day 15 if not provided
 }: WithdrawalAlertFlowProps) {
     const [hasConsented, setHasConsented] = useState(false)
     const [showCalculator, setShowCalculator] = useState(false)
@@ -70,7 +70,7 @@ export default function WithdrawalAlertFlow({
     }
 
     return (
-        <div className="space-y-4 px-1">
+        <div className="space-y-4">
             {/* Early Withdrawal Warning */}
             <EarlyWithdrawalWarning
                 smearingPeriodDays={smearingPeriodDays}
