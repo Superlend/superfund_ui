@@ -524,6 +524,7 @@ export default function SuperVaultTxDialog({
     const handleViewPortfolioClick = () => {
         router.push('/super-fund/base/?tab=position-details#start')
         setOpen(false)
+        return;
     }
 
     // SUB_COMPONENT: Content header UI
@@ -721,7 +722,7 @@ export default function SuperVaultTxDialog({
                                 %
                             </Badge>
                         </div>
-                        <div
+                        {/* <div
                             className={`flex items-center justify-between gap-1 w-full py-3`}
                         >
                             <BodyText
@@ -743,7 +744,7 @@ export default function SuperVaultTxDialog({
                                 )}{' '}
                                 {assetDetails?.asset?.token?.symbol}
                             </BodyText>
-                        </div>
+                        </div> */}
                     </div>)}
                 {/* Block 3 */}
                 {/* Email subscription for successful deposits */}
@@ -1114,7 +1115,7 @@ export default function SuperVaultTxDialog({
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, ease: 'easeOut' }}
-                        className="bg-gray-200 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full my-2"
+                        className="bg-gray-200 backdrop-blur-sm rounded-5 p-4 w-full"
                     >
                         <div className="space-y-2">
                             <div className="flex items-center justify-start gap-2">
@@ -1157,7 +1158,7 @@ export default function SuperVaultTxDialog({
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, ease: 'easeOut' }}
-                        className="bg-gray-200 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full my-2"
+                        className="bg-gray-200 backdrop-blur-sm rounded-5 p-4 w-full"
                     >
                         <div className="space-y-2">
                             <div className="flex items-center justify-start gap-2">
@@ -1196,7 +1197,7 @@ export default function SuperVaultTxDialog({
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, ease: 'easeOut' }}
-                        className="bg-gray-200 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full my-2"
+                        className="bg-gray-200 rounded-5 p-4 w-full"
                     >
                         <div className="space-y-2">
                             <div className="flex items-center justify-start gap-2">
@@ -1224,14 +1225,14 @@ export default function SuperVaultTxDialog({
                                 </BodyText>
                             </div>
 
-                            <Button
+                            {/* <Button
                                 variant="primaryOutline"
                                 size="sm"
                                 onClick={handleViewPortfolioClick}
                                 className="w-full h-9 rounded-4 capitalize"
                             >
                                 View Portfolio
-                            </Button>
+                            </Button> */}
                         </div>
                     </motion.div>
                 )}
@@ -1248,7 +1249,7 @@ export default function SuperVaultTxDialog({
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, ease: 'easeOut' }}
-                        className="bg-gray-200/50 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full my-2"
+                        className="bg-gray-200 backdrop-blur-sm rounded-5 p-4 w-full"
                     >
                         <SubscribeWithEmail
                             onEmailChange={setPendingEmail}
@@ -1283,6 +1284,12 @@ export default function SuperVaultTxDialog({
             amount={amount}
             setActionType={setActionType}
             actionType={positionType}
+            cta={
+                (isDepositTxInSuccess && isDepositPositionType) ? {
+                    text: 'View Portfolio',
+                    onClick: handleViewPortfolioClick,
+                } : undefined
+            }
             walletAddress={walletAddress as `0x${string}`}
         />
     )
@@ -1318,7 +1325,7 @@ export default function SuperVaultTxDialog({
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -20 }}
                                     transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                    className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-2"
+                                    className="flex-1 overflow-y-auto overscroll-contain dialog-scroll flex flex-col gap-3 rounded-4"
                                 >
                                     {withdrawalAlertContent}
                                 </motion.div>
@@ -1330,7 +1337,7 @@ export default function SuperVaultTxDialog({
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -20 }}
                                     transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                    className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-2"
+                                    className="flex-1 overflow-y-auto overscroll-contain dialog-scroll flex flex-col gap-3 rounded-4"
                                 >
                                     {successSpecificContent}
                                 </motion.div>
@@ -1430,26 +1437,26 @@ export default function SuperVaultTxDialog({
 
                     {/* Scrollable Middle - Withdrawal Retention Flow OR Success Content */}
                     <AnimatePresence mode="wait">
-                        {!isDepositPositionType && showWithdrawalRetention && (
+                        {(!isDepositPositionType && !isWithdrawTxInSuccess) && (
                             <motion.div
                                 key="withdrawal-alert-mobile"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
                                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-1"
+                                className="flex-1 overflow-y-auto overscroll-contain dialog-scroll flex flex-col gap-3 rounded-4"
                             >
                                 {withdrawalAlertContent}
                             </motion.div>
                         )}
-                        {(isTxInSuccess && successSpecificContent) && (
+                        {(isDepositTxInSuccess || isWithdrawTxInSuccess) && (
                             <motion.div
                                 key="success-content-mobile"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
                                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-1"
+                                className="flex-1 overflow-y-auto overscroll-contain dialog-scroll flex flex-col gap-3 rounded-4"
                             >
                                 {successSpecificContent}
                             </motion.div>

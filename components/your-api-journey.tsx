@@ -30,7 +30,7 @@ export default function YourApiJourney() {
         <Card>
             <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                    <div className="relative p-2 bg-gradient-to-br from-green-100 to-green-200 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:rotate-12 hover:scale-110">
+                    <div className="relative p-2 bg-gradient-to-br from-green-100 to-green-200 rounded-4 shadow-md hover:shadow-lg transition-all duration-300 hover:rotate-12 hover:scale-110">
                         <ChartNoAxesCombined className="h-5 w-5 text-green-600 drop-shadow-sm animate-pulse" />
                     </div>
                     <HeadingText level="h5" weight="medium" className="text-gray-800 flex items-center gap-1">
@@ -149,7 +149,7 @@ export default function YourApiJourney() {
                                             label={
                                                 <Trophy className="w-4 h-4 text-yellow-600" />
                                             }
-                                            content="Your APY is boosted by Loyalty Advantage"
+                                            content={`Additional ${((Number(TOTAL_SPOT_APY) / Number(TOTAL_VAULT_APY)) * 100) - 100}% loyalty bonus APR is being streamed to you`}
                                         />}
                                 </motion.div>
                                 <BodyText level="body2" weight="normal" className="text-gray-500">

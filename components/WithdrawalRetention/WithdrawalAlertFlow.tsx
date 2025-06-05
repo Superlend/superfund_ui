@@ -70,7 +70,7 @@ export default function WithdrawalAlertFlow({
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-3">
             {/* Early Withdrawal Warning */}
             <EarlyWithdrawalWarning
                 smearingPeriodDays={smearingPeriodDays}

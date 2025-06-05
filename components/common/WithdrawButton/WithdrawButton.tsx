@@ -29,6 +29,10 @@ interface IWithdrawButtonProps {
     asset: any
     amount: string
     handleCloseModal: (isVisible: boolean) => void
+    cta?: {
+        text: string
+        onClick: () => void
+    }
 }
 
 const WithdrawButton = ({
@@ -36,6 +40,7 @@ const WithdrawButton = ({
     asset,
     amount,
     handleCloseModal,
+    cta,
 }: IWithdrawButtonProps) => {
     const {
         writeContractAsync,

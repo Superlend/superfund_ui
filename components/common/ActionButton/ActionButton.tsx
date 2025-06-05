@@ -11,6 +11,10 @@ interface IActionButtonSelectComponent {
     actionType: 'deposit' | 'withdraw' | 'claim'
     setActionType?: (actionType: TPositionType) => void
     walletAddress: `0x${string}`
+    cta?: {
+        text: string
+        onClick: () => void
+    }
 }
 
 const ActionButton = ({
@@ -21,6 +25,7 @@ const ActionButton = ({
     actionType,
     setActionType,
     walletAddress,
+    cta,
 }: IActionButtonSelectComponent) => {
 
     if (actionType === 'deposit') {
@@ -33,6 +38,7 @@ const ActionButton = ({
                 underlyingAssetAdress={asset?.asset?.token?.address || ''}
                 amount={amount || ''}
                 decimals={asset?.asset?.token?.decimals || 0}
+                cta={cta}
             />
         )
     }
@@ -44,6 +50,7 @@ const ActionButton = ({
                 handleCloseModal={handleCloseModal}
                 asset={asset}
                 amount={amount}
+                cta={cta}
             />
         )
     }

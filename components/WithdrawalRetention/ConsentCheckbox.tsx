@@ -69,23 +69,6 @@ export default function ConsentCheckbox({
                             I understand that withdrawing now means I&apos;ll earn less yield than if I waited 6 more days
                         </BodyText>
                     </label>
-                    <div
-                        id="consent-description"
-                        className={`transition-colors ${showError
-                            ? 'text-red-600'
-                            : isChecked
-                                ? 'text-green-600'
-                                : 'text-gray-600'
-                            }`}
-                    >
-                        <BodyText
-                            level="body3"
-                            weight="normal"
-                            className="inherit"
-                        >
-                            By checking this box, you acknowledge that you have read and understood the yield impact due to our smearing period mechanism.
-                        </BodyText>
-                    </div>
                 </div>
                 {isChecked && (
                     <motion.div
