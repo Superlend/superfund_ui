@@ -42,6 +42,7 @@ import { BigNumber } from 'ethers'
 import useDimensions from '@/hooks/useDimensions'
 import {
     Drawer,
+    DrawerClose,
     DrawerContent,
     DrawerHeader,
     DrawerTrigger,
@@ -62,6 +63,7 @@ import FirstDepositToast from '@/components/toasts/FirstDepositToast'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
 import WithdrawalAlertFlow from '../WithdrawalRetention/WithdrawalAlertFlow'
 import PostDepositEngagementToast from '@/components/toasts/PostDepositEngagementToast'
+import { ScrollArea } from '@radix-ui/react-scroll-area'
 
 export default function SuperVaultTxDialog({
     disabled,
@@ -86,8 +88,14 @@ export default function SuperVaultTxDialog({
     setActionType?: (actionType: TPositionType) => void
     userMaxWithdrawAmount?: number
 }) {
-    const { depositTx, setDepositTx, withdrawTx, setWithdrawTx, initialPosition, setInitialPosition } =
-        useTxContext() as TTxContext
+    const {
+        depositTx,
+        setDepositTx,
+        withdrawTx,
+        setWithdrawTx,
+        initialPosition,
+        setInitialPosition,
+    } = useTxContext() as TTxContext
     const { walletAddress, isWalletConnected, handleSwitchChain } =
         useWalletConnection()
     const { selectedChain, chainDetails } = useChain()
@@ -99,8 +107,10 @@ export default function SuperVaultTxDialog({
     const [showEmailReminder, setShowEmailReminder] = useState(false)
     const [hasSubscribed, setHasSubscribed] = useState(false)
     const [isPointsClaimed, setIsPointsClaimed] = useState(false)
-    const [hasShownFirstDepositToast, setHasShownFirstDepositToast] = useState(false)
-    const [hasEverSeenFirstDepositToast, setHasEverSeenFirstDepositToast] = useState(false)
+    const [hasShownFirstDepositToast, setHasShownFirstDepositToast] =
+        useState(false)
+    const [hasEverSeenFirstDepositToast, setHasEverSeenFirstDepositToast] =
+        useState(false)
     const { logEvent } = useAnalytics()
 
     // Withdrawal retention flow state
@@ -113,11 +123,13 @@ export default function SuperVaultTxDialog({
     useEffect(() => {
         if (open) {
             try {
-                const hasEverSubscribed = localStorage.getItem('hasSubscribedToNewsletter') === 'true'
+                const hasEverSubscribed =
+                    localStorage.getItem('hasSubscribedToNewsletter') === 'true'
                 setHasSubscribed(hasEverSubscribed)
 
                 // Check if user has ever seen the first deposit toast
-                const hasSeenToast = localStorage.getItem('hasSeenFirstDepositToast') === 'true'
+                const hasSeenToast =
+                    localStorage.getItem('hasSeenFirstDepositToast') === 'true'
                 setHasEverSeenFirstDepositToast(hasSeenToast)
 
                 // Show withdrawal retention flow for withdrawals
@@ -128,7 +140,10 @@ export default function SuperVaultTxDialog({
                     setHasConsentedToWithdrawal(false)
                 }
             } catch (error) {
-                console.warn('Failed to read subscription status from localStorage:', error)
+                console.warn(
+                    'Failed to read subscription status from localStorage:',
+                    error
+                )
             }
         } else {
             // Reset withdrawal retention state when dialog closes
@@ -171,7 +186,11 @@ export default function SuperVaultTxDialog({
     // }, [open, isDepositPositionType, depositTx.status, depositTx.isConfirmed, depositTx.hash, amount, hasTriggeredPostDepositToast, assetDetails, walletAddress])
 
     useEffect(() => {
-        if (open && isDepositPositionType && userMaxWithdrawAmount !== undefined) {
+        if (
+            open &&
+            isDepositPositionType &&
+            userMaxWithdrawAmount !== undefined
+        ) {
             setInitialPosition(userMaxWithdrawAmount)
             setHasShownFirstDepositToast(false)
         }
@@ -207,20 +226,34 @@ export default function SuperVaultTxDialog({
                     localStorage.setItem('hasSeenFirstDepositToast', 'true')
                     setHasEverSeenFirstDepositToast(true)
                 } catch (error) {
-                    console.warn('Failed to save first deposit toast status to localStorage:', error)
+                    console.warn(
+                        'Failed to save first deposit toast status to localStorage:',
+                        error
+                    )
                 }
             }
 
             const timeoutId = setTimeout(showFirstDepositToast, 1000)
             return () => clearTimeout(timeoutId)
         }
-    }, [hasShownFirstDepositToast, hasEverSeenFirstDepositToast, isDepositPositionType, depositTx.status, depositTx.isConfirmed, depositTx.hash, initialPosition])
+    }, [
+        hasShownFirstDepositToast,
+        hasEverSeenFirstDepositToast,
+        isDepositPositionType,
+        depositTx.status,
+        depositTx.isConfirmed,
+        depositTx.hash,
+        initialPosition,
+    ])
 
     const handleSubscriptionSuccess = () => {
         try {
             localStorage.setItem('hasSubscribedToNewsletter', 'true')
         } catch (error) {
-            console.warn('Failed to save subscription status to localStorage:', error)
+            console.warn(
+                'Failed to save subscription status to localStorage:',
+                error
+            )
             setHasSubscribed(true)
         }
     }
@@ -243,7 +276,10 @@ export default function SuperVaultTxDialog({
     useEffect(() => {
         const checkPointsStatus = async () => {
             if (walletAddress) {
-                const claimed = await checkUserPointsClaimStatus(walletAddress, walletAddress)
+                const claimed = await checkUserPointsClaimStatus(
+                    walletAddress,
+                    walletAddress
+                )
                 setIsPointsClaimed(claimed)
             }
         }
@@ -409,11 +445,12 @@ export default function SuperVaultTxDialog({
     // SHARE SCREEN BUTTONS FOR MINI APP:
     const shareScreenButtons = [
         {
-            buttonText: isPointsClaimed ? 'Share on Warpcast' : 'Share and Claim',
+            buttonText: isPointsClaimed
+                ? 'Share on Warpcast'
+                : 'Share for a surprise',
             imageSrc: '/icons/share.svg',
             onClick: () => {
-                // I just deposited $10,
-                const text = `I just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} into Superfund. I am earning up to ${assetDetails?.asset?.effective_apy.toFixed(2)}% APY on my USDC deposit with the best adjusted risk.`
+                const text = `Just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} ${positionType === 'withdraw' ? 'from' : 'into'} Superfund by @superlend 📈 Earning ${assetDetails?.asset?.effective_apy.toFixed(2)}% APY on USDC with intelligent, risk-adjusted vaults. Let your capital work smarter.`
                 sdk.actions.composeCast({
                     text,
                     embeds: [
@@ -571,7 +608,7 @@ export default function SuperVaultTxDialog({
     // SUB_COMPONENT: Content body UI
     const contentBody = (
         <>
-            <div className="flex flex-col gap-[12px]">
+            <div className="flex flex-col gap-[12px] justify-start">
                 {/* Block 1 */}
                 {isShowBlock({
                     deposit: true,
@@ -741,7 +778,10 @@ export default function SuperVaultTxDialog({
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                                    transition={{
+                                        duration: 0.3,
+                                        ease: 'easeOut',
+                                    }}
                                     className="flex items-center justify-between gap-2"
                                 >
                                     <div className="flex items-center justify-start gap-2">
