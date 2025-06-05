@@ -540,8 +540,8 @@ export default function SuperVaultTxDialog({
                         className="text-gray-800 text-center capitalize"
                     >
                         {isDepositPositionType
-                            ? `${isDepositTxInSuccess ? 'Deposit' : 'Review Deposit'}`
-                            : `${isWithdrawTxInSuccess ? 'Withdraw' : 'Review Withdraw'}`}
+                            ? `${isDepositTxInSuccess ? 'Deposit Successful' : 'Review Deposit'}`
+                            : `${isWithdrawTxInSuccess ? 'Withdraw Successful' : 'Review Withdraw'}`}
                     </HeadingText>
                     // </DialogTitle>
                 )}
