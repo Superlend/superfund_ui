@@ -12,6 +12,7 @@ import { abbreviateNumber } from "../utils"
  * @returns rewards tooltip content
  */
 export function getRewardsTooltipContent({
+    title,
     baseRateFormatted,
     baseRateLabel,
     rewards,
@@ -21,6 +22,7 @@ export function getRewardsTooltipContent({
     note,
     netApyLabel,
 }: {
+    title?: string | (() => React.ReactNode)
     baseRateFormatted: string
     baseRateLabel?: string
     rewards?: TReward[]
@@ -37,13 +39,16 @@ export function getRewardsTooltipContent({
 
     return (
         <div className="flex flex-col divide-y divide-gray-400">
-            <BodyText
-                level="body1"
-                weight="medium"
-                className="py-2 text-gray-800"
-            >
-                Rate & Rewards
-            </BodyText>
+            {(!title || typeof title === 'string') &&
+                <BodyText
+                    level="body1"
+                    weight="medium"
+                    className="py-2 text-gray-800"
+                >
+                    {title || 'Rate & Rewards'}
+                </BodyText>
+            }
+            {typeof title === 'function' && title()}
             <div
                 className="flex items-center justify-between gap-[70px] py-2"
                 style={{ gap: '70px' }}

@@ -199,7 +199,7 @@ export function PerformanceHistoryChart() {
 
             return {
                 rawTimestamp: item.timestamp,
-                timestamp: `${formattedDate} ${time}`,
+                timestamp: `${formattedDate}`,
                 date: formattedDate.split(',')[0],
                 time: time,
                 baseApy: abbreviateNumber(item.baseApy),
