@@ -21,6 +21,7 @@ import { usePrivy } from '@privy-io/react-auth'
 import { useLoginToFrame } from '@privy-io/react-auth/farcaster'
 import sdk from '@farcaster/frame-sdk'
 import YourApiJourney from '@/components/your-api-journey'
+import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
 
 interface ChainPageProps {
     params: {
@@ -44,6 +45,9 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
     const { logEvent } = useAnalytics()
     const { initLoginToFrame, loginToFrame } = useLoginToFrame()
     const { ready, authenticated } = usePrivy()
+    const { userMaxWithdrawAmount, isLoading: isLoadingUserMaxWithdrawAmount, error: errorUserMaxWithdrawAmount } = useUserBalance(
+        walletAddress as `0x${string}`
+    )
 
     // Log user in to Farcaster Frame
     // useEffect(() => {
@@ -117,7 +121,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
         const validTabs = ['fund-overview', 'position-details']
         return validTabs.includes(tabParam || '') ? (tabParam as string) : 'fund-overview'
     }
-    
+
     const [selectedTab, setSelectedTab] = useState(getInitialTab)
 
     const tabs = [
@@ -137,12 +141,12 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
 
     const handleTabChange = (tab: string) => {
         setSelectedTab(tab)
-        
+
         // Update URL with new tab parameter while preserving existing query params
         const currentParams = new URLSearchParams(searchParams.toString())
         currentParams.set('tab', tab)
         router.replace(`?${currentParams.toString()}`, { scroll: false })
-        
+
         logEvent('selected_tab', {
             tab: tab,
             chain: params.chain,
@@ -157,7 +161,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
         const tabParam = searchParams.get('tab')
         const validTabs = ['fund-overview', 'position-details']
         const newTab = validTabs.includes(tabParam || '') ? (tabParam as string) : 'fund-overview'
-        
+
         if (newTab !== selectedTab) {
             setSelectedTab(newTab)
         }
@@ -171,9 +175,9 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
         const hash = window.location.hash
         if (hash === '#start' && tabsContainerRef.current) {
             setTimeout(() => {
-                tabsContainerRef.current?.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start' 
+                tabsContainerRef.current?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
                 })
                 // Clear the hash after scrolling to prevent repeated scrolling
                 window.history.replaceState(null, '', window.location.pathname + window.location.search)
@@ -204,7 +208,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                     <VaultStats />
                     <div className="flex flex-col gap-4 lg:hidden">
                         <DepositAndWithdrawAssets />
-                        {isWalletConnected && <YourApiJourney />}
+                        {(isWalletConnected && !!Number(userMaxWithdrawAmount)) && <YourApiJourney />}
                         {isWalletConnected && (
                             <TransactionHistory
                                 protocolIdentifier={getProtocolIdentifier(
@@ -238,7 +242,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                         <ScrollArea className="h-full" ref={scrollAreaRef}>
                             <div className="flex flex-col gap-2 pr-4">
                                 <DepositAndWithdrawAssets />
-                                {isWalletConnected && <YourApiJourney />}
+                                {(isWalletConnected && !!Number(userMaxWithdrawAmount)) && <YourApiJourney />}
                                 {isWalletConnected && (
                                     <TransactionHistory
                                         protocolIdentifier={getProtocolIdentifier(

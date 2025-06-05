@@ -68,6 +68,23 @@ import PostDepositEngagementToast from '@/components/toasts/PostDepositEngagemen
 import { ScrollArea } from '@radix-ui/react-scroll-area'
 import { UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL } from '@/constants'
 
+// Function to calculate days until next Tuesday
+function getDaysUntilNextTuesday(): number {
+    const currentDate = new Date()
+    const currentDay = currentDate.getDay() // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const tuesday = 2
+    
+    // Calculate days until next Tuesday
+    let daysUntilTuesday = (tuesday - currentDay + 7) % 7
+    
+    // If today is Tuesday, show next Tuesday (7 days)
+    if (daysUntilTuesday === 0) {
+        daysUntilTuesday = 7
+    }
+    
+    return daysUntilTuesday
+}
+
 export default function SuperVaultTxDialog({
     disabled,
     positionType,
@@ -510,7 +527,7 @@ export default function SuperVaultTxDialog({
 
         // Create calendar event
         const reminderDate = new Date()
-        reminderDate.setDate(reminderDate.getDate() + 7)
+        reminderDate.setDate(reminderDate.getDate() + getDaysUntilNextTuesday())
         const eventTitle = `Claim SuperFund Rewards - ${depositAmount} ${tokenSymbol}`
         const eventDescription = `Time to claim your accrued rewards from your SuperFund deposit.`
         const startDate = reminderDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
@@ -1127,7 +1144,7 @@ export default function SuperVaultTxDialog({
                                 </BodyText>
                             </div>
                             <BodyText level="body3" weight="normal" className="text-gray-600">
-                                Some of your rewards will become claimable in about 6 days.
+                                Some of your rewards will become claimable in about {getDaysUntilNextTuesday()} {getDaysUntilNextTuesday() === 1 ? 'day' : 'days'}.
                             </BodyText>
                             <div className="bg-amber-50 rounded-4 p-2 border border-amber-100 flex items-start gap-1">
                                 <Lightbulb className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -1141,7 +1158,7 @@ export default function SuperVaultTxDialog({
                                 onClick={handleSetReminder}
                                 className="w-full h-9 rounded-4 capitalize"
                             >
-                                Remind Me in 6 Days
+                                Remind Me in {getDaysUntilNextTuesday()} {getDaysUntilNextTuesday() === 1 ? 'Day' : 'Days'}
                             </Button>
                         </div>
                     </motion.div>
