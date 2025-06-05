@@ -1,6 +1,6 @@
 'use client'
 
-import { AlertTriangle, Clock, TrendingDown } from 'lucide-react'
+import { AlertTriangle, Clock, Lightbulb, TrendingDown } from 'lucide-react'
 import { BodyText, HeadingText } from '@/components/ui/typography'
 import { Badge } from '@/components/ui/badge'
 import { motion } from 'framer-motion'
@@ -10,6 +10,9 @@ import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
 import { VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { useChain } from '@/context/chain-context'
 import { useApyData } from '@/context/apy-data-provider'
+import ExternalLink from '../ExternalLink'
+import { Button } from '../ui/button'
+import { UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL } from '@/constants'
 
 interface EarlyWithdrawalWarningProps {
     smearingPeriodDays: number
@@ -27,15 +30,19 @@ export default function EarlyWithdrawalWarning({
         chain_id: selectedChain || 0
     })
     const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
-    
+
     const TOTAL_SPOT_APY = useMemo(() => {
         return Number(spotApy ?? 0) + Number(effectiveApyData?.rewards_apy ?? 0) + Number(BOOST_APY ?? 0)
     }, [spotApy, effectiveApyData, BOOST_APY])
-    
+
     const TOTAL_VAULT_APY = Number(effectiveApyData?.total_apy ?? 0) + Number(BOOST_APY ?? 0)
-    
+
     const remainingDays = Math.max(0, smearingPeriodDays - currentDayInPeriod)
     const apyProgressPercentage = TOTAL_VAULT_APY > 0 ? Math.min((TOTAL_SPOT_APY / TOTAL_VAULT_APY) * 100, 100) : 0
+
+    const handleLearnMoreClick = () => {
+        window.open(UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL, '_blank')
+    }
 
     return (
         <motion.div
@@ -55,14 +62,14 @@ export default function EarlyWithdrawalWarning({
                         weight="medium"
                         className="text-amber-800 mb-1"
                     >
-                        Early Withdrawal During Smearing Period
+                        Early Withdrawal Will Reduce Your Earnings
                     </HeadingText>
                     <BodyText
                         level="body2"
                         weight="normal"
                         className="text-amber-700"
                     >
-                        Withdrawing now will impact your yield due to our smearing period mechanism designed to protect all vault participants.
+                        You&apos;re withdrawing before your yield is fully unlocked. To keep things fair for everyone, your final return will be slightly reduced
                     </BodyText>
                 </div>
             </div>
@@ -77,7 +84,7 @@ export default function EarlyWithdrawalWarning({
                         {remainingDays} days remaining
                     </Badge>
                 </div>
-                
+
                 {!isLoadingSpotApy && !isLoadingEffectiveApy && !errorSpotApy && !isErrorEffectiveApy && effectiveApyData ? (
                     <>
                         <div className="w-full bg-amber-200 rounded-full h-2">
@@ -107,17 +114,25 @@ export default function EarlyWithdrawalWarning({
             {/* Key Points */}
             <div className="space-y-3">
                 <div className="flex items-start gap-2">
-                    <TrendingDown className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                    <Lightbulb className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
                     <BodyText level="body3" weight="normal" className="text-amber-700">
-                        <span className="font-medium">Yield Impact:</span> Early withdrawal reduces your earned yield to ensure fair distribution among all vault participants.
+                        We spread earned yield over a short period to prevent abuse and ensure everyone earns fairly.
                     </BodyText>
                 </div>
                 <div className="flex items-start gap-2">
                     <Clock className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
                     <BodyText level="body3" weight="normal" className="text-amber-700">
-                        <span className="font-medium">Optimal Timing:</span> Waiting until the smearing period ends maximizes your returns.
+                        <span className="font-medium">Wait 6 more days</span> to receive your full yield.
                     </BodyText>
                 </div>
+                <Button
+                    variant="primaryOutline"
+                    size="sm"
+                    onClick={handleLearnMoreClick}
+                    className="w-full h-9 rounded-4 capitalize"
+                >
+                    Learn more
+                </Button>
             </div>
         </motion.div>
     )

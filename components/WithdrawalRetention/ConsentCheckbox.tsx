@@ -36,13 +36,12 @@ export default function ConsentCheckbox({
             className={`space-y-3 ${className}`}
         >
             {/* Consent Checkbox */}
-            <div className={`flex items-start gap-3 p-4 rounded-5 border-2 transition-all duration-200 ${
-                showError 
-                    ? 'border-red-200 bg-red-50' 
-                    : isChecked 
-                    ? 'border-green-200 bg-green-50' 
+            <div className={`flex items-start gap-3 p-4 rounded-5 border-2 transition-all duration-200 ${showError
+                ? 'border-red-200 bg-red-50'
+                : isChecked
+                    ? 'border-green-200 bg-green-50'
                     : 'border-gray-200 bg-gray-50'
-            }`}>
+                }`}>
                 <div className="flex items-center pt-0.5">
                     <Checkbox
                         id="withdrawal-consent"
@@ -60,26 +59,24 @@ export default function ConsentCheckbox({
                         <BodyText
                             level="body2"
                             weight="medium"
-                            className={`transition-colors ${
-                                showError 
-                                    ? 'text-red-800' 
-                                    : isChecked 
-                                    ? 'text-green-800' 
+                            className={`transition-colors ${showError
+                                ? 'text-red-800'
+                                : isChecked
+                                    ? 'text-green-800'
                                     : 'text-gray-800'
-                            }`}
+                                }`}
                         >
-                            I understand and accept the yield loss due to early withdrawal during the smearing period
+                            I understand that withdrawing now means I&apos;ll earn less yield than if I waited 6 more days
                         </BodyText>
                     </label>
                     <div
                         id="consent-description"
-                        className={`transition-colors ${
-                            showError 
-                                ? 'text-red-600' 
-                                : isChecked 
-                                ? 'text-green-600' 
+                        className={`transition-colors ${showError
+                            ? 'text-red-600'
+                            : isChecked
+                                ? 'text-green-600'
                                 : 'text-gray-600'
-                        }`}
+                            }`}
                     >
                         <BodyText
                             level="body3"
@@ -111,7 +108,7 @@ export default function ConsentCheckbox({
                 >
                     <AlertCircle className="w-4 h-4" />
                     <BodyText level="body3" weight="normal" className="text-red-600">
-                        Please acknowledge the yield loss to proceed with withdrawal
+                        Please confirm you understand the reduced earnings before continuing
                     </BodyText>
                 </motion.div>
             )}

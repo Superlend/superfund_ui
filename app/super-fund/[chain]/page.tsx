@@ -12,7 +12,7 @@ import FlatTabs from '@/components/tabs/flat-tabs'
 import PositionDetails from '../position-details'
 import FundOverview from '../fund-overview'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
-import { useRouter, notFound } from 'next/navigation'
+import { useRouter, notFound, useSearchParams } from 'next/navigation'
 // import { ChainProvider, useChain } from '@/context/chain-context'
 import { ChainId } from '@/types/chain'
 import TransactionHistory from '@/components/transaction-history'
@@ -33,8 +33,10 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
     const { isWalletConnected, isConnectingWallet, walletAddress } =
         useWalletConnection()
     const router = useRouter()
+    const searchParams = useSearchParams()
     const initialized = useRef(false)
     const scrollAreaRef = useRef<HTMLDivElement>(null)
+    const tabsContainerRef = useRef<HTMLDivElement>(null)
     const [scrollState, setScrollState] = useState({
         canScrollUp: false,
         canScrollDown: false,
@@ -109,7 +111,14 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
         chainId = ChainId.Sonic
     }
 
-    const [selectedTab, setSelectedTab] = useState('fund-overview')
+    // Initialize selectedTab based on URL parameter
+    const getInitialTab = () => {
+        const tabParam = searchParams.get('tab')
+        const validTabs = ['fund-overview', 'position-details']
+        return validTabs.includes(tabParam || '') ? (tabParam as string) : 'fund-overview'
+    }
+    
+    const [selectedTab, setSelectedTab] = useState(getInitialTab)
 
     const tabs = [
         {
@@ -128,11 +137,49 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
 
     const handleTabChange = (tab: string) => {
         setSelectedTab(tab)
+        
+        // Update URL with new tab parameter while preserving existing query params
+        const currentParams = new URLSearchParams(searchParams.toString())
+        currentParams.set('tab', tab)
+        router.replace(`?${currentParams.toString()}`, { scroll: false })
+        
         logEvent('selected_tab', {
             tab: tab,
             chain: params.chain,
         })
     }
+
+    // Handle URL parameters and scroll focus on initial load
+    useEffect(() => {
+        if (!isClient) return
+
+        // Update selectedTab if URL param changes
+        const tabParam = searchParams.get('tab')
+        const validTabs = ['fund-overview', 'position-details']
+        const newTab = validTabs.includes(tabParam || '') ? (tabParam as string) : 'fund-overview'
+        
+        if (newTab !== selectedTab) {
+            setSelectedTab(newTab)
+        }
+    }, [isClient, searchParams, selectedTab])
+
+    // Handle scroll focus only when hash is present on initial navigation
+    useEffect(() => {
+        if (!isClient) return
+
+        // Only handle scroll on initial load or when hash is actually present
+        const hash = window.location.hash
+        if (hash === '#start' && tabsContainerRef.current) {
+            setTimeout(() => {
+                tabsContainerRef.current?.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                })
+                // Clear the hash after scrolling to prevent repeated scrolling
+                window.history.replaceState(null, '', window.location.pathname + window.location.search)
+            }, 300) // Delay to ensure tab content is rendered
+        }
+    }, [isClient]) // Only run on initial client load
 
     if (!isClient) {
         return <LoadingPageSkeleton />
@@ -168,11 +215,13 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                     </div>
                     {isConnectingWallet && <LoadingTabs />}
                     {!isConnectingWallet && (
-                        <FlatTabs
-                            tabs={tabs}
-                            activeTab={selectedTab}
-                            onTabChange={handleTabChange}
-                        />
+                        <div ref={tabsContainerRef} id="tabs-section">
+                            <FlatTabs
+                                tabs={tabs}
+                                activeTab={selectedTab}
+                                onTabChange={handleTabChange}
+                            />
+                        </div>
                     )}
                 </div>
                 <div className="hidden lg:block">

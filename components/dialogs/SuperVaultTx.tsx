@@ -12,8 +12,10 @@ import {
     TrendingUp,
     X,
     Zap,
+    Lightbulb,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import {
     abbreviateNumber,
     decimalPlacesCount,
@@ -56,7 +58,7 @@ import Image from 'next/image'
 import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
 import { VAULT_ADDRESS_MAP } from '@/lib/constants'
 import SubscribeWithEmail from '../subscribe-with-email'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { checkUserPointsClaimStatus } from '@/app/actions/points'
 import toast from 'react-hot-toast'
 import FirstDepositToast from '@/components/toasts/FirstDepositToast'
@@ -64,6 +66,7 @@ import { useAnalytics } from '@/context/amplitude-analytics-provider'
 import WithdrawalAlertFlow from '../WithdrawalRetention/WithdrawalAlertFlow'
 import PostDepositEngagementToast from '@/components/toasts/PostDepositEngagementToast'
 import { ScrollArea } from '@radix-ui/react-scroll-area'
+import { UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL } from '@/constants'
 
 export default function SuperVaultTxDialog({
     disabled,
@@ -112,6 +115,8 @@ export default function SuperVaultTxDialog({
     const [hasEverSeenFirstDepositToast, setHasEverSeenFirstDepositToast] =
         useState(false)
     const { logEvent } = useAnalytics()
+    const router = useRouter()
+
 
     // Withdrawal retention flow state
     const [hasConsentedToWithdrawal, setHasConsentedToWithdrawal] = useState(false)
@@ -348,7 +353,9 @@ export default function SuperVaultTxDialog({
             (depositTx.status !== 'approve' || withdrawTx.status !== 'withdraw')
         ) {
             setAmount('')
-            resetDepositWithdrawTx()
+            setTimeout(() => {
+                resetDepositWithdrawTx()
+            }, 1000)
             setPendingEmail('') // Reset pendingEmail when closing
         }
     }
@@ -383,17 +390,17 @@ export default function SuperVaultTxDialog({
         withdrawTx.isPending || withdrawTx.isConfirming
 
     const isDepositTxInSuccess =
-        depositTx.isConfirmed && depositTx.hash && depositTx.status === 'view'
+        depositTx.isConfirmed && !!depositTx.hash && depositTx.status === 'view'
     const isWithdrawTxInSuccess =
         withdrawTx.isConfirmed &&
-        withdrawTx.hash &&
+        !!withdrawTx.hash &&
         withdrawTx.status === 'view'
 
     const isTxInProgress = isDepositTxInProgress || isWithdrawTxInProgress
     const isTxInSuccess = isDepositTxInSuccess || isWithdrawTxInSuccess
     const isTxFailed = false
 
-    const hasDepositTxStarted = depositTx.status === 'deposit'
+    const hasDepositTxStarted = depositTx.status === 'view'
     const hasWithdrawTxStarted = withdrawTx.status === 'view'
 
     const depositTxSpinnerColor = depositTx.isPending
@@ -512,6 +519,11 @@ export default function SuperVaultTxDialog({
         const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(eventTitle)}&dates=${startDate}/${endDate}&details=${encodeURIComponent(eventDescription)}&location=${encodeURIComponent('https://funds.superlend.xyz')}`
 
         window.open(googleCalendarUrl, '_blank')
+    }
+
+    const handleViewPortfolioClick = () => {
+        router.push('/super-fund/base/?tab=position-details#start')
+        setOpen(false)
     }
 
     // SUB_COMPONENT: Content header UI
@@ -1092,17 +1104,17 @@ export default function SuperVaultTxDialog({
             )}
 
             {isShowBlock({
-                deposit:
-                    depositTx.status === 'view' &&
-                    depositTx.isConfirmed &&
-                    !!depositTx.hash,
-                withdraw: false,
+                deposit: false,
+                withdraw:
+                    withdrawTx.status === 'view' &&
+                    withdrawTx.isConfirmed &&
+                    !!withdrawTx.hash,
             }) && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, ease: 'easeOut' }}
-                        className="bg-gray-200/50 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full my-2"
+                        className="bg-gray-200 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full my-2"
                     >
                         <div className="space-y-2">
                             <div className="flex items-center justify-start gap-2">
@@ -1110,12 +1122,16 @@ export default function SuperVaultTxDialog({
                                     <Trophy className="w-4 h-4 text-blue-600" />
                                 </div>
                                 <BodyText level="body2" weight="medium" className="text-gray-800">
-                                    Check back in a week for claiming rewards
+                                    More Rewards Are on the Way!
                                 </BodyText>
                             </div>
-                            <div className="bg-amber-50 rounded-4 p-2 border border-amber-100">
+                            <BodyText level="body3" weight="normal" className="text-gray-600">
+                                Some of your rewards will become claimable in about 6 days.
+                            </BodyText>
+                            <div className="bg-amber-50 rounded-4 p-2 border border-amber-100 flex items-start gap-1">
+                                <Lightbulb className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
                                 <BodyText level="body3" weight="normal" className="text-amber-800">
-                                    💡 Set a reminder to claim rewards in a week.
+                                    Set a reminder so you don&apos;t miss out when they&apos;re ready!
                                 </BodyText>
                             </div>
                             <Button
@@ -1124,7 +1140,46 @@ export default function SuperVaultTxDialog({
                                 onClick={handleSetReminder}
                                 className="w-full h-9 rounded-4 capitalize"
                             >
-                                Set Reminder
+                                Remind Me in 6 Days
+                            </Button>
+                        </div>
+                    </motion.div>
+                )}
+
+            {isShowBlock({
+                deposit: false,
+                withdraw:
+                    withdrawTx.status === 'view' &&
+                    withdrawTx.isConfirmed &&
+                    !!withdrawTx.hash,
+            }) && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeOut' }}
+                        className="bg-gray-200 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full my-2"
+                    >
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-start gap-2">
+                                <div className="flex items-center justify-center w-8 h-8 bg-blue-50 rounded-4 shrink-0">
+                                    <TrendingUp className="w-4 h-4 text-blue-600" />
+                                </div>
+                                <BodyText level="body2" weight="medium" className="text-gray-800">
+                                    Looking for Other Yield Opportunities?
+                                </BodyText>
+                            </div>
+
+                            <BodyText level="body3" weight="normal" className="text-gray-600">
+                                Compare top DeFi yields across 350+ markets, all in one place
+                            </BodyText>
+
+                            <Button
+                                variant="primaryOutline"
+                                size="sm"
+                                onClick={handleExploreAggregator}
+                                className="w-full h-9 rounded-4 capitalize"
+                            >
+                                Find New Opportunities
                             </Button>
                         </div>
                     </motion.div>
@@ -1141,7 +1196,7 @@ export default function SuperVaultTxDialog({
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, ease: 'easeOut' }}
-                        className="bg-gray-200/50 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full my-2"
+                        className="bg-gray-200 bg-opacity-50 backdrop-blur-sm rounded-5 p-4 w-full my-2"
                     >
                         <div className="space-y-2">
                             <div className="flex items-center justify-start gap-2">
@@ -1149,32 +1204,33 @@ export default function SuperVaultTxDialog({
                                     <TrendingUp className="w-4 h-4 text-blue-600" />
                                 </div>
                                 <BodyText level="body2" weight="medium" className="text-gray-800">
-                                    Explore our Aggregator
+                                    How Your Yield Accrues
                                 </BodyText>
                             </div>
 
-                            <div className="space-y-1">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-1 h-1 bg-blue-400 rounded-full" />
-                                    <BodyText level="body3" weight="normal" className="text-gray-600">
-                                        Explore 350+ markets
-                                    </BodyText>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-1 h-1 bg-blue-400 rounded-full" />
-                                    <BodyText level="body3" weight="normal" className="text-gray-600">
-                                        Best yields across protocols
-                                    </BodyText>
-                                </div>
+                            <BodyText level="body3" weight="normal" className="text-gray-600">
+                                To ensure fair rewards for everyone, your full yield is unlocked gradually over a short period (called the <span className="font-medium">smearing period</span>)
+                            </BodyText>
+
+                            <div className="bg-amber-50 rounded-4 p-2 border border-amber-100 flex items-start gap-1">
+                                <Lightbulb className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                                <BodyText level="body3" weight="normal" className="text-amber-800">
+                                    You&apos;ll start earning immediately, and your yield will reach its full potential in the coming days.
+                                    <ExternalLink iconSize={12} href={UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL}>
+                                        <BodyText level="body3" weight="normal" className="text-blue-600 ml-1">
+                                            Learn more
+                                        </BodyText>
+                                    </ExternalLink>
+                                </BodyText>
                             </div>
 
                             <Button
                                 variant="primaryOutline"
                                 size="sm"
-                                onClick={handleExploreAggregator}
+                                onClick={handleViewPortfolioClick}
                                 className="w-full h-9 rounded-4 capitalize"
                             >
-                                Launch App
+                                View Portfolio
                             </Button>
                         </div>
                     </motion.div>
@@ -1254,15 +1310,32 @@ export default function SuperVaultTxDialog({
                         </div>
 
                         {/* Scrollable Middle - Withdrawal Retention Flow OR Success Content */}
-                        {!isDepositPositionType && showWithdrawalRetention ? (
-                            <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-2">
-                                {withdrawalAlertContent}
-                            </div>
-                        ) : (isTxInSuccess && successSpecificContent) ? (
-                            <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-2">
-                                {successSpecificContent}
-                            </div>
-                        ) : null}
+                        <AnimatePresence mode="wait">
+                            {(!isDepositPositionType && !isWithdrawTxInSuccess) && (
+                                <motion.div
+                                    key="withdrawal-alert"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                    className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-2"
+                                >
+                                    {withdrawalAlertContent}
+                                </motion.div>
+                            )}
+                            {(isDepositTxInSuccess || isWithdrawTxInSuccess) && (
+                                <motion.div
+                                    key="success-content"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                    className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-2"
+                                >
+                                    {successSpecificContent}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
                         {/* Fixed Bottom - Action Button */}
                         {transactionStatusContent}
@@ -1356,15 +1429,32 @@ export default function SuperVaultTxDialog({
                     </div>
 
                     {/* Scrollable Middle - Withdrawal Retention Flow OR Success Content */}
-                    {!isDepositPositionType && showWithdrawalRetention ? (
-                        <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-1">
-                            {withdrawalAlertContent}
-                        </div>
-                    ) : (isTxInSuccess && successSpecificContent) ? (
-                        <div className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-1">
-                            {successSpecificContent}
-                        </div>
-                    ) : null}
+                    <AnimatePresence mode="wait">
+                        {!isDepositPositionType && showWithdrawalRetention && (
+                            <motion.div
+                                key="withdrawal-alert-mobile"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-1"
+                            >
+                                {withdrawalAlertContent}
+                            </motion.div>
+                        )}
+                        {(isTxInSuccess && successSpecificContent) && (
+                            <motion.div
+                                key="success-content-mobile"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                className="flex-1 overflow-y-auto overscroll-contain dialog-scroll pr-1"
+                            >
+                                {successSpecificContent}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     {/* Fixed Bottom - Action Button */}
                     {transactionStatusContent}
