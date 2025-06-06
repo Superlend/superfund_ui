@@ -27,7 +27,6 @@ const ActionButton = ({
     walletAddress,
     cta,
 }: IActionButtonSelectComponent) => {
-
     if (actionType === 'deposit') {
         return (
             <DepositButton
@@ -48,6 +47,7 @@ const ActionButton = ({
             <WithdrawButton
                 disabled={disabled}
                 handleCloseModal={handleCloseModal}
+                walletAddress={walletAddress}
                 asset={asset}
                 amount={amount}
                 cta={cta}

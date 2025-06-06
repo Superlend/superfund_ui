@@ -73,15 +73,15 @@ function getDaysUntilNextTuesday(): number {
     const currentDate = new Date()
     const currentDay = currentDate.getDay() // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
     const tuesday = 2
-    
+
     // Calculate days until next Tuesday
     let daysUntilTuesday = (tuesday - currentDay + 7) % 7
-    
+
     // If today is Tuesday, show next Tuesday (7 days)
     if (daysUntilTuesday === 0) {
         daysUntilTuesday = 7
     }
-    
+
     return daysUntilTuesday
 }
 
@@ -469,17 +469,22 @@ export default function SuperVaultTxDialog({
     // SHARE SCREEN BUTTONS FOR MINI APP:
     const shareScreenButtons = [
         {
-            buttonText: isPointsClaimed
-                ? 'Share on Warpcast'
-                : 'Share for a surprise',
+            buttonText:
+                positionType === 'withdraw' || isPointsClaimed
+                    ? 'Share on Warpcast'
+                    : 'Share for a surprise',
             imageSrc: '/icons/share.svg',
             onClick: () => {
-                const text = `Just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} ${positionType === 'withdraw' ? 'from' : 'into'} Superfund by @superlend 📈 Earning ${assetDetails?.asset?.effective_apy.toFixed(2)}% APY on USDC with intelligent, risk-adjusted vaults. Let your capital work smarter.`
+                const text = `Just deposited into Superfund by @superlend 📈\nEarning ${assetDetails?.asset?.effective_apy.toFixed(2)}% APY on USDC with intelligent, risk-adjusted vaults.\nLet your capital work smarter.`
+
                 sdk.actions.composeCast({
                     text,
-                    embeds: [
-                        `https://funds.superlend.xyz?info=${`${positionType === 'withdraw' ? withdrawTx.hash : depositTx.hash}:${walletAddress}`}`,
-                    ],
+                    embeds:
+                        positionType === 'withdraw'
+                            ? []
+                            : [
+                                `https://funds.superlend.xyz?info=${depositTx.hash}:${walletAddress}`,
+                            ],
                 })
             },
         },

@@ -33,6 +33,7 @@ interface IWithdrawButtonProps {
         text: string
         onClick: () => void
     }
+    walletAddress: `0x${string}`
 }
 
 const WithdrawButton = ({
@@ -41,6 +42,7 @@ const WithdrawButton = ({
     amount,
     handleCloseModal,
     cta,
+    walletAddress,
 }: IWithdrawButtonProps) => {
     const {
         writeContractAsync,
@@ -51,7 +53,6 @@ const WithdrawButton = ({
     const { selectedChain } = useChain()
     const { logEvent } = useAnalytics()
     const { withdrawTx, setWithdrawTx } = useTxContext() as TTxContext
-    const { address: walletAddress } = useAccount()
     const txBtnStatus: Record<string, string> = {
         pending: 'Withdrawing...',
         confirming: 'Confirming...',
@@ -88,19 +89,21 @@ const WithdrawButton = ({
                 amount: amount,
                 chain: selectedChain,
                 token: asset.address,
-                walletAddress: walletAddress
+                walletAddress: walletAddress,
             })
             // Dispatch custom event to notify transaction is complete
             if (typeof window !== 'undefined') {
-                console.log('Dispatching transaction-complete event for withdraw');
+                console.log(
+                    'Dispatching transaction-complete event for withdraw'
+                )
                 const event = new CustomEvent('transaction-complete', {
                     detail: {
                         type: 'withdraw',
                         hash: hash,
-                        amount: amount
-                    }
-                });
-                window.dispatchEvent(event);
+                        amount: amount,
+                    },
+                })
+                window.dispatchEvent(event)
             }
         }
     }, [hash, isConfirmed])
@@ -118,20 +121,20 @@ const WithdrawButton = ({
 
     const txBtnText =
         txBtnStatus[
-        isConfirming
-            ? 'confirming'
-            : isConfirmed
-                ? withdrawTx.status === 'view'
-                    ? 'success'
-                    : 'default'
-                : isPending
+            isConfirming
+                ? 'confirming'
+                : isConfirmed
+                  ? withdrawTx.status === 'view'
+                      ? 'success'
+                      : 'default'
+                  : isPending
                     ? 'pending'
                     : !isPending &&
                         !isConfirming &&
                         !isConfirmed &&
                         withdrawTx.status === 'view'
-                        ? 'error'
-                        : 'default'
+                      ? 'error'
+                      : 'default'
         ]
 
     const handleWithdrawSuperVault = useCallback(async () => {
@@ -139,7 +142,9 @@ const WithdrawButton = ({
 
         try {
             writeContractAsync({
-                address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+                address: VAULT_ADDRESS_MAP[
+                    selectedChain as keyof typeof VAULT_ADDRESS_MAP
+                ] as `0x${string}`,
                 abi: VAULT_ABI,
                 functionName: 'withdraw',
                 args: [
