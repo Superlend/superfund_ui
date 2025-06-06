@@ -483,8 +483,8 @@ export default function SuperVaultTxDialog({
                         positionType === 'withdraw'
                             ? []
                             : [
-                                `https://funds.superlend.xyz?info=${depositTx.hash}:${walletAddress}`,
-                            ],
+                                  `https://funds.superlend.xyz?info=${depositTx.hash}:${walletAddress}`,
+                              ],
                 })
             },
         },
