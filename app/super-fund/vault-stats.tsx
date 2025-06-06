@@ -40,11 +40,12 @@ type VaultStatsProps = {
 export default function VaultStats() {
     const { walletAddress, isWalletConnected } = useWalletConnection()
     const { selectedChain, chainDetails } = useChain()
-    // const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
-    //     vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
-    //     chainId: selectedChain
-    // })
-    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
+    const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
+        vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        chainId: selectedChain
+    })
+    // const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
+    const BOOST_APY = boostRewardsData?.reduce((acc, curr) => acc + (curr.boost_apy / 100), 0) ?? 0
     const { userMaxWithdrawAmount, isLoading: isLoadingUserMaxWithdrawAmount, error: errorUserMaxWithdrawAmount } = useUserBalance(
         walletAddress as `0x${string}`
     )

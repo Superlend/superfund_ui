@@ -13,6 +13,8 @@ import { useApyData } from '@/context/apy-data-provider'
 import ExternalLink from '../ExternalLink'
 import { Button } from '../ui/button'
 import { UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL } from '@/constants'
+import useGetBoostRewards from '@/hooks/useGetBoostRewards'
+import { BoostRewardResponse } from '@/queries/get-boost-rewards-api'
 
 interface EarlyWithdrawalWarningProps {
     smearingPeriodDays: number
@@ -29,8 +31,13 @@ export default function EarlyWithdrawalWarning({
         vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
         chain_id: selectedChain || 0
     })
-    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
-
+    // const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
+    const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
+        vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        chainId: selectedChain
+    })
+    const BOOST_APY = boostRewardsData?.reduce((acc: number, curr: BoostRewardResponse) => acc + (curr.boost_apy / 100), 0) ?? 0
+    
     const TOTAL_SPOT_APY = useMemo(() => {
         return Number(spotApy ?? 0) + Number(effectiveApyData?.rewards_apy ?? 0) + Number(BOOST_APY ?? 0)
     }, [spotApy, effectiveApyData, BOOST_APY])
