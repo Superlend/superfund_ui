@@ -37,7 +37,6 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
     const searchParams = useSearchParams()
     const initialized = useRef(false)
     const scrollAreaRef = useRef<HTMLDivElement>(null)
-    const tabsContainerRef = useRef<HTMLDivElement>(null)
     const [scrollState, setScrollState] = useState({
         canScrollUp: false,
         canScrollDown: false,
@@ -167,23 +166,49 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
         }
     }, [isClient, searchParams, selectedTab])
 
-    // Handle scroll focus only when hash is present on initial navigation
+        // Handle scroll focus only when hash is present on initial navigation
     useEffect(() => {
         if (!isClient) return
 
-        // Only handle scroll on initial load or when hash is actually present
         const hash = window.location.hash
-        if (hash === '#start' && tabsContainerRef.current) {
-            setTimeout(() => {
-                tabsContainerRef.current?.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
+        if (hash === '#start') {
+            const scrollToTabsSection = () => {
+                // Wait for layout to settle and content to render
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        // Find the tabs section element
+                        const tabsSection = document.getElementById('tabs-section')
+                        const tabsContent = document.querySelector('[data-radix-tabs-content]')
+                        
+                        // Use the actual tabs content if available, otherwise fall back to tabs section
+                        const targetElement = tabsContent || tabsSection
+                        
+                        if (targetElement) {
+                            const isMobile = window.innerWidth <= 768
+                            const headerOffset = isMobile ? 120 : 100 // Account for headers and spacing
+                            
+                            const elementTop = targetElement.getBoundingClientRect().top + window.pageYOffset
+                            const targetScrollPosition = elementTop - headerOffset
+                            
+                            // Use smooth scroll to calculated position
+                            window.scrollTo({
+                                top: Math.max(0, targetScrollPosition),
+                                behavior: 'smooth'
+                            })
+                            
+                            // Clear the hash after scrolling
+                            setTimeout(() => {
+                                window.history.replaceState(null, '', window.location.pathname + window.location.search)
+                            }, 1000) // Longer delay to ensure scroll completes
+                        }
+                    }, 100) // Small delay for rendering
                 })
-                // Clear the hash after scrolling to prevent repeated scrolling
-                window.history.replaceState(null, '', window.location.pathname + window.location.search)
-            }, 300) // Delay to ensure tab content is rendered
+            }
+
+            // Wait for all content to be rendered, including position details if that's the target tab
+            setTimeout(scrollToTabsSection, 800) // Longer delay for complex content
         }
-    }, [isClient]) // Only run on initial client load
+    }, [isClient, selectedTab]) // Add selectedTab to ensure we wait for tab change
 
     if (!isClient) {
         return <LoadingPageSkeleton />
@@ -219,7 +244,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                     </div>
                     {isConnectingWallet && <LoadingTabs />}
                     {!isConnectingWallet && (
-                        <div ref={tabsContainerRef} id="tabs-section">
+                        <div id="tabs-section">
                             <FlatTabs
                                 tabs={tabs}
                                 activeTab={selectedTab}
