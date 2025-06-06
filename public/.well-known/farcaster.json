@@ -13,6 +13,14 @@
         "buttonTitle": "Start Earning",
         "splashImageUrl": "https://funds.superlend.xyz/images/logos/superlend-rounded.svg",
         "splashBackgroundColor": "#ffffff",
-        "webhookUrl": "https://funds.superlend.xyz/api/webhook"
+        "webhookUrl": "https://funds.superlend.xyz/api/webhook",
+        "ogTitle": "SuperFunds - Earn Maximum Yield on USDC",
+        "ogDescription": "Earn smarter with SuperFund — an automated DeFi fund that allocates USDC across Aave, Morpho, Euler & more for optimized returns.",
+        "ogImageUrl": "https://superlend-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png",
+        "primaryCategory": "Finance",
+        "heroImageUrl": "https://funds.superlend.xyz/icons/logo-light.png",
+        "tagline": "Your stablecoin savings app, optimized for yield.",
+        "description": "Earn smarter with SuperFund — an automated DeFi fund that allocates USDC across Aave, Morpho, Euler & more for optimized returns.",
+        "subtitle": "Your stablecoin savings app, optimized for yield."
     }
 }
