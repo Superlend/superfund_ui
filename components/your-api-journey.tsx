@@ -149,7 +149,11 @@ export default function YourApiJourney() {
                                             label={
                                                 <Trophy className="w-4 h-4 text-yellow-600" />
                                             }
-                                            content={`Additional ${((Number(TOTAL_SPOT_APY) / Number(TOTAL_VAULT_APY)) * 100) - 100}% loyalty bonus APR is being streamed to you`}
+                                            content={
+                                                <BodyText level="body2" weight="normal" className="text-gray-600">
+                                                    Additional <span className="font-semibold text-yellow-600">{(((Number(TOTAL_SPOT_APY) / Number(TOTAL_VAULT_APY)) * 100) - 100).toFixed(2)}%</span> loyalty bonus APR is being streamed to you
+                                                </BodyText>
+                                            }
                                         />}
                                 </motion.div>
                                 <BodyText level="body2" weight="normal" className="text-gray-500">
