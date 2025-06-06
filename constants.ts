@@ -281,3 +281,5 @@ export const EIP_20_SIGNED_APPROVALS_LINK =
 export const DOCUMENTATION_LINK = 'https://docs.superlend.xyz/superlend-vaults/superfunds'
 
 export const APY_RAMP_UP_EXPLANATION_DOCUMENTATION_LINK = 'https://docs.craft.do/editor/d/71fd7b22-8910-4b24-ee21-5c14ab0a71b2/CC6AEE76-9654-4E89-94F3-8B379327BC27?s=S3onFRBLuVP1Auieom2o2rEXcKhAQqvQvxwUaPCcyEgx'
+
+export const UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL = 'https://docs.superlend.xyz/superlend-vaults/superfunds/how-it-works#understanding-earnings-on-superfund'

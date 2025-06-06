@@ -38,6 +38,10 @@ interface IDepositButtonProps {
     decimals: number
     handleCloseModal: (isVisible: boolean) => void
     walletAddress: `0x${string}`
+    cta?: {
+        text: string
+        onClick: () => void
+    }
 }
 
 const USDC_ABI = parseAbi([
@@ -56,6 +60,7 @@ const DepositButton = ({
     disabled,
     handleCloseModal,
     walletAddress,
+    cta,
 }: IDepositButtonProps) => {
     const {
         writeContractAsync,
@@ -114,7 +119,7 @@ const DepositButton = ({
         ]
     }
 
-    const txBtnText = getTxButtonText(isPending, isConfirming, isConfirmed)
+    const txBtnText: string = getTxButtonText(isPending, isConfirming, isConfirmed)
 
     const deposit = useCallback(async () => {
         try {
@@ -333,6 +338,9 @@ const DepositButton = ({
                     depositTx.status !== 'view'
                 }
                 onClick={() => {
+                    if (cta) {
+                        cta.onClick()
+                    }
                     if (depositTx.status === 'approve') {
                         onApproveDeposit()
                     } else if (depositTx.status === 'deposit') {
@@ -344,7 +352,7 @@ const DepositButton = ({
                 className="group flex items-center gap-[4px] py-3 w-full rounded-5 uppercase"
                 variant="primary"
             >
-                {txBtnText}
+                {cta ? cta.text : txBtnText}
                 {depositTx.status !== 'view' && !isPending && !isConfirming && (
                     <ArrowRightIcon
                         width={16}

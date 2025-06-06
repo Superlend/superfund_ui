@@ -8,6 +8,7 @@ export interface BoostRewardResponse {
     address: string
   },
   boost_apy: number
+  description?: string
 }
 
 export interface BoostRewardParams {

@@ -39,7 +39,7 @@ export default function ExternalLink({
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className={`w-fit shrink-0 inline-flex items-center gap-1 ${getColor()} leading-[0.5] ${className || ''}`}
+            className={`w-fit shrink-0 inline-flex items-center gap-1 hover:underline ${getColor()} leading-[0.5] ${className || ''}`}
             onClick={onClick ?? undefined}
         >
             {prefixIcon && prefixIcon}

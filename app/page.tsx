@@ -27,6 +27,7 @@ import { useApyData } from '@/context/apy-data-provider'
 import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
 import { abbreviateNumber } from '@/lib/utils'
 import FAQ from '@/data/faq'
+import useGetBoostRewards from '@/hooks/useGetBoostRewards'
 
 // Lazy load components
 const BenchmarkYieldTable = dynamic(
@@ -985,7 +986,12 @@ export default function HomePage() {
         vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
         chain_id: selectedChain || 0
     })
-    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
+    // const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
+    const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
+        vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        chainId: selectedChain
+    })
+    const BOOST_APY = boostRewardsData?.reduce((acc, curr) => acc + (curr.boost_apy / 100), 0) ?? 0
     const TOTAL_VAULT_APY = abbreviateNumber(Number(effectiveApyData?.total_apy ?? 0) + Number(BOOST_APY ?? 0))
 
     // Performance optimizations
@@ -1000,16 +1006,16 @@ export default function HomePage() {
         return (e: React.MouseEvent) => {
             clearTimeout(timeoutId)
             timeoutId = setTimeout(() => {
-        const { clientX, clientY } = e
-        const { innerWidth, innerHeight } = window
+                const { clientX, clientY } = e
+                const { innerWidth, innerHeight } = window
 
-        // Calculate position as percentage of container
-        const x = (clientX / innerWidth - 0.5) * 20
-        const y = (clientY / innerHeight - 0.5) * 20
+                // Calculate position as percentage of container
+                const x = (clientX / innerWidth - 0.5) * 20
+                const y = (clientY / innerHeight - 0.5) * 20
 
-        setMousePosition({ x, y })
+                setMousePosition({ x, y })
             }, 16) // ~60fps throttling
-    }
+        }
     }, [shouldReduceMotion])
 
     useEffect(() => {
@@ -1070,10 +1076,10 @@ export default function HomePage() {
         return {
             containerVariants: {
                 hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 20 },
-        visible: {
-            opacity: 1,
-            y: 0,
-            transition: {
+                visible: {
+                    opacity: 1,
+                    y: 0,
+                    transition: {
                         ...baseTransition,
                         staggerChildren: shouldReduceMotion ? 0 : 0.2
                     }
@@ -1081,81 +1087,81 @@ export default function HomePage() {
             },
             childVariants: {
                 hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 20 },
-        visible: {
-            opacity: 1,
-            y: 0,
+                visible: {
+                    opacity: 1,
+                    y: 0,
                     transition: shouldReduceMotion ? { duration: 0.1 } : { duration: 0.5 }
                 }
             },
             cardVariants: {
                 hidden: { opacity: 0, scale: shouldReduceMotion ? 1 : 0.8, y: shouldReduceMotion ? 0 : 20 },
-        visible: {
-            opacity: 1,
-            scale: 1,
-            y: 0,
+                visible: {
+                    opacity: 1,
+                    scale: 1,
+                    y: 0,
                     transition: shouldReduceMotion ? { duration: 0.1 } : {
-                duration: 0.5,
-                ease: "easeOut",
-                type: "spring",
-                stiffness: 100
-            }
-        }
+                        duration: 0.5,
+                        ease: "easeOut",
+                        type: "spring",
+                        stiffness: 100
+                    }
+                }
             },
             cardVariantsLeft: {
                 hidden: { opacity: 0, x: shouldReduceMotion ? 0 : -40 },
-        visible: {
-            opacity: 1,
-            x: 0,
+                visible: {
+                    opacity: 1,
+                    x: 0,
                     transition: shouldReduceMotion ? { duration: 0.1 } : {
-                duration: 0.6,
-                ease: "easeOut",
-                type: "spring"
-            }
-        }
+                        duration: 0.6,
+                        ease: "easeOut",
+                        type: "spring"
+                    }
+                }
             },
             cardVariantsRight: {
                 hidden: { opacity: 0, x: shouldReduceMotion ? 0 : 40 },
-        visible: {
-            opacity: 1,
-            x: 0,
+                visible: {
+                    opacity: 1,
+                    x: 0,
                     transition: shouldReduceMotion ? { duration: 0.1 } : {
-                duration: 0.6,
-                ease: "easeOut",
-                type: "spring"
-            }
-        }
+                        duration: 0.6,
+                        ease: "easeOut",
+                        type: "spring"
+                    }
+                }
             },
             statVariants: {
                 hidden: { opacity: 0, scale: shouldReduceMotion ? 1 : 0.7 },
-        visible: {
-            opacity: 1,
-            scale: 1,
+                visible: {
+                    opacity: 1,
+                    scale: 1,
                     transition: shouldReduceMotion ? { duration: 0.1 } : {
-                duration: 0.6,
-                ease: "backOut",
-                type: "spring",
-                bounce: 0.4
-            }
-        }
+                        duration: 0.6,
+                        ease: "backOut",
+                        type: "spring",
+                        bounce: 0.4
+                    }
+                }
             },
             iconVariants: {
                 hidden: { opacity: 0, rotate: shouldReduceMotion ? 0 : -15, scale: shouldReduceMotion ? 1 : 0.8 },
-        visible: {
-            opacity: 1,
-            rotate: 0,
-            scale: 1,
+                visible: {
+                    opacity: 1,
+                    rotate: 0,
+                    scale: 1,
                     transition: shouldReduceMotion ? { duration: 0.1 } : {
-                duration: 0.5,
-                ease: "easeOut",
-                type: "spring",
-                stiffness: 200
-            }
-        }
+                        duration: 0.5,
+                        ease: "easeOut",
+                        type: "spring",
+                        stiffness: 200
+                    }
+                }
             },
             fadeInVariants: {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
+                hidden: { opacity: 0 },
+                visible: {
+                    opacity: 1,
                     transition: shouldReduceMotion ? { duration: 0.1 } : { duration: 0.6 }
                 }
             }
@@ -1222,7 +1228,7 @@ export default function HomePage() {
                                 </Button>
                             </Link>
                         </motion.div>
-                                </div>
+                    </div>
                     {/* Scroll Indicator */}
                     <motion.div
                         variants={childVariants}
@@ -1247,7 +1253,7 @@ export default function HomePage() {
             </section>
 
             {/* SECTION 2: Problem → Solution */}
-            <ProblemSolutionSection 
+            <ProblemSolutionSection
                 containerVariants={containerVariants}
                 childVariants={childVariants}
                 cardVariantsLeft={cardVariantsLeft}
@@ -1288,7 +1294,7 @@ export default function HomePage() {
             </Container>
 
             {/* SECTION 4: Available on the fastest growing chains */}
-            <NetworksSection 
+            <NetworksSection
                 containerVariants={containerVariants}
                 childVariants={childVariants}
                 cardVariantsLeft={cardVariantsLeft}
@@ -1303,7 +1309,7 @@ export default function HomePage() {
             />
 
             {/* FAQ Section */}
-            <FAQSection 
+            <FAQSection
                 containerVariants={containerVariants}
                 childVariants={childVariants}
                 cardVariants={cardVariants}
@@ -1328,7 +1334,7 @@ export default function HomePage() {
                     >
                         {/* Enhanced Section Header */}
                         <motion.div variants={childVariants} className="text-center mb-10">
-                                    <motion.div
+                            <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.6 }}
@@ -1336,7 +1342,7 @@ export default function HomePage() {
                             >
                                 <div className="w-2 h-2 bg-gradient-to-r from-primary to-blue-500 rounded-full animate-pulse" />
                                 <span className="text-sm font-medium text-slate-700">Get Started</span>
-                                    </motion.div>
+                            </motion.div>
                             <HeadingText level="h2" weight="bold" className="mb-4 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 bg-clip-text text-transparent">
                                 Ready to Maximize Your USDC Returns?
                             </HeadingText>
@@ -1354,14 +1360,14 @@ export default function HomePage() {
 
                             <div className="relative grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
                                 {/* Enhanced Base Network Card */}
-                            <motion.div
-                                variants={cardVariantsLeft}
+                                <motion.div
+                                    variants={cardVariantsLeft}
                                     className="group relative hover:scale-105 transition-transform duration-300"
-                            >
-                                <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base" className="block h-full" onClick={() => logEvent('clicked_launch_superfund_base_app', {
-                                    section: 'base_network_card',
-                                    title: "Ready to Maximize Your USDC Returns?"
-                                })}>
+                                >
+                                    <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base" className="block h-full" onClick={() => logEvent('clicked_launch_superfund_base_app', {
+                                        section: 'base_network_card',
+                                        title: "Ready to Maximize Your USDC Returns?"
+                                    })}>
                                         <div className="relative h-full bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/40 flex flex-col justify-between">
                                             {/* Enhanced Background Decoration - CSS only */}
                                             <div className="absolute -top-8 -right-8 w-24 h-24 bg-gradient-to-br from-primary/10 to-blue-400/10 rounded-full blur-xl animate-spin-slow" />
@@ -1369,61 +1375,61 @@ export default function HomePage() {
 
                                             <div className="relative z-10">
                                                 {/* Enhanced Header with 3D Logo */}
-                                            <div className="flex items-center gap-4 mb-6">
+                                                <div className="flex items-center gap-4 mb-6">
                                                     <div className="relative w-12 h-12 group-hover:scale-110 transition-transform duration-300">
                                                         <div className="absolute inset-0 bg-gradient-to-br from-primary to-blue-600 rounded-xl shadow-lg group-hover:shadow-primary/25 transition-all duration-300" />
                                                         <div className="absolute inset-0.5 bg-white rounded-xl flex items-center justify-center shadow-inner">
-                                                    <ImageWithDefault
-                                                        src={CHAIN_DETAILS[ChainId.Base].logo}
-                                                        alt="Base"
+                                                            <ImageWithDefault
+                                                                src={CHAIN_DETAILS[ChainId.Base].logo}
+                                                                alt="Base"
                                                                 width={24}
                                                                 height={24}
-                                                        className="rounded-full"
-                                                    />
-                                                </div>
+                                                                className="rounded-full"
+                                                            />
+                                                        </div>
                                                         {/* Floating particles - CSS only */}
                                                         <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-primary/40 rounded-full blur-sm animate-pulse" />
                                                     </div>
                                                     <HeadingText level="h3" weight="semibold" className="text-slate-800 group-hover:text-primary transition-colors">
-                                                    Base
-                                                </HeadingText>
+                                                        Base
+                                                    </HeadingText>
                                                     <div className="inline-block bg-gradient-to-r from-primary/10 to-blue-500/10 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-primary/20 hover:scale-105 transition-transform duration-300">
                                                         <span className="text-xs font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
                                                             Up to {TOTAL_VAULT_APY}% APY
                                                         </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
                                             {/* Enhanced CTA Button */}
                                             <div className="hover:scale-105 transition-transform duration-200">
-                                        <Button
-                                            size="lg"
-                                            variant="secondary"
+                                                <Button
+                                                    size="lg"
+                                                    variant="secondary"
                                                     className="w-full h-12 mt-4 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white shadow-lg hover:shadow-xl transition-all duration-300"
                                                 >
                                                     <span className="font-medium">Launch SuperFund Base App</span>
                                                     <div className="ml-2 group-hover:translate-x-1 transition-transform duration-200">
                                                         <ArrowRight className="w-5 h-5" />
                                                     </div>
-                                        </Button>
+                                                </Button>
                                             </div>
 
                                             {/* Hover Effect Overlay */}
                                             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-blue-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                    </div>
-                                </Link>
-                            </motion.div>
+                                        </div>
+                                    </Link>
+                                </motion.div>
 
                                 {/* Enhanced Sonic Network Card */}
-                            <motion.div
-                                variants={cardVariantsRight}
+                                <motion.div
+                                    variants={cardVariantsRight}
                                     className="group relative hover:scale-105 transition-transform duration-300"
-                            >
-                                <Link target={miniAppUser ? '_self' : '_blank'} href="/waitlist" className="block h-full" onClick={() => logEvent('clicked_join_superfund_sonic_waitlist', {
-                                    section: 'sonic_network_card',
-                                    title: "Ready to Maximize Your USDC Returns?"
-                                })}>
+                                >
+                                    <Link target={miniAppUser ? '_self' : '_blank'} href="/waitlist" className="block h-full" onClick={() => logEvent('clicked_join_superfund_sonic_waitlist', {
+                                        section: 'sonic_network_card',
+                                        title: "Ready to Maximize Your USDC Returns?"
+                                    })}>
                                         <div className="relative h-full bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/40 flex flex-col justify-between">
                                             {/* Enhanced Background Decoration - CSS only */}
                                             <div className="absolute -top-8 -right-8 w-24 h-24 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full blur-xl animate-spin-slow" />
@@ -1431,50 +1437,50 @@ export default function HomePage() {
 
                                             <div className="relative z-10">
                                                 {/* Enhanced Header with 3D Logo */}
-                                            <div className="flex items-center gap-4 mb-6">
+                                                <div className="flex items-center gap-4 mb-6">
                                                     <div className="relative w-12 h-12 group-hover:scale-110 transition-transform duration-300">
                                                         <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg group-hover:shadow-blue-500/25 transition-all duration-300" />
                                                         <div className="absolute inset-0.5 bg-white rounded-xl flex items-center justify-center shadow-inner">
-                                                    <ImageWithDefault
-                                                        src={CHAIN_DETAILS[ChainId.Sonic].logo}
-                                                        alt="Sonic"
+                                                            <ImageWithDefault
+                                                                src={CHAIN_DETAILS[ChainId.Sonic].logo}
+                                                                alt="Sonic"
                                                                 width={24}
                                                                 height={24}
-                                                        className="rounded-full"
-                                                    />
-                                                </div>
+                                                                className="rounded-full"
+                                                            />
+                                                        </div>
                                                         {/* Floating particles - CSS only */}
                                                         <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-blue-400/40 rounded-full blur-sm animate-pulse" />
                                                     </div>
                                                     <HeadingText level="h3" weight="semibold" className="text-slate-800 group-hover:text-blue-600 transition-colors">
-                                                    Sonic
-                                                </HeadingText>
+                                                        Sonic
+                                                    </HeadingText>
                                                     <div className="inline-block bg-gradient-to-r from-blue-500/10 to-indigo-500/10 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-blue-500/20 shrink-0 hover:scale-105 transition-transform duration-300">
                                                         <span className="text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                                                             Coming soon
                                                         </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
                                             {/* Enhanced CTA Button */}
                                             <div className="hover:scale-105 transition-transform duration-200">
-                                        <Button
-                                            size="lg"
+                                                <Button
+                                                    size="lg"
                                                     className="w-full h-12 mt-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 text-blue-800 hover:from-blue-100 hover:to-indigo-100 hover:border-blue-300 shadow-lg hover:shadow-xl transition-all duration-300"
                                                 >
                                                     <span className="font-medium">Join SuperFund Sonic Waitlist</span>
                                                     <div className="ml-2 group-hover:translate-x-1 transition-transform duration-200">
                                                         <Play className="w-4 h-4 fill-current" />
                                                     </div>
-                                        </Button>
+                                                </Button>
                                             </div>
 
                                             {/* Hover Effect Overlay */}
                                             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                    </div>
-                                </Link>
-                            </motion.div>
+                                        </div>
+                                    </Link>
+                                </motion.div>
                             </div>
                         </div>
                     </motion.div>
