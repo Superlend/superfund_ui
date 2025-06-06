@@ -368,7 +368,17 @@ export default function SuperVaultTxDialog({
     )
 
     // SUB_COMPONENT: Close button to close the dialog
-    const closeContentButton = !isTxInProgress ? (
+    const closeContentButtonDrawer = !isTxInProgress ? (
+        <Button
+            variant="ghost"
+            onClick={() => handleOpenChange(false)}
+            className="h-6 w-6 flex items-center justify-center absolute right-1.5 top-[1rem] rounded-full opacity-70 bg-white ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground p-0"
+        >
+            <X strokeWidth={2.5} className="h-4 w-4 text-black shrink-0" />
+            <span className="sr-only">Close</span>
+        </Button>
+    ) : null
+    const closeContentButtonDialog = !isTxInProgress ? (
         <Button
             variant="ghost"
             onClick={() => handleOpenChange(false)}
@@ -382,17 +392,22 @@ export default function SuperVaultTxDialog({
     // SHARE SCREEN BUTTONS FOR MINI APP:
     const shareScreenButtons = [
         {
-            buttonText: isPointsClaimed
-                ? 'Share on Warpcast'
-                : 'Share for a surprise',
+            buttonText:
+                positionType === 'withdraw' || isPointsClaimed
+                    ? 'Share on Warpcast'
+                    : 'Share for a surprise',
             imageSrc: '/icons/share.svg',
             onClick: () => {
-                const text = `Just ${positionType === 'withdraw' ? 'withdrew' : 'deposited'} ${positionType === 'withdraw' ? 'from' : 'into'} Superfund by @superlend 📈 Earning ${assetDetails?.asset?.effective_apy.toFixed(2)}% APY on USDC with intelligent, risk-adjusted vaults. Let your capital work smarter.`
+                const text = `Just deposited into Superfund by @superlend 📈\nEarning ${assetDetails?.asset?.effective_apy.toFixed(2)}% APY on USDC with intelligent, risk-adjusted vaults.\nLet your capital work smarter.`
+
                 sdk.actions.composeCast({
                     text,
-                    embeds: [
-                        `https://funds.superlend.xyz?info=${`${positionType === 'withdraw' ? withdrawTx.hash : depositTx.hash}:${walletAddress}`}`,
-                    ],
+                    embeds:
+                        positionType === 'withdraw'
+                            ? []
+                            : [
+                                  `https://funds.superlend.xyz?info=${depositTx.hash}:${walletAddress}`,
+                              ],
                 })
             },
         },
@@ -1269,7 +1284,7 @@ export default function SuperVaultTxDialog({
                     showCloseButton={false}
                 >
                     {/* X Icon to close the dialog */}
-                    {closeContentButton}
+                    {closeContentButtonDialog}
                     {/* Tx in progress - Loading state UI */}
                     {/* {txInProgressLoadingState} */}
                     {/* Initial Confirmation UI */}
@@ -1288,7 +1303,7 @@ export default function SuperVaultTxDialog({
             <DrawerContent className="w-full p-5 pt-2 dismissible-false">
                 <ScrollArea className="max-h-[550px] overflow-y-auto overflow-x-hidden relative hide-scrollbar">
                     {/* X Icon to close the drawer */}
-                    {closeContentButton}
+                    {closeContentButtonDrawer}
                     {/* Tx in progress - Loading state UI */}
                     {/* {txInProgressLoadingState} */}
                     <DrawerHeader>{contentHeader}</DrawerHeader>
