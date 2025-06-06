@@ -7,11 +7,11 @@
     "frame": {
         "version": "1",
         "name": "SuperFund",
-        "iconUrl": "https://funds.superlend.xyz/images/logos/superlend-rounded.svg",
+        "iconUrl": "https://favorite-dishes-grip-roles.trycloudflare.com/super-fund/base",
         "homeUrl": "https://funds.superlend.xyz/super-fund/base",
         "imageUrl": "https://funds.superlend.xyz/og.png",
         "buttonTitle": "Start Earning",
-        "splashImageUrl": "https://funds.superlend.xyz/images/logos/superlend-rounded.svg",
+        "splashImageUrl": "https://favorite-dishes-grip-roles.trycloudflare.com/super-fund/base",
         "splashBackgroundColor": "#ffffff",
         "webhookUrl": "https://funds.superlend.xyz/api/webhook",
         "ogTitle": "SuperFunds - Earn Maximum Yield on USDC",
