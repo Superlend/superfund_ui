@@ -19,7 +19,7 @@ const frame = {
             name: 'SuperFund',
             url: 'https://funds.superlend.xyz/super-fund/base',
             splashImageUrl:
-                'https://favorite-dishes-grip-roles.trycloudflare.com/super-fund/base',
+                'https://funds.superlend.xyz/images/logos/android-chrome-512x512.png',
             splashBackgroundColor: '#ffffff',
         },
     },
