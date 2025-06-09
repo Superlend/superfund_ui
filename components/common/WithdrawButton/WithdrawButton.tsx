@@ -29,6 +29,10 @@ interface IWithdrawButtonProps {
     asset: any
     amount: string
     handleCloseModal: (isVisible: boolean) => void
+    cta?: {
+        text: string
+        onClick: () => void
+    }
     walletAddress: `0x${string}`
 }
 
@@ -37,6 +41,7 @@ const WithdrawButton = ({
     asset,
     amount,
     handleCloseModal,
+    cta,
     walletAddress,
 }: IWithdrawButtonProps) => {
     const {

@@ -12,7 +12,7 @@ import FlatTabs from '@/components/tabs/flat-tabs'
 import PositionDetails from '../position-details'
 import FundOverview from '../fund-overview'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
-import { useRouter, notFound } from 'next/navigation'
+import { useRouter, notFound, useSearchParams } from 'next/navigation'
 // import { ChainProvider, useChain } from '@/context/chain-context'
 import { ChainId } from '@/types/chain'
 import TransactionHistory from '@/components/transaction-history'
@@ -21,6 +21,7 @@ import { usePrivy } from '@privy-io/react-auth'
 import { useLoginToFrame } from '@privy-io/react-auth/farcaster'
 import sdk from '@farcaster/frame-sdk'
 import YourApiJourney from '@/components/your-api-journey'
+import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
 
 interface ChainPageProps {
     params: {
@@ -33,6 +34,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
     const { isWalletConnected, isConnectingWallet, walletAddress } =
         useWalletConnection()
     const router = useRouter()
+    const searchParams = useSearchParams()
     const initialized = useRef(false)
     const scrollAreaRef = useRef<HTMLDivElement>(null)
     const [scrollState, setScrollState] = useState({
@@ -42,6 +44,9 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
     const { logEvent } = useAnalytics()
     const { initLoginToFrame, loginToFrame } = useLoginToFrame()
     const { ready, authenticated } = usePrivy()
+    const { userMaxWithdrawAmount, isLoading: isLoadingUserMaxWithdrawAmount, error: errorUserMaxWithdrawAmount } = useUserBalance(
+        walletAddress as `0x${string}`
+    )
 
     // Log user in to Farcaster Frame
     // useEffect(() => {
@@ -109,7 +114,14 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
         chainId = ChainId.Sonic
     }
 
-    const [selectedTab, setSelectedTab] = useState('fund-overview')
+    // Initialize selectedTab based on URL parameter
+    const getInitialTab = () => {
+        const tabParam = searchParams.get('tab')
+        const validTabs = ['fund-overview', 'position-details']
+        return validTabs.includes(tabParam || '') ? (tabParam as string) : 'fund-overview'
+    }
+
+    const [selectedTab, setSelectedTab] = useState(getInitialTab)
 
     const tabs = [
         {
@@ -128,11 +140,75 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
 
     const handleTabChange = (tab: string) => {
         setSelectedTab(tab)
+
+        // Update URL with new tab parameter while preserving existing query params
+        const currentParams = new URLSearchParams(searchParams.toString())
+        currentParams.set('tab', tab)
+        router.replace(`?${currentParams.toString()}`, { scroll: false })
+
         logEvent('selected_tab', {
             tab: tab,
             chain: params.chain,
         })
     }
+
+    // Handle URL parameters and scroll focus on initial load
+    useEffect(() => {
+        if (!isClient) return
+
+        // Update selectedTab if URL param changes
+        const tabParam = searchParams.get('tab')
+        const validTabs = ['fund-overview', 'position-details']
+        const newTab = validTabs.includes(tabParam || '') ? (tabParam as string) : 'fund-overview'
+
+        if (newTab !== selectedTab) {
+            setSelectedTab(newTab)
+        }
+    }, [isClient, searchParams, selectedTab])
+
+        // Handle scroll focus only when hash is present on initial navigation
+    useEffect(() => {
+        if (!isClient) return
+
+        const hash = window.location.hash
+        if (hash === '#start') {
+            const scrollToTabsSection = () => {
+                // Wait for layout to settle and content to render
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        // Find the tabs section element
+                        const tabsSection = document.getElementById('tabs-section')
+                        const tabsContent = document.querySelector('[data-radix-tabs-content]')
+                        
+                        // Use the actual tabs content if available, otherwise fall back to tabs section
+                        const targetElement = tabsContent || tabsSection
+                        
+                        if (targetElement) {
+                            const isMobile = window.innerWidth <= 768
+                            const headerOffset = isMobile ? 120 : 100 // Account for headers and spacing
+                            
+                            const elementTop = targetElement.getBoundingClientRect().top + window.pageYOffset
+                            const targetScrollPosition = elementTop - headerOffset
+                            
+                            // Use smooth scroll to calculated position
+                            window.scrollTo({
+                                top: Math.max(0, targetScrollPosition),
+                                behavior: 'smooth'
+                            })
+                            
+                            // Clear the hash after scrolling
+                            setTimeout(() => {
+                                window.history.replaceState(null, '', window.location.pathname + window.location.search)
+                            }, 1000) // Longer delay to ensure scroll completes
+                        }
+                    }, 100) // Small delay for rendering
+                })
+            }
+
+            // Wait for all content to be rendered, including position details if that's the target tab
+            setTimeout(scrollToTabsSection, 800) // Longer delay for complex content
+        }
+    }, [isClient, selectedTab]) // Add selectedTab to ensure we wait for tab change
 
     if (!isClient) {
         return <LoadingPageSkeleton />
@@ -157,7 +233,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                     <VaultStats />
                     <div className="flex flex-col gap-4 lg:hidden">
                         <DepositAndWithdrawAssets />
-                        {isWalletConnected && <YourApiJourney />}
+                        {(isWalletConnected && !!Number(userMaxWithdrawAmount)) && <YourApiJourney />}
                         {isWalletConnected && (
                             <TransactionHistory
                                 protocolIdentifier={getProtocolIdentifier(
@@ -168,11 +244,13 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                     </div>
                     {isConnectingWallet && <LoadingTabs />}
                     {!isConnectingWallet && (
-                        <FlatTabs
-                            tabs={tabs}
-                            activeTab={selectedTab}
-                            onTabChange={handleTabChange}
-                        />
+                        <div id="tabs-section">
+                            <FlatTabs
+                                tabs={tabs}
+                                activeTab={selectedTab}
+                                onTabChange={handleTabChange}
+                            />
+                        </div>
                     )}
                 </div>
                 <div className="hidden lg:block">
@@ -189,7 +267,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                         <ScrollArea className="h-full" ref={scrollAreaRef}>
                             <div className="flex flex-col gap-2 pr-4">
                                 <DepositAndWithdrawAssets />
-                                {isWalletConnected && <YourApiJourney />}
+                                {(isWalletConnected && !!Number(userMaxWithdrawAmount)) && <YourApiJourney />}
                                 {isWalletConnected && (
                                     <TransactionHistory
                                         protocolIdentifier={getProtocolIdentifier(

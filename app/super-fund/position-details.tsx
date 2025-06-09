@@ -27,6 +27,7 @@ import TooltipText from "@/components/tooltips/TooltipText"
 import { useApyData } from "@/context/apy-data-provider"
 import { getRewardsTooltipContent } from "@/lib/ui/getRewardsTooltipContent"
 import { starVariants } from "@/lib/animations"
+import useGetBoostRewards from "@/hooks/useGetBoostRewards"
 // import { APY_RAMP_UP_EXPLANATION_DOCUMENTATION_LINK } from "@/constants"
 
 const variants = {
@@ -115,7 +116,13 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
         walletAddress: walletAddress || '',
         refetchOnTransaction: true
     })
-    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
+    const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
+        vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        chainId: selectedChain,
+        userAddress: walletAddress
+    })
+    const BOOST_APY = boostRewardsData?.reduce((acc: number, curr: any) => acc + (curr.boost_apy / 100), 0) ?? 0
+
     // Daily Earnings History
     const [selectedRangeForDailyEarningsHistory, setSelectedRangeForDailyEarningsHistory] = useState(Period.oneMonth)
     const startTimeStamp = getStartTimestamp(selectedRangeForDailyEarningsHistory)

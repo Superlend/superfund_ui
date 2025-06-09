@@ -12,15 +12,25 @@ import { useGetEffectiveApy } from "@/hooks/vault_hooks/useGetEffectiveApy"
 import { VAULT_ADDRESS_MAP } from "@/lib/constants"
 import { useChain } from "@/context/chain-context"
 import { useApyData } from "@/context/apy-data-provider"
+import useGetBoostRewards from "@/hooks/useGetBoostRewards"
+import { BoostRewardResponse } from "@/queries/get-boost-rewards-api"
+import { useWalletConnection } from "@/hooks/useWalletConnection"
 
 export default function YourApiJourney() {
+    const { walletAddress } = useWalletConnection()
     const { selectedChain, chainDetails } = useChain()
     const { spotApy, isLoading: isLoadingSpotApy, error: errorSpotApy } = useVaultHook()
     const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
         vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
         chain_id: selectedChain || 0
     })
-    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
+    // const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
+    const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
+        vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        chainId: selectedChain,
+        userAddress: walletAddress
+    })
+    const BOOST_APY = boostRewardsData?.reduce((acc: number, curr: BoostRewardResponse) => acc + (curr.boost_apy / 100), 0) ?? 0
     const TOTAL_SPOT_APY = useMemo(() => {
         return Number(spotApy ?? 0) + Number(effectiveApyData?.rewards_apy ?? 0) + Number(BOOST_APY ?? 0)
     }, [spotApy, effectiveApyData, BOOST_APY])
@@ -30,7 +40,7 @@ export default function YourApiJourney() {
         <Card>
             <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                    <div className="relative p-2 bg-gradient-to-br from-green-100 to-green-200 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:rotate-12 hover:scale-110">
+                    <div className="relative p-2 bg-gradient-to-br from-green-100 to-green-200 rounded-4 shadow-md hover:shadow-lg transition-all duration-300 hover:rotate-12 hover:scale-110">
                         <ChartNoAxesCombined className="h-5 w-5 text-green-600 drop-shadow-sm animate-pulse" />
                     </div>
                     <HeadingText level="h5" weight="medium" className="text-gray-800 flex items-center gap-1">
@@ -149,7 +159,11 @@ export default function YourApiJourney() {
                                             label={
                                                 <Trophy className="w-4 h-4 text-yellow-600" />
                                             }
-                                            content="Your APY is boosted by Loyalty Advantage"
+                                            content={
+                                                <BodyText level="body2" weight="normal" className="text-gray-600">
+                                                    Additional <span className="font-semibold text-yellow-600">{(((Number(TOTAL_SPOT_APY) / Number(TOTAL_VAULT_APY)) * 100) - 100).toFixed(2)}%</span> loyalty bonus APR is being streamed to you
+                                                </BodyText>
+                                            }
                                         />}
                                 </motion.div>
                                 <BodyText level="body2" weight="normal" className="text-gray-500">

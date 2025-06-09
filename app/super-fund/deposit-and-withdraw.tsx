@@ -66,11 +66,12 @@ export default function DepositAndWithdrawAssets() {
         chain_id: selectedChain
     })
     const { totalAssets, spotApy, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
-    // const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
-    //     vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
-    //     chainId: selectedChain
-    // })
-    const BOOST_APY = getBoostApy(Number(totalAssets))
+    const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
+        vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        chainId: selectedChain,
+        userAddress: walletAddress
+    })
+    const BOOST_APY = boostRewardsData?.reduce((acc, curr) => acc + (curr.boost_apy / 100), 0) ?? 0
     const TOTAL_APY = Number(effectiveApyData?.rewards_apy ?? 0) + Number(BOOST_APY ?? 0) + Number(effectiveApyData?.base_apy ?? 0)
 
     useEffect(() => {
