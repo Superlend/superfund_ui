@@ -84,7 +84,7 @@ export default function VaultStats() {
     const isLoadingSection = !isClient;
     const TOTAL_APY = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(effectiveApyData?.base_apy ?? 0) + Number(BOOST_APY ?? 0)
     const totalPositionAmountInDollars = useMemo(() => {
-        return abbreviateNumber(Number(capital ?? 0) + Number(totalInterestEarned ?? 0), 4)
+        return Number(capital ?? 0) + Number(totalInterestEarned ?? 0)
     }, [capital, totalInterestEarned])
 
     const positionBreakdownList = [
