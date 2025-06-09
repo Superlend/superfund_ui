@@ -83,9 +83,9 @@ export default function VaultStats() {
     // })
     const isLoadingSection = !isClient;
     const TOTAL_APY = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(effectiveApyData?.base_apy ?? 0) + Number(BOOST_APY ?? 0)
-    const totalPositionAmountInDollars = useMemo(() => {
-        return Number(capital ?? 0) + Number(totalInterestEarned ?? 0)
-    }, [capital, totalInterestEarned])
+    // const totalPositionAmountInDollars = useMemo(() => {
+    //     return Number(capital ?? 0) + Number(totalInterestEarned ?? 0)
+    // }, [capital, totalInterestEarned])
 
     const positionBreakdownList = [
         {
@@ -112,7 +112,7 @@ export default function VaultStats() {
         {
             id: 'my-position',
             title: 'My Position',
-            value: isWalletConnected ? `$${abbreviateNumber(Number(totalPositionAmountInDollars), 4)}` : '',
+            value: isWalletConnected ? `$${abbreviateNumber(Number(userMaxWithdrawAmount), 4)}` : '',
             show: true,
             isLoading: isWalletConnected && isLoadingUserMaxWithdrawAmount,
             error: errorUserMaxWithdrawAmount,
@@ -154,7 +154,7 @@ export default function VaultStats() {
                                 </Label>
                             </div>
                             <BodyText level="body3" weight="medium" className="text-gray-800">
-                                ={' '}${abbreviateNumber(Number(totalPositionAmountInDollars), 4)}
+                                ={' '}${abbreviateNumber(Number(userMaxWithdrawAmount), 4)}
                             </BodyText>
                         </div>
                     </div>
