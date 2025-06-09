@@ -5,7 +5,7 @@ import { useSetActiveWallet } from '@privy-io/wagmi'
 import FrameSDK from '@farcaster/frame-sdk'
 
 export const useWalletConnection = () => {
-    const { isConnecting: isConnectingWagmi } = useAccount()
+    const { isConnecting: isConnectingWagmi, address: wagmiWalletAddress } = useAccount()
     const { disconnect } = useDisconnect()
     const { user, ready, authenticated } = usePrivy()
     const { wallets } = useWallets()
@@ -20,9 +20,11 @@ export const useWalletConnection = () => {
     const activeWallet = isWalletConnected
         ? wallets.find((wallet) => wallet.isConnected)
         : undefined
+
     const walletAddress =
         (activeWallet?.address as `0x${string}`) ||
-        (user?.wallet?.address as `0x${string}`)
+        (user?.wallet?.address as `0x${string}`) ||
+        wagmiWalletAddress
 
     // Set the latest connected wallet as active
     useEffect(() => {

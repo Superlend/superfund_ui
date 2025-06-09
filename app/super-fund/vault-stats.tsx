@@ -42,7 +42,8 @@ export default function VaultStats() {
     const { selectedChain, chainDetails } = useChain()
     const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
         vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
-        chainId: selectedChain
+        chainId: selectedChain,
+        userAddress: walletAddress
     })
     // const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
     const BOOST_APY = boostRewardsData?.reduce((acc, curr) => acc + (curr.boost_apy / 100), 0) ?? 0

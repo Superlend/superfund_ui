@@ -14,8 +14,10 @@ import { useChain } from "@/context/chain-context"
 import { useApyData } from "@/context/apy-data-provider"
 import useGetBoostRewards from "@/hooks/useGetBoostRewards"
 import { BoostRewardResponse } from "@/queries/get-boost-rewards-api"
+import { useWalletConnection } from "@/hooks/useWalletConnection"
 
 export default function YourApiJourney() {
+    const { walletAddress } = useWalletConnection()
     const { selectedChain, chainDetails } = useChain()
     const { spotApy, isLoading: isLoadingSpotApy, error: errorSpotApy } = useVaultHook()
     const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
@@ -25,7 +27,8 @@ export default function YourApiJourney() {
     // const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
     const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
         vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
-        chainId: selectedChain
+        chainId: selectedChain,
+        userAddress: walletAddress
     })
     const BOOST_APY = boostRewardsData?.reduce((acc: number, curr: BoostRewardResponse) => acc + (curr.boost_apy / 100), 0) ?? 0
     const TOTAL_SPOT_APY = useMemo(() => {

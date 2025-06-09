@@ -28,6 +28,7 @@ import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
 import { abbreviateNumber } from '@/lib/utils'
 import FAQ from '@/data/faq'
 import useGetBoostRewards from '@/hooks/useGetBoostRewards'
+import { useWalletConnection } from '@/hooks/useWalletConnection'
 
 // Lazy load components
 const BenchmarkYieldTable = dynamic(
@@ -982,14 +983,16 @@ export default function HomePage() {
     const [miniAppUser, setMiniAppUser] = useState<any>(null)
     const { logEvent } = useAnalytics()
     const { selectedChain, chainDetails } = useChain()
+    const { walletAddress } = useWalletConnection()
     const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
         vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
-        chain_id: selectedChain || 0
+        chain_id: selectedChain || 0,
     })
     // const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
     const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
         vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
-        chainId: selectedChain
+        chainId: selectedChain,
+        userAddress: walletAddress
     })
     const BOOST_APY = boostRewardsData?.reduce((acc, curr) => acc + (curr.boost_apy / 100), 0) ?? 0
     const TOTAL_VAULT_APY = abbreviateNumber(Number(effectiveApyData?.total_apy ?? 0) + Number(BOOST_APY ?? 0))

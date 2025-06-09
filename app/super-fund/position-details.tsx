@@ -118,7 +118,8 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
     })
     const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
         vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
-        chainId: selectedChain
+        chainId: selectedChain,
+        userAddress: walletAddress
     })
     const BOOST_APY = boostRewardsData?.reduce((acc: number, curr: any) => acc + (curr.boost_apy / 100), 0) ?? 0
 
