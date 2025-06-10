@@ -17,6 +17,7 @@ import { ChainProvider } from './chain-context'
 const queryClient = new QueryClient()
 
 export const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''
+const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || ''
 
 // Set up metadata
 const metadata = {
@@ -84,6 +85,27 @@ function ContextProvider({
         initializeConfig()
     }, [isClient])
 
+    // walletList: context
+    //     ? undefined
+    //     : isMiniApp
+    //         ? [
+    //             'metamask',
+    //             'coinbase_wallet',
+    //             'okx_wallet',
+    //             'rainbow',
+    //             'rabby_wallet',
+    //             'phantom',
+    //         ]
+    //         : [
+    //             'metamask',
+    //             'coinbase_wallet',
+    //             'okx_wallet',
+    //             'rainbow',
+    //             'rabby_wallet',
+    //             'phantom',
+    //             'wallet_connect',
+    //         ],
+
     return (
         <AnalyticsProvider>
             <PrivyProvider
@@ -97,29 +119,18 @@ function ContextProvider({
                         landingHeader: 'Connect Wallet',
                         loginMessage: 'Select wallet to continue',
                         showWalletLoginFirst: true,
-                        walletList: context
-                            ? undefined
-                            : isMiniApp
-                              ? [
-                                    'metamask',
-                                    'coinbase_wallet',
-                                    'okx_wallet',
-                                    'rainbow',
-                                    'rabby_wallet',
-                                    'phantom',
-                                    // 'wallet_connect',
-                                ]
-                              : [
-                                    'metamask',
-                                    'coinbase_wallet',
-                                    'okx_wallet',
-                                    'rainbow',
-                                    'rabby_wallet',
-                                    'phantom',
-                                    // 'wallet_connect',
-                                ],
+                        walletList: [
+                            'metamask',
+                            'coinbase_wallet',
+                            'okx_wallet',
+                            'rainbow',
+                            'rabby_wallet',
+                            'phantom',
+                            'wallet_connect',
+                        ],
                     },
                     supportedChains: [base, sonic],
+                    walletConnectCloudProjectId: WALLETCONNECT_PROJECT_ID,
                 }}
             >
                 <QueryClientProvider client={queryClient}>
