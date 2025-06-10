@@ -25,7 +25,7 @@ export function useRewardsHook() {
         isError: isErrorRewards,
         refetch: refetchClaimRewardsData,
     } = useGetClaimRewards({
-        user_address: walletAddress,
+        user_address: walletAddress || '',
         chain_id: CHAIN_ID,
     })
 

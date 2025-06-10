@@ -16,7 +16,7 @@ import { ChainProvider } from './chain-context'
 // Set up queryClient
 const queryClient = new QueryClient()
 
-export const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_PROJECT_ID || ''
+export const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''
 
 // Set up metadata
 const metadata = {
@@ -99,15 +99,24 @@ function ContextProvider({
                         showWalletLoginFirst: true,
                         walletList: context
                             ? undefined
-                            : [
-                                  'metamask',
-                                  'coinbase_wallet',
-                                  'okx_wallet',
-                                  'rainbow',
-                                  'rabby_wallet',
-                                  'phantom',
-                                  'wallet_connect',
-                              ],
+                            : isMiniApp
+                              ? [
+                                    'metamask',
+                                    'coinbase_wallet',
+                                    'okx_wallet',
+                                    'rainbow',
+                                    'rabby_wallet',
+                                    'phantom',
+                                ]
+                              : [
+                                    'metamask',
+                                    'coinbase_wallet',
+                                    'okx_wallet',
+                                    'rainbow',
+                                    'rabby_wallet',
+                                    'phantom',
+                                    'wallet_connect',
+                                ],
                     },
                     supportedChains: [base, sonic],
                 }}

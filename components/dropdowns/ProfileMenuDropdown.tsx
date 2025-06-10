@@ -76,13 +76,16 @@ export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
     const handleLogout = async () => {
         clearApprovedWallet()
         setIsLoggingOut(true)
-        logout()
-            .then(() => {
-                setOpen(false)
-            })
-            .finally(() => {
-                setIsLoggingOut(false)
-            })
+        try {
+            await logout()
+            setOpen(false)
+        } catch (error) {
+            console.error('Profile menu logout error:', error)
+            // Still close the menu even if logout fails
+            setOpen(false)
+        } finally {
+            setIsLoggingOut(false)
+        }
     }
 
     const handleViewTransactions = () => {

@@ -14,17 +14,18 @@ export const useWalletConnection = () => {
     const [context, setContext] = useState<any>(null)
 
     const isConnectingWallet = isConnectingWagmi || !ready
-    const isWalletConnected = !!user || !!wagmiWalletAddress
+    const isWalletConnected = authenticated && (!!user || !!wagmiWalletAddress)
 
     // Get the active wallet from the list of wallets
     const activeWallet = isWalletConnected
         ? wallets.find((wallet) => wallet.isConnected)
         : undefined
 
-    const walletAddress =
-        (activeWallet?.address as `0x${string}`) ||
-        (user?.wallet?.address as `0x${string}`) ||
-        wagmiWalletAddress
+    const walletAddress = authenticated 
+        ? ((activeWallet?.address as `0x${string}`) ||
+           (user?.wallet?.address as `0x${string}`) ||
+           wagmiWalletAddress)
+        : undefined
 
     // Set the latest connected wallet as active
     useEffect(() => {
@@ -54,6 +55,13 @@ export const useWalletConnection = () => {
         }
         void load()
     }, [])
+
+    // Disconnect wagmi when user logs out of Privy
+    useEffect(() => {
+        if (!authenticated && wagmiWalletAddress) {
+            disconnect()
+        }
+    }, [authenticated, wagmiWalletAddress, disconnect])
 
     async function handleSwitchChain(chain_id: number) {
         await wallet?.switchChain(Number(chain_id))

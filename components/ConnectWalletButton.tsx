@@ -5,7 +5,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from './ui/button'
 import useIsClient from '@/hooks/useIsClient'
-import { usePrivy } from '@privy-io/react-auth'
+import { usePrivy, useLogout } from '@privy-io/react-auth'
 import { ProfileMenuDropdown } from './dropdowns/ProfileMenuDropdown'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
@@ -42,7 +42,12 @@ export default function ConnectWalletButton() {
     const { isClient } = useIsClient()
     const { logEvent } = useAnalytics()
     const { walletAddress, isConnectingWallet } = useWalletConnection()
-    const { ready, authenticated, login, logout, user } = usePrivy()
+    const { ready, authenticated, login, user } = usePrivy()
+    const { logout } = useLogout({
+        onSuccess: () => {
+            console.log('Logout successful via useLogout')
+        }
+    })
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
     // const [showSonicDialog, setShowSonicDialog] = useState(false)
     // const [portfolioValue, setPortfolioValue] = useState('0')
@@ -76,7 +81,11 @@ export default function ConnectWalletButton() {
 
     // Handle logout with redirection
     const handleLogout = async () => {
-        await logout()
+        try {
+            await logout()
+        } catch (error) {
+            console.error('Logout error:', error)
+        }
         // router.push('/')
     }
 
