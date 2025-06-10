@@ -15,7 +15,7 @@ export default function CustomAlert({
 }) {
     return (
         <Alert variant={variant} size={size}>
-            <AlertDescription className="flex items-start justify-start gap-1 truncate">
+            <AlertDescription className="flex items-start justify-start gap-1">
                 {/* {hasPrefixIcon && variant === 'destructive' && (
                     <DangerSquare
                         width={18}
@@ -39,7 +39,7 @@ export default function CustomAlert({
                         />
                     )}
                 {typeof description === 'string' && (
-                    <span className="leading-0 font-medium inline-block truncate">{description}</span>
+                    <span className="leading-0 font-medium">{description}</span>
                 )}
                 {typeof description !== 'string' && description}
             </AlertDescription>

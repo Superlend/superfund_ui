@@ -84,58 +84,58 @@ export function BenchmarkHistoryChart() {
     // Get Aave data
     const { data: aaveData, isLoading: isAaveLoading } = useGetBenchmarkHistory({
         protocol_identifier: PROTOCOL_IDENTIFIERS[selectedChain === ChainId.Sonic ? 'SONIC' : 'BASE'].aave,
-        period: apiPeriod,
+        period: Period.oneYear,
         token: selectedChain === ChainId.Sonic ? SONIC_USDC_ADDRESS : USDC_ADDRESS
     })
 
     // Get Morpho data for Base chain
     const { data: morphoGauntletPrimeData, isLoading: isMorphoGauntletPrimeLoading } = useGetBenchmarkHistory({
         protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.morphoGauntletPrime,
-        period: apiPeriod,
+        period: Period.oneYear,
         token: USDC_ADDRESS
     })
 
     const { data: morphoMoonwellData, isLoading: isMorphoMoonwellLoading } = useGetBenchmarkHistory({
         protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.morphoMoonwell,
-        period: apiPeriod,
+        period: Period.oneYear,
         token: USDC_ADDRESS
     })
 
     const { data: morphoGauntletCoreData, isLoading: isMorphoGauntletCoreLoading } = useGetBenchmarkHistory({
         protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.morphoGauntletCore,
-        period: apiPeriod,
+        period: Period.oneYear,
         token: USDC_ADDRESS
     })
 
     const { data: morphoSteakhouseData, isLoading: isMorphoSteakhouseLoading } = useGetBenchmarkHistory({
         protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.morphoSteakhouse,
-        period: apiPeriod,
+        period: Period.oneYear,
         token: USDC_ADDRESS
     })
 
     const { data: morphoIonicData, isLoading: isMorphoIonicLoading } = useGetBenchmarkHistory({
         protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.morphoIonic,
-        period: apiPeriod,
+        period: Period.oneYear,
         token: USDC_ADDRESS
     })
 
     const { data: morphoRe7Data, isLoading: isMorphoRe7Loading } = useGetBenchmarkHistory({
         protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.morphoRe7,
-        period: apiPeriod,
+        period: Period.oneYear,
         token: USDC_ADDRESS
     })
 
     // Get Fluid data for Base chain
     const { data: fluidData, isLoading: isFluidLoading } = useGetBenchmarkHistory({
         protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.fluid,
-        period: apiPeriod,
+        period: Period.oneYear,
         token: USDC_ADDRESS
     });
 
     // Get Euler data for Base chain
     const { data: eulerData, isLoading: isEulerLoading } = useGetBenchmarkHistory({
         protocol_identifier: PROTOCOL_IDENTIFIERS.BASE.euler,
-        period: apiPeriod,
+        period: Period.oneYear,
         token: USDC_ADDRESS
     });
 
@@ -429,18 +429,42 @@ export function BenchmarkHistoryChart() {
                 };
             });
 
-            setHistoricalData(
-                combined.filter(d =>
-                    d.aave !== null ||
-                    d.fluid !== null ||
-                    d.morphoGauntletPrime !== null ||
-                    d.morphoMoonwell !== null ||
-                    d.morphoGauntletCore !== null ||
-                    d.morphoSteakhouse !== null ||
-                    d.morphoIonic !== null ||
-                    d.morphoRe7 !== null
-                ) as TBenchmarkDataPoint[]
+            // Filter combined data to match Superfund's time range for consistent period display
+            let filteredCombined = combined.filter(d =>
+                d.aave !== null ||
+                d.fluid !== null ||
+                d.morphoGauntletPrime !== null ||
+                d.morphoMoonwell !== null ||
+                d.morphoGauntletCore !== null ||
+                d.morphoSteakhouse !== null ||
+                d.morphoIonic !== null ||
+                d.morphoRe7 !== null
             );
+
+            // If Superfund data exists, filter other protocols to match Superfund's time range
+            if (superfundData && Array.isArray(superfundData) && superfundData.length > 0) {
+                const superfundTimestamps = superfundData.map(item => item.timestamp);
+                const superfundStartTime = Math.min(...superfundTimestamps);
+                const superfundEndTime = Math.max(...superfundTimestamps);
+                
+                // Convert to milliseconds if needed (same logic as above normalization)
+                let normalizedStartTime = superfundStartTime;
+                let normalizedEndTime = superfundEndTime;
+                
+                if (superfundStartTime.toString().length === 10) {
+                    // Convert seconds to milliseconds if Superfund timestamps are in seconds
+                    normalizedStartTime = superfundStartTime * 1000;
+                    normalizedEndTime = superfundEndTime * 1000;
+                }
+                
+                // Filter to match Superfund's time range
+                filteredCombined = filteredCombined.filter(item =>
+                    item.timestamp >= normalizedStartTime && 
+                    item.timestamp <= normalizedEndTime
+                );
+            }
+
+            setHistoricalData(filteredCombined as TBenchmarkDataPoint[]);
         } else {
             console.log('Missing timestamp data in one or both datasets');
             setHistoricalData([]);
