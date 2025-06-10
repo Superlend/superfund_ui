@@ -38,7 +38,7 @@ type VaultStatsProps = {
 }
 
 export default function VaultStats() {
-    const { walletAddress, isWalletConnected } = useWalletConnection()
+    const { walletAddress, isWalletConnectedForUI } = useWalletConnection()
     const { selectedChain, chainDetails } = useChain()
     const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
         vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
@@ -112,9 +112,9 @@ export default function VaultStats() {
         {
             id: 'my-position',
             title: 'My Position',
-            value: isWalletConnected ? `$${abbreviateNumber(Number(userMaxWithdrawAmount), 4)}` : '',
+            value: isWalletConnectedForUI ? `$${abbreviateNumber(Number(userMaxWithdrawAmount), 4)}` : '',
             show: true,
-            isLoading: isWalletConnected && isLoadingUserMaxWithdrawAmount,
+            isLoading: isWalletConnectedForUI && isLoadingUserMaxWithdrawAmount,
             error: errorUserMaxWithdrawAmount,
             positionDetailsTooltipContent: () => {
                 return (
@@ -326,7 +326,7 @@ export default function VaultStats() {
                         }}
                     >
                         {/* For My Position when wallet is not connected, show compact layout */}
-                        {(item.id === 'my-position' && !isWalletConnected) ? (
+                        {(item.id === 'my-position' && !isWalletConnectedForUI) ? (
                             <div className="flex flex-col gap-2 h-full justify-between">
                                 <BodyText level="body1" weight="normal" className="text-gray-600">
                                     {item.title}
@@ -371,7 +371,7 @@ export default function VaultStats() {
                                 }
 
                                 {/* My Position with wallet connected */}
-                                {(item.id === 'my-position' && isWalletConnected) && (
+                                {(item.id === 'my-position' && isWalletConnectedForUI) && (
                                     <HeadingText level="h3" weight="medium">
                                         {!item.isLoading ? (
                                             <div className="flex items-center gap-2">
