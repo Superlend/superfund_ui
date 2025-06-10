@@ -14,7 +14,7 @@ export const useWalletConnection = () => {
     const [context, setContext] = useState<any>(null)
 
     const isConnectingWallet = isConnectingWagmi || !ready
-    const isWalletConnected = !!user && authenticated
+    const isWalletConnected = !!user || !!wagmiWalletAddress
 
     // Get the active wallet from the list of wallets
     const activeWallet = isWalletConnected
