@@ -22,7 +22,7 @@ export const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''
 const metadata = {
     name: 'superlend',
     description: 'superlend',
-    url: 'https://app.superlend.xyz.com',
+    url: 'https://funds.superlend.xyz',
     icons: ['https://avatars.githubusercontent.com/u/179229932'],
 }
 
@@ -107,6 +107,7 @@ function ContextProvider({
                                     'rainbow',
                                     'rabby_wallet',
                                     'phantom',
+                                    // 'wallet_connect',
                                 ]
                               : [
                                     'metamask',
@@ -115,7 +116,7 @@ function ContextProvider({
                                     'rainbow',
                                     'rabby_wallet',
                                     'phantom',
-                                    'wallet_connect',
+                                    // 'wallet_connect',
                                 ],
                     },
                     supportedChains: [base, sonic],
