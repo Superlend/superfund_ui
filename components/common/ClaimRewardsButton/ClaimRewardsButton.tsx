@@ -46,12 +46,14 @@ const ClaimRewardsButton = ({
     } = useWriteContract()
     const { logEvent } = useAnalytics()
     const { claimRewardsTx, setClaimRewardsTx } = useTxContext() as TTxContext
+    const { canMakeTransactions, isConnectingWallet } = useWalletConnection()
     const txBtnStatus: Record<string, string> = {
         pending: 'Claiming...',
         confirming: 'Confirming...',
         success: 'Close',
         error: 'Close',
         default: 'Start claiming',
+        connecting: 'Connecting wallet...',
     }
     const { selectedChain } = useChain()
     const { isLoading: isConfirming, isSuccess: isConfirmed } =
@@ -99,25 +101,39 @@ const ClaimRewardsButton = ({
 
     const txBtnText =
         txBtnStatus[
-        isConfirming
-            ? 'confirming'
-            : isConfirmed
-                ? claimRewardsTx.status === 'view'
-                    ? 'success'
-                    : 'default'
-                : isPending
-                    ? 'pending'
-                    : !isPending &&
-                        !isConfirming &&
-                        !isConfirmed &&
-                        claimRewardsTx.status === 'view'
-                        ? 'error'
+        isConnectingWallet
+            ? 'connecting'
+            : isConfirming
+                ? 'confirming'
+                : isConfirmed
+                    ? claimRewardsTx.status === 'view'
+                        ? 'success'
                         : 'default'
+                    : isPending
+                        ? 'pending'
+                        : !isPending &&
+                            !isConfirming &&
+                            !isConfirmed &&
+                            claimRewardsTx.status === 'view'
+                            ? 'error'
+                            : 'default'
         ]
 
     const handleClaimRewards = useCallback(async () => {
+        // Validate connection state before proceeding
+        if (!canMakeTransactions) {
+            console.error('Cannot make transactions: wallet not properly connected')
+            setClaimRewardsTx((prev: TClaimRewardsTx) => ({
+                ...prev,
+                errorMessage: 'Wallet not properly connected. Please reconnect your wallet.',
+                isPending: false,
+                isConfirming: false,
+            }))
+            return
+        }
+
         try {
-            writeContractAsync({
+            await writeContractAsync({
                 address: rewardDetails.reward.distributor.address,
                 abi: REWARD_ABI,
                 functionName: 'claim',
@@ -129,21 +145,37 @@ const ClaimRewardsButton = ({
                 ],
             })
         } catch (error) {
-            error
+            console.error('Claim rewards error:', error)
+            setClaimRewardsTx((prev: TClaimRewardsTx) => ({
+                ...prev,
+                isPending: false,
+                isConfirming: false,
+                errorMessage: error instanceof Error ? error.message : 'Transaction failed',
+            }))
         }
-    }, [])
+    }, [canMakeTransactions, walletAddress, rewardDetails, writeContractAsync, setClaimRewardsTx])
 
     const onClaimRewards = async () => {
         await handleClaimRewards()
         return
     }
 
+    // Add connection status warning
+    const showConnectionWarning = !canMakeTransactions && !isConnectingWallet
+
     return (
         <div className="flex flex-col gap-2">
-            {error && (
+            {showConnectionWarning && (
+                <CustomAlert
+                    description="Wallet connection lost. Please reconnect your wallet to continue."
+                />
+            )}
+            {(error || claimRewardsTx.errorMessage) && (
                 <CustomAlert
                     description={
-                        (error as BaseError).shortMessage || error.message
+                        error 
+                            ? (error as BaseError).shortMessage || error.message
+                            : claimRewardsTx.errorMessage
                     }
                 />
             )}
@@ -151,7 +183,7 @@ const ClaimRewardsButton = ({
                 variant="primary"
                 className="group flex items-center gap-[4px] py-3 w-full rounded-5 uppercase"
                 disabled={
-                    (isPending || isConfirming || disabled) &&
+                    (isPending || isConfirming || disabled || !canMakeTransactions) &&
                     claimRewardsTx.status !== 'view'
                 }
                 onClick={() => {

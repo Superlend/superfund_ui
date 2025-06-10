@@ -70,6 +70,7 @@ const DepositButton = ({
     } = useWriteContract()
     const { selectedChain } = useChain()
     const { logEvent } = useAnalytics()
+    const { canMakeTransactions, isWagmiConnected, isConnectingWallet } = useWalletConnection()
 
     const { isLoading: isConfirming, isSuccess: isConfirmed } =
         useWaitForTransactionReceipt({
@@ -99,6 +100,7 @@ const DepositButton = ({
         confirming: 'Confirming...',
         success: 'Close',
         default: 'Start depositing',
+        connecting: 'Connecting wallet...',
     }
 
     const getTxButtonText = (
@@ -106,6 +108,8 @@ const DepositButton = ({
         isConfirming: boolean,
         isConfirmed: boolean
     ) => {
+        if (isConnectingWallet) return txBtnStatus['connecting']
+        
         return txBtnStatus[
             isConfirming
                 ? 'confirming'
@@ -122,6 +126,18 @@ const DepositButton = ({
     const txBtnText: string = getTxButtonText(isPending, isConfirming, isConfirmed)
 
     const deposit = useCallback(async () => {
+        // Validate connection state before proceeding
+        if (!canMakeTransactions) {
+            console.error('Cannot make transactions: wallet not properly connected')
+            setDepositTx((prev: TDepositTx) => ({
+                ...prev,
+                errorMessage: 'Wallet not properly connected. Please reconnect your wallet.',
+                isPending: false,
+                isConfirming: false,
+            }))
+            return
+        }
+
         try {
             setDepositTx((prev: TDepositTx) => ({
                 ...prev,
@@ -166,14 +182,38 @@ const DepositButton = ({
                     }
                 })
                 .catch((error) => {
+                    console.error('Deposit transaction error:', error)
+                    
+                    // Check if it's a connector error
+                    const isConnectorError = error.message?.includes('Connector not connected') || 
+                                           error.message?.includes('No connector') ||
+                                           error.name === 'ConnectorNotConnectedError'
+                    
                     setDepositTx((prev: TDepositTx) => ({
                         ...prev,
                         isPending: false,
                         isConfirming: false,
+                        errorMessage: isConnectorError 
+                            ? 'Wallet connection lost. Please refresh the page and reconnect your wallet.'
+                            : getErrorText(error as any),
                     }))
                 })
         } catch (error) {
-            error
+            console.error('Deposit error:', error)
+            
+            // Check if it's a connector error
+            const isConnectorError = (error as any)?.message?.includes('Connector not connected') || 
+                                   (error as any)?.message?.includes('No connector') ||
+                                   (error as any)?.name === 'ConnectorNotConnectedError'
+            
+            setDepositTx((prev: TDepositTx) => ({
+                ...prev,
+                isPending: false,
+                isConfirming: false,
+                errorMessage: isConnectorError 
+                    ? 'Wallet connection lost. Please refresh the page and reconnect your wallet.'
+                    : getErrorText(error as any),
+            }))
         }
     }, [
         amount,
@@ -182,6 +222,12 @@ const DepositButton = ({
         handleCloseModal,
         writeContractAsync,
         decimals,
+        canMakeTransactions,
+        selectedChain,
+        walletAddress,
+        hash,
+        logEvent,
+        setDepositTx,
     ])
 
     useEffect(() => {
@@ -193,49 +239,55 @@ const DepositButton = ({
             isRefreshingAllowance: isConfirmed,
         }))
 
-        // If approval transaction is confirmed, move to deposit state
+        // If approval transaction is confirmed, move to deposit state after a brief delay
         if (isConfirmed && !isPending && !isConfirming && depositTx.status === 'approve') {
-            setDepositTx((prev: TDepositTx) => ({
-                ...prev,
-                status: 'deposit',
-                allowanceBN: amountBN, // Set the allowance to the amount we just approved
-            }))
-
             logEvent('approve_successful', {
                 amount: amount,
                 chain: selectedChain,
                 token: underlyingAssetAdress,
                 walletAddress: walletAddress,
             })
+            
+            // Brief delay to show approval success before moving to deposit
+            setTimeout(() => {
+                setDepositTx((prev: TDepositTx) => ({
+                    ...prev,
+                    status: 'deposit',
+                    allowanceBN: amountBN, // Set the allowance to the amount we just approved
+                    errorMessage: '', // Clear any previous errors
+                }))
+            }, 1500) // 1.5 second delay to show approval success
         }
-    }, [isPending, isConfirming, isConfirmed])
+    }, [isPending, isConfirming, isConfirmed, depositTx.status, amountBN, amount, selectedChain, underlyingAssetAdress, walletAddress, logEvent, setDepositTx])
 
-    // Check allowance for initial state
-    // useEffect(() => {
-    //     if (depositTx.status === 'view') return
-
-    //     if (
-    //         !depositTx.isConfirmed &&
-    //         !depositTx.isPending &&
-    //         !depositTx.isConfirming
-    //     ) {
-    //         if (depositTx.allowanceBN.gte(amountBN)) {
-    //             setDepositTx((prev: TDepositTx) => ({
-    //                 ...prev,
-    //                 status: 'deposit',
-    //                 hash: '',
-    //                 errorMessage: '',
-    //             }))
-    //         } else {
-    //             setDepositTx((prev: TDepositTx) => ({
-    //                 ...prev,
-    //                 status: 'approve',
-    //                 hash: '',
-    //                 errorMessage: '',
-    //             }))
-    //         }
-    //     }
-    // }, [depositTx.allowanceBN])
+    // Separate effect to handle wagmi errors and prevent duplicate error messages
+    useEffect(() => {
+        if (error && !isPending && !isConfirming) {
+            // Only set error if there's no existing error message to prevent duplicates
+            if (!depositTx.errorMessage) {
+                console.error('Wagmi contract error:', error)
+                
+                // Check if it's a connector error
+                const isConnectorError = error.message?.includes('Connector not connected') || 
+                                       error.message?.includes('No connector') ||
+                                       error.name === 'ConnectorNotConnectedError'
+                
+                setDepositTx((prev: TDepositTx) => ({
+                    ...prev,
+                    isPending: false,
+                    isConfirming: false,
+                    errorMessage: isConnectorError 
+                        ? 'Wallet connection lost. Please refresh the page and reconnect your wallet.'
+                        : getErrorText(error as any),
+                }))
+            }
+        }
+        // Clear wagmi errors when transaction starts
+        else if ((isPending || isConfirming) && error) {
+            // Transaction is in progress, wagmi error might be stale
+            console.log('Clearing stale wagmi error as transaction is in progress')
+        }
+    }, [error, isPending, isConfirming, depositTx.errorMessage, setDepositTx])
 
     useEffect(() => {
         if (
@@ -254,10 +306,23 @@ const DepositButton = ({
                 hash: hash || '',
             }))
         }
-    }, [hash, depositTx.status])
+    }, [hash, depositTx.status, setDepositTx])
 
     const onApproveDeposit = async () => {
+        // Validate connection state before proceeding
+        if (!canMakeTransactions) {
+            console.error('Cannot make transactions: wallet not properly connected')
+            setDepositTx((prev: TDepositTx) => ({
+                ...prev,
+                errorMessage: 'Wallet not properly connected. Please reconnect your wallet.',
+                isPending: false,
+                isConfirming: false,
+            }))
+            return
+        }
+
         try {
+            // Clear any previous errors when starting approval
             setDepositTx((prev: TDepositTx) => ({
                 ...prev,
                 status: 'approve',
@@ -272,14 +337,38 @@ const DepositButton = ({
                 functionName: 'approve',
                 args: [VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`, amountInWei.toBigInt()],
             }).catch((error) => {
+                console.error('Approve transaction error:', error)
+                
+                // Check if it's a connector error
+                const isConnectorError = error.message?.includes('Connector not connected') || 
+                                       error.message?.includes('No connector') ||
+                                       error.name === 'ConnectorNotConnectedError'
+                
                 setDepositTx((prev: TDepositTx) => ({
                     ...prev,
                     isPending: false,
                     isConfirming: false,
+                    errorMessage: isConnectorError 
+                        ? 'Wallet connection lost. Please refresh the page and reconnect your wallet.'
+                        : getErrorText(error as any),
                 }))
             })
         } catch (error) {
-            error
+            console.error('Approve error:', error)
+            
+            // Check if it's a connector error
+            const isConnectorError = (error as any)?.message?.includes('Connector not connected') || 
+                                   (error as any)?.message?.includes('No connector') ||
+                                   (error as any)?.name === 'ConnectorNotConnectedError'
+            
+            setDepositTx((prev: TDepositTx) => ({
+                ...prev,
+                isPending: false,
+                isConfirming: false,
+                errorMessage: isConnectorError 
+                    ? 'Wallet connection lost. Please refresh the page and reconnect your wallet.'
+                    : getErrorText(error as { message: string }),
+            }))
         } finally {
             // After approval is completed and confirmed, set the allowanceBN
             if (isConfirmed && !isPending && !isConfirming) {
@@ -291,6 +380,9 @@ const DepositButton = ({
             }
         }
     }
+
+    // Add connection status warning - only show if actively connecting
+    const showConnectionWarning = !canMakeTransactions && isConnectingWallet
 
     return (
         <div className="flex flex-col gap-2">
@@ -320,7 +412,15 @@ const DepositButton = ({
                     }
                 />
             )} */}
-            {error && (
+            {showConnectionWarning && (
+                <CustomAlert
+                    description="Connecting wallet... Please wait."
+                />
+            )}
+            {/* Show only one error message at a time - prioritize depositTx.errorMessage over wagmi error */}
+            {depositTx.errorMessage.length > 0 ? (
+                <CustomAlert description={depositTx.errorMessage} />
+            ) : error ? (
                 <CustomAlert
                     description={
                         error && error.message
@@ -328,13 +428,10 @@ const DepositButton = ({
                             : SOMETHING_WENT_WRONG_MESSAGE
                     }
                 />
-            )}
-            {depositTx.errorMessage.length > 0 && (
-                <CustomAlert description={depositTx.errorMessage} />
-            )}
+            ) : null}
             <Button
                 disabled={
-                    (isPending || isConfirming || disabled) &&
+                    (isPending || isConfirming || disabled || isConnectingWallet) &&
                     depositTx.status !== 'view'
                 }
                 onClick={() => {

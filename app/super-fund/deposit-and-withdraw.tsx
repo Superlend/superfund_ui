@@ -35,7 +35,7 @@ export type THelperText = Record<
 >
 
 export default function DepositAndWithdrawAssets() {
-    const { isWalletConnected, handleSwitchChain } = useWalletConnection()
+    const { isWalletConnectedForUI, handleSwitchChain } = useWalletConnection()
     const [positionType, setPositionType] = useState<TActionType>('deposit')
     const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] =
         useState<boolean>(false)
@@ -75,10 +75,10 @@ export default function DepositAndWithdrawAssets() {
     const TOTAL_APY = Number(effectiveApyData?.rewards_apy ?? 0) + Number(BOOST_APY ?? 0) + Number(effectiveApyData?.base_apy ?? 0)
 
     useEffect(() => {
-        if (isWalletConnected) {
+        if (isWalletConnectedForUI) {
             handleSwitchChain(selectedChain)
         }
-    }, [isWalletConnected, selectedChain, handleSwitchChain])
+    }, [isWalletConnectedForUI, selectedChain, handleSwitchChain])
 
     useEffect(() => {
         if (depositTx.status === 'approve' && depositTx.isRefreshingAllowance) {
@@ -202,7 +202,7 @@ export default function DepositAndWithdrawAssets() {
                     >
                         {isDepositPositionType ? 'Deposit' : `Withdraw`}
                     </BodyText>
-                    {isWalletConnected && (
+                    {isWalletConnectedForUI && (
                         <BodyText
                             level="body2"
                             weight="normal"
@@ -269,7 +269,7 @@ export default function DepositAndWithdrawAssets() {
                                 }
                             />
                         </div>
-                        {isWalletConnected && (
+                        {isWalletConnectedForUI && (
                             <Button
                                 variant="link"
                                 onClick={() =>
@@ -285,7 +285,7 @@ export default function DepositAndWithdrawAssets() {
                             </Button>
                         )}
                     </div>
-                    {isWalletConnected && (
+                    {isWalletConnectedForUI && (
                         <div className="card-content-bottom max-md:px-2 py-3 max-w-[250px] mx-auto">
                             <BodyText
                                 level="body2"
@@ -298,8 +298,8 @@ export default function DepositAndWithdrawAssets() {
                     )}
                 </CardContent>
                 <CardFooter className="p-0 justify-center">
-                    {!isWalletConnected && <ConnectWalletButton />}
-                    {isWalletConnected && (
+                    {!isWalletConnectedForUI && <ConnectWalletButton />}
+                    {isWalletConnectedForUI && (
                         <SuperVaultTxDialog
                             disabled={isDiasableActionBtn()}
                             positionType={positionType}
