@@ -1,5 +1,5 @@
 import { usePrivy, useWallets } from '@privy-io/react-auth'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { useAccount, useDisconnect } from 'wagmi'
 import { useSetActiveWallet } from '@privy-io/wagmi'
 import FrameSDK from '@farcaster/frame-sdk'
@@ -14,8 +14,13 @@ export const useWalletConnection = () => {
     const [context, setContext] = useState<any>(null)
     const [isSettingActiveWallet, setIsSettingActiveWallet] = useState(false)
     const [isManuallyReconnecting, setIsManuallyReconnecting] = useState(false)
-
-    const isConnectingWallet = isConnectingWagmi || !ready || isSettingActiveWallet || isManuallyReconnecting
+    
+    // Use refs to track timeouts and prevent race conditions
+    const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+    const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+    
+    // Simplified connecting state - only true when actively connecting, not for every state mismatch
+    const isConnectingWallet = isConnectingWagmi || !ready || isManuallyReconnecting
     
     // Strict check for transaction safety - requires both Privy and wagmi to be connected
     const isWalletConnected = authenticated && isWagmiConnected && (!!user || !!wagmiWalletAddress)
@@ -34,64 +39,88 @@ export const useWalletConnection = () => {
            wagmiWalletAddress)
         : undefined
 
-    // Set the latest connected wallet as active with proper error handling
+    // Cleanup timeouts on unmount
     useEffect(() => {
-        const setLatestWalletActive = async () => {
-            if (!walletAddress || wallets.length === 0 || isSettingActiveWallet) {
-                return
+        return () => {
+            if (syncTimeoutRef.current) {
+                clearTimeout(syncTimeoutRef.current)
             }
-
-            // Find the wallet that matches our address
-            const latestWallet = wallets.find(
-                (wallet) => wallet.address?.toLowerCase() === walletAddress.toLowerCase()
-            )
-            
-            // Set active wallet if we found one and it's not connected
-            if (latestWallet && !latestWallet.isConnected) {
-                try {
-                    setIsSettingActiveWallet(true)
-                    await setActiveWallet(latestWallet)
-                } catch (error) {
-                    console.error('❌ Error setting active wallet:', error)
-                } finally {
-                    setIsSettingActiveWallet(false)
-                }
-            }
-            // If we have a connected wallet but wagmi is not connected, try to reconnect
-            else if (latestWallet && !isWagmiConnected) {
-                try {
-                    setIsSettingActiveWallet(true)
-                    await setActiveWallet(latestWallet)
-                } catch (error) {
-                    console.error('❌ Error syncing wagmi with Privy:', error)
-                } finally {
-                    setIsSettingActiveWallet(false)
-                }
+            if (reconnectTimeoutRef.current) {
+                clearTimeout(reconnectTimeoutRef.current)
             }
         }
+    }, [])
+
+    // Memoized wallet sync function to prevent recreating on every render
+    const syncWalletConnection = useCallback(async () => {
+        if (!walletAddress || wallets.length === 0 || isSettingActiveWallet) {
+            return
+        }
+
+        // Find the wallet that matches our address
+        const matchingWallet = wallets.find(
+            (wallet) => wallet.address?.toLowerCase() === walletAddress.toLowerCase()
+        )
         
-        // Add a delay to avoid race conditions and allow Privy to stabilize
-        const timeoutId = setTimeout(() => {
-            void setLatestWalletActive()
-        }, 200)
+        // Only attempt to sync if we have a wallet and it's not already connected
+        if (matchingWallet && !matchingWallet.isConnected) {
+            try {
+                setIsSettingActiveWallet(true)
+                await setActiveWallet(matchingWallet)
+            } catch (error) {
+                console.error('❌ Error setting active wallet:', error)
+            } finally {
+                setIsSettingActiveWallet(false)
+            }
+        }
+    }, [walletAddress, wallets, setActiveWallet, isSettingActiveWallet])
 
-        return () => clearTimeout(timeoutId)
-    }, [walletAddress, wallets, setActiveWallet, isSettingActiveWallet, isWagmiConnected])
-
-    // Additional effect to handle the case where wagmi is not connected but should be
+    // Effect to sync wallet connection - runs only when essential dependencies change
     useEffect(() => {
+        // Clear any existing timeout
+        if (syncTimeoutRef.current) {
+            clearTimeout(syncTimeoutRef.current)
+        }
+
+        // Only sync if we have authenticated user and wallet address
+        if (authenticated && walletAddress && ready) {
+            // Use a timeout to debounce and avoid rapid successive calls
+            syncTimeoutRef.current = setTimeout(() => {
+                void syncWalletConnection()
+            }, 300)
+        }
+
+        return () => {
+            if (syncTimeoutRef.current) {
+                clearTimeout(syncTimeoutRef.current)
+            }
+        }
+    }, [authenticated, walletAddress, ready, syncWalletConnection])
+
+    // Separate effect for handling wagmi reconnection - less aggressive
+    useEffect(() => {
+        // Clear any existing timeout
+        if (reconnectTimeoutRef.current) {
+            clearTimeout(reconnectTimeoutRef.current)
+        }
+
+        // Only attempt reconnection if we have all the prerequisites and wagmi is not connected
         if (authenticated && walletAddress && !isWagmiConnected && !isConnectingWallet && wallets.length > 0) {
-            const timer = setTimeout(() => {
+            reconnectTimeoutRef.current = setTimeout(() => {
                 console.log('⚠️ Detected wagmi not connected but should be. Attempting sync...')
                 const matchingWallet = wallets.find(w => w.address?.toLowerCase() === walletAddress.toLowerCase())
-                if (matchingWallet) {
+                if (matchingWallet && !isSettingActiveWallet) {
                     setActiveWallet(matchingWallet).catch(console.error)
                 }
-            }, 1000) // Give it a second to auto-connect
+            }, 2000) // Longer delay for wagmi reconnection
 
-            return () => clearTimeout(timer)
+            return () => {
+                if (reconnectTimeoutRef.current) {
+                    clearTimeout(reconnectTimeoutRef.current)
+                }
+            }
         }
-    }, [authenticated, walletAddress, isWagmiConnected, isConnectingWallet, wallets, setActiveWallet])
+    }, [authenticated, walletAddress, isWagmiConnected, isConnectingWallet, wallets.length])
 
     const wallet = wallets.find(
         (wallet: any) => wallet.address === walletAddress
@@ -153,55 +182,12 @@ export const useWalletConnection = () => {
 
     // Helper function to check if we can safely make transactions
     // More lenient approach: if we have Privy auth and wallet address, we can try transactions
-    // The actual transaction will fail safely if wagmi isn't ready
     const canMakeTransactions = useMemo(() => {
         const hasBasicConnection = authenticated && walletAddress && !isConnectingWallet
-        const hasFullConnection = isWalletConnected && isWagmiConnected && walletAddress && !isConnectingWallet
-        
-        // Debug logging to help troubleshoot
-        // if (hasBasicConnection && !hasFullConnection) {
-        //     console.log('🔍 Wallet Connection Debug:', {
-        //         authenticated,
-        //         isWagmiConnected,
-        //         walletAddress: !!walletAddress,
-        //         isConnectingWallet,
-        //         user: !!user,
-        //         wagmiWalletAddress: !!wagmiWalletAddress,
-        //         hasBasicConnection,
-        //         hasFullConnection
-        //     })
-        // }
         
         // Use basic connection for now - wagmi errors will be caught by transaction components
         return hasBasicConnection
-    }, [authenticated, isWalletConnected, isWagmiConnected, walletAddress, isConnectingWallet, user, wagmiWalletAddress])
-
-    // Debug helper function - can be called from browser console
-    // const debugConnectionState = () => {
-    //     console.log('🔍 Full Wallet Connection State:', {
-    //         authenticated,
-    //         ready,
-    //         isWagmiConnected,
-    //         isConnectingWagmi,
-    //         walletAddress,
-    //         wagmiWalletAddress,
-    //         user: !!user,
-    //         userWalletAddress: user?.wallet?.address,
-    //         isConnectingWallet,
-    //         canMakeTransactions,
-    //         isWalletConnected,
-    //         isWalletConnectedForUI,
-    //         wallets: wallets.length,
-    //         activeWallet: !!activeWallet,
-    //     })
-    // }
-
-    // Expose debug function globally for console access
-    // useEffect(() => {
-    //     if (typeof window !== 'undefined') {
-    //         (window as any).debugWalletConnection = debugConnectionState
-    //     }
-    // }, [authenticated, isWagmiConnected, walletAddress, canMakeTransactions])
+    }, [authenticated, walletAddress, isConnectingWallet])
 
     return {
         user,

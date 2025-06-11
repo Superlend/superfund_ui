@@ -17,12 +17,13 @@ import { ChainProvider } from './chain-context'
 const queryClient = new QueryClient()
 
 export const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''
+const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || ''
 
 // Set up metadata
 const metadata = {
     name: 'superlend',
     description: 'superlend',
-    url: 'https://app.superlend.xyz.com',
+    url: 'https://funds.superlend.xyz',
     icons: ['https://avatars.githubusercontent.com/u/179229932'],
 }
 
@@ -100,7 +101,7 @@ function ContextProvider({
                         walletList: context
                             ? undefined
                             : isMiniApp
-                              ? [
+                                ? [
                                     'metamask',
                                     'coinbase_wallet',
                                     'okx_wallet',
@@ -108,7 +109,7 @@ function ContextProvider({
                                     'rabby_wallet',
                                     'phantom',
                                 ]
-                              : [
+                                : [
                                     'metamask',
                                     'coinbase_wallet',
                                     'okx_wallet',
@@ -119,6 +120,7 @@ function ContextProvider({
                                 ],
                     },
                     supportedChains: [base, sonic],
+                    walletConnectCloudProjectId: WALLETCONNECT_PROJECT_ID,
                 }}
             >
                 <QueryClientProvider client={queryClient}>

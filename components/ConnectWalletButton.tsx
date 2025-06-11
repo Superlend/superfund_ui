@@ -10,6 +10,9 @@ import { ProfileMenuDropdown } from './dropdowns/ProfileMenuDropdown'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
+import { BodyText } from './ui/typography'
+import { AlertCircle, Clock } from 'lucide-react'
+import InfoTooltip from './tooltips/InfoTooltip'
 
 // Create a wrapper component to conditionally use the useUserBalance hook
 function PortfolioChecker({
@@ -59,8 +62,8 @@ export default function ConnectWalletButton() {
         return isConnectingWallet
             ? 'Connecting...'
             : walletAddress
-              ? `${walletAddress?.slice(0, 5)}...${walletAddress?.slice(-5)}`
-              : 'Connect Wallet'
+                ? `${walletAddress?.slice(0, 5)}...${walletAddress?.slice(-5)}`
+                : 'Connect Wallet'
     }, [isConnectingWallet, walletAddress])
 
     // Handle showing dialog when portfolio value is set
@@ -133,15 +136,47 @@ export default function ConnectWalletButton() {
                         />
                     )}
                     {!walletAddress && (
-                        <Button
-                            variant="primary"
-                            size="lg"
-                            className="rounded-4 py-2 capitalize w-full"
-                            onClick={login}
-                            disabled={isDisabled}
-                        >
-                            {isDisabled ? 'Connecting...' : 'Connect Wallet'}
-                        </Button>
+                        <InfoTooltip
+                            size="none"
+                            className="px-2"
+                            label={
+                                <Button
+                                    variant="primary"
+                                    size="lg"
+                                    className="rounded-4 py-2 capitalize w-full"
+                                    onClick={login}
+                                    disabled={isDisabled}
+                                >
+                                    {isDisabled ? 'Connecting...' : 'Connect Wallet'}
+                                </Button>
+                            }
+                            content={
+                                <div className="flex flex-col gap-2 bg-blue-50/50 p-3 rounded-lg">
+                                    <div className="flex items-start gap-3">
+                                        <div className="shrink-0 p-1.5 bg-blue-100 rounded-full">
+                                            <AlertCircle className="w-5 h-5 text-blue-600" />
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <BodyText level="body2" className="font-semibold text-blue-900">
+                                                Temporary Connection Issue
+                                            </BodyText>
+                                            <BodyText level="body2" className="text-blue-700">
+                                                We&apos;re currently experiencing technical difficulties with wallet connections on Superfund.
+                                            </BodyText>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-blue-600 pl-2">
+                                        <div className="shrink-0 p-1 bg-blue-100 rounded-full">
+                                            <Clock className="w-4 h-4 text-blue-600" />
+                                        </div>
+                                        <BodyText level="body2" className="font-medium">
+                                            A fix is in progress.
+                                        </BodyText>
+                                    </div>
+                                </div>
+                            }
+                            side="bottom"
+                        />
                     )}
                 </>
             )}
