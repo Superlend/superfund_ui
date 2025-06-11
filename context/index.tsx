@@ -85,27 +85,6 @@ function ContextProvider({
         initializeConfig()
     }, [isClient])
 
-    // walletList: context
-    //     ? undefined
-    //     : isMiniApp
-    //         ? [
-    //             'metamask',
-    //             'coinbase_wallet',
-    //             'okx_wallet',
-    //             'rainbow',
-    //             'rabby_wallet',
-    //             'phantom',
-    //         ]
-    //         : [
-    //             'metamask',
-    //             'coinbase_wallet',
-    //             'okx_wallet',
-    //             'rainbow',
-    //             'rabby_wallet',
-    //             'phantom',
-    //             'wallet_connect',
-    //         ],
-
     return (
         <AnalyticsProvider>
             <PrivyProvider
@@ -119,15 +98,26 @@ function ContextProvider({
                         landingHeader: 'Connect Wallet',
                         loginMessage: 'Select wallet to continue',
                         showWalletLoginFirst: true,
-                        walletList: [
-                            'metamask',
-                            'coinbase_wallet',
-                            'okx_wallet',
-                            'rainbow',
-                            'rabby_wallet',
-                            'phantom',
-                            'wallet_connect',
-                        ],
+                        walletList: context
+                            ? undefined
+                            : isMiniApp
+                                ? [
+                                    'metamask',
+                                    'coinbase_wallet',
+                                    'okx_wallet',
+                                    'rainbow',
+                                    'rabby_wallet',
+                                    'phantom',
+                                ]
+                                : [
+                                    'metamask',
+                                    'coinbase_wallet',
+                                    'okx_wallet',
+                                    'rainbow',
+                                    'rabby_wallet',
+                                    'phantom',
+                                    'wallet_connect',
+                                ],
                     },
                     supportedChains: [base, sonic],
                     walletConnectCloudProjectId: WALLETCONNECT_PROJECT_ID,
