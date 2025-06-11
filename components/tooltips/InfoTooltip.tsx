@@ -38,6 +38,7 @@ const sizes: any = {
     lg: 'py-[18px] px-[22px]',
     md: 'py-[12px] px-[16px]',
     sm: 'py-[6px] px-[12px]',
+    none: 'py-0 px-0',
 }
 
 export default function InfoTooltip({
