@@ -267,7 +267,7 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
                     <div className="text-xs">
                       <p className="font-medium">{format(date, 'EEEE, MMMM dd, yyyy')}</p>
                       <p className="text-muted-foreground">{format(date, 'HH:mm:ss')} ({getUserTimezone()})</p>
-                      <p className="text-[10px] text-muted-foreground mt-1">Block: {blockTimestamp}</p>
+                      {/* <p className="text-[10px] text-muted-foreground mt-1">Block: {blockTimestamp}</p> */}
                     </div>
                   </TooltipContent>
                 </Tooltip>
