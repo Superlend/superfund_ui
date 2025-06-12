@@ -271,7 +271,7 @@ export function AllocationHistoryChart() {
     const chartData = useMemo(() => {
         const transformedData: ChartDataPoint[] = []
 
-        rebalanceHistory.forEach((item, index) => {
+        rebalanceHistory.forEach((item: any, index: number) => {
             const date = new Date(item.timestamp * 1000)
             const dateOptions: any = {
                 year: 'numeric',
@@ -300,7 +300,7 @@ export function AllocationHistoryChart() {
             }, {} as Record<string, number>)
 
             // Update with actual values
-            allocationsWithValues.forEach((allocation) => {
+            allocationsWithValues.forEach((allocation: any) => {
                 defaultAllocations[allocation.address] = allocation.value
             })
 
@@ -318,8 +318,8 @@ export function AllocationHistoryChart() {
             // If there's a next item and values change, add intermediate points
             if (index < rebalanceHistory.length - 1) {
                 const nextItem = rebalanceHistory[index + 1]
-                const hasChanges = item.allocations.some(allocation => {
-                    const nextAllocation = nextItem.allocations.find(a => a.address === allocation.address)
+                const hasChanges = item.allocations.some((allocation: any) => {
+                    const nextAllocation = nextItem.allocations.find((a: any) => a.address === allocation.address)
                     return (nextAllocation?.value || 0) !== allocation.value
                 })
 

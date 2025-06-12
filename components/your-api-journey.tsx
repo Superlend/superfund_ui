@@ -63,7 +63,7 @@ export default function YourApiJourney() {
                                         When you deposit into SuperFund, your earnings (APY) don&apos;t start at the full rate right away.
                                     </BodyText>
                                     <BodyText level="body2" weight="normal" className="text-gray-600">
-                                        This is due to our yield smearing system, which gradually releases yield over 7 days for stability.
+                                        This is due to our yield ramp-up system, which gradually releases yield over 7 days for stability.
                                     </BodyText>
                                 </div>
                             }

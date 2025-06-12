@@ -164,7 +164,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
         if (newTab !== selectedTab) {
             setSelectedTab(newTab)
         }
-    }, [isClient, searchParams, selectedTab])
+    }, [isClient, searchParams]) // Removed selectedTab from dependency array
 
         // Handle scroll focus only when hash is present on initial navigation
     useEffect(() => {

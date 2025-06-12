@@ -678,8 +678,8 @@ export default function WaitlistPage() {
                                     {/* Conditional Telegram section for high-value portfolios */}
                                     {showTelegramSection && (
                                         <div className="w-full mt-4 pt-4 border-t border-white/20">
-                                            <div className="bg-blue-500/30 p-4 rounded-lg flex items-center gap-4 mb-4">
-                                                <div className="bg-blue-500/40 p-2 rounded-lg">
+                                            <div className="bg-blue-500/30 p-4 rounded-3 flex items-center gap-4 mb-4">
+                                                <div className="bg-blue-500/40 p-2 rounded-3">
                                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                         <path d="M6 8H6.01M6 16H6.01M6 12H18M6 12C5.20435 12 4.44129 11.6839 3.87868 11.1213C3.31607 10.5587 3 9.79565 3 9C3 8.20435 3.31607 7.44129 3.87868 6.87868C4.44129 6.31607 5.20435 6 6 6C6.79565 6 7.55871 6.31607 8.12132 6.87868C8.68393 7.44129 9 8.20435 9 9C9 9.79565 8.68393 10.5587 8.12132 11.1213C7.55871 11.6839 6.79565 12 6 12ZM6 12C5.20435 12 4.44129 12.3161 3.87868 12.8787C3.31607 13.4413 3 14.2044 3 15C3 15.7956 3.31607 16.5587 3.87868 17.1213C4.44129 17.6839 5.20435 18 6 18C6.79565 18 7.55871 17.6839 8.12132 17.1213C8.68393 16.5587 9 15.7956 9 15C9 14.2044 8.68393 13.4413 8.12132 12.8787C7.55871 12.3161 6.79565 12 6 12Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                                     </svg>
@@ -760,7 +760,7 @@ export default function WaitlistPage() {
                                                         stiffness: 300,
                                                         damping: 30
                                                     }}
-                                                    className="bg-green-500/30 p-5 rounded-lg border border-green-500/40 mb-4"
+                                                    className="bg-green-500/30 p-5 rounded-3 border border-green-500/40 mb-4"
                                                 >
                                                     <div className="flex items-center justify-center gap-3 mb-3">
                                                         <div className="bg-green-500 rounded-full p-1">
@@ -857,7 +857,7 @@ export default function WaitlistPage() {
                                                         type="submit"
                                                         variant="primary"
                                                         size="lg"
-                                                        className="hidden md:block absolute right-1 top-1/2 transform -translate-y-1/2 h-10 rounded-lg hover:shadow-md transition-all duration-300"
+                                                        className="hidden md:block absolute right-1 top-1/2 transform -translate-y-1/2 h-10 rounded-3 hover:shadow-md transition-all duration-300"
                                                         disabled={isLoading}
                                                     >
                                                         {isLoading ? (
@@ -873,7 +873,7 @@ export default function WaitlistPage() {
                                                     type="submit"
                                                     variant="primary"
                                                     size="lg"
-                                                    className="md:hidden h-10 w-full rounded-lg hover:shadow-md transition-all duration-300 mt-4"
+                                                    className="md:hidden h-10 w-full rounded-3 hover:shadow-md transition-all duration-300 mt-4"
                                                     disabled={isLoading}
                                                 >
                                                     {isLoading ? (
@@ -909,7 +909,7 @@ export default function WaitlistPage() {
                                                             initial={{ opacity: 0, y: 10 }}
                                                             animate={{ opacity: 1, y: 0 }}
                                                             exit={{ opacity: 0, y: -10 }}
-                                                            className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2"
+                                                            className="mt-3 p-3 bg-red-50 border border-red-200 rounded-3 flex items-center space-x-2"
                                                         >
                                                             <XCircle className="h-4 w-4 text-red-500" />
                                                             <BodyText level="body3" className="text-red-700">
@@ -958,7 +958,7 @@ export default function WaitlistPage() {
                                                         initial={{ opacity: 0, y: 10 }}
                                                         animate={{ opacity: 1, y: 0 }}
                                                         exit={{ opacity: 0, y: -10 }}
-                                                        className="w-full mt-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2"
+                                                        className="w-full mt-3 p-3 bg-red-50 border border-red-200 rounded-3 flex items-center space-x-2"
                                                     >
                                                         <XCircle className="h-4 w-4 text-red-500" />
                                                         <BodyText level="body3" className="text-red-700">

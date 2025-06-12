@@ -22,6 +22,7 @@ import FLUID_LENDING_RESOLVER_ABI from './abis/FluidLendingResolver.json'
 import { BigNumber } from 'ethers'
 import { useChain } from '@/context/chain-context'
 import { ChainId } from '@/types/chain'
+import { useQuery } from '@tanstack/react-query'
 
 const VAULT_ABI = parseAbi([
     'function totalAssets() view returns (uint256)',
@@ -63,23 +64,13 @@ const publicClients = {
     })
 }
 
+// ✅ Optimization 2.2: Convert useVaultHook to React Query while preserving exact same interface
 export function useVaultHook() {
-    const [totalAssets, setTotalAssets] = useState<string>('0')
-    const [spotApy, setSpotApy] = useState<string>('0')
-    const [isLoading, setIsLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
-    const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-    const isMountedRef = useRef(true)
-    const isInitialLoadRef = useRef(true)
     const { selectedChain } = useChain()
 
-    async function fetchVaultData() {
-        try {
-            // Only show loading state during initial load
-            if (isInitialLoadRef.current) {
-                setIsLoading(true)
-            }
-
+    const { data, isLoading, error } = useQuery({
+        queryKey: ['vault-data', selectedChain],
+        queryFn: async () => {
             // Get chain-specific config
             const config = CHAIN_CONFIGS[selectedChain as keyof typeof CHAIN_CONFIGS]
             if (!config) {
@@ -116,59 +107,26 @@ export function useVaultHook() {
                     parseFloat(formatUnits(assets, USDC_DECIMALS))) *
                 100
 
-            if (isMountedRef.current) {
-                const formattedAssets = formatUnits(assets, USDC_DECIMALS)
-                setTotalAssets(formattedAssets)
-                setSpotApy(convertAPRtoAPY(rate / 100).toFixed(2))
-                setError(null)
+            const formattedAssets = formatUnits(assets, USDC_DECIMALS)
+            const formattedSpotApy = convertAPRtoAPY(rate / 100).toFixed(2)
+
+            return {
+                totalAssets: formattedAssets,
+                spotApy: formattedSpotApy
             }
-        } catch (err) {
-            console.error('Error fetching vault data:', err)
-            if (isMountedRef.current) {
-                setError('Failed to fetch vault data')
-            }
-        } finally {
-            if (isMountedRef.current) {
-                // Only set loading to false during initial load
-                if (isInitialLoadRef.current) {
-                    setIsLoading(false)
-                    isInitialLoadRef.current = false
-                }
-                // Clear any existing timeout before setting a new one
-                if (timeoutRef.current) {
-                    clearTimeout(timeoutRef.current)
-                }
-                // Schedule next update after completion
-                timeoutRef.current = setTimeout(() => {
-                    if (isMountedRef.current) {
-                        fetchVaultData()
-                    }
-                }, 15000)
-            }
-        }
+        },
+        staleTime: 10 * 1000, // 10 seconds - vault data changes frequently
+        refetchInterval: 15 * 1000, // 15 seconds - same as original implementation
+        enabled: !!selectedChain,
+    })
+
+    // Return the exact same interface as the original hook
+    return { 
+        totalAssets: data?.totalAssets || '0', 
+        spotApy: data?.spotApy || '0', 
+        isLoading, 
+        error: error ? 'Failed to fetch vault data' : null 
     }
-
-    useEffect(() => {
-        isMountedRef.current = true
-        isInitialLoadRef.current = true // Reset initial load flag when chain changes
-        // Clear any existing timeout when chain changes
-        if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current)
-            timeoutRef.current = null
-        }
-        // Initial fetch
-        fetchVaultData()
-
-        return () => {
-            isMountedRef.current = false
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current)
-                timeoutRef.current = null
-            }
-        }
-    }, [selectedChain]) // Add selectedChain as a dependency
-
-    return { totalAssets, spotApy, isLoading, error }
 }
 
 const SEC_IN_YEAR = 31536000

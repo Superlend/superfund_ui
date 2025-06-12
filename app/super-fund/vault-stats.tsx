@@ -45,8 +45,14 @@ export default function VaultStats() {
         chainId: selectedChain,
         userAddress: walletAddress
     })
-    // const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
-    const BOOST_APY = boostRewardsData?.reduce((acc, curr) => acc + (curr.boost_apy / 100), 0) ?? 0
+    // const { boostApy: GLOBAL_BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
+    const GLOBAL_BOOST_APY =
+        boostRewardsData?.filter((item) => item.description?.includes('A global boost for all users') ?? false)
+            .reduce((acc, curr) => acc + (curr.boost_apy / 100), 0) ?? 0
+    const Farcaster_BOOST_APY =
+        boostRewardsData?.filter((item) => !item.description?.includes('A global boost for all users'))
+            .reduce((acc, curr) => acc + (curr.boost_apy / 100), 0) ?? 0
+    const hasFarcasterBoost = Farcaster_BOOST_APY > 0
     const { userMaxWithdrawAmount, isLoading: isLoadingUserMaxWithdrawAmount, error: errorUserMaxWithdrawAmount } = useUserBalance(
         walletAddress as `0x${string}`
     )
@@ -82,7 +88,7 @@ export default function VaultStats() {
     //     chain_id: selectedChain
     // })
     const isLoadingSection = !isClient;
-    const TOTAL_APY = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(effectiveApyData?.base_apy ?? 0) + Number(BOOST_APY ?? 0)
+    const TOTAL_APY = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(effectiveApyData?.base_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
     // const totalPositionAmountInDollars = useMemo(() => {
     //     return Number(capital ?? 0) + Number(totalInterestEarned ?? 0)
     // }, [capital, totalInterestEarned])
@@ -190,8 +196,15 @@ export default function VaultStats() {
                     {
                         key: 'superlend_rewards_apy',
                         key_name: 'Superlend USDC Reward',
-                        value: abbreviateNumber(BOOST_APY ?? 0, 0),
+                        value: abbreviateNumber(GLOBAL_BOOST_APY ?? 0, 0),
                         logo: "/images/tokens/usdc.webp"
+                    },
+                    {
+                        key: 'farcaster_rewards_apy',
+                        key_name: 'Farcaster Yieldrop',
+                        value: abbreviateNumber(Farcaster_BOOST_APY ?? 0, 0),
+                        logo: "/icons/sparkles.svg",
+                        show: hasFarcasterBoost,
                     },
                 ],
                 apyCurrent: TOTAL_APY,
@@ -431,13 +444,13 @@ export default function VaultStats() {
                                             }
                                             content={item.rewardsTooltipContent}
                                         />
-                                        {/* {(!item.isLoading && (item.id === 'effective-apy') && (BOOST_APY > 0)) && (
+                                        {/* {(!item.isLoading && (item.id === 'effective-apy') && (GLOBAL_BOOST_APY > 0)) && (
                                             <>
                                                 <HeadingText level="h3" weight="medium">+</HeadingText>
                                                 <div className="flex items-center gap-2">
                                                     <HeadingText level="h3" weight="medium">
                                                         <div className="flex items-center">
-                                                            <AnimatedNumber value={BOOST_APY.toFixed(hasNoDecimals(BOOST_APY) ? 0 : 2)} />%
+                                                            <AnimatedNumber value={GLOBAL_BOOST_APY.toFixed(hasNoDecimals(GLOBAL_BOOST_APY) ? 0 : 2)} />%
                                                         </div>
                                                     </HeadingText>
                                                     <InfoTooltip

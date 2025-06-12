@@ -2,7 +2,7 @@
 
 import { Period } from "@/types/periodButtons"
 import { motion } from "motion/react"
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState, useCallback } from "react"
 import ClaimRewards from "./claim-rewards"
 import { useWalletConnection } from "@/hooks/useWalletConnection"
 import DailyEarningsHistoryChart from "@/components/daily-earnings-history-chart"
@@ -43,7 +43,7 @@ const transition = {
 // Main Component
 export default function PositionDetails() {
     // Wallet Connection
-    const { walletAddress } = useWalletConnection()
+    const { walletAddress, isConnectingWallet } = useWalletConnection()
 
     if (!walletAddress) {
         return (
@@ -51,7 +51,7 @@ export default function PositionDetails() {
         )
     }
 
-    return <PositionDetailsTabContentUI walletAddress={walletAddress} />
+    return <PositionDetailsTabContentUI walletAddress={walletAddress} isConnecting={isConnectingWallet} />
 }
 
 // Child Components
@@ -103,13 +103,18 @@ function NoActivePositionUI({
     )
 }
 
-function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddress }) {
+function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAddress: TAddress; isConnecting?: boolean }) {
     const { selectedChain, chainDetails } = useChain()
-    const getProtocolIdentifier = () => {
+
+    const protocolId = useMemo(() => {
         if (!selectedChain) return ''
         return chainDetails[selectedChain as keyof typeof chainDetails]?.contractAddress || ''
-    }
-    const protocolId = getProtocolIdentifier()
+    }, [selectedChain, chainDetails])
+
+    const vaultAddress = useMemo(() => {
+        return VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`
+    }, [selectedChain])
+
     const { data: { capital, interest_earned }, isLoading: isLoadingPositionDetails } = useTransactionHistory({
         protocolIdentifier: protocolId,
         chainId: selectedChain || 0,
@@ -117,11 +122,17 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
         refetchOnTransaction: true
     })
     const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
-        vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        vaultAddress: vaultAddress,
         chainId: selectedChain,
         userAddress: walletAddress
     })
-    const BOOST_APY = boostRewardsData?.reduce((acc: number, curr: any) => acc + (curr.boost_apy / 100), 0) ?? 0
+    const GLOBAL_BOOST_APY =
+        boostRewardsData?.filter((item) => item.description?.includes('A global boost for all users') ?? false)
+            .reduce((acc, curr) => acc + (curr.boost_apy / 100), 0) ?? 0
+    const Farcaster_BOOST_APY =
+        boostRewardsData?.filter((item) => !item.description?.includes('A global boost for all users'))
+            .reduce((acc, curr) => acc + (curr.boost_apy / 100), 0) ?? 0
+    const hasFarcasterBoost = Farcaster_BOOST_APY > 0
 
     // Daily Earnings History
     const [selectedRangeForDailyEarningsHistory, setSelectedRangeForDailyEarningsHistory] = useState(Period.oneMonth)
@@ -131,7 +142,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
         isLoading: isLoadingDailyEarningsHistory,
         isError: isErrorDailyEarningsHistory
     } = useGetDailyEarningsHistory({
-        vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        vault_address: vaultAddress,
         user_address: walletAddress.toLowerCase() as `0x${string}`,
     })
 
@@ -139,21 +150,21 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
     const dailyEarningsHistoryData = React.useMemo(() => {
         if (!allDailyEarningsHistoryData) return []
         return allDailyEarningsHistoryData.filter(item => item.timestamp >= startTimeStamp)
-    }, [allDailyEarningsHistoryData, startTimeStamp, isLoadingDailyEarningsHistory, isErrorDailyEarningsHistory])
+    }, [allDailyEarningsHistoryData, startTimeStamp])
 
     const totalInterestEarned = useMemo(() => {
         return allDailyEarningsHistoryData?.reduce((acc: number, item: any) => acc + item.earnings, 0) ?? 0
-    }, [allDailyEarningsHistoryData, isLoadingDailyEarningsHistory, isErrorDailyEarningsHistory])
+    }, [allDailyEarningsHistoryData])
 
     // New hooks for APY enhancement sections
     const { spotApy, isLoading: isLoadingSpotApy, error: errorSpotApy } = useVaultHook()
     const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
-        vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        vault_address: vaultAddress,
         chain_id: selectedChain || 0
     })
     const TOTAL_SPOT_APY = useMemo(() => {
-        return Number(spotApy ?? 0) + Number(effectiveApyData?.rewards_apy ?? 0) + Number(BOOST_APY ?? 0)
-    }, [spotApy, effectiveApyData, BOOST_APY])
+        return Number(spotApy ?? 0) + Number(effectiveApyData?.rewards_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
+    }, [spotApy, effectiveApyData, GLOBAL_BOOST_APY, Farcaster_BOOST_APY])
     const {
         historicalData: historicalWeeklyData,
         isLoading: isLoadingHistoricalWeeklyData,
@@ -200,9 +211,68 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
     } satisfies Record<Period, string>
 
     const [infoCardsLayout, setInfoCardsLayout] = useState<'grid' | 'row'>('grid')
-    const TOTAL_APY = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(spotApy ?? 0) + Number(BOOST_APY ?? 0)
-    const TOTAL_VAULT_APY = Number(effectiveApyData?.total_apy ?? 0) + Number(BOOST_APY ?? 0)
-    const TOTAL_7_DAY_AVG_VAULT_APY = Number(days_7_avg_base_apy ?? 0) + Number(days_7_avg_rewards_apy ?? 0) + Number(BOOST_APY ?? 0)
+
+    // Combine all APY calculations in a single useMemo to prevent cascading re-renders
+    const apyCalculations = useMemo(() => {
+        const totalApy = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(spotApy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
+        const totalVaultApy = Number(effectiveApyData?.total_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
+        const total7DayAvgVaultApy = Number(days_7_avg_base_apy ?? 0) + Number(days_7_avg_rewards_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
+
+        return {
+            TOTAL_APY: totalApy,
+            TOTAL_VAULT_APY: totalVaultApy,
+            TOTAL_7_DAY_AVG_VAULT_APY: total7DayAvgVaultApy
+        }
+    }, [effectiveApyData, spotApy, GLOBAL_BOOST_APY, Farcaster_BOOST_APY, days_7_avg_base_apy, days_7_avg_rewards_apy])
+
+    const { TOTAL_APY, TOTAL_VAULT_APY, TOTAL_7_DAY_AVG_VAULT_APY } = apyCalculations
+
+    // Show loading state if wallet is connecting or critical data is still loading
+    if (isConnecting) {
+        return (
+            <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={variants}
+                transition={transition}
+                className="flex flex-col gap-[40px]"
+            >
+                <Card>
+                    <CardContent className="p-4 max-md:px-2 grid grid-cols-3 place-content-center gap-4">
+                        <div className="flex flex-col items-start w-fit gap-1 m-auto">
+                            <BodyText level="body2" weight="medium" className="text-gray-600">Capital</BodyText>
+                            <Skeleton className="h-10 w-16 rounded-4" />
+                        </div>
+                        <div className="w-[1.5px] h-4 bg-secondary-100/50 rounded-full m-auto"></div>
+                        <div className="flex flex-col items-start w-fit gap-1 m-auto">
+                            <BodyText level="body2" weight="medium" className="text-gray-600">Interest Earned</BodyText>
+                            <Skeleton className="h-10 w-16 rounded-4" />
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="p-6">
+                        <div className="flex items-center gap-2 mb-6">
+                            <div className="p-2 bg-gradient-to-br from-blue-100 to-blue-200 rounded-3 shadow-md">
+                                <Activity className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <HeadingText level="h4" weight="medium" className="text-gray-800">
+                                Loading Vault Performance Metrics...
+                            </HeadingText>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="flex flex-col gap-2 p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl">
+                                    <Skeleton className="h-6 w-20 rounded-4" />
+                                    <Skeleton className="h-10 w-16 rounded-4" />
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            </motion.div>
+        )
+    }
 
     return (
         <motion.div
@@ -249,7 +319,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
             <Card>
                 <CardContent className="p-6">
                     <div className="flex items-center gap-2 mb-6">
-                        <div className="relative p-2 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110">
+                        <div className="relative p-2 bg-gradient-to-br from-blue-100 to-blue-200 rounded-3 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110">
                             <Activity className="h-5 w-5 text-blue-600 drop-shadow-sm" />
                         </div>
                         <HeadingText level="h4" weight="medium" className="text-gray-800">
@@ -326,8 +396,15 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                                     {
                                                         key: 'superlend_rewards_apy',
                                                         key_name: 'Superlend USDC Reward',
-                                                        value: abbreviateNumber(BOOST_APY ?? 0, 0),
+                                                        value: abbreviateNumber(GLOBAL_BOOST_APY ?? 0, 0),
                                                         logo: "/images/tokens/usdc.webp"
+                                                    },
+                                                    {
+                                                        key: 'farcaster_rewards_apy',
+                                                        key_name: 'Farcaster Yieldrop',
+                                                        value: abbreviateNumber(Farcaster_BOOST_APY ?? 0, 0),
+                                                        logo: "/icons/sparkles.svg",
+                                                        show: hasFarcasterBoost,
                                                     },
                                                 ],
                                                 apyCurrent: TOTAL_APY,
@@ -411,8 +488,15 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                                     {
                                                         key: 'superlend_rewards_apy',
                                                         key_name: 'Superlend USDC Reward',
-                                                        value: abbreviateNumber(BOOST_APY ?? 0, 0),
+                                                        value: abbreviateNumber(GLOBAL_BOOST_APY ?? 0, 0),
                                                         logo: "/images/tokens/usdc.webp"
+                                                    },
+                                                    {
+                                                        key: 'farcaster_rewards_apy',
+                                                        key_name: 'Farcaster Yieldrop',
+                                                        value: abbreviateNumber(Farcaster_BOOST_APY ?? 0, 0),
+                                                        logo: "/icons/sparkles.svg",
+                                                        show: hasFarcasterBoost,
                                                     },
                                                 ],
                                                 apyCurrent: TOTAL_VAULT_APY,
@@ -496,8 +580,15 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                                     {
                                                         key: 'superlend_rewards_apy',
                                                         key_name: 'Superlend USDC Reward',
-                                                        value: abbreviateNumber(BOOST_APY ?? 0, 0),
+                                                        value: abbreviateNumber(GLOBAL_BOOST_APY ?? 0, 0),
                                                         logo: "/images/tokens/usdc.webp"
+                                                    },
+                                                    {
+                                                        key: 'farcaster_rewards_apy',
+                                                        key_name: 'Farcaster Yieldrop',
+                                                        value: abbreviateNumber(Farcaster_BOOST_APY ?? 0, 0),
+                                                        logo: "/icons/sparkles.svg",
+                                                        show: hasFarcasterBoost,
                                                     },
                                                 ],
                                                 apyCurrent: TOTAL_7_DAY_AVG_VAULT_APY,
@@ -534,7 +625,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
             <Card>
                 <CardContent className="p-6">
                     <div className="flex items-center gap-2 mb-4">
-                        <div className="relative p-2 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                        <div className="relative p-2 bg-gradient-to-br from-purple-100 to-purple-200 rounded-3 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                             <Calendar className="h-5 w-5 text-purple-600 drop-shadow-sm" />
                         </div>
                         <HeadingText level="h4" weight="medium" className="text-gray-800">
@@ -687,7 +778,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                 <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-2">
-                            <div className="relative p-2 bg-gradient-to-br from-green-100 to-green-200 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 hover:-translate-y-1">
+                            <div className="relative p-2 bg-gradient-to-br from-green-100 to-green-200 rounded-3 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 hover:-translate-y-1">
                                 <TrendingUp className="h-5 w-5 text-green-600 drop-shadow-sm animate-pulse" />
                             </div>
                             <HeadingText level="h4" weight="medium" className="text-gray-800">
@@ -713,7 +804,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                         viewport={{ once: true }}
                                         transition={{ duration: 0.4, delay: 0.3 }}
                                     >
-                                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-orange-200 to-orange-300 rounded-lg mr-1 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 hover:rotate-6">
+                                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-orange-200 to-orange-300 rounded-3 mr-1 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 hover:rotate-6">
                                             <BarChart3 className="h-5 w-5 text-orange-700 drop-shadow-sm" />
                                         </div>
                                         <HeadingText level="h5" weight="medium" className="text-gray-800">
@@ -746,7 +837,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                         transition={{ duration: 0.5, delay: 0.5 }}
                                     >
                                         <BodyText level="body2" weight="normal" className="text-gray-600">
-                                            You need to hold for at least 2 weeks to outperform similar type of other vaults in DeFi.
+                                            You need to hold for at least 2 weeks to get the optimum yield.
                                         </BodyText>
                                     </motion.div>
                                 </CardContent>
@@ -769,7 +860,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                         viewport={{ once: true }}
                                         transition={{ duration: 0.4, delay: 0.4 }}
                                     >
-                                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-purple-200 to-purple-300 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:rotate-12 hover:scale-110">
+                                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-purple-200 to-purple-300 rounded-3 shadow-md hover:shadow-lg transition-all duration-300 hover:rotate-12 hover:scale-110">
                                             <Target className="h-5 w-5 text-purple-700 drop-shadow-sm animate-pulse" />
                                         </div>
                                         <HeadingText level="h5" weight="medium" className="text-gray-800">
@@ -806,7 +897,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
                                         viewport={{ once: true }}
                                         transition={{ duration: 0.4, delay: 0.5 }}
                                     >
-                                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-200 to-blue-300 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 hover:-translate-y-1">
+                                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-200 to-blue-300 rounded-3 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 hover:-translate-y-1">
                                             <Trophy className="h-5 w-5 text-blue-700 drop-shadow-sm animate-bounce" />
                                         </div>
                                         <HeadingText level="h5" weight="medium" className="text-gray-800">
