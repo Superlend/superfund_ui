@@ -139,6 +139,7 @@ export default function ConnectWalletButton() {
                         <InfoTooltip
                             size="none"
                             className="px-2"
+                            classNameLabel="w-full"
                             label={
                                 <Button
                                     variant="primary"
