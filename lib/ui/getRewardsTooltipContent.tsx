@@ -27,7 +27,8 @@ export function getRewardsTooltipContent({
     baseRateLabel?: string
     rewards?: TReward[]
     rewardsCustomList?: {
-        [key: string]: string
+        [key: string]: string | boolean | undefined
+        show?: boolean
     }[]
     apyCurrent: number
     positionTypeParam?: string
@@ -106,6 +107,7 @@ export function getRewardsTooltipContent({
                 return null
             })}
             {rewardsCustomList && rewardsCustomList?.map((reward: any) => {
+                if (reward.show ?? true) {
                 return (
                     <div
                         key={reward.key}
@@ -120,7 +122,7 @@ export function getRewardsTooltipContent({
                                     width={16}
                                     height={16}
                                     alt={reward?.key_name || ''}
-                                    className="inline-block rounded-full object-contain"
+                                    className="inline-block rounded-full grow-0 shrink-0 object-cover"
                                 />
                             }
                             <Label weight="medium" className="text-gray-800">
@@ -131,7 +133,9 @@ export function getRewardsTooltipContent({
                             {reward.value}%
                         </BodyText>
                     </div>
-                )
+                    )
+                }
+                return null
             })}
             <div
                 className="flex items-center justify-between gap-[100px] py-2"
@@ -139,7 +143,7 @@ export function getRewardsTooltipContent({
             >
                 <div className="flex items-center gap-1">
                     <ImageWithDefault
-                        src="/icons/sparkles.svg"
+                        src="/icons/twinkle-stars.svg"
                         alt="Net APY"
                         width={16}
                         height={16}

@@ -126,7 +126,13 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
         chainId: selectedChain,
         userAddress: walletAddress
     })
-    const BOOST_APY = boostRewardsData?.reduce((acc: number, curr: any) => acc + (curr.boost_apy / 100), 0) ?? 0
+    const GLOBAL_BOOST_APY =
+        boostRewardsData?.filter((item) => item.description?.includes('A global boost for all users') ?? false)
+            .reduce((acc, curr) => acc + (curr.boost_apy / 100), 0) ?? 0
+    const Farcaster_BOOST_APY =
+        boostRewardsData?.filter((item) => !item.description?.includes('A global boost for all users'))
+            .reduce((acc, curr) => acc + (curr.boost_apy / 100), 0) ?? 0
+    const hasFarcasterBoost = Farcaster_BOOST_APY > 0
 
     // Daily Earnings History
     const [selectedRangeForDailyEarningsHistory, setSelectedRangeForDailyEarningsHistory] = useState(Period.oneMonth)
@@ -157,8 +163,8 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
         chain_id: selectedChain || 0
     })
     const TOTAL_SPOT_APY = useMemo(() => {
-        return Number(spotApy ?? 0) + Number(effectiveApyData?.rewards_apy ?? 0) + Number(BOOST_APY ?? 0)
-    }, [spotApy, effectiveApyData, BOOST_APY])
+        return Number(spotApy ?? 0) + Number(effectiveApyData?.rewards_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
+    }, [spotApy, effectiveApyData, GLOBAL_BOOST_APY, Farcaster_BOOST_APY])
     const {
         historicalData: historicalWeeklyData,
         isLoading: isLoadingHistoricalWeeklyData,
@@ -208,16 +214,16 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
 
     // Combine all APY calculations in a single useMemo to prevent cascading re-renders
     const apyCalculations = useMemo(() => {
-        const totalApy = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(spotApy ?? 0) + Number(BOOST_APY ?? 0)
-        const totalVaultApy = Number(effectiveApyData?.total_apy ?? 0) + Number(BOOST_APY ?? 0)
-        const total7DayAvgVaultApy = Number(days_7_avg_base_apy ?? 0) + Number(days_7_avg_rewards_apy ?? 0) + Number(BOOST_APY ?? 0)
+        const totalApy = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(spotApy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
+        const totalVaultApy = Number(effectiveApyData?.total_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
+        const total7DayAvgVaultApy = Number(days_7_avg_base_apy ?? 0) + Number(days_7_avg_rewards_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
 
         return {
             TOTAL_APY: totalApy,
             TOTAL_VAULT_APY: totalVaultApy,
             TOTAL_7_DAY_AVG_VAULT_APY: total7DayAvgVaultApy
         }
-    }, [effectiveApyData, spotApy, BOOST_APY, days_7_avg_base_apy, days_7_avg_rewards_apy])
+    }, [effectiveApyData, spotApy, GLOBAL_BOOST_APY, Farcaster_BOOST_APY, days_7_avg_base_apy, days_7_avg_rewards_apy])
 
     const { TOTAL_APY, TOTAL_VAULT_APY, TOTAL_7_DAY_AVG_VAULT_APY } = apyCalculations
 
@@ -247,7 +253,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                 <Card>
                     <CardContent className="p-6">
                         <div className="flex items-center gap-2 mb-6">
-                            <div className="p-2 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg shadow-md">
+                            <div className="p-2 bg-gradient-to-br from-blue-100 to-blue-200 rounded-3 shadow-md">
                                 <Activity className="h-5 w-5 text-blue-600" />
                             </div>
                             <HeadingText level="h4" weight="medium" className="text-gray-800">
@@ -390,8 +396,15 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                                     {
                                                         key: 'superlend_rewards_apy',
                                                         key_name: 'Superlend USDC Reward',
-                                                        value: abbreviateNumber(BOOST_APY ?? 0, 0),
+                                                        value: abbreviateNumber(GLOBAL_BOOST_APY ?? 0, 0),
                                                         logo: "/images/tokens/usdc.webp"
+                                                    },
+                                                    {
+                                                        key: 'farcaster_rewards_apy',
+                                                        key_name: 'Farcaster Yieldrop',
+                                                        value: abbreviateNumber(Farcaster_BOOST_APY ?? 0, 0),
+                                                        logo: "/icons/sparkles.svg",
+                                                        show: hasFarcasterBoost,
                                                     },
                                                 ],
                                                 apyCurrent: TOTAL_APY,
@@ -475,8 +488,15 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                                     {
                                                         key: 'superlend_rewards_apy',
                                                         key_name: 'Superlend USDC Reward',
-                                                        value: abbreviateNumber(BOOST_APY ?? 0, 0),
+                                                        value: abbreviateNumber(GLOBAL_BOOST_APY ?? 0, 0),
                                                         logo: "/images/tokens/usdc.webp"
+                                                    },
+                                                    {
+                                                        key: 'farcaster_rewards_apy',
+                                                        key_name: 'Farcaster Yieldrop',
+                                                        value: abbreviateNumber(Farcaster_BOOST_APY ?? 0, 0),
+                                                        logo: "/icons/sparkles.svg",
+                                                        show: hasFarcasterBoost,
                                                     },
                                                 ],
                                                 apyCurrent: TOTAL_VAULT_APY,
@@ -560,8 +580,15 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                                     {
                                                         key: 'superlend_rewards_apy',
                                                         key_name: 'Superlend USDC Reward',
-                                                        value: abbreviateNumber(BOOST_APY ?? 0, 0),
+                                                        value: abbreviateNumber(GLOBAL_BOOST_APY ?? 0, 0),
                                                         logo: "/images/tokens/usdc.webp"
+                                                    },
+                                                    {
+                                                        key: 'farcaster_rewards_apy',
+                                                        key_name: 'Farcaster Yieldrop',
+                                                        value: abbreviateNumber(Farcaster_BOOST_APY ?? 0, 0),
+                                                        logo: "/icons/sparkles.svg",
+                                                        show: hasFarcasterBoost,
                                                     },
                                                 ],
                                                 apyCurrent: TOTAL_7_DAY_AVG_VAULT_APY,
@@ -777,7 +804,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                         viewport={{ once: true }}
                                         transition={{ duration: 0.4, delay: 0.3 }}
                                     >
-                                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-orange-200 to-orange-300 rounded-lg mr-1 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 hover:rotate-6">
+                                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-orange-200 to-orange-300 rounded-3 mr-1 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 hover:rotate-6">
                                             <BarChart3 className="h-5 w-5 text-orange-700 drop-shadow-sm" />
                                         </div>
                                         <HeadingText level="h5" weight="medium" className="text-gray-800">
@@ -810,7 +837,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                         transition={{ duration: 0.5, delay: 0.5 }}
                                     >
                                         <BodyText level="body2" weight="normal" className="text-gray-600">
-                                            You need to hold for at least 2 weeks to outperform similar type of other vaults in DeFi.
+                                            You need to hold for at least 2 weeks to get the optimum yield.
                                         </BodyText>
                                     </motion.div>
                                 </CardContent>
@@ -833,7 +860,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                         viewport={{ once: true }}
                                         transition={{ duration: 0.4, delay: 0.4 }}
                                     >
-                                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-purple-200 to-purple-300 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:rotate-12 hover:scale-110">
+                                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-purple-200 to-purple-300 rounded-3 shadow-md hover:shadow-lg transition-all duration-300 hover:rotate-12 hover:scale-110">
                                             <Target className="h-5 w-5 text-purple-700 drop-shadow-sm animate-pulse" />
                                         </div>
                                         <HeadingText level="h5" weight="medium" className="text-gray-800">
@@ -870,7 +897,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                         viewport={{ once: true }}
                                         transition={{ duration: 0.4, delay: 0.5 }}
                                     >
-                                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-200 to-blue-300 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 hover:-translate-y-1">
+                                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-200 to-blue-300 rounded-3 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 hover:-translate-y-1">
                                             <Trophy className="h-5 w-5 text-blue-700 drop-shadow-sm animate-bounce" />
                                         </div>
                                         <HeadingText level="h5" weight="medium" className="text-gray-800">

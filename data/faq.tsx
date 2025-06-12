@@ -4,12 +4,12 @@ const FAQ = [
     {
         value: "item-1",
         question: "Why doesn't my APY match the advertised rate on day one?",
-        answer: "When you deposit into SuperFund, your earnings (APY) don't start at the full rate right away. That's because we use a \"yield smearing\" system — built on Euler Earn — to make rates more stable and fair over time.",
+        answer: "When you deposit into SuperFund, your earnings (APY) don't start at the full rate right away. That's because we use a \"Yield Ramp-up\" system — built on Euler Earn — to make rates more stable and fair over time.",
         delay: 0.1
     },
     {
         value: "item-2",
-        question: "What's Yield Smearing?",
+        question: "What's Yield Ramp-up?",
         answer: "Think of SuperFund like a candy machine 🍬 that gives out candies (yield) slowly and evenly, so everyone gets a fair share — not all at once. When the vault earns yield, it's added to a pool and released gradually over 7 days. This prevents sudden spikes and keeps returns smooth for everyone.",
         delay: 0.2
     },

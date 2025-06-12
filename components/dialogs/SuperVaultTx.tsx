@@ -157,7 +157,7 @@ export default function SuperVaultTxDialog({
 
     const getScrollableHeight = () => {
         if (isDepositPositionType) {
-            return isDepositTxInSuccess ? 'h-[320px]' : ''
+            return isDepositTxInSuccess ? isDesktop ? 'h-[180px]' : 'h-[200px]' : ''
         }
 
         return 'h-[320px]'
@@ -1350,7 +1350,7 @@ export default function SuperVaultTxDialog({
                     <DialogTrigger asChild>{triggerButton}</DialogTrigger>
                     <DialogContent
                         aria-describedby={undefined}
-                        className="pt-[25px] max-w-[450px] max-h-[90vh] flex flex-col"
+                        className="pt-[25px] max-w-[450px] max-h-[100vh] flex flex-col"
                         showCloseButton={false}
                     >
                         {/* X Icon to close the dialog */}
@@ -1498,7 +1498,7 @@ export default function SuperVaultTxDialog({
         <>
             <Drawer open={open} dismissible={false}>
                 <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
-                <DrawerContent className="w-full p-5 pt-2 dismissible-false max-h-[90vh] flex flex-col gap-3">
+                <DrawerContent className="w-full p-5 pt-2 dismissible-false max-h-[100vh] flex flex-col gap-3">
                     {/* X Icon to close the drawer */}
                     {closeContentButton}
 
@@ -1513,7 +1513,7 @@ export default function SuperVaultTxDialog({
                     {/* Scrollable Middle - Withdrawal Retention Flow OR Success Content */}
                     <div className="relative flex-1">
                         <div
-                            className={`${getScrollableHeight()} overflow-y-auto`}
+                            className={`${getScrollableHeight()} overflow-y-auto rounded-3`}
                             onScroll={(e) => checkScroll(e.currentTarget)}
                             ref={(el) => {
                                 if (el) {
