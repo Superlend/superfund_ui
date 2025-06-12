@@ -134,6 +134,8 @@ export default function SuperVaultTxDialog({
     const { logEvent } = useAnalytics()
     const router = useRouter()
 
+    // Simple scroll state
+    const [showScrollButton, setShowScrollButton] = useState(false)
 
     // Withdrawal retention flow state
     const [hasConsentedToWithdrawal, setHasConsentedToWithdrawal] = useState(false)
@@ -141,6 +143,25 @@ export default function SuperVaultTxDialog({
 
     // Post-deposit engagement flow state - now for toast trigger only
     const [hasTriggeredPostDepositToast, setHasTriggeredPostDepositToast] = useState(false)
+
+    // Simple scroll check
+    const checkScroll = (element: HTMLElement) => {
+        const canScroll = element.scrollHeight > element.clientHeight
+        const isAtBottom = element.scrollTop + element.clientHeight >= element.scrollHeight - 10
+        setShowScrollButton(canScroll && !isAtBottom)
+    }
+
+    const scrollToBottom = (element: HTMLElement) => {
+        element.scrollTo({ top: element.scrollHeight, behavior: 'smooth' })
+    }
+
+    const getScrollableHeight = () => {
+        if (isDepositPositionType) {
+            return isDepositTxInSuccess ? 'h-[320px]' : ''
+        }
+
+        return 'h-[320px]'
+    }
 
     useEffect(() => {
         if (open) {
@@ -309,6 +330,9 @@ export default function SuperVaultTxDialog({
     }, [walletAddress])
 
     useEffect(() => {
+        if (!open) {
+            resetDepositWithdrawTx()
+        }
         // Reset the tx status when the dialog is closed
         return () => {
             resetDepositWithdrawTx()
@@ -435,6 +459,8 @@ export default function SuperVaultTxDialog({
 
     const disableActionButton = disabled || (!isDepositPositionType && showWithdrawalRetention && !hasConsentedToWithdrawal)
 
+
+
     // SUB_COMPONENT: Trigger button to open the dialog
     const triggerButton = (
         <Button
@@ -483,8 +509,8 @@ export default function SuperVaultTxDialog({
                         positionType === 'withdraw'
                             ? []
                             : [
-                                  `https://funds.superlend.xyz?info=${depositTx.hash}:${walletAddress}`,
-                              ],
+                                `https://funds.superlend.xyz?info=${depositTx.hash}:${walletAddress}`,
+                            ],
                 })
             },
         },
@@ -1324,7 +1350,7 @@ export default function SuperVaultTxDialog({
                     <DialogTrigger asChild>{triggerButton}</DialogTrigger>
                     <DialogContent
                         aria-describedby={undefined}
-                        className="pt-[25px] max-w-[450px] max-h-[100vh] flex flex-col"
+                        className="pt-[25px] max-w-[450px] max-h-[90vh] flex flex-col"
                         showCloseButton={false}
                     >
                         {/* X Icon to close the dialog */}
@@ -1339,32 +1365,59 @@ export default function SuperVaultTxDialog({
                         </div>
 
                         {/* Scrollable Middle - Withdrawal Retention Flow OR Success Content */}
-                        <AnimatePresence mode="wait">
-                            {(!isDepositPositionType && !isWithdrawTxInSuccess) && (
-                                <motion.div
-                                    key="withdrawal-alert"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                    className="flex-1 overflow-y-auto overscroll-contain dialog-scroll flex flex-col gap-3 rounded-4"
+                        <div className="relative flex-1">
+                            <div
+                                className={`${getScrollableHeight()} overflow-y-auto rounded-3`}
+                                onScroll={(e) => checkScroll(e.currentTarget)}
+                                ref={(el) => {
+                                    if (el) {
+                                        setTimeout(() => checkScroll(el), 100)
+                                    }
+                                }}
+                            >
+                                <AnimatePresence mode="wait">
+                                    {(!isDepositPositionType && !isWithdrawTxInSuccess) && (
+                                        <motion.div
+                                            key="withdrawal-alert"
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
+                                            transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                            className="flex flex-col gap-3"
+                                        >
+                                            {withdrawalAlertContent}
+                                        </motion.div>
+                                    )}
+                                    {(isDepositTxInSuccess || isWithdrawTxInSuccess) && (
+                                        <motion.div
+                                            key="success-content"
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
+                                            transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                            className="flex flex-col gap-3"
+                                        >
+                                            {successSpecificContent}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* Simple scroll button */}
+                            {showScrollButton && (
+                                <button
+                                    onClick={(e) => {
+                                        const scrollContainer = e.currentTarget.previousElementSibling as HTMLElement
+                                        scrollToBottom(scrollContainer)
+                                    }}
+                                    className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl"
                                 >
-                                    {withdrawalAlertContent}
-                                </motion.div>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-secondary-500">
+                                        <path d="m6 9 6 6 6-6" />
+                                    </svg>
+                                </button>
                             )}
-                            {(isDepositTxInSuccess || isWithdrawTxInSuccess) && (
-                                <motion.div
-                                    key="success-content"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                    className="flex-1 overflow-y-auto overscroll-contain dialog-scroll flex flex-col gap-3 rounded-4"
-                                >
-                                    {successSpecificContent}
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                        </div>
 
                         {/* Fixed Bottom - Action Button */}
                         {transactionStatusContent}
@@ -1445,7 +1498,7 @@ export default function SuperVaultTxDialog({
         <>
             <Drawer open={open} dismissible={false}>
                 <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
-                <DrawerContent className="w-full p-5 pt-2 dismissible-false max-h-[100vh] flex flex-col gap-3">
+                <DrawerContent className="w-full p-5 pt-2 dismissible-false max-h-[90vh] flex flex-col gap-3">
                     {/* X Icon to close the drawer */}
                     {closeContentButton}
 
@@ -1458,32 +1511,59 @@ export default function SuperVaultTxDialog({
                     </div>
 
                     {/* Scrollable Middle - Withdrawal Retention Flow OR Success Content */}
-                    <AnimatePresence mode="wait">
-                        {(!isDepositPositionType && !isWithdrawTxInSuccess) && (
-                            <motion.div
-                                key="withdrawal-alert-mobile"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                className="flex-1 overflow-y-auto overscroll-contain dialog-scroll flex flex-col gap-3 rounded-4"
+                    <div className="relative flex-1">
+                        <div
+                            className={`${getScrollableHeight()} overflow-y-auto`}
+                            onScroll={(e) => checkScroll(e.currentTarget)}
+                            ref={(el) => {
+                                if (el) {
+                                    setTimeout(() => checkScroll(el), 100)
+                                }
+                            }}
+                        >
+                            <AnimatePresence mode="wait">
+                                {(!isDepositPositionType && !isWithdrawTxInSuccess) && (
+                                    <motion.div
+                                        key="withdrawal-alert-mobile"
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -20 }}
+                                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                        className="flex flex-col gap-3"
+                                    >
+                                        {withdrawalAlertContent}
+                                    </motion.div>
+                                )}
+                                {(isDepositTxInSuccess || isWithdrawTxInSuccess) && (
+                                    <motion.div
+                                        key="success-content-mobile"
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -20 }}
+                                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                        className="flex flex-col gap-3"
+                                    >
+                                        {successSpecificContent}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+                        {/* Simple scroll button */}
+                        {showScrollButton && (
+                            <button
+                                onClick={(e) => {
+                                    const scrollContainer = e.currentTarget.previousElementSibling as HTMLElement
+                                    scrollToBottom(scrollContainer)
+                                }}
+                                className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl"
                             >
-                                {withdrawalAlertContent}
-                            </motion.div>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-secondary-500">
+                                    <path d="m6 9 6 6 6-6" />
+                                </svg>
+                            </button>
                         )}
-                        {(isDepositTxInSuccess || isWithdrawTxInSuccess) && (
-                            <motion.div
-                                key="success-content-mobile"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                className="flex-1 overflow-y-auto overscroll-contain dialog-scroll flex flex-col gap-3 rounded-4"
-                            >
-                                {successSpecificContent}
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                    </div>
 
                     {/* Fixed Bottom - Action Button */}
                     {transactionStatusContent}

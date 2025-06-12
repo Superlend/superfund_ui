@@ -36,15 +36,15 @@ const convertTimestampToLocalDate = (timestamp: string): Date => {
   const date = new Date(timestampMs);
   
   // Debug log to help identify timestamp issues
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Timestamp conversion:', {
-      originalTimestamp: timestamp,
-      timestampMs,
-      localDate: date.toLocaleString(),
-      utcDate: date.toUTCString(),
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-    });
-  }
+  // if (process.env.NODE_ENV === 'development') {
+  //   console.log('Timestamp conversion:', {
+  //     originalTimestamp: timestamp,
+  //     timestampMs,
+  //     localDate: date.toLocaleString(),
+  //     utcDate: date.toUTCString(),
+  //     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+  //   });
+  // }
   
   return date;
 };
