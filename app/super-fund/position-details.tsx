@@ -313,7 +313,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
             <Card>
                 <CardContent className="p-6">
                     <div className="flex items-center gap-2 mb-6">
-                        <div className="relative p-2 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110">
+                        <div className="relative p-2 bg-gradient-to-br from-blue-100 to-blue-200 rounded-3 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110">
                             <Activity className="h-5 w-5 text-blue-600 drop-shadow-sm" />
                         </div>
                         <HeadingText level="h4" weight="medium" className="text-gray-800">
@@ -598,7 +598,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
             <Card>
                 <CardContent className="p-6">
                     <div className="flex items-center gap-2 mb-4">
-                        <div className="relative p-2 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                        <div className="relative p-2 bg-gradient-to-br from-purple-100 to-purple-200 rounded-3 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                             <Calendar className="h-5 w-5 text-purple-600 drop-shadow-sm" />
                         </div>
                         <HeadingText level="h4" weight="medium" className="text-gray-800">
@@ -751,7 +751,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                 <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-2">
-                            <div className="relative p-2 bg-gradient-to-br from-green-100 to-green-200 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 hover:-translate-y-1">
+                            <div className="relative p-2 bg-gradient-to-br from-green-100 to-green-200 rounded-3 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 hover:-translate-y-1">
                                 <TrendingUp className="h-5 w-5 text-green-600 drop-shadow-sm animate-pulse" />
                             </div>
                             <HeadingText level="h4" weight="medium" className="text-gray-800">
