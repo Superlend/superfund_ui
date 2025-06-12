@@ -4,9 +4,14 @@ function makeQueryClient() {
     return new QueryClient({
         defaultOptions: {
             queries: {
+                // ✅ Optimization 1.3: Enhanced query client configuration for better caching
                 // With SSR, we usually want to set some default staleTime
                 // above 0 to avoid refetching immediately on the client
-                staleTime: 60 * 1000,
+                staleTime: 60 * 1000, // 1 minute
+                gcTime: 10 * 60 * 1000, // 10 minutes (replaces deprecated cacheTime)
+                refetchOnWindowFocus: false, // Prevent refetch on window focus during tab switching
+                refetchOnMount: false, // Prevent refetch on mount if we have cached data
+                retry: 2, // Reduce retry attempts for failed requests
             },
         },
     })

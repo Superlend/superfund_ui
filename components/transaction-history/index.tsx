@@ -27,6 +27,37 @@ interface TransactionHistoryProps {
   protocolIdentifier: string
 }
 
+// Helper function to convert Unix timestamp to user's local timezone
+const convertTimestampToLocalDate = (timestamp: string): Date => {
+  // Convert string timestamp to number and multiply by 1000 for milliseconds
+  const timestampMs = parseInt(timestamp) * 1000;
+  
+  // Create date object which automatically uses user's local timezone
+  const date = new Date(timestampMs);
+  
+  // Debug log to help identify timestamp issues
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Timestamp conversion:', {
+      originalTimestamp: timestamp,
+      timestampMs,
+      localDate: date.toLocaleString(),
+      utcDate: date.toUTCString(),
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    });
+  }
+  
+  return date;
+};
+
+// Helper function to get user's timezone for display
+const getUserTimezone = (): string => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch {
+    return 'UTC';
+  }
+};
+
 export default function TransactionHistory({ protocolIdentifier }: TransactionHistoryProps) {
   const { walletAddress, isWalletConnected } = useWalletConnection()
   const { selectedChain } = useChain()
@@ -70,19 +101,22 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
     return null
   }
 
-  // Group transactions by date
+  // Group transactions by date with improved timezone handling
   const groupTransactionsByDate = () => {
     const groups: { [key: string]: Transaction[] } = {}
+    const userTimezone = getUserTimezone();
 
     transactions.slice(0, 3).forEach(tx => {
-      const date = new Date(parseInt(tx.blockTimestamp) * 1000)
+      const date = convertTimestampToLocalDate(tx.blockTimestamp);
       let dateKey = ''
 
+      // Use timezone-aware date comparison
       if (isToday(date)) {
         dateKey = 'Today'
       } else if (isYesterday(date)) {
         dateKey = 'Yesterday'
       } else {
+        // Format date in user's local timezone
         dateKey = format(date, 'MMM dd, yyyy')
       }
 
@@ -104,6 +138,12 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
         <HeadingText level="h5" weight="medium" className="text-gray-800 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
           Your Recent Transactions
         </HeadingText>
+        {/* Debug info in development */}
+        {process.env.NODE_ENV === 'development' && (
+          <p className="text-xs text-muted-foreground mt-1">
+            Timezone: {getUserTimezone()}
+          </p>
+        )}
       </div>
 
       <div className="space-y-4">
@@ -115,7 +155,7 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
           Object.entries(groupedTransactions).map(([dateGroup, txs]) => (
             <div key={dateGroup} className="space-y-3">
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground bg-gradient-to-r from-accent/10 to-accent/5 py-1.5 px-3 rounded-lg border border-accent/20">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground bg-gradient-to-r from-accent/10 to-accent/5 py-1.5 px-3 rounded-3 border border-accent/20">
                   <Calendar className="w-3 h-3 text-accent" />
                   {dateGroup}
                 </div>
@@ -147,7 +187,7 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
 
 function TransactionItem({ transaction }: { transaction: Transaction }) {
   const { type, assets, shares, blockTimestamp, transactionHash } = transaction
-  const date = new Date(parseInt(blockTimestamp) * 1000)
+  const date = convertTimestampToLocalDate(blockTimestamp);
   const { selectedChain, chainDetails } = useChain()
   const [copied, setCopied] = useState(false)
 
@@ -197,9 +237,9 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
 
   return (
     <TooltipProvider>
-      <div className="group relative p-3 bg-gradient-to-r from-background to-background/50 rounded-lg hover:from-accent/5 hover:to-accent/10 transition-all duration-300 border border-border/50 hover:border-accent/30 hover:shadow-md hover:shadow-accent/5">
+      <div className="group relative p-3 bg-gradient-to-r from-background to-background/50 rounded-3 hover:from-accent/5 hover:to-accent/10 transition-all duration-300 border border-border/50 hover:border-accent/30 hover:shadow-md hover:shadow-accent/5">
         {/* Subtle gradient overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3 pointer-events-none" />
         
         <div className="relative flex items-start justify-between gap-3">
           {/* Left section */}
@@ -217,7 +257,20 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
               </div>
 
               <div className="text-xs text-muted-foreground font-medium">
-                {format(date, 'MMM dd • HH:mm')}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="cursor-help">
+                      {format(date, 'MMM dd • HH:mm')}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="bg-card border shadow-lg">
+                    <div className="text-xs">
+                      <p className="font-medium">{format(date, 'EEEE, MMMM dd, yyyy')}</p>
+                      <p className="text-muted-foreground">{format(date, 'HH:mm:ss')} ({getUserTimezone()})</p>
+                      <p className="text-[10px] text-muted-foreground mt-1">Block: {blockTimestamp}</p>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
               </div>
 
               {/* Transaction hash and explorer link */}
@@ -226,7 +279,7 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
                   <TooltipTrigger asChild>
                     <button
                       onClick={copyHash}
-                      className="group/copy text-xs text-orange-500 hover:text-orange-600 active:text-orange-700 flex items-center gap-1 px-2 py-1 rounded-md hover:bg-orange-50 active:bg-orange-100 transition-all duration-200"
+                      className="group/copy text-xs text-orange-500 hover:text-orange-600 active:text-orange-700 flex items-center gap-1 px-2 py-1 rounded-2 hover:bg-orange-50 active:bg-orange-100 transition-all duration-200"
                     >
                       <span className="font-mono text-[10px]">{truncatedHash}</span>
                       {copied ? (
@@ -246,7 +299,7 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
                     <Link
                       href={`${getExplorerUrl()}${transactionHash}`}
                       target="_blank"
-                      className="group/link text-xs text-orange-500 hover:text-orange-600 active:text-orange-700 flex items-center gap-1 px-2 py-1 rounded-md hover:bg-orange-50 active:bg-orange-100 transition-all duration-200"
+                      className="group/link text-xs text-orange-500 hover:text-orange-600 active:text-orange-700 flex items-center gap-1 px-2 py-1 rounded-2 hover:bg-orange-50 active:bg-orange-100 transition-all duration-200"
                     >
                       <span className="text-[10px]">Explorer</span>
                       <ExternalLink className="h-2.5 w-2.5 group-hover/link:scale-110 group-hover/link:translate-x-0.5 transition-all duration-200" />
@@ -266,7 +319,7 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
               <>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-red-50/70 border border-red-100/70 hover:bg-red-50 hover:border-red-200 transition-colors duration-200 cursor-pointer">
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-2 bg-red-50/70 border border-red-100/70 hover:bg-red-50 hover:border-red-200 transition-colors duration-200 cursor-pointer">
                       <span className="text-red-500 font-medium tabular-nums text-xs">-{formattedAssets}</span>
                       {USDCIcon}
                     </div>
@@ -277,7 +330,7 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-green-50/70 border border-green-100/70 hover:bg-green-50 hover:border-green-200 transition-colors duration-200 cursor-pointer">
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-2 bg-green-50/70 border border-green-100/70 hover:bg-green-50 hover:border-green-200 transition-colors duration-200 cursor-pointer">
                       <span className="text-green-500 font-medium tabular-nums text-xs">+{formattedShares}</span>
                       <span className="text-[9px] font-medium text-green-600/80 bg-green-100/50 px-1 py-0.5 rounded">
                         slUSD
@@ -293,7 +346,7 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
               <>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-red-50/70 border border-red-100/70 hover:bg-red-50 hover:border-red-200 transition-colors duration-200 cursor-pointer">
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-2 bg-red-50/70 border border-red-100/70 hover:bg-red-50 hover:border-red-200 transition-colors duration-200 cursor-pointer">
                       <span className="text-red-500 font-medium tabular-nums text-xs">-{formattedShares}</span>
                       <span className="text-[9px] font-medium text-red-600/80 bg-red-100/50 px-1 py-0.5 rounded">
                         slUSD
@@ -306,7 +359,7 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-green-50/70 border border-green-100/70 hover:bg-green-50 hover:border-green-200 transition-colors duration-200 cursor-pointer">
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-2 bg-green-50/70 border border-green-100/70 hover:bg-green-50 hover:border-green-200 transition-colors duration-200 cursor-pointer">
                       <span className="text-green-500 font-medium tabular-nums text-xs">+{formattedAssets}</span>
                       {USDCIcon}
                     </div>
@@ -332,9 +385,9 @@ function TransactionSkeleton({ count = 3 }: { count?: number }) {
         .map((_, index) => (
           <div key={index} className="space-y-2">
             {index === 0 && (
-              <Skeleton className="h-4 w-16 rounded-md" />
+              <Skeleton className="h-4 w-16 rounded-2" />
             )}
-            <Skeleton className="h-[88px] w-full rounded-lg" />
+            <Skeleton className="h-[88px] w-full rounded-3" />
           </div>
         ))}
     </>

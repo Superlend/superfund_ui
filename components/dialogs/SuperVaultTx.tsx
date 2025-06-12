@@ -1445,7 +1445,7 @@ export default function SuperVaultTxDialog({
         <>
             <Drawer open={open} dismissible={false}>
                 <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
-                <DrawerContent className="w-full p-5 pt-2 dismissible-false max-h-[90vh] flex flex-col gap-3">
+                <DrawerContent className="w-full p-5 pt-2 dismissible-false max-h-[100vh] flex flex-col gap-3">
                     {/* X Icon to close the drawer */}
                     {closeContentButton}
 

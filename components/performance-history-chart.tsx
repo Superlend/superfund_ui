@@ -206,11 +206,11 @@ export function PerformanceHistoryChart() {
                 totalApy: abbreviateNumber(totalApyValue),
                 totalAssets: abbreviateNumber(item.totalAssets),
             }
-        }).sort((a, b) => new Date(a.rawTimestamp).getTime() - new Date(b.rawTimestamp).getTime())
+        }).sort((a: any, b: any) => new Date(a.rawTimestamp).getTime() - new Date(b.rawTimestamp).getTime())
     }, [historicalData])
 
     const { minValue, maxValue, valueRange } = useMemo(() => {
-        const allValues = chartData.flatMap(d => [Number(d.baseApy), Number(d.totalApy)])
+        const allValues = chartData.flatMap((d: any) => [Number(d.baseApy), Number(d.totalApy)])
         const min = Math.min(...allValues)
         const max = Math.max(...allValues)
         return {

@@ -2,7 +2,7 @@
 
 import { Period } from "@/types/periodButtons"
 import { motion } from "motion/react"
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState, useCallback } from "react"
 import ClaimRewards from "./claim-rewards"
 import { useWalletConnection } from "@/hooks/useWalletConnection"
 import DailyEarningsHistoryChart from "@/components/daily-earnings-history-chart"
@@ -43,7 +43,7 @@ const transition = {
 // Main Component
 export default function PositionDetails() {
     // Wallet Connection
-    const { walletAddress } = useWalletConnection()
+    const { walletAddress, isConnectingWallet } = useWalletConnection()
 
     if (!walletAddress) {
         return (
@@ -51,7 +51,7 @@ export default function PositionDetails() {
         )
     }
 
-    return <PositionDetailsTabContentUI walletAddress={walletAddress} />
+    return <PositionDetailsTabContentUI walletAddress={walletAddress} isConnecting={isConnectingWallet} />
 }
 
 // Child Components
@@ -103,13 +103,18 @@ function NoActivePositionUI({
     )
 }
 
-function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddress }) {
+function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAddress: TAddress; isConnecting?: boolean }) {
     const { selectedChain, chainDetails } = useChain()
-    const getProtocolIdentifier = () => {
+
+    const protocolId = useMemo(() => {
         if (!selectedChain) return ''
         return chainDetails[selectedChain as keyof typeof chainDetails]?.contractAddress || ''
-    }
-    const protocolId = getProtocolIdentifier()
+    }, [selectedChain, chainDetails])
+
+    const vaultAddress = useMemo(() => {
+        return VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`
+    }, [selectedChain])
+
     const { data: { capital, interest_earned }, isLoading: isLoadingPositionDetails } = useTransactionHistory({
         protocolIdentifier: protocolId,
         chainId: selectedChain || 0,
@@ -117,7 +122,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
         refetchOnTransaction: true
     })
     const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
-        vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        vaultAddress: vaultAddress,
         chainId: selectedChain,
         userAddress: walletAddress
     })
@@ -131,7 +136,7 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
         isLoading: isLoadingDailyEarningsHistory,
         isError: isErrorDailyEarningsHistory
     } = useGetDailyEarningsHistory({
-        vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        vault_address: vaultAddress,
         user_address: walletAddress.toLowerCase() as `0x${string}`,
     })
 
@@ -139,16 +144,16 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
     const dailyEarningsHistoryData = React.useMemo(() => {
         if (!allDailyEarningsHistoryData) return []
         return allDailyEarningsHistoryData.filter(item => item.timestamp >= startTimeStamp)
-    }, [allDailyEarningsHistoryData, startTimeStamp, isLoadingDailyEarningsHistory, isErrorDailyEarningsHistory])
+    }, [allDailyEarningsHistoryData, startTimeStamp])
 
     const totalInterestEarned = useMemo(() => {
         return allDailyEarningsHistoryData?.reduce((acc: number, item: any) => acc + item.earnings, 0) ?? 0
-    }, [allDailyEarningsHistoryData, isLoadingDailyEarningsHistory, isErrorDailyEarningsHistory])
+    }, [allDailyEarningsHistoryData])
 
     // New hooks for APY enhancement sections
     const { spotApy, isLoading: isLoadingSpotApy, error: errorSpotApy } = useVaultHook()
     const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
-        vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        vault_address: vaultAddress,
         chain_id: selectedChain || 0
     })
     const TOTAL_SPOT_APY = useMemo(() => {
@@ -200,9 +205,68 @@ function PositionDetailsTabContentUI({ walletAddress }: { walletAddress: TAddres
     } satisfies Record<Period, string>
 
     const [infoCardsLayout, setInfoCardsLayout] = useState<'grid' | 'row'>('grid')
-    const TOTAL_APY = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(spotApy ?? 0) + Number(BOOST_APY ?? 0)
-    const TOTAL_VAULT_APY = Number(effectiveApyData?.total_apy ?? 0) + Number(BOOST_APY ?? 0)
-    const TOTAL_7_DAY_AVG_VAULT_APY = Number(days_7_avg_base_apy ?? 0) + Number(days_7_avg_rewards_apy ?? 0) + Number(BOOST_APY ?? 0)
+
+    // Combine all APY calculations in a single useMemo to prevent cascading re-renders
+    const apyCalculations = useMemo(() => {
+        const totalApy = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(spotApy ?? 0) + Number(BOOST_APY ?? 0)
+        const totalVaultApy = Number(effectiveApyData?.total_apy ?? 0) + Number(BOOST_APY ?? 0)
+        const total7DayAvgVaultApy = Number(days_7_avg_base_apy ?? 0) + Number(days_7_avg_rewards_apy ?? 0) + Number(BOOST_APY ?? 0)
+
+        return {
+            TOTAL_APY: totalApy,
+            TOTAL_VAULT_APY: totalVaultApy,
+            TOTAL_7_DAY_AVG_VAULT_APY: total7DayAvgVaultApy
+        }
+    }, [effectiveApyData, spotApy, BOOST_APY, days_7_avg_base_apy, days_7_avg_rewards_apy])
+
+    const { TOTAL_APY, TOTAL_VAULT_APY, TOTAL_7_DAY_AVG_VAULT_APY } = apyCalculations
+
+    // Show loading state if wallet is connecting or critical data is still loading
+    if (isConnecting) {
+        return (
+            <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={variants}
+                transition={transition}
+                className="flex flex-col gap-[40px]"
+            >
+                <Card>
+                    <CardContent className="p-4 max-md:px-2 grid grid-cols-3 place-content-center gap-4">
+                        <div className="flex flex-col items-start w-fit gap-1 m-auto">
+                            <BodyText level="body2" weight="medium" className="text-gray-600">Capital</BodyText>
+                            <Skeleton className="h-10 w-16 rounded-4" />
+                        </div>
+                        <div className="w-[1.5px] h-4 bg-secondary-100/50 rounded-full m-auto"></div>
+                        <div className="flex flex-col items-start w-fit gap-1 m-auto">
+                            <BodyText level="body2" weight="medium" className="text-gray-600">Interest Earned</BodyText>
+                            <Skeleton className="h-10 w-16 rounded-4" />
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="p-6">
+                        <div className="flex items-center gap-2 mb-6">
+                            <div className="p-2 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg shadow-md">
+                                <Activity className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <HeadingText level="h4" weight="medium" className="text-gray-800">
+                                Loading Vault Performance Metrics...
+                            </HeadingText>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="flex flex-col gap-2 p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl">
+                                    <Skeleton className="h-6 w-20 rounded-4" />
+                                    <Skeleton className="h-10 w-16 rounded-4" />
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            </motion.div>
+        )
+    }
 
     return (
         <motion.div

@@ -1,7 +1,7 @@
 // components/ConnectWalletButton.tsx
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from './ui/button'
 import useIsClient from '@/hooks/useIsClient'
@@ -80,17 +80,17 @@ export default function ConnectWalletButton() {
                 walletAddress: walletAddress,
             })
         }
-    }, [walletAddress])
+    }, [walletAddress, logEvent])
 
     // Handle logout with redirection
-    const handleLogout = async () => {
+    const handleLogout = useCallback(async () => {
         try {
             await logout()
         } catch (error) {
             console.error('Logout error:', error)
         }
         // router.push('/')
-    }
+    }, [logout])
 
     // Portfolio check handler
     // const handlePortfolioCheck = (value: string) => {
