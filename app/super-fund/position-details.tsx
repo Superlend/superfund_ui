@@ -2,7 +2,7 @@
 
 import { Period } from "@/types/periodButtons"
 import { motion } from "motion/react"
-import React, { useEffect, useMemo, useState, useCallback } from "react"
+import React, { useMemo, useState } from "react"
 import ClaimRewards from "./claim-rewards"
 import { useWalletConnection } from "@/hooks/useWalletConnection"
 import DailyEarningsHistoryChart from "@/components/daily-earnings-history-chart"
@@ -24,11 +24,10 @@ import { useHistoricalData } from "@/hooks/vault_hooks/useHistoricalDataHook"
 import { TrendingUp, BarChart3, Calendar, Target, Trophy, Activity } from "lucide-react"
 import HistoricalSpotApyChart from '@/components/historical-spot-apy-chart'
 import TooltipText from "@/components/tooltips/TooltipText"
-import { useApyData } from "@/context/apy-data-provider"
 import { getRewardsTooltipContent } from "@/lib/ui/getRewardsTooltipContent"
 import { starVariants } from "@/lib/animations"
 import useGetBoostRewards from "@/hooks/useGetBoostRewards"
-// import { APY_RAMP_UP_EXPLANATION_DOCUMENTATION_LINK } from "@/constants"
+import { UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL } from "@/constants"
 
 const variants = {
     hidden: { opacity: 0, y: 30 },
@@ -622,6 +621,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
             />
 
             {/* Section 4: APY Journey Timeline */}
+            {/* 
             <Card>
                 <CardContent className="p-6">
                     <div className="flex items-center gap-2 mb-4">
@@ -631,29 +631,10 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                         <HeadingText level="h4" weight="medium" className="text-gray-800">
                             Your APY Journey Timeline
                         </HeadingText>
-                        {/* <InfoTooltip
-                            content={
-                                <div className="space-y-2">
-                                    <BodyText level="body2" weight="normal" className="text-gray-600">
-                                        Assuming normal deposit and withdraw activities.
-                                    </BodyText>
-                                    <BodyText level="body3" weight="normal" className="text-gray-500">
-                                        <a
-                                            href={APY_RAMP_UP_EXPLANATION_DOCUMENTATION_LINK}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:underline"
-                                        >
-                                            Learn more about APY ramp up →
-                                        </a>
-                                    </BodyText>
-                                </div>
-                            }
-                        /> */}
                     </div>
 
                     <div className="space-y-6">
-                        {/* Less than a week: Red */}
+                        // Less than a week: Red
                         <motion.div
                             className="space-y-3"
                             initial={{ opacity: 0, x: -50 }}
@@ -688,7 +669,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                             </BodyText>
                         </motion.div>
 
-                        {/* Week 1-2: Yellow (Ramping up) */}
+                        // Week 1-2: Yellow (Ramping up) 
                         <motion.div
                             className="space-y-3"
                             initial={{ opacity: 0, x: -50 }}
@@ -723,7 +704,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                             </BodyText>
                         </motion.div>
 
-                        {/* 2+ Weeks: Green (Full rate) */}
+                        // 2+ Weeks: Green (Full rate)
                         <motion.div
                             className="space-y-3"
                             initial={{ opacity: 0, x: -50 }}
@@ -771,7 +752,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                         </motion.div>
                     </div>
                 </CardContent>
-            </Card>
+            </Card> */}
 
             {/* Section 5: Information Cards */}
             <Card>
@@ -816,16 +797,16 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                                     <BodyText level="body2" weight="normal" className="text-gray-600">
                                                         Assuming normal deposit and withdraw activities.
                                                     </BodyText>
-                                                    {/* <BodyText level="body3" weight="normal" className="text-gray-500">
+                                                    <BodyText level="body3" weight="normal" className="text-gray-500">
                                                         <a
-                                                            href={APY_RAMP_UP_EXPLANATION_DOCUMENTATION_LINK}
+                                                            href={UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="text-blue-600 hover:underline"
                                                         >
                                                             Learn more →
                                                         </a>
-                                                    </BodyText> */}
+                                                    </BodyText>
                                                 </div>
                                             }
                                         />
