@@ -1,9 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import {
-    useAccount,
-    useWaitForTransactionReceipt,
-    useWriteContract,
-} from 'wagmi'
 import { parseUnits } from 'ethers/lib/utils'
 import {
     APPROVE_MESSAGE,
@@ -25,11 +20,37 @@ import { BigNumber } from 'ethers'
 import { getErrorText } from '@/lib/getErrorText'
 import { BodyText } from '@/components/ui/typography'
 import { USDC_ADDRESS_MAP, USDC_DECIMALS, VAULT_ADDRESS_MAP } from '@/lib/constants'
-import { useWalletConnection } from '@/hooks/useWalletConnection'
-import { parseAbi } from 'viem'
 import { useChain } from '@/context/chain-context'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
-import { useConnect } from "thirdweb/react"
+import { useActiveAccount, useConnect, useSendTransaction } from "thirdweb/react"
+import { getContract, prepareContractCall, waitForReceipt } from "thirdweb"
+import { client } from "@/app/client"
+import { base, defineChain } from "thirdweb/chains"
+import { ChainId } from '@/types/chain'
+
+// Define custom Sonic chain
+const sonic = defineChain({
+    id: 146,
+    name: "Sonic",
+    nativeCurrency: {
+        name: "Sonic",
+        symbol: "S",
+        decimals: 18,
+    },
+    rpc: process.env.NEXT_PUBLIC_SONIC_RPC_URL || "https://rpc.soniclabs.com",
+    blockExplorers: [
+        {
+            name: "Sonicscan",
+            url: "https://sonicscan.org",
+        },
+    ],
+})
+
+// Define chain mapping for Thirdweb
+const THIRDWEB_CHAINS = {
+    [ChainId.Base]: base,
+    [ChainId.Sonic]: sonic,
+}
 
 interface IDepositButtonProps {
     disabled: boolean
@@ -45,14 +66,6 @@ interface IDepositButtonProps {
     }
 }
 
-const USDC_ABI = parseAbi([
-    'function approve(address spender, uint256 amount) returns (bool)',
-])
-
-const VAULT_ABI = parseAbi([
-    'function deposit(uint256 assets, address receiver)',
-])
-
 const DepositButton = ({
     poolContractAddress,
     underlyingAssetAdress,
@@ -63,22 +76,17 @@ const DepositButton = ({
     walletAddress,
     cta,
 }: IDepositButtonProps) => {
-    const {
-        writeContractAsync,
-        isPending,
-        data: hash,
-        error,
-    } = useWriteContract()
+    const account = useActiveAccount()
+    const { mutateAsync: sendTransaction, isPending } = useSendTransaction()
     const { selectedChain } = useChain()
     const { logEvent } = useAnalytics()
-    // const { canMakeTransactions } = useWalletConnection()
-    const { isConnecting } = useConnect();
-
-    const { isLoading: isConfirming, isSuccess: isConfirmed } =
-        useWaitForTransactionReceipt({
-            confirmations: 2,
-            hash,
-        })
+    const { isConnecting } = useConnect()
+    
+    // Transaction state
+    const [hash, setHash] = useState<string>('')
+    const [isConfirming, setIsConfirming] = useState(false)
+    const [isConfirmed, setIsConfirmed] = useState(false)
+    const [error, setError] = useState<Error | null>(null)
 
     const { depositTx, setDepositTx } = useTxContext() as TTxContext
 
@@ -128,17 +136,15 @@ const DepositButton = ({
     const txBtnText: string = getTxButtonText(isPending, isConfirming, isConfirmed)
 
     const deposit = useCallback(async () => {
-        // Validate connection state before proceeding
-        // if (!canMakeTransactions) {
-        //     console.error('Cannot make transactions: wallet not properly connected')
-        //     setDepositTx((prev: TDepositTx) => ({
-        //         ...prev,
-        //         errorMessage: WALLET_CONNECTION_LOST_MESSAGE,
-        //         isPending: false,
-        //         isConfirming: false,
-        //     }))
-        //     return
-        // }
+        if (!account) {
+            setDepositTx((prev: TDepositTx) => ({
+                ...prev,
+                errorMessage: WALLET_CONNECTION_LOST_MESSAGE,
+                isPending: false,
+                isConfirming: false,
+            }))
+            return
+        }
 
         try {
             setDepositTx((prev: TDepositTx) => ({
@@ -147,87 +153,79 @@ const DepositButton = ({
                 hash: '',
                 errorMessage: '',
             }))
+            setError(null)
+
+            const vaultContract = getContract({
+                client,
+                address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+                chain: THIRDWEB_CHAINS[selectedChain as keyof typeof THIRDWEB_CHAINS],
+            })
 
             const amountInWei = parseUnits(amount, USDC_DECIMALS)
 
-            writeContractAsync({
-                address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
-                abi: VAULT_ABI,
-                functionName: 'deposit',
-                args: [amountInWei.toBigInt(), walletAddress],
+            const transaction = prepareContractCall({
+                contract: vaultContract,
+                method: "function deposit(uint256 assets, address receiver)",
+                params: [amountInWei.toBigInt(), account.address],
             })
-                .then((data) => {
-                    setDepositTx((prev: TDepositTx) => ({
-                        ...prev,
-                        status: 'view',
-                        errorMessage: '',
-                    }))
 
-                    logEvent('deposit_successful', {
-                        amount: amount,
-                        chain: selectedChain,
-                        token: underlyingAssetAdress,
-                        walletAddress: walletAddress
-                    })
+            const result = await sendTransaction(transaction)
+            setHash(result.transactionHash)
 
-                    // Dispatch custom event to notify transaction is complete
-                    if (typeof window !== 'undefined') {
-                        console.log('Dispatching transaction-complete event');
-                        const event = new CustomEvent('transaction-complete', {
-                            detail: {
-                                type: 'deposit',
-                                hash: hash,
-                                amount: amount
-                            }
-                        });
-                        window.dispatchEvent(event);
+            // Wait for confirmation
+            setIsConfirming(true)
+            const receipt = await waitForReceipt({
+                client,
+                chain: THIRDWEB_CHAINS[selectedChain as keyof typeof THIRDWEB_CHAINS],
+                transactionHash: result.transactionHash,
+            })
+
+            setIsConfirming(false)
+            setIsConfirmed(true)
+
+            setDepositTx((prev: TDepositTx) => ({
+                ...prev,
+                status: 'view',
+                errorMessage: '',
+            }))
+
+            logEvent('deposit_successful', {
+                amount: amount,
+                chain: selectedChain,
+                token: underlyingAssetAdress,
+                walletAddress: account.address
+            })
+
+            // Dispatch custom event to notify transaction is complete
+            if (typeof window !== 'undefined') {
+                console.log('Dispatching transaction-complete event');
+                const event = new CustomEvent('transaction-complete', {
+                    detail: {
+                        type: 'deposit',
+                        hash: result.transactionHash,
+                        amount: amount
                     }
-                })
-                .catch((error) => {
-                    console.error('Deposit transaction error:', error)
-
-                    // Check if it's a connector error
-                    const isConnectorError = error.message?.includes('Connector not connected') ||
-                        error.message?.includes('No connector') ||
-                        error.name === 'ConnectorNotConnectedError'
-
-                    setDepositTx((prev: TDepositTx) => ({
-                        ...prev,
-                        isPending: false,
-                        isConfirming: false,
-                        errorMessage: isConnectorError
-                            ? WALLET_CONNECTION_LOST_MESSAGE
-                            : getErrorText(error as any),
-                    }))
-                })
+                });
+                window.dispatchEvent(event);
+            }
         } catch (error) {
-            console.error('Deposit error:', error)
-
-            // Check if it's a connector error
-            const isConnectorError = (error as any)?.message?.includes('Connector not connected') ||
-                (error as any)?.message?.includes('No connector') ||
-                (error as any)?.name === 'ConnectorNotConnectedError'
+            console.error('Deposit transaction error:', error)
+            setIsConfirming(false)
+            setError(error as Error)
 
             setDepositTx((prev: TDepositTx) => ({
                 ...prev,
                 isPending: false,
                 isConfirming: false,
-                errorMessage: isConnectorError
-                    ? WALLET_CONNECTION_LOST_MESSAGE
-                    : getErrorText(error as any),
+                errorMessage: getErrorText(error as any),
             }))
         }
     }, [
+        account,
         amount,
-        poolContractAddress,
-        underlyingAssetAdress,
-        handleCloseModal,
-        writeContractAsync,
-        decimals,
-        // canMakeTransactions,
         selectedChain,
-        walletAddress,
-        hash,
+        underlyingAssetAdress,
+        sendTransaction,
         logEvent,
         setDepositTx,
     ])
@@ -247,7 +245,7 @@ const DepositButton = ({
                 amount: amount,
                 chain: selectedChain,
                 token: underlyingAssetAdress,
-                walletAddress: walletAddress,
+                walletAddress: account?.address,
             })
 
             // Brief delay to show approval success before moving to deposit
@@ -260,36 +258,7 @@ const DepositButton = ({
                 }))
             }, 1500) // 1.5 second delay to show approval success
         }
-    }, [isPending, isConfirming, isConfirmed, depositTx.status, amountBN, amount, selectedChain, underlyingAssetAdress, walletAddress, logEvent, setDepositTx])
-
-    // Separate effect to handle wagmi errors and prevent duplicate error messages
-    useEffect(() => {
-        if (error && !isPending && !isConfirming) {
-            // Only set error if there's no existing error message to prevent duplicates
-            if (!depositTx.errorMessage) {
-                console.error('Wagmi contract error:', error)
-
-                // Check if it's a connector error
-                const isConnectorError = error.message?.includes('Connector not connected') ||
-                    error.message?.includes('No connector') ||
-                    error.name === 'ConnectorNotConnectedError'
-
-                setDepositTx((prev: TDepositTx) => ({
-                    ...prev,
-                    isPending: false,
-                    isConfirming: false,
-                    errorMessage: isConnectorError
-                        ? WALLET_CONNECTION_LOST_MESSAGE
-                        : getErrorText(error as any),
-                }))
-            }
-        }
-        // Clear wagmi errors when transaction starts
-        else if ((isPending || isConfirming) && error) {
-            // Transaction is in progress, wagmi error might be stale
-            console.log('Clearing stale wagmi error as transaction is in progress')
-        }
-    }, [error, isPending, isConfirming, depositTx.errorMessage, setDepositTx])
+    }, [isPending, isConfirming, isConfirmed, depositTx.status, amountBN, amount, selectedChain, underlyingAssetAdress, account?.address, logEvent, setDepositTx])
 
     useEffect(() => {
         if (
@@ -311,17 +280,15 @@ const DepositButton = ({
     }, [hash, depositTx.status, setDepositTx])
 
     const onApproveDeposit = async () => {
-        // Validate connection state before proceeding
-        // if (!canMakeTransactions) {
-        //     console.error('Cannot make transactions: wallet not properly connected')
-        //     setDepositTx((prev: TDepositTx) => ({
-        //         ...prev,
-        //         errorMessage: WALLET_CONNECTION_LOST_MESSAGE,
-        //         isPending: false,
-        //         isConfirming: false,
-        //     }))
-        //     return
-        // }
+        if (!account) {
+            setDepositTx((prev: TDepositTx) => ({
+                ...prev,
+                errorMessage: WALLET_CONNECTION_LOST_MESSAGE,
+                isPending: false,
+                isConfirming: false,
+            }))
+            return
+        }
 
         try {
             // Clear any previous errors when starting approval
@@ -331,45 +298,46 @@ const DepositButton = ({
                 hash: '',
                 errorMessage: '',
             }))
+            setError(null)
+
+            const usdcContract = getContract({
+                client,
+                address: USDC_ADDRESS_MAP[selectedChain as keyof typeof USDC_ADDRESS_MAP] as `0x${string}`,
+                chain: THIRDWEB_CHAINS[selectedChain as keyof typeof THIRDWEB_CHAINS],
+            })
 
             const amountInWei = parseUnits(amount, USDC_DECIMALS)
-            writeContractAsync({
-                address: USDC_ADDRESS_MAP[selectedChain as keyof typeof USDC_ADDRESS_MAP] as `0x${string}`,
-                abi: USDC_ABI,
-                functionName: 'approve',
-                args: [VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`, amountInWei.toBigInt()],
-            }).catch((error) => {
-                console.error('Approve transaction error:', error)
-
-                // Check if it's a connector error
-                const isConnectorError = error.message?.includes('Connector not connected') ||
-                    error.message?.includes('No connector') ||
-                    error.name === 'ConnectorNotConnectedError'
-
-                setDepositTx((prev: TDepositTx) => ({
-                    ...prev,
-                    isPending: false,
-                    isConfirming: false,
-                    errorMessage: isConnectorError
-                        ? WALLET_CONNECTION_LOST_MESSAGE
-                        : getErrorText(error as any),
-                }))
+            
+            const transaction = prepareContractCall({
+                contract: usdcContract,
+                method: "function approve(address spender, uint256 amount) returns (bool)",
+                params: [VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`, amountInWei.toBigInt()],
             })
-        } catch (error) {
-            console.error('Approve error:', error)
 
-            // Check if it's a connector error
-            const isConnectorError = (error as any)?.message?.includes('Connector not connected') ||
-                (error as any)?.message?.includes('No connector') ||
-                (error as any)?.name === 'ConnectorNotConnectedError'
+            const result = await sendTransaction(transaction)
+            setHash(result.transactionHash)
+
+            // Wait for confirmation
+            setIsConfirming(true)
+            const receipt = await waitForReceipt({
+                client,
+                chain: THIRDWEB_CHAINS[selectedChain as keyof typeof THIRDWEB_CHAINS],
+                transactionHash: result.transactionHash,
+            })
+
+            setIsConfirming(false)
+            setIsConfirmed(true)
+
+        } catch (error) {
+            console.error('Approve transaction error:', error)
+            setIsConfirming(false)
+            setError(error as Error)
 
             setDepositTx((prev: TDepositTx) => ({
                 ...prev,
                 isPending: false,
                 isConfirming: false,
-                errorMessage: isConnectorError
-                    ? WALLET_CONNECTION_LOST_MESSAGE
-                    : getErrorText(error as { message: string }),
+                errorMessage: getErrorText(error as { message: string }),
             }))
         } finally {
             // After approval is completed and confirmed, set the allowanceBN
@@ -384,43 +352,16 @@ const DepositButton = ({
     }
 
     // Add connection status warning - only show if actively connecting
-    // const showConnectionWarning = !canMakeTransactions && isConnecting
     const showConnectionWarning = isConnecting
 
     return (
         <div className="flex flex-col gap-2">
-            {/* {depositTx.status === 'approve' && (
-                <CustomAlert
-                    variant="info"
-                    hasPrefixIcon={false}
-                    description={
-                        <BodyText
-                            level="body2"
-                            weight="normal"
-                            className="text-secondary-500"
-                        >
-                            Note: You need to complete an &apos;approval
-                            transaction&apos; granting permission to move funds
-                            from your wallet as the first step before depositing
-                            the asset.
-                            <a
-                                href="https://eips.ethereum.org/EIPS/eip-2612"
-                                target="_blank"
-                                className="text-secondary-500 pb-[0.5px] border-b border-secondary-500 hover:border-secondary-200 ml-1"
-                            >
-                                Learn more
-                            </a>
-                            .
-                        </BodyText>
-                    }
-                />
-            )} */}
             {showConnectionWarning && (
                 <CustomAlert
                     description="Connecting wallet... Please wait."
                 />
             )}
-            {/* Show only one error message at a time - prioritize depositTx.errorMessage over wagmi error */}
+            {/* Show only one error message at a time - prioritize depositTx.errorMessage over error */}
             {depositTx.errorMessage.length > 0 ? (
                 <CustomAlert description={depositTx.errorMessage} />
             ) : error ? (

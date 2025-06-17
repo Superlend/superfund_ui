@@ -1,14 +1,12 @@
 import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
-import { useAccount, useDisconnect } from 'wagmi'
 import { useSetActiveWallet } from '@privy-io/wagmi'
 import FrameSDK from '@farcaster/frame-sdk'
-import { useActiveAccount } from "thirdweb/react";
+import { useActiveAccount, useConnect } from "thirdweb/react";
 
 export const useWalletConnection = () => {
     const account = useActiveAccount();
-    const { isConnecting: isConnectingWagmi, address: wagmiWalletAddress, isConnected: isWagmiConnected } = useAccount()
-    const { disconnect } = useDisconnect()
+    const { isConnecting } = useConnect()
     // const { user, ready, authenticated, login } = usePrivy()
     const { wallets } = useWallets()
     const { setActiveWallet } = useSetActiveWallet()
@@ -19,15 +17,14 @@ export const useWalletConnection = () => {
     
     // Use refs to track timeouts and prevent race conditions
     const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-    const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
     
-    // Simplified connecting state - only true when actively connecting, not for every state mismatch
-    const isConnectingWallet = isConnectingWagmi || isManuallyReconnecting
+    // Simplified connecting state - only true when actively connecting
+    const isConnectingWallet = isConnecting || isManuallyReconnecting
     
-    // Strict check for transaction safety - requires both Privy and wagmi to be connected
+    // Wallet connection state based on Thirdweb
     const isWalletConnected = !!account
     
-    // Less strict check for UI purposes - only requires Privy authentication and wallet address
+    // Less strict check for UI purposes
     const isWalletConnectedForUI = !!account
 
     // Get the active wallet from the list of wallets
@@ -42,9 +39,6 @@ export const useWalletConnection = () => {
         return () => {
             if (syncTimeoutRef.current) {
                 clearTimeout(syncTimeoutRef.current)
-            }
-            if (reconnectTimeoutRef.current) {
-                clearTimeout(reconnectTimeoutRef.current)
             }
         }
     }, [])
@@ -95,31 +89,6 @@ export const useWalletConnection = () => {
         }
     }, [isWalletConnected, walletAddress, syncWalletConnection])
 
-    // Separate effect for handling wagmi reconnection - less aggressive
-    useEffect(() => {
-        // Clear any existing timeout
-        if (reconnectTimeoutRef.current) {
-            clearTimeout(reconnectTimeoutRef.current)
-        }
-
-        // Only attempt reconnection if we have all the prerequisites and wagmi is not connected
-        if (isWalletConnected && walletAddress && !isWagmiConnected && !isConnectingWallet && wallets.length > 0) {
-            reconnectTimeoutRef.current = setTimeout(() => {
-                console.log('⚠️ Detected wagmi not connected but should be. Attempting sync...')
-                const matchingWallet = wallets.find(w => w.address?.toLowerCase() === walletAddress.toLowerCase())
-                if (matchingWallet && !isSettingActiveWallet) {
-                    setActiveWallet(matchingWallet).catch(console.error)
-                }
-            }, 2000) // Longer delay for wagmi reconnection
-
-            return () => {
-                if (reconnectTimeoutRef.current) {
-                    clearTimeout(reconnectTimeoutRef.current)
-                }
-            }
-        }
-    }, [isWalletConnected, walletAddress, isWagmiConnected, isConnectingWallet, wallets.length])
-
     const wallet = wallets.find(
         (wallet: any) => wallet.address === walletAddress
     )
@@ -138,13 +107,6 @@ export const useWalletConnection = () => {
         void load()
     }, [])
 
-    // Disconnect wagmi when user logs out of Privy
-    useEffect(() => {
-        if (!isWalletConnected && wagmiWalletAddress) {
-            disconnect()
-        }
-    }, [isWalletConnected, wagmiWalletAddress, disconnect])
-
     async function handleSwitchChain(chain_id: number) {
         try {
             await wallet?.switchChain(Number(chain_id))
@@ -154,17 +116,12 @@ export const useWalletConnection = () => {
         }
     }
 
-    // Manual reconnection function
+    // Manual reconnection function - simplified since we're using Thirdweb
     const reconnectWallet = async () => {
         try {
             setIsManuallyReconnecting(true)
             
-            // First disconnect everything
-            if (wagmiWalletAddress) {
-                disconnect()
-            }
-            
-            // Wait a bit for disconnection to complete
+            // Wait a bit for any disconnection to complete
             await new Promise(resolve => setTimeout(resolve, 500))
             
             // Try to reconnect through Privy
@@ -179,25 +136,22 @@ export const useWalletConnection = () => {
     }
 
     // Helper function to check if we can safely make transactions
-    // More lenient approach: if we have Privy auth and wallet address, we can try transactions
+    // With Thirdweb, this is much simpler - just check if account exists
     const canMakeTransactions = useMemo(() => {
-        const hasBasicConnection = isWalletConnected && !isConnectingWallet
-        
-        // Use basic connection for now - wagmi errors will be caught by transaction components
-        return hasBasicConnection
-    }, [isWalletConnected, walletAddress, isConnectingWallet])
+        return !!account && !isConnectingWallet
+    }, [account, isConnectingWallet])
 
     return {
         user: account,
         wallet,
         walletAddress,
-        isWalletConnected, // Strict check for transactions
-        isWalletConnectedForUI, // Less strict check for UI
+        isWalletConnected,
+        isWalletConnectedForUI,
         isConnectingWallet,
         canMakeTransactions,
-        isWagmiConnected,
         handleSwitchChain,
-        disconnect,
         reconnectWallet,
+        isMiniApp,
+        context,
     }
 }
