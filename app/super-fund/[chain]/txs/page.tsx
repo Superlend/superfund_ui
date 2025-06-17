@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import AllTransactions from '@/components/all-transactions'
 // import { ChainProvider } from '@/context/chain-context'
 import { ChainId } from '@/types/chain'
+import { useActiveAccount } from "thirdweb/react"
 
 interface ChainTxsPageProps {
   params: {
@@ -19,7 +20,10 @@ interface ChainTxsPageProps {
 }
 
 export default function ChainTransactionsPage({ params }: ChainTxsPageProps) {
-  const { isWalletConnected } = useWalletConnection()
+  // const { isWalletConnected } = useWalletConnection()
+  const account = useActiveAccount();
+  const walletAddress = account?.address as `0x${string}`
+  const isWalletConnected = !!account
   const { isClient } = useIsClient()
   const router = useRouter()
 

@@ -67,6 +67,8 @@ import WithdrawalAlertFlow from '../WithdrawalRetention/WithdrawalAlertFlow'
 import PostDepositEngagementToast from '@/components/toasts/PostDepositEngagementToast'
 import { ScrollArea } from '@radix-ui/react-scroll-area'
 import { UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL } from '@/constants'
+import { useActiveAccount, useSwitchActiveWalletChain } from "thirdweb/react"
+import { base } from 'thirdweb/chains'
 
 // Function to calculate days until next Tuesday
 function getDaysUntilNextTuesday(): number {
@@ -116,8 +118,12 @@ export default function SuperVaultTxDialog({
         initialPosition,
         setInitialPosition,
     } = useTxContext() as TTxContext
-    const { walletAddress, isWalletConnected, handleSwitchChain } =
-        useWalletConnection()
+    // const { walletAddress, isWalletConnected, handleSwitchChain } =
+    //     useWalletConnection()
+    const account = useActiveAccount();
+    const walletAddress = account?.address as `0x${string}`
+    const isWalletConnected = !!account
+    const switchChain = useSwitchActiveWalletChain();
     const { selectedChain, chainDetails } = useChain()
     const { width: screenWidth } = useDimensions()
     const isDesktop = screenWidth > 768
@@ -341,9 +347,9 @@ export default function SuperVaultTxDialog({
 
     useEffect(() => {
         if (isWalletConnected) {
-            handleSwitchChain(selectedChain)
+            switchChain(base)
         }
-    }, [isWalletConnected, selectedChain, handleSwitchChain])
+    }, [isWalletConnected, selectedChain, switchChain])
 
     function resetDepositWithdrawTx() {
         setDepositTx((prev: TDepositTx) => ({

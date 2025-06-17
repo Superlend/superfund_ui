@@ -15,6 +15,7 @@ import useLogNewUserEvent from '@/hooks/points/useLogNewUserEvent'
 import Link from 'next/link'
 import ExternalLinkAnchor from "@/components/ExternalLink"
 import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
+import { useActiveAccount } from "thirdweb/react"
 
 const emailSchema = z.string().email('Please enter a valid email address')
 
@@ -77,7 +78,10 @@ export default function WaitlistPage() {
     const [submittedEmail, setSubmittedEmail] = useState<string | null>(null)
     const { logUserEvent } = useLogNewUserEvent()
     const { accessToken, getAccessTokenFromPrivy } = useAuth()
-    const { walletAddress, isWalletConnected } = useWalletConnection()
+    // const { walletAddress, isWalletConnected } = useWalletConnection()
+    const account = useActiveAccount();
+    const walletAddress = account?.address as `0x${string}`
+    const isWalletConnected = !!account
 
     const { userMaxWithdrawAmount } = useUserBalance(
         walletAddress ? (walletAddress as `0x${string}`) : '0x0000000000000000000000000000000000000000'

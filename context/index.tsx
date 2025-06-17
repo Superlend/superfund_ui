@@ -12,6 +12,8 @@ import { farcasterFrame } from '@farcaster/frame-wagmi-connector'
 import { AnalyticsProvider } from './analytics-provider'
 import { ApyDataProvider } from './apy-data-provider'
 import { ChainProvider } from './chain-context'
+import { ThirdwebProvider } from "thirdweb/react";
+
 
 // Set up queryClient
 const queryClient = new QueryClient()
@@ -123,15 +125,19 @@ function ContextProvider({
                     walletConnectCloudProjectId: WALLETCONNECT_PROJECT_ID,
                 }}
             >
-                <QueryClientProvider client={queryClient}>
+                <ThirdwebProvider>
                     <WagmiProvider config={localConfig}>
-                        <AuthProvider>
-                            <ChainProvider>
-                                <ApyDataProvider>{children}</ApyDataProvider>
-                            </ChainProvider>
-                        </AuthProvider>
+                        <QueryClientProvider client={queryClient}>
+                            <AuthProvider>
+                                <ChainProvider>
+                                    <ApyDataProvider>
+                                        {children}
+                                    </ApyDataProvider>
+                                </ChainProvider>
+                            </AuthProvider>
+                        </QueryClientProvider>
                     </WagmiProvider>
-                </QueryClientProvider>
+                </ThirdwebProvider>
             </PrivyProvider>
         </AnalyticsProvider>
     )

@@ -22,6 +22,7 @@ import { useLoginToFrame } from '@privy-io/react-auth/farcaster'
 import sdk from '@farcaster/frame-sdk'
 import YourApiJourney from '@/components/your-api-journey'
 import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
+import { useActiveAccount, useConnect } from "thirdweb/react"
 
 interface ChainPageProps {
     params: {
@@ -31,8 +32,12 @@ interface ChainPageProps {
 
 export default function SuperVaultChainPage({ params }: ChainPageProps) {
     const { isClient } = useIsClient()
-    const { isWalletConnected, isConnectingWallet, walletAddress } =
-        useWalletConnection()
+    // const { isWalletConnected, isConnectingWallet, walletAddress } =
+    //     useWalletConnection()
+    const { connect, isConnecting, error } = useConnect();
+    const account = useActiveAccount();
+    const walletAddress = account?.address as `0x${string}`
+    const isWalletConnected = !!account
     const router = useRouter()
     const searchParams = useSearchParams()
     const initialized = useRef(false)
@@ -242,8 +247,8 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                             />
                         )}
                     </div>
-                    {isConnectingWallet && <LoadingTabs />}
-                    {!isConnectingWallet && (
+                    {isConnecting && <LoadingTabs />}
+                    {!isConnecting && (
                         <div id="tabs-section">
                             <FlatTabs
                                 tabs={tabs}

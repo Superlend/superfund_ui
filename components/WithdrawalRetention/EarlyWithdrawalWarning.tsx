@@ -16,6 +16,7 @@ import { UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL } from '@/constants'
 import useGetBoostRewards from '@/hooks/useGetBoostRewards'
 import { BoostRewardResponse } from '@/queries/get-boost-rewards-api'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
+import { useActiveAccount } from 'thirdweb/react'
 
 interface EarlyWithdrawalWarningProps {
     smearingPeriodDays: number
@@ -27,7 +28,10 @@ export default function EarlyWithdrawalWarning({
     currentDayInPeriod,
 }: EarlyWithdrawalWarningProps) {
     const { selectedChain } = useChain()
-    const { walletAddress } = useWalletConnection()
+    // const { walletAddress } = useWalletConnection()
+    const account = useActiveAccount();
+    const walletAddress = account?.address as `0x${string}`
+    const isWalletConnected = !!account
     const { spotApy, isLoading: isLoadingSpotApy, error: errorSpotApy } = useVaultHook()
     const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
         vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,

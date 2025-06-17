@@ -28,6 +28,8 @@ import { VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
 import useGetBoostRewards from '@/hooks/useGetBoostRewards'
 import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
+import { useActiveAccount, useSwitchActiveWalletChain } from "thirdweb/react";
+import { base } from "thirdweb/chains";
 
 export type THelperText = Record<
     string,
@@ -35,7 +37,8 @@ export type THelperText = Record<
 >
 
 export default function DepositAndWithdrawAssets() {
-    const { isWalletConnectedForUI, handleSwitchChain } = useWalletConnection()
+    // const { isWalletConnectedForUI, handleSwitchChain } = useWalletConnection()
+    const switchChain = useSwitchActiveWalletChain();
     const [positionType, setPositionType] = useState<TActionType>('deposit')
     const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] =
         useState<boolean>(false)
@@ -48,7 +51,10 @@ export default function DepositAndWithdrawAssets() {
 
     const isDepositPositionType = positionType === 'deposit'
     const { selectedChain } = useChain()
-    const { walletAddress } = useWalletConnection()
+    // const { walletAddress } = useWalletConnection()
+    const account = useActiveAccount();
+    const walletAddress = account?.address as `0x${string}`
+    const isWalletConnectedForUI = !!account
 
     const {
         balance,
@@ -75,10 +81,10 @@ export default function DepositAndWithdrawAssets() {
     const TOTAL_APY = Number(effectiveApyData?.rewards_apy ?? 0) + Number(BOOST_APY ?? 0) + Number(effectiveApyData?.base_apy ?? 0)
 
     useEffect(() => {
-        if (isWalletConnectedForUI) {
-            handleSwitchChain(selectedChain)
+        if (account) {
+            switchChain(base)
         }
-    }, [isWalletConnectedForUI, selectedChain, handleSwitchChain])
+    }, [account, selectedChain, switchChain])
 
     useEffect(() => {
         if (depositTx.status === 'approve' && depositTx.isRefreshingAllowance) {

@@ -28,6 +28,7 @@ import { getRewardsTooltipContent } from "@/lib/ui/getRewardsTooltipContent"
 import { starVariants } from "@/lib/animations"
 import useGetBoostRewards from "@/hooks/useGetBoostRewards"
 import { UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL } from "@/constants"
+import { useActiveAccount, useConnect } from "thirdweb/react"
 
 const variants = {
     hidden: { opacity: 0, y: 30 },
@@ -42,7 +43,10 @@ const transition = {
 // Main Component
 export default function PositionDetails() {
     // Wallet Connection
-    const { walletAddress, isConnectingWallet } = useWalletConnection()
+    // const { walletAddress, isConnectingWallet } = useWalletConnection()
+    const account = useActiveAccount();
+    const walletAddress = account?.address as `0x${string}`
+    const { connect, isConnecting, error } = useConnect();
 
     if (!walletAddress) {
         return (
@@ -50,7 +54,7 @@ export default function PositionDetails() {
         )
     }
 
-    return <PositionDetailsTabContentUI walletAddress={walletAddress} isConnecting={isConnectingWallet} />
+    return <PositionDetailsTabContentUI walletAddress={walletAddress} isConnecting={isConnecting} />
 }
 
 // Child Components

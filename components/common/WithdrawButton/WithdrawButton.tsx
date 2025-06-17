@@ -20,6 +20,7 @@ import { parseAbi } from 'viem'
 import { useChain } from '@/context/chain-context'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
+import { useConnect } from "thirdweb/react"
 
 const VAULT_ABI = parseAbi([
     'function withdraw(uint256 _assets, address _receiver, address _owner) returns (uint256)',
@@ -53,7 +54,9 @@ const WithdrawButton = ({
     } = useWriteContract()
     const { selectedChain } = useChain()
     const { logEvent } = useAnalytics()
-    const { canMakeTransactions, isConnectingWallet } = useWalletConnection()
+    // const { canMakeTransactions, isConnectingWallet } = useWalletConnection()
+    const { canMakeTransactions } = useWalletConnection()
+    const { isConnecting } = useConnect();
     const { withdrawTx, setWithdrawTx } = useTxContext() as TTxContext
     const txBtnStatus: Record<string, string> = {
         pending: 'Withdrawing...',
@@ -124,7 +127,7 @@ const WithdrawButton = ({
 
     const txBtnText =
         txBtnStatus[
-            isConnectingWallet
+            isConnecting
                 ? 'connecting'
                 : isConfirming
                   ? 'confirming'
@@ -187,7 +190,7 @@ const WithdrawButton = ({
     }
 
     // Add connection status warning
-    const showConnectionWarning = !canMakeTransactions && !isConnectingWallet
+    const showConnectionWarning = !canMakeTransactions && !isConnecting
 
     return (
         <div className="flex flex-col gap-2">

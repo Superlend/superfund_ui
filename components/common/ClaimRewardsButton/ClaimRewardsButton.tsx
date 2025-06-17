@@ -22,6 +22,7 @@ import REWARD_ABI from '@/data/abi/rewardsABI.json'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
 import { useChain } from '@/context/chain-context'
+import { useActiveAccount, useConnect } from "thirdweb/react"
 
 const VAULT_ABI = parseAbi([
     'function withdraw(uint256 _assets, address _receiver, address _owner) returns (uint256)',
@@ -46,7 +47,11 @@ const ClaimRewardsButton = ({
     } = useWriteContract()
     const { logEvent } = useAnalytics()
     const { claimRewardsTx, setClaimRewardsTx } = useTxContext() as TTxContext
-    const { canMakeTransactions, isConnectingWallet } = useWalletConnection()
+    const { canMakeTransactions } = useWalletConnection()
+    const { isConnecting } = useConnect();
+    const account = useActiveAccount();
+    const walletAddress = account?.address as `0x${string}`
+    const isWalletConnected = !!account
     const txBtnStatus: Record<string, string> = {
         pending: 'Claiming...',
         confirming: 'Confirming...',
@@ -60,7 +65,7 @@ const ClaimRewardsButton = ({
         useWaitForTransactionReceipt({
             hash,
         })
-    const { walletAddress } = useWalletConnection()
+    // const { walletAddress } = useWalletConnection()
 
     useEffect(() => {
         if (claimRewardsTx.status === 'view') return
@@ -101,7 +106,7 @@ const ClaimRewardsButton = ({
 
     const txBtnText =
         txBtnStatus[
-        isConnectingWallet
+        isConnecting
             ? 'connecting'
             : isConfirming
                 ? 'confirming'
@@ -161,7 +166,7 @@ const ClaimRewardsButton = ({
     }
 
     // Add connection status warning
-    const showConnectionWarning = !canMakeTransactions && !isConnectingWallet
+    const showConnectionWarning = !canMakeTransactions && !isConnecting
 
     return (
         <div className="flex flex-col gap-2">

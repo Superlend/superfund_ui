@@ -44,6 +44,8 @@ import ImageWithBadge from '@/components/ImageWithBadge'
 import ExternalLink from '@/components/ExternalLink'
 import ImageWithDefault from '../ImageWithDefault'
 import { motion } from 'motion/react'
+import { useActiveAccount, useSwitchActiveWalletChain } from "thirdweb/react"
+import { base } from "thirdweb/chains"
 
 export default function ClaimRewardsTxDialog({
     disabled,
@@ -62,9 +64,14 @@ export default function ClaimRewardsTxDialog({
 }) {
     const { claimRewardsTx, setClaimRewardsTx } =
         useTxContext() as TTxContext
-    const { isWalletConnected, handleSwitchChain, walletAddress } = useWalletConnection()
+    // const { isWalletConnected, handleSwitchChain, walletAddress } = useWalletConnection()
+    const account = useActiveAccount();
+    const walletAddress = account?.address as `0x${string}`
+    const isWalletConnected = !!account
     const { width: screenWidth } = useDimensions()
     const isDesktop = screenWidth > 768
+    const switchChain = useSwitchActiveWalletChain();
+
 
     useEffect(() => {
         // Reset the tx status when the dialog is closed
@@ -75,7 +82,7 @@ export default function ClaimRewardsTxDialog({
 
     useEffect(() => {
         if (isWalletConnected) {
-            handleSwitchChain(ChainId.Base)
+            switchChain(base)
         }
     }, [isWalletConnected])
 
@@ -337,7 +344,7 @@ export default function ClaimRewardsTxDialog({
                 }) && (
                         <div className="py-1">
                             {isClaimRewardsTxInProgress && (
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -364,7 +371,7 @@ export default function ClaimRewardsTxDialog({
                                 </motion.div>
                             )}
                             {(claimRewardsTx.status === 'view' && claimRewardsTx.isConfirmed) && (
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.3, ease: 'easeOut' }}

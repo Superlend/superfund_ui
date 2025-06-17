@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
     useAccount,
-    useConnect,
     useWaitForTransactionReceipt,
     useWriteContract,
 } from 'wagmi'
@@ -12,6 +11,7 @@ import {
     ERROR_TOAST_ICON_STYLES,
     SOMETHING_WENT_WRONG_MESSAGE,
     SUCCESS_MESSAGE,
+    WALLET_CONNECTION_LOST_MESSAGE,
 } from '@/constants'
 import { Button } from '@/components/ui/button'
 import {
@@ -29,6 +29,7 @@ import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { parseAbi } from 'viem'
 import { useChain } from '@/context/chain-context'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
+import { useConnect } from "thirdweb/react"
 
 interface IDepositButtonProps {
     disabled: boolean
@@ -70,7 +71,8 @@ const DepositButton = ({
     } = useWriteContract()
     const { selectedChain } = useChain()
     const { logEvent } = useAnalytics()
-    const { canMakeTransactions, isWagmiConnected, isConnectingWallet } = useWalletConnection()
+    // const { canMakeTransactions } = useWalletConnection()
+    const { isConnecting } = useConnect();
 
     const { isLoading: isConfirming, isSuccess: isConfirmed } =
         useWaitForTransactionReceipt({
@@ -108,8 +110,8 @@ const DepositButton = ({
         isConfirming: boolean,
         isConfirmed: boolean
     ) => {
-        if (isConnectingWallet) return txBtnStatus['connecting']
-        
+        if (isConnecting) return txBtnStatus['connecting']
+
         return txBtnStatus[
             isConfirming
                 ? 'confirming'
@@ -127,16 +129,16 @@ const DepositButton = ({
 
     const deposit = useCallback(async () => {
         // Validate connection state before proceeding
-        if (!canMakeTransactions) {
-            console.error('Cannot make transactions: wallet not properly connected')
-            setDepositTx((prev: TDepositTx) => ({
-                ...prev,
-                errorMessage: 'Wallet not properly connected. Please reconnect your wallet.',
-                isPending: false,
-                isConfirming: false,
-            }))
-            return
-        }
+        // if (!canMakeTransactions) {
+        //     console.error('Cannot make transactions: wallet not properly connected')
+        //     setDepositTx((prev: TDepositTx) => ({
+        //         ...prev,
+        //         errorMessage: WALLET_CONNECTION_LOST_MESSAGE,
+        //         isPending: false,
+        //         isConfirming: false,
+        //     }))
+        //     return
+        // }
 
         try {
             setDepositTx((prev: TDepositTx) => ({
@@ -183,35 +185,35 @@ const DepositButton = ({
                 })
                 .catch((error) => {
                     console.error('Deposit transaction error:', error)
-                    
+
                     // Check if it's a connector error
-                    const isConnectorError = error.message?.includes('Connector not connected') || 
-                                           error.message?.includes('No connector') ||
-                                           error.name === 'ConnectorNotConnectedError'
-                    
+                    const isConnectorError = error.message?.includes('Connector not connected') ||
+                        error.message?.includes('No connector') ||
+                        error.name === 'ConnectorNotConnectedError'
+
                     setDepositTx((prev: TDepositTx) => ({
                         ...prev,
                         isPending: false,
                         isConfirming: false,
-                        errorMessage: isConnectorError 
-                            ? 'Wallet connection lost. Please refresh the page and reconnect your wallet.'
+                        errorMessage: isConnectorError
+                            ? WALLET_CONNECTION_LOST_MESSAGE
                             : getErrorText(error as any),
                     }))
                 })
         } catch (error) {
             console.error('Deposit error:', error)
-            
+
             // Check if it's a connector error
-            const isConnectorError = (error as any)?.message?.includes('Connector not connected') || 
-                                   (error as any)?.message?.includes('No connector') ||
-                                   (error as any)?.name === 'ConnectorNotConnectedError'
-            
+            const isConnectorError = (error as any)?.message?.includes('Connector not connected') ||
+                (error as any)?.message?.includes('No connector') ||
+                (error as any)?.name === 'ConnectorNotConnectedError'
+
             setDepositTx((prev: TDepositTx) => ({
                 ...prev,
                 isPending: false,
                 isConfirming: false,
-                errorMessage: isConnectorError 
-                    ? 'Wallet connection lost. Please refresh the page and reconnect your wallet.'
+                errorMessage: isConnectorError
+                    ? WALLET_CONNECTION_LOST_MESSAGE
                     : getErrorText(error as any),
             }))
         }
@@ -222,7 +224,7 @@ const DepositButton = ({
         handleCloseModal,
         writeContractAsync,
         decimals,
-        canMakeTransactions,
+        // canMakeTransactions,
         selectedChain,
         walletAddress,
         hash,
@@ -247,7 +249,7 @@ const DepositButton = ({
                 token: underlyingAssetAdress,
                 walletAddress: walletAddress,
             })
-            
+
             // Brief delay to show approval success before moving to deposit
             setTimeout(() => {
                 setDepositTx((prev: TDepositTx) => ({
@@ -266,18 +268,18 @@ const DepositButton = ({
             // Only set error if there's no existing error message to prevent duplicates
             if (!depositTx.errorMessage) {
                 console.error('Wagmi contract error:', error)
-                
+
                 // Check if it's a connector error
-                const isConnectorError = error.message?.includes('Connector not connected') || 
-                                       error.message?.includes('No connector') ||
-                                       error.name === 'ConnectorNotConnectedError'
-                
+                const isConnectorError = error.message?.includes('Connector not connected') ||
+                    error.message?.includes('No connector') ||
+                    error.name === 'ConnectorNotConnectedError'
+
                 setDepositTx((prev: TDepositTx) => ({
                     ...prev,
                     isPending: false,
                     isConfirming: false,
-                    errorMessage: isConnectorError 
-                        ? 'Wallet connection lost. Please refresh the page and reconnect your wallet.'
+                    errorMessage: isConnectorError
+                        ? WALLET_CONNECTION_LOST_MESSAGE
                         : getErrorText(error as any),
                 }))
             }
@@ -310,16 +312,16 @@ const DepositButton = ({
 
     const onApproveDeposit = async () => {
         // Validate connection state before proceeding
-        if (!canMakeTransactions) {
-            console.error('Cannot make transactions: wallet not properly connected')
-            setDepositTx((prev: TDepositTx) => ({
-                ...prev,
-                errorMessage: 'Wallet not properly connected. Please reconnect your wallet.',
-                isPending: false,
-                isConfirming: false,
-            }))
-            return
-        }
+        // if (!canMakeTransactions) {
+        //     console.error('Cannot make transactions: wallet not properly connected')
+        //     setDepositTx((prev: TDepositTx) => ({
+        //         ...prev,
+        //         errorMessage: WALLET_CONNECTION_LOST_MESSAGE,
+        //         isPending: false,
+        //         isConfirming: false,
+        //     }))
+        //     return
+        // }
 
         try {
             // Clear any previous errors when starting approval
@@ -338,35 +340,35 @@ const DepositButton = ({
                 args: [VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`, amountInWei.toBigInt()],
             }).catch((error) => {
                 console.error('Approve transaction error:', error)
-                
+
                 // Check if it's a connector error
-                const isConnectorError = error.message?.includes('Connector not connected') || 
-                                       error.message?.includes('No connector') ||
-                                       error.name === 'ConnectorNotConnectedError'
-                
+                const isConnectorError = error.message?.includes('Connector not connected') ||
+                    error.message?.includes('No connector') ||
+                    error.name === 'ConnectorNotConnectedError'
+
                 setDepositTx((prev: TDepositTx) => ({
                     ...prev,
                     isPending: false,
                     isConfirming: false,
-                    errorMessage: isConnectorError 
-                        ? 'Wallet connection lost. Please refresh the page and reconnect your wallet.'
+                    errorMessage: isConnectorError
+                        ? WALLET_CONNECTION_LOST_MESSAGE
                         : getErrorText(error as any),
                 }))
             })
         } catch (error) {
             console.error('Approve error:', error)
-            
+
             // Check if it's a connector error
-            const isConnectorError = (error as any)?.message?.includes('Connector not connected') || 
-                                   (error as any)?.message?.includes('No connector') ||
-                                   (error as any)?.name === 'ConnectorNotConnectedError'
-            
+            const isConnectorError = (error as any)?.message?.includes('Connector not connected') ||
+                (error as any)?.message?.includes('No connector') ||
+                (error as any)?.name === 'ConnectorNotConnectedError'
+
             setDepositTx((prev: TDepositTx) => ({
                 ...prev,
                 isPending: false,
                 isConfirming: false,
-                errorMessage: isConnectorError 
-                    ? 'Wallet connection lost. Please refresh the page and reconnect your wallet.'
+                errorMessage: isConnectorError
+                    ? WALLET_CONNECTION_LOST_MESSAGE
                     : getErrorText(error as { message: string }),
             }))
         } finally {
@@ -382,7 +384,8 @@ const DepositButton = ({
     }
 
     // Add connection status warning - only show if actively connecting
-    const showConnectionWarning = !canMakeTransactions && isConnectingWallet
+    // const showConnectionWarning = !canMakeTransactions && isConnecting
+    const showConnectionWarning = isConnecting
 
     return (
         <div className="flex flex-col gap-2">
@@ -431,7 +434,7 @@ const DepositButton = ({
             ) : null}
             <Button
                 disabled={
-                    (isPending || isConfirming || disabled || isConnectingWallet) &&
+                    (isPending || isConfirming || disabled || isConnecting) &&
                     depositTx.status !== 'view'
                 }
                 onClick={() => {

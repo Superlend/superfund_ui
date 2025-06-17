@@ -13,6 +13,11 @@ import { useAnalytics } from '@/context/amplitude-analytics-provider'
 import { BodyText } from './ui/typography'
 import { AlertCircle, Clock } from 'lucide-react'
 import InfoTooltip from './tooltips/InfoTooltip'
+import { client } from "@/app/client";
+import { ConnectButton, useActiveWallet, useConnect, useDisconnect } from "thirdweb/react";
+import { useActiveAccount } from 'thirdweb/react'
+import { createWallet, inAppWallet } from "thirdweb/wallets";
+
 
 // Create a wrapper component to conditionally use the useUserBalance hook
 function PortfolioChecker({
@@ -44,27 +49,39 @@ function PortfolioChecker({
 export default function ConnectWalletButton() {
     const { isClient } = useIsClient()
     const { logEvent } = useAnalytics()
-    const { walletAddress, isConnectingWallet } = useWalletConnection()
-    const { ready, authenticated, login, user } = usePrivy()
-    const { logout } = useLogout({
-        onSuccess: () => {
-            console.log('Logout successful via useLogout')
-        }
-    })
+    const account = useActiveAccount();
+    const walletAddress = account?.address as `0x${string}`
+    const isWalletConnected = !!account
+    const { isConnecting } = useConnect();
+    const { disconnect } = useDisconnect();
+    const wallet = useActiveWallet();
+    // const { walletAddress, isConnectingWallet } = useWalletConnection()
+    // const { ready, authenticated, login, user } = usePrivy()
+    // const { logout } = useLogout({
+    //     onSuccess: () => {
+    //         console.log('Logout successful via useLogout')
+    //     }
+    // })
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
     // const [showSonicDialog, setShowSonicDialog] = useState(false)
     // const [portfolioValue, setPortfolioValue] = useState('0')
 
-    const disableLogin = !ready || (ready && authenticated)
-    const disableLogout = !ready || (ready && !authenticated)
+    const wallets = [
+        createWallet("io.metamask"),
+        createWallet("com.coinbase.wallet"),
+        createWallet("me.rainbow"),
+    ];
+
+    const disableLogin = isConnecting
+    const disableLogout = isConnecting
     const isDisabled = walletAddress ? disableLogout : disableLogin
     const displayText = useMemo(() => {
-        return isConnectingWallet
+        return isConnecting
             ? 'Connecting...'
             : walletAddress
                 ? `${walletAddress?.slice(0, 5)}...${walletAddress?.slice(-5)}`
                 : 'Connect Wallet'
-    }, [isConnectingWallet, walletAddress])
+    }, [isConnecting, walletAddress])
 
     // Handle showing dialog when portfolio value is set
     // useEffect(() => {
@@ -85,12 +102,12 @@ export default function ConnectWalletButton() {
     // Handle logout with redirection
     const handleLogout = useCallback(async () => {
         try {
-            await logout()
+            await disconnect(wallet as any)
         } catch (error) {
             console.error('Logout error:', error)
         }
         // router.push('/')
-    }, [logout])
+    }, [disconnect, wallet])
 
     // Portfolio check handler
     // const handlePortfolioCheck = (value: string) => {
@@ -135,7 +152,7 @@ export default function ConnectWalletButton() {
                             logout={handleLogout}
                         />
                     )}
-                    {!walletAddress && (
+                    {/* {!walletAddress && (
                         <InfoTooltip
                             size="none"
                             className="px-2"
@@ -178,7 +195,18 @@ export default function ConnectWalletButton() {
                             }
                             side="bottom"
                         />
-                    )}
+                    )} */}
+                    {!walletAddress &&
+                        <ConnectButton
+                            client={client}
+                            theme="light"
+                            connectModal={{
+                                title: "Connect Wallet",
+                                titleIcon: "https://funds.superlend.xyz/images/logos/favicon-32x32.png"
+                            }}
+                            wallets={wallets}
+                        />
+                    }
                 </>
             )}
         </>

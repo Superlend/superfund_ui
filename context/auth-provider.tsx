@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { usePrivy } from '@privy-io/react-auth'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
+import { useActiveAccount } from 'thirdweb/react'
 
 interface AuthContextType {
   accessToken: string | null
@@ -14,7 +15,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { getAccessToken } = usePrivy()
-  const { walletAddress } = useWalletConnection()
+  // const { walletAddress } = useWalletConnection()
+  const account = useActiveAccount();
+  const walletAddress = account?.address as `0x${string}`
+  const isWalletConnected = !!account
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [isLoadingToken, setIsLoadingToken] = useState(false)
 

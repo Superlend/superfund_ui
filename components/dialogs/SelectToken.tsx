@@ -37,6 +37,7 @@ import SearchInput from '../inputs/SearchInput'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { Badge } from '../ui/badge'
 import { STABLECOINS_NAMES_LIST } from '@/constants'
+import { useActiveAccount } from "thirdweb/react"
 
 interface TokenDetails {
     symbol: string
@@ -86,7 +87,10 @@ export const SelectTokenDialog: FC<SelectTokenDialogProps> = ({
     const [selectedChains, setSelectedChains] = useState<string[]>([])
     const [showAllChains, setShowAllChains] = useState(false);
     const [keywords, setKeywords] = useState<string>('')
-    const { isWalletConnected } = useWalletConnection()
+    // const { isWalletConnected } = useWalletConnection()
+    const account = useActiveAccount();
+    const walletAddress = account?.address as `0x${string}`
+    const isWalletConnected = !!account
 
     useEffect(() => {
         if (open) {

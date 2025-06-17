@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
 // import { useAnalytics } from '@/context/amplitude-analytics-provider'
+import { useActiveAccount } from "thirdweb/react"
 
 export default function SubscribeWithEmail({ 
     onEmailChange, 
@@ -17,7 +18,9 @@ export default function SubscribeWithEmail({
     onSubscriptionSuccess?: () => void 
 }) {
     // const { logEvent } = useAnalytics()
-    const { walletAddress } = useWalletConnection()
+    // const { walletAddress } = useWalletConnection()
+    const account = useActiveAccount();
+    const walletAddress = account?.address as `0x${string}`
     const [email, setEmail] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'success' | 'error'>('idle')

@@ -15,9 +15,12 @@ import { useApyData } from "@/context/apy-data-provider"
 import useGetBoostRewards from "@/hooks/useGetBoostRewards"
 import { BoostRewardResponse } from "@/queries/get-boost-rewards-api"
 import { useWalletConnection } from "@/hooks/useWalletConnection"
+import { useActiveAccount } from "thirdweb/react"
 
 export default function YourApiJourney() {
-    const { walletAddress } = useWalletConnection()
+    // const { walletAddress } = useWalletConnection()
+    const account = useActiveAccount();
+    const walletAddress = account?.address as `0x${string}`
     const { selectedChain, chainDetails } = useChain()
     const { spotApy, isLoading: isLoadingSpotApy, error: errorSpotApy } = useVaultHook()
     const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
