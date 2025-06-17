@@ -21,7 +21,7 @@ import InfoTooltip from "@/components/tooltips/InfoTooltip"
 import { useVaultHook } from "@/hooks/vault_hooks/vaultHook"
 import { useGetEffectiveApy } from "@/hooks/vault_hooks/useGetEffectiveApy"
 import { useHistoricalData } from "@/hooks/vault_hooks/useHistoricalDataHook"
-import { TrendingUp, BarChart3, Calendar, Target, Trophy, Activity } from "lucide-react"
+import { TrendingUp, BarChart3, Calendar, Target, Trophy, Activity, CircleHelp } from "lucide-react"
 import HistoricalSpotApyChart from '@/components/historical-spot-apy-chart'
 import TooltipText from "@/components/tooltips/TooltipText"
 import { getRewardsTooltipContent } from "@/lib/ui/getRewardsTooltipContent"
@@ -345,7 +345,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                 }
                                 content={
                                     <BodyText level="body2" weight="normal" className="text-gray-600">
-                                        The current annualized yield (APY) the vault is earning right now, based on real-time data. This rate can change frequently as conditions change.
+                                        The current annualized yield (APY) you are earning right now, based on real-time data. This rate can change frequently basis deposits and withdrawals.
                                     </BodyText>
                                 }
                             />
@@ -762,14 +762,22 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                             <div className="relative p-2 bg-gradient-to-br from-green-100 to-green-200 rounded-3 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 hover:-translate-y-1">
                                 <TrendingUp className="h-5 w-5 text-green-600 drop-shadow-sm animate-pulse" />
                             </div>
-                            <HeadingText level="h4" weight="medium" className="text-gray-800">
-                                Long-term Investment Benefits
-                            </HeadingText>
+                            <div className="flex items-center gap-2">
+                                <HeadingText level="h4" weight="medium" className="text-gray-800">
+                                    Long-term Investment Benefits
+                                </HeadingText>
+                                <InfoTooltip
+                                    label={
+                                        <CircleHelp className="h-5 w-5 text-gray-600 drop-shadow-sm" />
+                                    }
+                                    content={"Only applicable on Base yield."}
+                                />
+                            </div>
                         </div>
                     </div>
 
                     <div className={`${infoCardsLayout === 'grid' ? 'grid grid-cols-1 gap-4' : 'space-y-4'}`}>
-                        {/* Break-Even Point Card */}
+                        {/* Fair Share Adjustment Card */}
                         <motion.div
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
@@ -789,13 +797,13 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                             <BarChart3 className="h-5 w-5 text-orange-700 drop-shadow-sm" />
                                         </div>
                                         <HeadingText level="h5" weight="medium" className="text-gray-800">
-                                            Break-Even Point
+                                            Fair Share Adjustment
                                         </HeadingText>
-                                        <InfoTooltip
+                                        {/* <InfoTooltip
                                             content={
                                                 <div className="space-y-2">
                                                     <BodyText level="body2" weight="normal" className="text-gray-600">
-                                                        Assuming normal deposit and withdraw activities.
+                                                        Yield is shared fairly as users enter the vault. This can briefly lower your returns — but staying longer helps balance things out.
                                                     </BodyText>
                                                     <BodyText level="body3" weight="normal" className="text-gray-500">
                                                         <a
@@ -809,7 +817,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                                     </BodyText>
                                                 </div>
                                             }
-                                        />
+                                        /> */}
                                     </motion.div>
                                     <motion.div
                                         initial={{ opacity: 0 }}
