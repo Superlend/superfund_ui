@@ -44,7 +44,7 @@ export default function YourApiJourney() {
                         <ChartNoAxesCombined className="h-5 w-5 text-green-600 drop-shadow-sm animate-pulse" />
                     </div>
                     <HeadingText level="h5" weight="medium" className="text-gray-800 flex items-center gap-1">
-                        Your APY Journey
+                        Your APY Status
                         <InfoTooltip
                             label={
                                 <BodyText level="body2" weight="medium" className="cursor-help">
@@ -71,7 +71,7 @@ export default function YourApiJourney() {
                     </HeadingText>
                 </div>
                 <BodyText level="body2" weight="normal" className="text-gray-600 mb-6">
-                    Track your progress from current spot APY to the target vault APY for optimized returns.
+                    Your yield may dip or rise temporarily as others deposit or withdraw.
                 </BodyText>
 
                 {!isLoadingSpotApy && !isLoadingEffectiveApy && !errorSpotApy && !isErrorEffectiveApy && effectiveApyData ? (

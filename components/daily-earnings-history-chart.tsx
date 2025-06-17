@@ -204,10 +204,10 @@ export default function DailyEarningsHistoryChart({
                                     <AreaChart
                                         data={chartData}
                                         margin={{
-                                            top: 10,
+                                            top: 40,
                                             right: 10,
                                             left: 10,
-                                            bottom: 0,
+                                            bottom: 10,
                                         }}
                                     >
                                         <defs>
@@ -261,7 +261,7 @@ export default function DailyEarningsHistoryChart({
                                             axisLine={true}
                                             tickCount={4}
                                             tickFormatter={(value) => `$${abbreviateNumber(value)}`}
-                                            padding={{ top: 10, bottom: 10 }}
+                                            padding={{ top: 20, bottom: 20 }}
                                             allowDataOverflow={false}
                                             scale="auto"
                                             interval="preserveStartEnd"
@@ -282,10 +282,10 @@ export default function DailyEarningsHistoryChart({
                                     <BarChart
                                         data={chartData}
                                         margin={{
-                                            top: 10,
+                                            top: 40,
                                             right: 10,
                                             left: 10,
-                                            bottom: 0,
+                                            bottom: 10,
                                         }}
                                     >
                                         <XAxis
@@ -319,7 +319,7 @@ export default function DailyEarningsHistoryChart({
                                             axisLine={true}
                                             tickCount={4}
                                             tickFormatter={(value) => `$${abbreviateNumber(value)}`}
-                                            padding={{ top: 10, bottom: 10 }}
+                                            padding={{ top: 20, bottom: 20 }}
                                             allowDataOverflow={false}
                                             scale="auto"
                                             interval="preserveStartEnd"

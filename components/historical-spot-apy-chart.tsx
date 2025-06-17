@@ -229,10 +229,10 @@ export default function HistoricalSpotApyChart({
                                     <AreaChart
                                         data={chartData}
                                         margin={{
-                                            top: 10,
+                                            top: 40,
                                             right: 10,
                                             left: 10,
-                                            bottom: 0,
+                                            bottom: 10,
                                         }}
                                     >
                                         <defs>
@@ -278,14 +278,14 @@ export default function HistoricalSpotApyChart({
                                             )}
                                         />
                                         <YAxis
-                                            dataKey="spotApy"
+                                            dataKey="totalApy"
                                             stroke="#888888"
                                             fontSize={12}
                                             tickLine={true}
                                             axisLine={true}
                                             tickCount={4}
                                             tickFormatter={(value) => `${Number(value).toFixed(1)}%`}
-                                            padding={{ top: 10, bottom: 10 }}
+                                            padding={{ top: 20, bottom: 20 }}
                                             allowDataOverflow={false}
                                             scale="auto"
                                             interval="preserveStartEnd"
@@ -293,7 +293,7 @@ export default function HistoricalSpotApyChart({
                                         <ChartTooltip content={<CustomTooltip />} />
                                         <Area
                                             type="monotone"
-                                            dataKey="spotApy"
+                                            dataKey="totalApy"
                                             stroke="#FF5B00"
                                             fillOpacity={1}
                                             fill="url(#colorSpotApy)"
@@ -306,10 +306,10 @@ export default function HistoricalSpotApyChart({
                                     <BarChart
                                         data={chartData}
                                         margin={{
-                                            top: 10,
+                                            top: 40,
                                             right: 10,
                                             left: 10,
-                                            bottom: 0,
+                                            bottom: 10,
                                         }}
                                     >
                                         <XAxis
@@ -335,21 +335,21 @@ export default function HistoricalSpotApyChart({
                                             )}
                                         />
                                         <YAxis
-                                            dataKey="spotApy"
+                                            dataKey="totalApy"
                                             stroke="#888888"
                                             fontSize={12}
                                             tickLine={true}
                                             axisLine={true}
                                             tickCount={4}
                                             tickFormatter={(value) => `${Number(value).toFixed(1)}%`}
-                                            padding={{ top: 10, bottom: 10 }}
+                                            padding={{ top: 20, bottom: 20 }}
                                             allowDataOverflow={false}
                                             scale="auto"
                                             interval="preserveStartEnd"
                                         />
                                         <ChartTooltip content={<CustomTooltip />} />
                                         <Bar
-                                            dataKey="spotApy"
+                                            dataKey="totalApy"
                                             fill="#FF5B00"
                                             radius={[4, 4, 0, 0]}
                                             maxBarSize={50}
