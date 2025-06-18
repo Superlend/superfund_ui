@@ -2,7 +2,7 @@
 
 import { Period } from "@/types/periodButtons"
 import { motion } from "motion/react"
-import React, { useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import ClaimRewards from "./claim-rewards"
 import { useWalletConnection } from "@/hooks/useWalletConnection"
 import DailyEarningsHistoryChart from "@/components/daily-earnings-history-chart"
@@ -118,7 +118,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
         return VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`
     }, [selectedChain])
 
-    const { data: { capital, interest_earned }, isLoading: isLoadingPositionDetails } = useTransactionHistory({
+    const { data: { capital, interest_earned }, isLoading: isLoadingPositionDetails, startRefreshing } = useTransactionHistory({
         protocolIdentifier: protocolId,
         chainId: selectedChain || 0,
         walletAddress: walletAddress || '',
@@ -176,6 +176,25 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
         period: Period.oneWeek,
         chain_id: selectedChain
     })
+
+    // Listen for transaction events from the global event system if available
+  useEffect(() => {
+    const handleTransactionComplete = () => {
+      // Manually trigger refreshing for 30 seconds when transaction completes
+      startRefreshing();
+    };
+
+    // Add event listener if window exists
+    if (typeof window !== 'undefined') {
+      window.addEventListener('transaction-complete', handleTransactionComplete);
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('transaction-complete', handleTransactionComplete);
+      }
+    };
+  }, [startRefreshing]);
 
     // Calculate 7-day average spot APY from historical data
     const days_7_avg_spot_apy = useMemo(() => {

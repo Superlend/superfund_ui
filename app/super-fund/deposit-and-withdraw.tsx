@@ -81,10 +81,6 @@ export default function DepositAndWithdrawAssets() {
     const TOTAL_APY = Number(effectiveApyData?.rewards_apy ?? 0) + Number(BOOST_APY ?? 0) + Number(effectiveApyData?.base_apy ?? 0)
 
     useEffect(() => {
-        switchChain(base)
-    }, [])
-
-    useEffect(() => {
         if (depositTx.status === 'approve' && depositTx.isRefreshingAllowance) {
             setDepositTx((prev: TDepositTx) => ({
                 ...prev,
