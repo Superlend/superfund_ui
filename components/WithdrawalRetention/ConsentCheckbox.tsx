@@ -66,7 +66,7 @@ export default function ConsentCheckbox({
                                     : 'text-gray-800'
                                 }`}
                         >
-                            I understand that withdrawing now means I&apos;ll earn less yield than if I waited 6 more days
+                            I understand that by withdrawing now, I&apos;ll lose part of my recent yield due to the vault&apos;s fair distribution mechanism.
                         </BodyText>
                     </label>
                 </div>
@@ -91,7 +91,7 @@ export default function ConsentCheckbox({
                 >
                     <AlertCircle className="w-4 h-4" />
                     <BodyText level="body3" weight="normal" className="text-red-600">
-                        Please confirm you understand the reduced earnings before continuing
+                        Please confirm you understand before proceeding.
                     </BodyText>
                 </motion.div>
             )}

@@ -44,7 +44,7 @@ export default function EarlyWithdrawalWarning({
         userAddress: walletAddress
     })
     const BOOST_APY = boostRewardsData?.reduce((acc: number, curr: BoostRewardResponse) => acc + (curr.boost_apy / 100), 0) ?? 0
-    
+
     const TOTAL_SPOT_APY = useMemo(() => {
         return Number(spotApy ?? 0) + Number(effectiveApyData?.rewards_apy ?? 0) + Number(BOOST_APY ?? 0)
     }, [spotApy, effectiveApyData, BOOST_APY])
@@ -66,30 +66,30 @@ export default function EarlyWithdrawalWarning({
             className="bg-amber-50 border border-amber-200 rounded-5 p-4 space-y-4"
         >
             {/* Header */}
-            <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+            <div className="flex items-center justify-center gap-2">
+                <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <AlertTriangle className="w-4 h-4 text-amber-600" />
                 </div>
                 <div className="flex-1">
                     <HeadingText
                         level="h5"
                         weight="medium"
-                        className="text-amber-800 mb-1"
+                        className="text-amber-800"
                     >
-                        Early Withdrawal Will Reduce Your Earnings
+                        You'll Lose Out on Yield
                     </HeadingText>
-                    <BodyText
+                    {/* <BodyText
                         level="body2"
                         weight="normal"
                         className="text-amber-700"
                     >
                         You&apos;re withdrawing before your yield is fully unlocked. To keep things fair for everyone, your final return will be slightly reduced
-                    </BodyText>
+                    </BodyText> */}
                 </div>
             </div>
 
             {/* Progress Bar */}
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
                 <div className="flex items-center justify-between">
                     <BodyText level="body3" weight="medium" className="text-amber-700">
                         APY Progress
@@ -123,20 +123,20 @@ export default function EarlyWithdrawalWarning({
                         </div>
                     </>
                 )}
-            </div>
+            </div> */}
 
             {/* Key Points */}
             <div className="space-y-3">
-                <div className="flex items-start gap-2">
+                <div className="flex items-start gap-2 ml-2">
                     <Lightbulb className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
                     <BodyText level="body3" weight="normal" className="text-amber-700">
-                        We spread earned yield over a short period to prevent abuse and ensure everyone earns fairly.
+                        We spread earned yield over a short period to ensure fair distribution and prevent abuse.
                     </BodyText>
                 </div>
-                <div className="flex items-start gap-2">
+                <div className="flex items-start gap-2 ml-2">
                     <Clock className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
                     <BodyText level="body3" weight="normal" className="text-amber-700">
-                        <span className="font-medium">Wait 6 more days</span> to receive your full yield.
+                        This mechanism promotes long-term participation and steady returns for all vault users.
                     </BodyText>
                 </div>
                 <Button
