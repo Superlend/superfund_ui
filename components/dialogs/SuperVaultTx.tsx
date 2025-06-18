@@ -519,17 +519,20 @@ export default function SuperVaultTxDialog({
                             ],
                 })
             },
+            show: positionType === 'deposit',
         },
         {
             buttonText: 'Follow us on X',
             imageSrc: '/icons/x.svg',
             onClick: () => sdk.actions.openUrl('https://x.com/SuperlendHQ'),
+            show: true,
         },
         {
             buttonText: 'Explore More',
             imageSrc: '/icons/globe.svg',
             onClick: () =>
                 sdk.actions.openUrl('https://app.superlend.xyz/discover'),
+            show: true,
         },
         {
             buttonText: 'Add to Warpcast',
@@ -538,6 +541,7 @@ export default function SuperVaultTxDialog({
                 await sdk.actions.addFrame()
                 return
             },
+            show: true,
         },
     ]
 
@@ -1138,23 +1142,25 @@ export default function SuperVaultTxDialog({
                     transition={{ duration: 0.3, ease: 'easeOut' }}
                     className="w-full flex items-center flex-col justify-start gap-3"
                 >
-                    {shareScreenButtons.map((config, index) => (
-                        <Button
-                            key={index}
-                            variant="primary"
-                            size="lg"
-                            className="rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]"
-                            onClick={config.onClick}
-                        >
-                            <Image
-                                src={config.imageSrc}
-                                alt=""
-                                width={18}
-                                height={18}
-                            />
-                            {config.buttonText}
-                        </Button>
-                    ))}
+                    {shareScreenButtons
+                        .filter(config => config.show)
+                        .map((config, index) => (
+                            <Button
+                                key={index}
+                                variant="primary"
+                                size="lg"
+                                className="rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]"
+                                onClick={config.onClick}
+                            >
+                                <Image
+                                    src={config.imageSrc}
+                                    alt=""
+                                    width={18}
+                                    height={18}
+                                />
+                                {config.buttonText}
+                            </Button>
+                        ))}
                 </motion.div>
             )}
 
