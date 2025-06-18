@@ -173,7 +173,7 @@ export default function ConnectWalletButton() {
         load()
     }, [isFarcasterFrame, isSDKLoaded, connectFarcasterWallet])
 
-    // If we're in Farcaster Frame, show different UI
+    // Farcaster Frame UI
     if (isFarcasterFrame) {
         return (
             <>
@@ -223,7 +223,7 @@ export default function ConnectWalletButton() {
                 />
             )} */}
 
-            <AutoConnect
+            {/* <AutoConnect
                 client={client}
                 timeout={10000}
                 wallets={wallets}
@@ -233,7 +233,7 @@ export default function ConnectWalletButton() {
                     url: "https://funds.superlend.xyz",
                     logoUrl: "https://funds.superlend.xyz/images/logos/favicon-32x32.png",
                 }}
-            />
+            /> */}
 
             {/* This is a workaround to show the skeleton on the first render */}
             {!isClient && (
