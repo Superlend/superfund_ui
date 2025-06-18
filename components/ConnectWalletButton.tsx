@@ -64,7 +64,13 @@ export default function ConnectWalletButton() {
 
     const wallets = [
         inAppWallet({
-            auth: { options: ["farcaster"] },
+            auth: {
+                mode: "popup",
+                options: ["farcaster"],
+                redirectUrl: typeof window !== 'undefined'
+                    ? `${window.location.origin}/super-fund/base`
+                    : "https://funds.superlend.xyz/super-fund/base",
+            }
         }),
         createWallet("io.metamask"),
         createWallet("com.coinbase.wallet"),
