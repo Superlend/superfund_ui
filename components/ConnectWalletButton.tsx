@@ -16,9 +16,10 @@ import InfoTooltip from './tooltips/InfoTooltip'
 import { client } from "@/app/client";
 import { ConnectButton, useActiveWallet, useConnect, useDisconnect } from "thirdweb/react";
 import { useActiveAccount } from 'thirdweb/react'
-import { createWallet, inAppWallet, walletConnect } from "thirdweb/wallets";
+import { createWallet, inAppWallet } from "thirdweb/wallets";
 import { base } from 'thirdweb/chains'
-import { isMobile, isIOS } from '@/lib/mobile-utils'
+import { AutoConnect } from "thirdweb/react";
+
 
 
 // Create a wrapper component to conditionally use the useUserBalance hook
@@ -62,6 +63,7 @@ export default function ConnectWalletButton() {
     // const [portfolioValue, setPortfolioValue] = useState('0')
 
     const wallets = [
+        inAppWallet(),
         createWallet("io.metamask"),
         createWallet("com.coinbase.wallet"),
         createWallet("me.rainbow"),
@@ -129,6 +131,18 @@ export default function ConnectWalletButton() {
                     portfolioValue={portfolioValue}
                 />
             )} */}
+
+            <AutoConnect
+                client={client}
+                timeout={10000}
+                wallets={wallets}
+                appMetadata={{
+                    name: "SuperFund",
+                    description: "Earn smarter with SuperFund — an automated DeFi fund that allocates USDC across Aave, Morpho, Euler & more for optimized returns.",
+                    url: "https://funds.superlend.xyz",
+                    logoUrl: "https://funds.superlend.xyz/images/logos/favicon-32x32.png",
+                }}
+            />
 
             {/* This is a workaround to show the skeleton on the first render */}
             {!isClient && (
