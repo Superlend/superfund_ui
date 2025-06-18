@@ -62,23 +62,24 @@ export default function ConnectWalletButton() {
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
     const [isFarcasterFrame, setIsFarcasterFrame] = useState(false)
     const [isSDKLoaded, setIsSDKLoaded] = useState(false)
+    const [isLoadingFarcasterWallet, setIsLoadingFarcasterWallet] = useState(false)
     // const [showSonicDialog, setShowSonicDialog] = useState(false)
     // const [portfolioValue, setPortfolioValue] = useState('0')
 
     const wallets = [
-        inAppWallet({
-            auth: {
-                mode: "popup",
-                options: ["farcaster"],
-                redirectUrl: typeof window !== 'undefined'
-                    ? `${window.location.origin}/super-fund/base`
-                    : "https://funds.superlend.xyz/super-fund/base",
-            }
-        }),
+        // inAppWallet({
+        //     auth: {
+        //         mode: "popup",
+        //         options: ["farcaster"],
+        //         redirectUrl: typeof window !== 'undefined'
+        //             ? `${window.location.origin}/super-fund/base`
+        //             : "https://funds.superlend.xyz/super-fund/base",
+        //     }
+        // }),
         createWallet("io.metamask"),
         createWallet("com.coinbase.wallet"),
         createWallet("me.rainbow"),
-        createWallet("walletConnect"),
+        // createWallet("walletConnect"),
     ];
 
     const disableLogin = isConnecting
@@ -140,6 +141,7 @@ export default function ConnectWalletButton() {
     // Farcaster-specific wallet connection
     const connectFarcasterWallet = useCallback(async () => {
         try {
+            setIsLoadingFarcasterWallet(true)
             await connect(async () => {
                 // Use thirdweb's EIP1193 provider for Farcaster
                 const wallet = EIP1193.fromProvider({
@@ -150,6 +152,8 @@ export default function ConnectWalletButton() {
             })
         } catch (error) {
             console.error('Farcaster wallet connection failed:', error)
+        } finally {
+            setIsLoadingFarcasterWallet(false)
         }
     }, [connect])
 
@@ -161,9 +165,9 @@ export default function ConnectWalletButton() {
                 await FrameSDK.actions.ready({})
 
                 // Auto-connect if wallet is available
-                // if (FrameSDK.wallet) {
-                //     await connectFarcasterWallet()
-                // }
+                if (FrameSDK.wallet) {
+                    await connectFarcasterWallet()
+                }
             }
         }
         load()
@@ -180,8 +184,9 @@ export default function ConnectWalletButton() {
                             size="lg"
                             className="rounded-4 py-2 capitalize w-full"
                             onClick={connectFarcasterWallet}
+                            disabled={isLoadingFarcasterWallet}
                         >
-                            Connect Wallet
+                            {isLoadingFarcasterWallet ? 'Connecting...' : 'Connect Wallet'}
                         </Button>
                     </div>)}
                 {walletAddress && (

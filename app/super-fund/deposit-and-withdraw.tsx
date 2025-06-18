@@ -7,7 +7,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { TActionType, TPositionType } from '@/types'
 import { LoaderCircle } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { abbreviateNumber, getBoostApy, getLowestDisplayValue } from '@/lib/utils'
+import { abbreviateNumberWithoutRounding, getBoostApy, getLowestDisplayValue } from '@/lib/utils'
 import { BodyText } from '@/components/ui/typography'
 import { cn } from '@/lib/utils'
 import CustomNumberInput from '@/components/inputs/CustomNumberInput'
@@ -212,12 +212,11 @@ export default function DepositAndWithdrawAssets() {
                             {isLoadingBalance ? (
                                 <LoaderCircle className="text-primary w-4 h-4 animate-spin" />
                             ) : (
-                                abbreviateNumber(
+                                abbreviateNumberWithoutRounding(
                                     Number(
                                         isDepositPositionType
                                             ? (balance ?? 0)
-                                            : (userMaxWithdrawAmount ??
-                                                0)
+                                            : (userMaxWithdrawAmount ?? 0)
                                     ),
                                     2
                                 )
