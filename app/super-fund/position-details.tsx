@@ -849,7 +849,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                         transition={{ duration: 0.5, delay: 0.5 }}
                                     >
                                         <BodyText level="body2" weight="normal" className="text-gray-600">
-                                            You need to hold for at least 2 weeks to get the optimum yield.
+                                            Yield is shared fairly as users enter the vault. This can briefly lower your returns but staying longer helps balance things out.
                                         </BodyText>
                                     </motion.div>
                                 </CardContent>
