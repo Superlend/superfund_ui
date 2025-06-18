@@ -76,7 +76,7 @@ export default function EarlyWithdrawalWarning({
                         weight="medium"
                         className="text-amber-800"
                     >
-                        You'll Lose Out on Yield
+                        You&apos;ll Lose Out on Yield
                     </HeadingText>
                     {/* <BodyText
                         level="body2"
