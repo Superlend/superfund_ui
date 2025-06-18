@@ -18,6 +18,7 @@ import { ConnectButton, useActiveWallet, useConnect, useDisconnect } from "third
 import { useActiveAccount } from 'thirdweb/react'
 import { createWallet, inAppWallet, walletConnect } from "thirdweb/wallets";
 import { base } from 'thirdweb/chains'
+import { isMobile, isIOSSafari } from '@/lib/mobile-utils'
 
 
 // Create a wrapper component to conditionally use the useUserBalance hook
@@ -60,12 +61,28 @@ export default function ConnectWalletButton() {
     // const [showSonicDialog, setShowSonicDialog] = useState(false)
     // const [portfolioValue, setPortfolioValue] = useState('0')
 
-    const wallets = [
-        createWallet("io.metamask"),
-        createWallet("com.coinbase.wallet"),
-        createWallet("me.rainbow"),
-        // createWallet("walletConnect"),
-    ];
+    const wallets = useMemo(() => {
+        const isMobileDevice = isMobile();
+        const isIOSSafariBrowser = isIOSSafari();
+        
+        // For iOS Safari, prioritize WalletConnect for better mobile wallet compatibility
+        if (isIOSSafariBrowser) {
+            return [
+                createWallet("walletConnect"),
+                createWallet("io.metamask"),
+                createWallet("com.coinbase.wallet"),
+                createWallet("me.rainbow"),
+            ];
+        }
+        
+        // For other browsers/devices, use the standard order
+        return [
+            createWallet("io.metamask"),
+            createWallet("com.coinbase.wallet"),
+            createWallet("me.rainbow"),
+            createWallet("walletConnect"),
+        ];
+    }, []);
 
     const disableLogin = isConnecting
     const disableLogout = isConnecting
@@ -197,13 +214,27 @@ export default function ConnectWalletButton() {
                             theme="light"
                             connectModal={{
                                 title: "Connect Wallet",
-                                titleIcon: "https://funds.superlend.xyz/images/logos/favicon-32x32.png"
+                                titleIcon: "https://funds.superlend.xyz/images/logos/favicon-32x32.png",
+                                size: "wide"
                             }}
                             walletConnect={{
-                                projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "",
+                                projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || ""
                             }}
                             wallets={wallets}
                             chain={base}
+                            connectButton={{
+                                label: "Connect Wallet",
+                                style: {
+                                    fontSize: "14px",
+                                    fontWeight: "600",
+                                    height: "40px",
+                                    borderRadius: "10px",
+                                    backgroundColor: "#FF5900",
+                                    color: "#fff",
+                                    border: "2px solid #FF5900",
+                                    minWidth: "130px"
+                                }
+                            }}
                         />
                     }
                 </>
