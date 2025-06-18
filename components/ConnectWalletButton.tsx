@@ -63,7 +63,6 @@ export default function ConnectWalletButton() {
     // const [portfolioValue, setPortfolioValue] = useState('0')
 
     const wallets = [
-        inAppWallet(),
         createWallet("io.metamask"),
         createWallet("com.coinbase.wallet"),
         createWallet("me.rainbow"),
