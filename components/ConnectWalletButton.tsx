@@ -16,9 +16,10 @@ import InfoTooltip from './tooltips/InfoTooltip'
 import { client } from "@/app/client";
 import { ConnectButton, useActiveWallet, useConnect, useDisconnect } from "thirdweb/react";
 import { useActiveAccount } from 'thirdweb/react'
-import { createWallet, inAppWallet } from "thirdweb/wallets";
+import { createWallet, inAppWallet, EIP1193 } from "thirdweb/wallets";
 import { base } from 'thirdweb/chains'
 import { AutoConnect } from "thirdweb/react";
+import FrameSDK from '@farcaster/frame-sdk'
 
 
 
@@ -55,16 +56,24 @@ export default function ConnectWalletButton() {
     const account = useActiveAccount();
     const walletAddress = account?.address as `0x${string}`
     const isWalletConnected = !!account
-    const { isConnecting } = useConnect();
+    const { isConnecting, connect } = useConnect();
     const { disconnect } = useDisconnect();
     const wallet = useActiveWallet();
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+    const [isFarcasterFrame, setIsFarcasterFrame] = useState(false)
+    const [isSDKLoaded, setIsSDKLoaded] = useState(false)
     // const [showSonicDialog, setShowSonicDialog] = useState(false)
     // const [portfolioValue, setPortfolioValue] = useState('0')
 
     const wallets = [
         inAppWallet({
-            auth: { options: ["farcaster"] },
+            auth: {
+                mode: "popup",
+                options: ["farcaster"],
+                redirectUrl: typeof window !== 'undefined'
+                    ? `${window.location.origin}/super-fund/base`
+                    : "https://funds.superlend.xyz/super-fund/base",
+            }
         }),
         createWallet("io.metamask"),
         createWallet("com.coinbase.wallet"),
@@ -114,6 +123,69 @@ export default function ConnectWalletButton() {
     //     setPortfolioValue(value);
     // };
 
+    // Detect if we're in a Farcaster Frame
+    useEffect(() => {
+        const detectFarcaster = async () => {
+            try {
+                const isMiniApp = await FrameSDK.isInMiniApp()
+                setIsFarcasterFrame(isMiniApp)
+            } catch (error) {
+                console.error('Error detecting Farcaster:', error)
+                setIsFarcasterFrame(false)
+            }
+        }
+        detectFarcaster()
+    }, [])
+
+    // Farcaster-specific wallet connection
+    const connectFarcasterWallet = useCallback(async () => {
+        try {
+            await connect(async () => {
+                // Use thirdweb's EIP1193 provider for Farcaster
+                const wallet = EIP1193.fromProvider({ 
+                    provider: FrameSDK.wallet.ethProvider 
+                })
+                await wallet.connect({ client })
+                return wallet
+            })
+        } catch (error) {
+            console.error('Farcaster wallet connection failed:', error)
+        }
+    }, [connect])
+
+    // Auto-connect when Farcaster SDK loads
+    useEffect(() => {
+        const load = async () => {
+            if (isFarcasterFrame && !isSDKLoaded) {
+                setIsSDKLoaded(true)
+                await FrameSDK.actions.ready({})
+                
+                // Auto-connect if wallet is available
+                if (FrameSDK.wallet) {
+                    await connectFarcasterWallet()
+                }
+            }
+        }
+        load()
+    }, [isFarcasterFrame, isSDKLoaded, connectFarcasterWallet])
+
+    // If we're in Farcaster Frame, show different UI
+    if (isFarcasterFrame) {
+        return (
+            <div className="flex items-center gap-2">
+                <Button
+                    variant="primary"
+                    size="lg"
+                    className="rounded-4 py-2 capitalize w-full"
+                    onClick={connectFarcasterWallet}
+                >
+                    Connect Wallet
+                </Button>
+            </div>
+        )
+    }
+
+    // Regular ConnectButton for non-Farcaster environments
     return (
         <>
             {/* Conditionally render the PortfolioChecker only when wallet is connected */}
