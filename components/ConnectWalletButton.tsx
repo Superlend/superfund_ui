@@ -61,29 +61,12 @@ export default function ConnectWalletButton() {
     // const [showSonicDialog, setShowSonicDialog] = useState(false)
     // const [portfolioValue, setPortfolioValue] = useState('0')
 
-    const wallets = useMemo(() => {
-        const isMobileDevice = isMobile();
-        const isIOSDevice = isIOS();
-        
-        // For ALL iOS devices (regardless of browser), prioritize WalletConnect for better mobile wallet compatibility
-        // This includes iOS Safari, Chrome, Firefox, Edge, etc. since they all use WebKit
-        if (isIOSDevice) {
-            return [
-                createWallet("walletConnect"),
-                createWallet("io.metamask"),
-                createWallet("com.coinbase.wallet"),
-                createWallet("me.rainbow"),
-            ];
-        }
-        
-        // For other browsers/devices, use the standard order
-        return [
-            createWallet("io.metamask"),
-            createWallet("com.coinbase.wallet"),
-            createWallet("me.rainbow"),
-            createWallet("walletConnect"),
-        ];
-    }, []);
+    const wallets = [
+        createWallet("io.metamask"),
+        createWallet("com.coinbase.wallet"),
+        createWallet("me.rainbow"),
+        createWallet("walletConnect"),
+    ];
 
     const disableLogin = isConnecting
     const disableLogout = isConnecting
