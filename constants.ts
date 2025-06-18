@@ -221,6 +221,8 @@ export const TRANSACTION_CANCEL_TEXT =
 
 export const SOMETHING_WENT_WRONG_WITH_RELOAD_MESSAGE =
     'Something went wrong, please reload the page'
+export const WALLET_CONNECTION_LOST_MESSAGE =
+    'Wallet connection lost. Please refresh the page and reconnect your wallet.'
 
 export const ERROR_TOAST_ICON_STYLES = {
     iconTheme: {

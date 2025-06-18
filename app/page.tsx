@@ -28,7 +28,8 @@ import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
 import { abbreviateNumber } from '@/lib/utils'
 import FAQ from '@/data/faq'
 import useGetBoostRewards from '@/hooks/useGetBoostRewards'
-import { useWalletConnection } from '@/hooks/useWalletConnection'
+import { useActiveAccount } from "thirdweb/react";
+// import { useWalletConnection } from '@/hooks/useWalletConnection'
 
 // Lazy load components
 const BenchmarkYieldTable = dynamic(
@@ -983,7 +984,8 @@ export default function HomePage() {
     const [miniAppUser, setMiniAppUser] = useState<any>(null)
     const { logEvent } = useAnalytics()
     const { selectedChain, chainDetails } = useChain()
-    const { walletAddress } = useWalletConnection()
+    const account = useActiveAccount()
+    const walletAddress = account?.address as `0x${string}`
     const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
         vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
         chain_id: selectedChain || 0,

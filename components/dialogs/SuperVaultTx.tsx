@@ -67,6 +67,8 @@ import WithdrawalAlertFlow from '../WithdrawalRetention/WithdrawalAlertFlow'
 import PostDepositEngagementToast from '@/components/toasts/PostDepositEngagementToast'
 import { ScrollArea } from '@radix-ui/react-scroll-area'
 import { UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL } from '@/constants'
+import { useActiveAccount, useSwitchActiveWalletChain } from "thirdweb/react"
+import { base } from 'thirdweb/chains'
 
 // Function to calculate days until next Tuesday
 function getDaysUntilNextTuesday(): number {
@@ -116,8 +118,12 @@ export default function SuperVaultTxDialog({
         initialPosition,
         setInitialPosition,
     } = useTxContext() as TTxContext
-    const { walletAddress, isWalletConnected, handleSwitchChain } =
-        useWalletConnection()
+    // const { walletAddress, isWalletConnected, handleSwitchChain } =
+    //     useWalletConnection()
+    const account = useActiveAccount();
+    const walletAddress = account?.address as `0x${string}`
+    const isWalletConnected = !!account
+    const switchChain = useSwitchActiveWalletChain();
     const { selectedChain, chainDetails } = useChain()
     const { width: screenWidth } = useDimensions()
     const isDesktop = screenWidth > 768
@@ -340,10 +346,8 @@ export default function SuperVaultTxDialog({
     }, [])
 
     useEffect(() => {
-        if (isWalletConnected) {
-            handleSwitchChain(selectedChain)
-        }
-    }, [isWalletConnected, selectedChain, handleSwitchChain])
+        switchChain(base)
+    }, [])
 
     function resetDepositWithdrawTx() {
         setDepositTx((prev: TDepositTx) => ({
@@ -1258,7 +1262,7 @@ export default function SuperVaultTxDialog({
                             </div>
 
                             <BodyText level="body3" weight="normal" className="text-gray-600">
-                                To ensure fair rewards for everyone, your full yield is unlocked gradually over a short period (called the <span className="font-medium">smearing period</span>)
+                                To ensure fair rewards for everyone, your full yield is unlocked gradually over a short period (called the <span className="font-medium">Yield Ramp-up</span>)
                             </BodyText>
 
                             <div className="bg-amber-50 rounded-4 p-2 border border-amber-100 flex items-start gap-1">

@@ -7,6 +7,7 @@ import { TClaimRewardsResponse } from '../../types'
 import { BigNumber } from 'ethers'
 import { formatUnits } from 'ethers/lib/utils'
 import REWARD_ABI from '@/data/abi/rewardsABI.json'
+import { useActiveAccount } from 'thirdweb/react'
 
 const publicClient = createPublicClient({
     chain: base,
@@ -14,10 +15,11 @@ const publicClient = createPublicClient({
     batch: { multicall: true },
 })
 
-const CHAIN_ID = 8453
-
 export function useRewardsHook() {
-    const { walletAddress } = useWalletConnection()
+    // const { walletAddress } = useWalletConnection()
+    const account = useActiveAccount();
+    const walletAddress = account?.address as `0x${string}`
+    // const isWalletConnected = !!account
 
     const {
         data: rewardsData,
@@ -26,7 +28,7 @@ export function useRewardsHook() {
         refetch: refetchClaimRewardsData,
     } = useGetClaimRewards({
         user_address: walletAddress || '',
-        chain_id: CHAIN_ID,
+        chain_id: base.id,
     })
 
     const [formattedClaimData, setFormattedClaimData] = useState<

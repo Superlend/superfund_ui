@@ -30,6 +30,7 @@ import { Expand, Lock, Maximize2, Minimize2, Percent } from 'lucide-react'
 import { motion } from 'motion/react'
 import Link from 'next/link'
 import { useEffect, useMemo } from 'react'
+import { useActiveAccount } from "thirdweb/react"
 
 type VaultStatsProps = {
     days_7_avg_total_apy: number
@@ -38,7 +39,10 @@ type VaultStatsProps = {
 }
 
 export default function VaultStats() {
-    const { walletAddress, isWalletConnectedForUI } = useWalletConnection()
+    // const { walletAddress, isWalletConnectedForUI } = useWalletConnection()
+    const account = useActiveAccount();
+    const walletAddress = account?.address as `0x${string}`
+    const isWalletConnectedForUI = !!account
     const { selectedChain, chainDetails } = useChain()
     const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
         vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,

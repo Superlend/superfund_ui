@@ -1,10 +1,4 @@
-import {
-    useWriteContract,
-    useWaitForTransactionReceipt,
-    type BaseError,
-    useAccount,
-} from 'wagmi'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { parseUnits } from 'ethers/lib/utils'
 import { Button } from '@/components/ui/button'
 import { PlatformType, PlatformValue } from '@/types/platform'
@@ -16,14 +10,38 @@ import {
 } from '@/context/super-vault-tx-provider'
 import { ArrowRightIcon } from 'lucide-react'
 import { USDC_DECIMALS, VAULT_ADDRESS_MAP } from '@/lib/constants'
-import { parseAbi } from 'viem'
 import { useChain } from '@/context/chain-context'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
-import { useWalletConnection } from '@/hooks/useWalletConnection'
+import { useActiveAccount, useConnect, useSendTransaction } from "thirdweb/react"
+import { getContract, prepareContractCall, waitForReceipt } from "thirdweb"
+import { client } from "@/app/client"
+import { base, defineChain } from "thirdweb/chains"
+import { ChainId } from '@/types/chain'
+import { getErrorText } from '@/lib/getErrorText'
 
-const VAULT_ABI = parseAbi([
-    'function withdraw(uint256 _assets, address _receiver, address _owner) returns (uint256)',
-])
+// Define custom Sonic chain
+const sonic = defineChain({
+    id: 146,
+    name: "Sonic",
+    nativeCurrency: {
+        name: "Sonic",
+        symbol: "S",
+        decimals: 18,
+    },
+    rpc: process.env.NEXT_PUBLIC_SONIC_RPC_URL || "https://rpc.soniclabs.com",
+    blockExplorers: [
+        {
+            name: "Sonicscan",
+            url: "https://sonicscan.org",
+        },
+    ],
+})
+
+// Define chain mapping for Thirdweb
+const THIRDWEB_CHAINS = {
+    [ChainId.Base]: base,
+    [ChainId.Sonic]: sonic,
+}
 
 interface IWithdrawButtonProps {
     disabled: boolean
@@ -45,16 +63,20 @@ const WithdrawButton = ({
     cta,
     walletAddress,
 }: IWithdrawButtonProps) => {
-    const {
-        writeContractAsync,
-        isPending,
-        data: hash,
-        error,
-    } = useWriteContract()
+    const account = useActiveAccount()
+    const { mutateAsync: sendTransaction, isPending } = useSendTransaction()
     const { selectedChain } = useChain()
     const { logEvent } = useAnalytics()
-    const { canMakeTransactions, isConnectingWallet } = useWalletConnection()
+    const { isConnecting } = useConnect()
+    
+    // Transaction state
+    const [hash, setHash] = useState<string>('')
+    const [isConfirming, setIsConfirming] = useState(false)
+    const [isConfirmed, setIsConfirmed] = useState(false)
+    const [error, setError] = useState<Error | null>(null)
+    
     const { withdrawTx, setWithdrawTx } = useTxContext() as TTxContext
+    
     const txBtnStatus: Record<string, string> = {
         pending: 'Withdrawing...',
         confirming: 'Confirming...',
@@ -64,21 +86,8 @@ const WithdrawButton = ({
         connecting: 'Connecting wallet...',
     }
 
-    const { isLoading: isConfirming, isSuccess: isConfirmed } =
-        useWaitForTransactionReceipt({
-            hash,
-        })
-
     useEffect(() => {
         if (withdrawTx.status === 'view') return
-
-        // if (hash) {
-        //     setWithdrawTx((prev: TWithdrawTx) => ({
-        //         ...prev,
-        //         status: 'view',
-        //         hash,
-        //     }))
-        // }
 
         if (hash && isConfirmed) {
             setWithdrawTx((prev: TWithdrawTx) => ({
@@ -92,7 +101,7 @@ const WithdrawButton = ({
                 amount: amount,
                 chain: selectedChain,
                 token: asset.address,
-                walletAddress: walletAddress,
+                walletAddress: account?.address || walletAddress,
             })
             // Dispatch custom event to notify transaction is complete
             if (typeof window !== 'undefined') {
@@ -109,9 +118,9 @@ const WithdrawButton = ({
                 window.dispatchEvent(event)
             }
         }
-    }, [hash, isConfirmed])
+    }, [hash, isConfirmed, withdrawTx.status, amount, selectedChain, asset.address, account?.address, walletAddress, logEvent, setWithdrawTx])
 
-    // Update the status(Loading states) of the lendTx based on the isPending and isConfirming states
+    // Update the status(Loading states) of the withdrawTx based on the isPending and isConfirming states
     useEffect(() => {
         setWithdrawTx((prev: TWithdrawTx) => ({
             ...prev,
@@ -120,11 +129,11 @@ const WithdrawButton = ({
             isConfirmed: isConfirmed,
             isRefreshingAllowance: isConfirmed,
         }))
-    }, [isPending, isConfirming, isConfirmed])
+    }, [isPending, isConfirming, isConfirmed, setWithdrawTx])
 
     const txBtnText =
         txBtnStatus[
-            isConnectingWallet
+            isConnecting
                 ? 'connecting'
                 : isConfirming
                   ? 'confirming'
@@ -144,7 +153,7 @@ const WithdrawButton = ({
 
     const handleWithdrawSuperVault = useCallback(async () => {
         // Validate connection state before proceeding
-        if (!canMakeTransactions) {
+        if (!account) {
             console.error('Cannot make transactions: wallet not properly connected')
             setWithdrawTx((prev: TWithdrawTx) => ({
                 ...prev,
@@ -155,31 +164,53 @@ const WithdrawButton = ({
             return
         }
 
-        const amountInWei = parseUnits(amount, USDC_DECIMALS)
-
         try {
-            await writeContractAsync({
-                address: VAULT_ADDRESS_MAP[
-                    selectedChain as keyof typeof VAULT_ADDRESS_MAP
-                ] as `0x${string}`,
-                abi: VAULT_ABI,
-                functionName: 'withdraw',
-                args: [
+            setError(null)
+            const amountInWei = parseUnits(amount, USDC_DECIMALS)
+
+            const vaultContract = getContract({
+                client,
+                address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+                chain: THIRDWEB_CHAINS[selectedChain as keyof typeof THIRDWEB_CHAINS],
+            })
+
+            const transaction = prepareContractCall({
+                contract: vaultContract,
+                method: "function withdraw(uint256 _assets, address _receiver, address _owner) returns (uint256)",
+                params: [
                     amountInWei.toBigInt(),
-                    walletAddress as `0x${string}`,
-                    walletAddress as `0x${string}`,
+                    account.address as `0x${string}`,
+                    account.address as `0x${string}`,
                 ],
             })
+
+            const result = await sendTransaction(transaction)
+            setHash(result.transactionHash)
+
+            // Wait for confirmation
+            setIsConfirming(true)
+            const receipt = await waitForReceipt({
+                client,
+                chain: THIRDWEB_CHAINS[selectedChain as keyof typeof THIRDWEB_CHAINS],
+                transactionHash: result.transactionHash,
+            })
+
+            setIsConfirming(false)
+            setIsConfirmed(true)
+
         } catch (error) {
             console.error('Withdraw error:', error)
+            setIsConfirming(false)
+            setError(error as Error)
+            
             setWithdrawTx((prev: TWithdrawTx) => ({
                 ...prev,
                 isPending: false,
                 isConfirming: false,
-                errorMessage: error instanceof Error ? error.message : 'Transaction failed',
+                errorMessage: getErrorText(error as any),
             }))
         }
-    }, [canMakeTransactions, amount, selectedChain, walletAddress, writeContractAsync, setWithdrawTx])
+    }, [account, amount, selectedChain, sendTransaction, setWithdrawTx])
 
     const onWithdraw = async () => {
         await handleWithdrawSuperVault()
@@ -187,7 +218,7 @@ const WithdrawButton = ({
     }
 
     // Add connection status warning
-    const showConnectionWarning = !canMakeTransactions && !isConnectingWallet
+    const showConnectionWarning = !account && !isConnecting
 
     return (
         <div className="flex flex-col gap-2">
@@ -200,7 +231,7 @@ const WithdrawButton = ({
                 <CustomAlert
                     description={
                         error 
-                            ? (error as BaseError).shortMessage || error.message
+                            ? getErrorText(error)
                             : withdrawTx.errorMessage
                     }
                 />
@@ -209,7 +240,7 @@ const WithdrawButton = ({
                 variant="primary"
                 className="group flex items-center gap-[4px] py-3 w-full rounded-5 uppercase"
                 disabled={
-                    (isPending || isConfirming || disabled || !canMakeTransactions) &&
+                    (isPending || isConfirming || disabled || !account) &&
                     withdrawTx.status !== 'view'
                 }
                 onClick={() => {

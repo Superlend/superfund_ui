@@ -17,11 +17,13 @@ import { useRouter, notFound, useSearchParams } from 'next/navigation'
 import { ChainId } from '@/types/chain'
 import TransactionHistory from '@/components/transaction-history'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
-import { usePrivy } from '@privy-io/react-auth'
-import { useLoginToFrame } from '@privy-io/react-auth/farcaster'
+// import { usePrivy } from '@privy-io/react-auth'
+// import { useLoginToFrame } from '@privy-io/react-auth/farcaster'
 import sdk from '@farcaster/frame-sdk'
 import YourApiJourney from '@/components/your-api-journey'
 import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
+import { useActiveAccount, useConnect } from "thirdweb/react"
+import useDimensions from '@/hooks/useDimensions'
 
 interface ChainPageProps {
     params: {
@@ -31,8 +33,12 @@ interface ChainPageProps {
 
 export default function SuperVaultChainPage({ params }: ChainPageProps) {
     const { isClient } = useIsClient()
-    const { isWalletConnected, isConnectingWallet, walletAddress } =
-        useWalletConnection()
+    // const { isWalletConnected, isConnectingWallet, walletAddress } =
+    //     useWalletConnection()
+    const { connect, isConnecting, error } = useConnect();
+    const account = useActiveAccount();
+    const walletAddress = account?.address as `0x${string}`
+    const isWalletConnected = !!account
     const router = useRouter()
     const searchParams = useSearchParams()
     const initialized = useRef(false)
@@ -41,9 +47,11 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
         canScrollUp: false,
         canScrollDown: false,
     })
+    const { width } = useDimensions()
+    const isDesktop = width > 1024
     const { logEvent } = useAnalytics()
-    const { initLoginToFrame, loginToFrame } = useLoginToFrame()
-    const { ready, authenticated } = usePrivy()
+    // const { initLoginToFrame, loginToFrame } = useLoginToFrame()
+    // const { ready, authenticated } = usePrivy()
     const { userMaxWithdrawAmount, isLoading: isLoadingUserMaxWithdrawAmount, error: errorUserMaxWithdrawAmount } = useUserBalance(
         walletAddress as `0x${string}`
     )
@@ -67,30 +75,31 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
     // }, [ready, authenticated, initLoginToFrame, loginToFrame])
 
     // Handle scroll events to show/hide blur effects
-    useEffect(() => {
-        const scrollArea = scrollAreaRef.current
-        if (!scrollArea) return
+    // useEffect(() => {
+    //     const scrollArea = scrollAreaRef.current
+    //     if (!scrollArea) return
 
-        const handleScroll = () => {
-            const viewport = scrollArea.querySelector('[data-radix-scroll-area-viewport]')
-            if (!viewport) return
+    //     const handleScroll = () => {
+    //         const viewport = scrollArea.querySelector('[data-radix-scroll-area-viewport]')
+    //         if (!viewport) return
 
-            const { scrollTop, scrollHeight, clientHeight } = viewport
-            const canScrollUp = scrollTop > 10
-            const canScrollDown = scrollTop < scrollHeight - clientHeight - 10
+    //         const { scrollTop, scrollHeight, clientHeight } = viewport
+    //         const canScrollUp = scrollTop > 10
+    //         const canScrollDown = scrollTop < scrollHeight - clientHeight - 10
 
-            setScrollState({ canScrollUp, canScrollDown })
-        }
+    //         setScrollState({ canScrollUp, canScrollDown })
+    //     }
 
-        // Initial check
-        handleScroll()
+    //     // Initial check
+    //     handleScroll()
 
-        const viewport = scrollArea.querySelector('[data-radix-scroll-area-viewport]')
-        if (viewport) {
-            viewport.addEventListener('scroll', handleScroll)
-            return () => viewport.removeEventListener('scroll', handleScroll)
-        }
-    }, [isWalletConnected]) // Re-run when wallet connection changes
+    //     const viewport = scrollArea.querySelector('[data-radix-scroll-area-viewport]')
+    //     if (viewport) {
+    //         viewport.addEventListener('scroll', handleScroll)
+    //         return () => viewport.removeEventListener('scroll', handleScroll)
+    //     }
+    // }, [isWalletConnected]) 
+    // Re-run when wallet connection changes
 
     // Validate chain parameter only once
     useEffect(() => {
@@ -166,7 +175,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
         }
     }, [isClient, searchParams]) // Removed selectedTab from dependency array
 
-        // Handle scroll focus only when hash is present on initial navigation
+    // Handle scroll focus only when hash is present on initial navigation
     useEffect(() => {
         if (!isClient) return
 
@@ -179,23 +188,23 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                         // Find the tabs section element
                         const tabsSection = document.getElementById('tabs-section')
                         const tabsContent = document.querySelector('[data-radix-tabs-content]')
-                        
+
                         // Use the actual tabs content if available, otherwise fall back to tabs section
                         const targetElement = tabsContent || tabsSection
-                        
+
                         if (targetElement) {
                             const isMobile = window.innerWidth <= 768
                             const headerOffset = isMobile ? 120 : 100 // Account for headers and spacing
-                            
+
                             const elementTop = targetElement.getBoundingClientRect().top + window.pageYOffset
                             const targetScrollPosition = elementTop - headerOffset
-                            
+
                             // Use smooth scroll to calculated position
                             window.scrollTo({
                                 top: Math.max(0, targetScrollPosition),
                                 behavior: 'smooth'
                             })
-                            
+
                             // Clear the hash after scrolling
                             setTimeout(() => {
                                 window.history.replaceState(null, '', window.location.pathname + window.location.search)
@@ -231,19 +240,21 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-[16px]">
                 <div className="flex flex-col gap-10">
                     <VaultStats />
-                    <div className="flex flex-col gap-4 lg:hidden">
-                        <DepositAndWithdrawAssets />
-                        {(isWalletConnected && !!Number(userMaxWithdrawAmount)) && <YourApiJourney />}
-                        {isWalletConnected && (
-                            <TransactionHistory
-                                protocolIdentifier={getProtocolIdentifier(
-                                    chainId
-                                )}
-                            />
-                        )}
-                    </div>
-                    {isConnectingWallet && <LoadingTabs />}
-                    {!isConnectingWallet && (
+                    {!isDesktop &&
+                        <div className="flex flex-col gap-4">
+                            <DepositAndWithdrawAssets />
+                            {(isWalletConnected && !!Number(userMaxWithdrawAmount)) && <YourApiJourney />}
+                            {isWalletConnected && (
+                                <TransactionHistory
+                                    protocolIdentifier={getProtocolIdentifier(
+                                        chainId
+                                    )}
+                                />
+                            )}
+                        </div>
+                    }
+                    {isConnecting && <LoadingTabs />}
+                    {!isConnecting && (
                         <div id="tabs-section">
                             <FlatTabs
                                 tabs={tabs}
@@ -253,41 +264,41 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                         </div>
                     )}
                 </div>
-                <div className="hidden lg:block">
-                    <div className="sticky top-20 h-[calc(100vh-5rem)] relative">
-                        {/* Top blur overlay */}
-                        <div
-                            className={`absolute top-0 left-0 right-0 h-12 z-10 pointer-events-none transition-opacity duration-300 ${scrollState.canScrollUp ? 'opacity-100' : 'opacity-0'
-                                }`}
-                            style={{
-                                background: 'linear-gradient(to bottom, hsl(var(--background-light-blue)) 0%, hsl(var(--background-light-blue) / 0.95) 25%, hsl(var(--background-light-blue) / 0.8) 50%, hsl(var(--background-light-blue) / 0.4) 75%, transparent 100%)'
-                            }}
-                        />
+                {isDesktop && (
+                    <div className="">
+                        <div className="sticky top-20 h-[calc(100vh-5rem)] relative">
+                            <div
+                                className={`absolute top-0 left-0 right-0 h-12 z-10 pointer-events-none transition-opacity duration-300 ${scrollState.canScrollUp ? 'opacity-100' : 'opacity-0'
+                                    }`}
+                                style={{
+                                    background: 'linear-gradient(to bottom, hsl(var(--background-light-blue)) 0%, hsl(var(--background-light-blue) / 0.95) 25%, hsl(var(--background-light-blue) / 0.8) 50%, hsl(var(--background-light-blue) / 0.4) 75%, transparent 100%)'
+                                }}
+                            />
 
-                        <ScrollArea className="h-full" ref={scrollAreaRef}>
-                            <div className="flex flex-col gap-2 pr-4">
-                                <DepositAndWithdrawAssets />
-                                {(isWalletConnected && !!Number(userMaxWithdrawAmount)) && <YourApiJourney />}
-                                {isWalletConnected && (
-                                    <TransactionHistory
-                                        protocolIdentifier={getProtocolIdentifier(
-                                            chainId
-                                        )}
-                                    />
-                                )}
-                            </div>
-                        </ScrollArea>
+                            <ScrollArea className="h-full" ref={scrollAreaRef}>
+                                <div className="flex flex-col gap-2 pr-4">
+                                    <DepositAndWithdrawAssets />
+                                    {(isWalletConnected && !!Number(userMaxWithdrawAmount)) && <YourApiJourney />}
+                                    {isWalletConnected && (
+                                        <TransactionHistory
+                                            protocolIdentifier={getProtocolIdentifier(
+                                                chainId
+                                            )}
+                                        />
+                                    )}
+                                </div>
+                            </ScrollArea>
 
-                        {/* Bottom blur overlay */}
-                        <div
-                            className={`absolute bottom-0 left-0 right-0 h-12 z-10 pointer-events-none transition-opacity duration-300 ${scrollState.canScrollDown ? 'opacity-100' : 'opacity-0'
-                                }`}
-                            style={{
-                                background: 'linear-gradient(to top, hsl(var(--background-light-blue)) 0%, hsl(var(--background-light-blue) / 0.95) 25%, hsl(var(--background-light-blue) / 0.8) 50%, hsl(var(--background-light-blue) / 0.4) 75%, transparent 100%)'
-                            }}
-                        />
+                            <div
+                                className={`absolute bottom-0 left-0 right-0 h-12 z-10 pointer-events-none transition-opacity duration-300 ${scrollState.canScrollDown ? 'opacity-100' : 'opacity-0'
+                                    }`}
+                                style={{
+                                    background: 'linear-gradient(to top, hsl(var(--background-light-blue)) 0%, hsl(var(--background-light-blue) / 0.95) 25%, hsl(var(--background-light-blue) / 0.8) 50%, hsl(var(--background-light-blue) / 0.4) 75%, transparent 100%)'
+                                }}
+                            />
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </MainContainer>
     )

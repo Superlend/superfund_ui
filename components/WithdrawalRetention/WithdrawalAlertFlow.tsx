@@ -7,6 +7,7 @@ import YieldLossCalculator from './YieldLossCalculator'
 import ConsentCheckbox from './ConsentCheckbox'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
+import { useActiveAccount } from 'thirdweb/react'
 
 interface WithdrawalAlertFlowProps {
     withdrawalAmount: number
@@ -29,7 +30,10 @@ export default function WithdrawalAlertFlow({
 }: WithdrawalAlertFlowProps) {
     const [hasConsented, setHasConsented] = useState(false)
     const [showCalculator, setShowCalculator] = useState(false)
-    const { walletAddress } = useWalletConnection()
+    // const { walletAddress } = useWalletConnection()
+    const account = useActiveAccount();
+    const walletAddress = account?.address as `0x${string}`
+    const isWalletConnected = !!account
     const { logEvent } = useAnalytics()
 
     // Reset consent when visibility changes

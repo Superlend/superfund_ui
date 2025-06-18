@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge"
 import useTransactionHistory from '@/hooks/useTransactionHistory'
 import { Transaction } from '@/queries/transaction-history-api'
 import { HeadingText } from '@/components/ui/typography'
+import { useActiveAccount } from 'thirdweb/react'
 
 interface TransactionHistoryProps {
   protocolIdentifier: string
@@ -59,7 +60,10 @@ const getUserTimezone = (): string => {
 };
 
 export default function TransactionHistory({ protocolIdentifier }: TransactionHistoryProps) {
-  const { walletAddress, isWalletConnected } = useWalletConnection()
+  // const { walletAddress, isWalletConnected } = useWalletConnection()
+  const account = useActiveAccount();
+  const walletAddress = account?.address as `0x${string}`
+  const isWalletConnected = !!account
   const { selectedChain } = useChain()
   const router = useRouter()
 

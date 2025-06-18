@@ -27,6 +27,7 @@ import {
 import { Button } from "@/components/ui/button"
 import useTransactionHistory from '@/hooks/useTransactionHistory'
 import { Transaction } from '@/queries/transaction-history-api'
+import { useActiveAccount } from "thirdweb/react"
 
 interface AllTransactionsProps {
   protocolIdentifier?: string // Optional if we want to pass it directly
@@ -66,7 +67,10 @@ const getUserTimezone = (): string => {
 };
 
 export default function AllTransactions({ protocolIdentifier }: AllTransactionsProps) {
-  const { walletAddress, isWalletConnected } = useWalletConnection()
+  // const { walletAddress, isWalletConnected } = useWalletConnection()
+  const account = useActiveAccount();
+  const walletAddress = account?.address as `0x${string}`
+  const isWalletConnected = !!account
   const { selectedChain, chainDetails } = useChain()
   const [currentFilter, setCurrentFilter] = useState<FilterType>('all')
 

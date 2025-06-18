@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react'
 import { ChainId } from '@/types/chain'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
+import { useSwitchActiveWalletChain } from 'thirdweb/react'
+import { base } from 'thirdweb/chains'
 
 // Constants for chain details
 export const CHAIN_DETAILS = {
@@ -42,7 +44,8 @@ export function ChainProvider({
     // Use initialChain parameter for the initial state
     const [selectedChain, setSelectedChainState] = useState<ChainId>(initialChain)
     const [isChangingChain, setIsChangingChain] = useState(false)
-    const { handleSwitchChain } = useWalletConnection()
+    // const { handleSwitchChain } = useWalletConnection()
+    const switchChain = useSwitchActiveWalletChain();
 
     // Simple synchronous setter for chain selection
     const setSelectedChain = (chain: ChainId) => {
@@ -51,7 +54,7 @@ export function ChainProvider({
         setIsChangingChain(true)
         
         // Switch chain in wallet if needed
-        handleSwitchChain(chain)
+        switchChain(base)
             .catch(err => console.error('Error switching chain:', err))
             .finally(() => setIsChangingChain(false))
     }

@@ -61,11 +61,16 @@
         --chart-green: hsla(137, 85%, 35%, 1);
         --chart-orange: hsla(21, 100%, 50%, 1);
         --chart-yellow: hsla(44, 100%, 47%, 1);
-        --chart-aave: 241 86% 77%; /* #9293F7 */
-        --chart-compound: 162 99% 38%; /* #87C101 */
-        --chart-morpho: 238 73% 40%; /* #201CB0 */
-        --chart-fluid: 223 98% 62%; /* #753FFD */
-        --chart-superlend: 21 100% 50%; /* #FF5900 */
+        --chart-aave: 241 86% 77%;
+        /* #9293F7 */
+        --chart-compound: 162 99% 38%;
+        /* #87C101 */
+        --chart-morpho: 238 73% 40%;
+        /* #201CB0 */
+        --chart-fluid: 223 98% 62%;
+        /* #753FFD */
+        --chart-superlend: 21 100% 50%;
+        /* #FF5900 */
         --pulse-color: 21, 100%, 50%;
         --duration: 1.3s;
         --color-0xeE8F4eC5672F09119b96Ab6fB59C27E1b7e44b61: #201cb0;
@@ -129,13 +134,16 @@
     * {
         @apply border-border;
     }
+
     body {
         @apply bg-background text-foreground;
     }
+
     /* Remove focus outlines globally */
     *:focus {
         outline: none !important;
     }
+
     *:focus-visible {
         outline: none !important;
         box-shadow: none !important;
@@ -150,12 +158,10 @@
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 255, 255, 0.6) 50%,
-            transparent
-        );
+        background: linear-gradient(90deg,
+                transparent,
+                rgba(255, 255, 255, 0.6) 50%,
+                transparent);
         transform: skewX(-20deg);
         animation: shimmer 1.5s infinite;
     }
@@ -179,7 +185,7 @@
     max-height: 40px !important;
 }
 
-.tw-connected-wallet > :first-child {
+.tw-connected-wallet> :first-child {
     display: none !important;
 }
 
@@ -239,15 +245,50 @@ input[type='number'] {
     0% {
         left: -100%;
     }
+
     100% {
         left: 100%;
     }
 }
 
 .hide-scrollbar {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
 }
+
 .hide-scrollbar::-webkit-scrollbar {
-    display: none; /* Chrome, Safari and Opera */
+    display: none;
+    /* Chrome, Safari and Opera */
+}
+
+.tw-connect-wallet {
+    border-radius: 10px !important;
+    background: linear-gradient(to bottom, #FF5900, #FF5900) !important;
+    color: #fff !important;
+    border: 2px solid #FF5900 !important;
+    transition: all 0.3s ease !important;
+    padding-left: .75rem !important;
+    padding-right: .75rem !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    height: 40px !important;
+    text-transform: capitalize !important;
+    width: 100% !important;
+    min-width: 130px !important;
+
+    &:hover {
+        background: linear-gradient(to bottom, #FF5900, #FF5900) !important;
+        color: #fff !important;
+    }
+
+    &:active {
+        background: linear-gradient(to bottom, #FF5900, #FF5900) !important;
+        color: #fff !important;
+    }
+
+    &:disabled {
+        background: linear-gradient(to bottom, #FF5900, #FF5900) !important;
+    }
 }

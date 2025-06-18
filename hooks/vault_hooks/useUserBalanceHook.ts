@@ -1,5 +1,5 @@
 import { SONIC_USDC_ADDRESS, SONIC_VAULT_ADDRESS, USDC_ADDRESS, USDC_DECIMALS, VAULT_ADDRESS } from '@/lib/constants'
-import { usePrivy } from '@privy-io/react-auth'
+// import { usePrivy } from '@privy-io/react-auth'
 import { useEffect, useState, useRef } from 'react'
 import { createPublicClient, formatUnits, http, parseAbi } from 'viem'
 import { base, sonic } from 'viem/chains'

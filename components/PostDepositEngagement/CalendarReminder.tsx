@@ -6,6 +6,7 @@ import { BodyText } from '@/components/ui/typography'
 import { Button } from '@/components/ui/button'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
+import { useActiveAccount } from 'thirdweb/react'
 
 interface CalendarReminderProps {
     depositAmount: number
@@ -17,7 +18,10 @@ export default function CalendarReminder({
     tokenSymbol,
 }: CalendarReminderProps) {
     const { logEvent } = useAnalytics()
-    const { walletAddress } = useWalletConnection()
+    // const { walletAddress } = useWalletConnection()
+    const account = useActiveAccount();
+    const walletAddress = account?.address as `0x${string}`
+    // const isWalletConnected = !!account
 
     const handleSetReminder = () => {
         logEvent('calendar_reminder_clicked', {
