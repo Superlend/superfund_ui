@@ -63,6 +63,9 @@ export default function ConnectWalletButton() {
     // const [portfolioValue, setPortfolioValue] = useState('0')
 
     const wallets = [
+        inAppWallet({
+            auth: { options: ["farcaster"] },
+        }),
         createWallet("io.metamask"),
         createWallet("com.coinbase.wallet"),
         createWallet("me.rainbow"),
