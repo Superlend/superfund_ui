@@ -205,6 +205,9 @@ export default function ConnectWalletButton() {
                                 titleIcon: "https://funds.superlend.xyz/images/logos/favicon-32x32.png"
                             }}
                             wallets={wallets}
+                            walletConnect={{
+                                projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+                            }}
                         />
                     }
                 </>
