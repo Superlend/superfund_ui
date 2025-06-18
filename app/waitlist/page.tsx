@@ -76,8 +76,8 @@ export default function WaitlistPage() {
     const [isTelegramSuccess, setIsTelegramSuccess] = useState(false)
 
     const [submittedEmail, setSubmittedEmail] = useState<string | null>(null)
-    const { logUserEvent } = useLogNewUserEvent()
-    const { accessToken, getAccessTokenFromPrivy } = useAuth()
+    // const { logUserEvent } = useLogNewUserEvent()
+    // const { accessToken, getAccessTokenFromPrivy } = useAuth()
     // const { walletAddress, isWalletConnected } = useWalletConnection()
     const account = useActiveAccount();
     const walletAddress = account?.address as `0x${string}`
@@ -87,11 +87,11 @@ export default function WaitlistPage() {
         walletAddress ? (walletAddress as `0x${string}`) : '0x0000000000000000000000000000000000000000'
     )
 
-    useEffect(() => {
-        if (isWalletConnected || currentStep === 2) {
-            getAccessTokenFromPrivy()
-        }
-    }, [isWalletConnected, currentStep])
+    // useEffect(() => {
+    //     if (isWalletConnected || currentStep === 2) {
+    //         getAccessTokenFromPrivy()
+    //     }
+    // }, [isWalletConnected, currentStep])
 
     // Add a function to check if the Telegram table exists
     useEffect(() => {
@@ -235,14 +235,14 @@ export default function WaitlistPage() {
             if (!completedSteps.includes(2)) {
                 setCompletedSteps(prev => [...prev, 2])
                 setPoints(prev => prev + 50) // Add 50 points for wallet connection
-                logUserEvent({
-                    user_address: walletAddress,
-                    event_type: "USER_WAITLIST",
-                    platform_type: 'superlend_vault',
-                    protocol_identifier: '0x',
-                    event_data: '',
-                    authToken: accessToken || '',
-                })
+                // logUserEvent({
+                //     user_address: walletAddress,
+                //     event_type: "USER_WAITLIST",
+                //     platform_type: 'superlend_vault',
+                //     protocol_identifier: '0x',
+                //     event_data: '',
+                //     authToken: accessToken || '',
+                // })
             }
 
             // Show success screen - the Telegram section visibility is handled by the useEffect

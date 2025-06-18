@@ -17,8 +17,8 @@ import { useRouter, notFound, useSearchParams } from 'next/navigation'
 import { ChainId } from '@/types/chain'
 import TransactionHistory from '@/components/transaction-history'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
-import { usePrivy } from '@privy-io/react-auth'
-import { useLoginToFrame } from '@privy-io/react-auth/farcaster'
+// import { usePrivy } from '@privy-io/react-auth'
+// import { useLoginToFrame } from '@privy-io/react-auth/farcaster'
 import sdk from '@farcaster/frame-sdk'
 import YourApiJourney from '@/components/your-api-journey'
 import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
@@ -47,8 +47,8 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
         canScrollDown: false,
     })
     const { logEvent } = useAnalytics()
-    const { initLoginToFrame, loginToFrame } = useLoginToFrame()
-    const { ready, authenticated } = usePrivy()
+    // const { initLoginToFrame, loginToFrame } = useLoginToFrame()
+    // const { ready, authenticated } = usePrivy()
     const { userMaxWithdrawAmount, isLoading: isLoadingUserMaxWithdrawAmount, error: errorUserMaxWithdrawAmount } = useUserBalance(
         walletAddress as `0x${string}`
     )

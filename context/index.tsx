@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { PrivyProvider } from '@privy-io/react-auth'
-import { createConfig, WagmiProvider } from '@privy-io/wagmi'
-import { base, sonic } from 'viem/chains'
-import { http } from 'wagmi'
+// import { PrivyProvider } from '@privy-io/react-auth'
+// import { createConfig, WagmiProvider } from '@privy-io/wagmi'
+// import { base, sonic } from 'viem/chains'
+// import { http } from 'wagmi'
 import { AuthProvider } from './auth-provider'
 import FrameSDK from '@farcaster/frame-sdk'
 import { farcasterFrame } from '@farcaster/frame-wagmi-connector'
@@ -13,6 +13,7 @@ import { AnalyticsProvider } from './analytics-provider'
 import { ApyDataProvider } from './apy-data-provider'
 import { ChainProvider } from './chain-context'
 import { ThirdwebProvider } from "thirdweb/react";
+import { base } from 'thirdweb/chains'
 
 
 // Set up queryClient
@@ -30,13 +31,13 @@ const metadata = {
 }
 
 // Create a default config for initial render
-const defaultConfig = createConfig({
-    chains: [base, sonic],
-    transports: {
-        [base.id]: http(),
-        [sonic.id]: http(),
-    },
-})
+// const defaultConfig = createConfig({
+//     chains: [base],
+//     transports: {
+//         [base.id]: http(),
+//         // [sonic.id]: http(),
+//     },
+// })
 
 function ContextProvider({
     children,
@@ -45,100 +46,61 @@ function ContextProvider({
     children: ReactNode
     cookies: string | null
 }) {
-    const [localConfig, setLocalConfig] = useState(defaultConfig)
-    const [context, setContext] = useState<any>(null)
+    // const [localConfig, setLocalConfig] = useState(defaultConfig)
+    // const [context, setContext] = useState<any>(null)
     const [isClient, setIsClient] = useState(false)
-    const [isMiniApp, setIsMiniApp] = useState(false)
+    // const [isMiniApp, setIsMiniApp] = useState(false)
 
     // Check if we're on the client side
     useEffect(() => {
         setIsClient(true)
     }, [])
 
-    useEffect(() => {
-        // Only run Farcaster initialization on the client side
-        if (!isClient) return
+    // useEffect(() => {
+    //     // Only run Farcaster initialization on the client side
+    //     if (!isClient) return
 
-        const initializeConfig = async () => {
-            try {
-                await FrameSDK.actions.ready()
-                const isMiniApp = await FrameSDK.isInMiniApp()
-                const context = await FrameSDK.context
-                setContext(context)
-                setIsMiniApp(isMiniApp)
+    //     const initializeConfig = async () => {
+    //         try {
+    //             await FrameSDK.actions.ready()
+    //             const isMiniApp = await FrameSDK.isInMiniApp()
+    //             const context = await FrameSDK.context
+    //             setContext(context)
+    //             setIsMiniApp(isMiniApp)
 
-                if (isMiniApp) {
-                    const newConfigForFarcaster = createConfig({
-                        chains: [base, sonic],
-                        transports: {
-                            [base.id]: http(),
-                            [sonic.id]: http(),
-                        },
-                        connectors: [farcasterFrame()],
-                    })
-                    setLocalConfig(newConfigForFarcaster)
-                }
-            } catch (error) {
-                console.error('Error initializing Farcaster SDK:', error)
-                // Keep using default config in case of errors
-            }
-        }
+    //             if (isMiniApp) {
+    //                 const newConfigForFarcaster = createConfig({
+    //                     chains: [base, sonic],
+    //                     transports: {
+    //                         [base.id]: http(),
+    //                         [sonic.id]: http(),
+    //                     },
+    //                     connectors: [farcasterFrame()],
+    //                 })
+    //                 setLocalConfig(newConfigForFarcaster)
+    //             }
+    //         } catch (error) {
+    //             console.error('Error initializing Farcaster SDK:', error)
+    //             // Keep using default config in case of errors
+    //         }
+    //     }
 
-        initializeConfig()
-    }, [isClient])
+    //     initializeConfig()
+    // }, [isClient])
 
     return (
         <AnalyticsProvider>
-            <PrivyProvider
-                appId={PRIVY_APP_ID}
-                config={{
-                    loginMethods: ['wallet'],
-                    appearance: {
-                        theme: 'light',
-                        accentColor: '#676FFF',
-                        logo: 'https://app.superlend.xyz/images/logos/superlend-logo.webp',
-                        landingHeader: 'Connect Wallet',
-                        loginMessage: 'Select wallet to continue',
-                        showWalletLoginFirst: true,
-                        walletList: context
-                            ? undefined
-                            : isMiniApp
-                                ? [
-                                    'metamask',
-                                    'coinbase_wallet',
-                                    'okx_wallet',
-                                    'rainbow',
-                                    'rabby_wallet',
-                                    'phantom',
-                                ]
-                                : [
-                                    'metamask',
-                                    'coinbase_wallet',
-                                    'okx_wallet',
-                                    'rainbow',
-                                    'rabby_wallet',
-                                    'phantom',
-                                    'wallet_connect',
-                                ],
-                    },
-                    supportedChains: [base, sonic],
-                    walletConnectCloudProjectId: WALLETCONNECT_PROJECT_ID,
-                }}
-            >
-                <ThirdwebProvider>
-                    <WagmiProvider config={localConfig}>
-                        <QueryClientProvider client={queryClient}>
-                            <AuthProvider>
-                                <ChainProvider>
-                                    <ApyDataProvider>
-                                        {children}
-                                    </ApyDataProvider>
-                                </ChainProvider>
-                            </AuthProvider>
-                        </QueryClientProvider>
-                    </WagmiProvider>
-                </ThirdwebProvider>
-            </PrivyProvider>
+            <ThirdwebProvider>
+                <QueryClientProvider client={queryClient}>
+                    <AuthProvider>
+                        <ChainProvider>
+                            <ApyDataProvider>
+                                {children}
+                            </ApyDataProvider>
+                        </ChainProvider>
+                    </AuthProvider>
+                </QueryClientProvider>
+            </ThirdwebProvider>
         </AnalyticsProvider>
     )
 }

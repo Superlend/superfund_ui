@@ -13,7 +13,7 @@ type RequestOptions = {
 }
 
 export function useAuthRequest() {
-  const { getAccessTokenFromPrivy } = useAuth()
+  // const { getAccessTokenFromPrivy } = useAuth()
   const [isRefreshingToken, setIsRefreshingToken] = useState(false)
 
   const makeRequest = async <T,>(options: RequestOptions): Promise<T> => {
@@ -26,7 +26,8 @@ export function useAuthRequest() {
         try {
           setIsRefreshingToken(true)
           // Get new token
-          const newToken = await getAccessTokenFromPrivy()
+          // const newToken = await getAccessTokenFromPrivy()
+          const newToken = null
           
           if (!newToken) {
             throw new Error('Failed to refresh token')

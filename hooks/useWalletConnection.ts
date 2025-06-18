@@ -1,6 +1,6 @@
-import { usePrivy, useWallets } from '@privy-io/react-auth'
+// import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
-import { useSetActiveWallet } from '@privy-io/wagmi'
+// import { useSetActiveWallet } from '@privy-io/wagmi'
 import FrameSDK from '@farcaster/frame-sdk'
 import { useActiveAccount, useConnect } from "thirdweb/react";
 
@@ -8,8 +8,8 @@ export const useWalletConnection = () => {
     const account = useActiveAccount();
     const { isConnecting } = useConnect()
     // const { user, ready, authenticated, login } = usePrivy()
-    const { wallets } = useWallets()
-    const { setActiveWallet } = useSetActiveWallet()
+    // const { wallets } = useWallets()
+    // const { setActiveWallet } = useSetActiveWallet()
     const [isMiniApp, setIsMiniApp] = useState(false)
     const [context, setContext] = useState<any>(null)
     const [isSettingActiveWallet, setIsSettingActiveWallet] = useState(false)
@@ -28,9 +28,9 @@ export const useWalletConnection = () => {
     const isWalletConnectedForUI = !!account
 
     // Get the active wallet from the list of wallets
-    const activeWallet = isWalletConnectedForUI
-        ? wallets.find((wallet) => wallet.isConnected)
-        : undefined
+    // const activeWallet = isWalletConnectedForUI
+    //     ? wallets.find((wallet) => wallet.isConnected)
+    //     : undefined
 
     const walletAddress = account?.address as `0x${string}`
 
@@ -44,54 +44,54 @@ export const useWalletConnection = () => {
     }, [])
 
     // Memoized wallet sync function to prevent recreating on every render
-    const syncWalletConnection = useCallback(async () => {
-        if (!walletAddress || wallets.length === 0 || isSettingActiveWallet) {
-            return
-        }
+    // const syncWalletConnection = useCallback(async () => {
+    //     if (!walletAddress || wallets.length === 0 || isSettingActiveWallet) {
+    //         return
+    //     }
 
-        // Find the wallet that matches our address
-        const matchingWallet = wallets.find(
-            (wallet) => wallet.address?.toLowerCase() === walletAddress.toLowerCase()
-        )
+    //     // Find the wallet that matches our address
+    //     const matchingWallet = wallets.find(
+    //         (wallet) => wallet.address?.toLowerCase() === walletAddress.toLowerCase()
+    //     )
         
-        // Only attempt to sync if we have a wallet and it's not already connected
-        if (matchingWallet && !matchingWallet.isConnected) {
-            try {
-                setIsSettingActiveWallet(true)
-                await setActiveWallet(matchingWallet)
-            } catch (error) {
-                console.error('❌ Error setting active wallet:', error)
-            } finally {
-                setIsSettingActiveWallet(false)
-            }
-        }
-    }, [walletAddress, wallets, setActiveWallet, isSettingActiveWallet])
+    //     // Only attempt to sync if we have a wallet and it's not already connected
+    //     if (matchingWallet && !matchingWallet.isConnected) {
+    //         try {
+    //             setIsSettingActiveWallet(true)
+    //             await setActiveWallet(matchingWallet)
+    //         } catch (error) {
+    //             console.error('❌ Error setting active wallet:', error)
+    //         } finally {
+    //             setIsSettingActiveWallet(false)
+    //         }
+    //     }
+    // }, [walletAddress, wallets, setActiveWallet, isSettingActiveWallet])
 
     // Effect to sync wallet connection - runs only when essential dependencies change
-    useEffect(() => {
-        // Clear any existing timeout
-        if (syncTimeoutRef.current) {
-            clearTimeout(syncTimeoutRef.current)
-        }
+    // useEffect(() => {
+    //     // Clear any existing timeout
+    //     if (syncTimeoutRef.current) {
+    //         clearTimeout(syncTimeoutRef.current)
+    //     }
 
-        // Only sync if we have authenticated user and wallet address
-        if (isWalletConnected && walletAddress) {
-            // Use a timeout to debounce and avoid rapid successive calls
-            syncTimeoutRef.current = setTimeout(() => {
-                void syncWalletConnection()
-            }, 300)
-        }
+    //     // Only sync if we have authenticated user and wallet address
+    //     if (isWalletConnected && walletAddress) {
+    //         // Use a timeout to debounce and avoid rapid successive calls
+    //         syncTimeoutRef.current = setTimeout(() => {
+    //             void syncWalletConnection()
+    //         }, 300)
+    //     }
 
-        return () => {
-            if (syncTimeoutRef.current) {
-                clearTimeout(syncTimeoutRef.current)
-            }
-        }
-    }, [isWalletConnected, walletAddress, syncWalletConnection])
+    //     return () => {
+    //         if (syncTimeoutRef.current) {
+    //             clearTimeout(syncTimeoutRef.current)
+    //         }
+    //     }
+    // }, [isWalletConnected, walletAddress, syncWalletConnection])
 
-    const wallet = wallets.find(
-        (wallet: any) => wallet.address === walletAddress
-    )
+    // const wallet = wallets.find(
+    //     (wallet: any) => wallet.address === walletAddress
+    // )
 
     useEffect(() => {
         const load = async () => {
@@ -107,14 +107,14 @@ export const useWalletConnection = () => {
         void load()
     }, [])
 
-    async function handleSwitchChain(chain_id: number) {
-        try {
-            await wallet?.switchChain(Number(chain_id))
-        } catch (error) {
-            console.error('Error switching chain:', error)
-            throw error
-        }
-    }
+    // async function handleSwitchChain(chain_id: number) {
+    //     try {
+    //         await wallet?.switchChain(Number(chain_id))
+    //     } catch (error) {
+    //         console.error('Error switching chain:', error)
+    //         throw error
+    //     }
+    // }
 
     // Manual reconnection function - simplified since we're using Thirdweb
     const reconnectWallet = async () => {
@@ -143,13 +143,13 @@ export const useWalletConnection = () => {
 
     return {
         user: account,
-        wallet,
+        // wallet,
         walletAddress,
         isWalletConnected,
         isWalletConnectedForUI,
         isConnectingWallet,
         canMakeTransactions,
-        handleSwitchChain,
+        // handleSwitchChain,
         reconnectWallet,
         isMiniApp,
         context,
