@@ -64,7 +64,7 @@ export default function ConnectWalletButton() {
         createWallet("io.metamask"),
         createWallet("com.coinbase.wallet"),
         createWallet("me.rainbow"),
-        createWallet("walletConnect"),
+        // createWallet("walletConnect"),
     ];
 
     const disableLogin = isConnecting
