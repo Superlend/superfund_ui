@@ -16,7 +16,8 @@ import InfoTooltip from './tooltips/InfoTooltip'
 import { client } from "@/app/client";
 import { ConnectButton, useActiveWallet, useConnect, useDisconnect } from "thirdweb/react";
 import { useActiveAccount } from 'thirdweb/react'
-import { createWallet, inAppWallet } from "thirdweb/wallets";
+import { createWallet, inAppWallet, walletConnect } from "thirdweb/wallets";
+import { base } from 'thirdweb/chains'
 
 
 // Create a wrapper component to conditionally use the useUserBalance hook
@@ -55,13 +56,6 @@ export default function ConnectWalletButton() {
     const { isConnecting } = useConnect();
     const { disconnect } = useDisconnect();
     const wallet = useActiveWallet();
-    // const { walletAddress, isConnectingWallet } = useWalletConnection()
-    // const { ready, authenticated, login, user } = usePrivy()
-    // const { logout } = useLogout({
-    //     onSuccess: () => {
-    //         console.log('Logout successful via useLogout')
-    //     }
-    // })
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
     // const [showSonicDialog, setShowSonicDialog] = useState(false)
     // const [portfolioValue, setPortfolioValue] = useState('0')
@@ -70,6 +64,7 @@ export default function ConnectWalletButton() {
         createWallet("io.metamask"),
         createWallet("com.coinbase.wallet"),
         createWallet("me.rainbow"),
+        createWallet("walletConnect"),
     ];
 
     const disableLogin = isConnecting
@@ -204,10 +199,11 @@ export default function ConnectWalletButton() {
                                 title: "Connect Wallet",
                                 titleIcon: "https://funds.superlend.xyz/images/logos/favicon-32x32.png"
                             }}
-                            wallets={wallets}
                             walletConnect={{
-                                projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+                                projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "",
                             }}
+                            wallets={wallets}
+                            chain={base}
                         />
                     }
                 </>

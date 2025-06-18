@@ -1264,7 +1264,7 @@ export default function SuperVaultTxDialog({
                             </div>
 
                             <BodyText level="body3" weight="normal" className="text-gray-600">
-                                To ensure fair rewards for everyone, your full yield is unlocked gradually over a short period (called the <span className="font-medium">smearing period</span>)
+                                To ensure fair rewards for everyone, your full yield is unlocked gradually over a short period (called the <span className="font-medium">Yield Ramp-up</span>)
                             </BodyText>
 
                             <div className="bg-amber-50 rounded-4 p-2 border border-amber-100 flex items-start gap-1">
