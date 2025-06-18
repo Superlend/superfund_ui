@@ -18,7 +18,7 @@ import { ConnectButton, useActiveWallet, useConnect, useDisconnect } from "third
 import { useActiveAccount } from 'thirdweb/react'
 import { createWallet, inAppWallet, walletConnect } from "thirdweb/wallets";
 import { base } from 'thirdweb/chains'
-import { isMobile, isIOSSafari } from '@/lib/mobile-utils'
+import { isMobile, isIOS } from '@/lib/mobile-utils'
 
 
 // Create a wrapper component to conditionally use the useUserBalance hook
@@ -63,10 +63,11 @@ export default function ConnectWalletButton() {
 
     const wallets = useMemo(() => {
         const isMobileDevice = isMobile();
-        const isIOSSafariBrowser = isIOSSafari();
+        const isIOSDevice = isIOS();
         
-        // For iOS Safari, prioritize WalletConnect for better mobile wallet compatibility
-        if (isIOSSafariBrowser) {
+        // For ALL iOS devices (regardless of browser), prioritize WalletConnect for better mobile wallet compatibility
+        // This includes iOS Safari, Chrome, Firefox, Edge, etc. since they all use WebKit
+        if (isIOSDevice) {
             return [
                 createWallet("walletConnect"),
                 createWallet("io.metamask"),

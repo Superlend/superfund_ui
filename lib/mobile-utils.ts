@@ -6,7 +6,10 @@ export const isMobile = (): boolean => {
 
 export const isIOS = (): boolean => {
     if (typeof window === 'undefined') return false;
-    return /iPad|iPhone|iPod/.test(navigator.userAgent);
+    // Detect iOS devices regardless of browser (Safari, Chrome, Firefox, Edge, etc.)
+    // All browsers on iOS use WebKit under the hood due to Apple's App Store policies
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // iPad with iOS 13+
 };
 
 export const isSafari = (): boolean => {
@@ -16,6 +19,12 @@ export const isSafari = (): boolean => {
 
 export const isIOSSafari = (): boolean => {
     return isIOS() && isSafari();
+};
+
+// Check if running on iOS with any browser (Chrome, Firefox, Edge, Safari, etc.)
+// This is more useful than isIOSSafari since WalletConnect issues affect all iOS browsers
+export const isIOSAnyBrowser = (): boolean => {
+    return isIOS();
 };
 
 // Check if wallet app is installed on mobile
