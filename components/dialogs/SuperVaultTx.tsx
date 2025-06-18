@@ -346,10 +346,8 @@ export default function SuperVaultTxDialog({
     }, [])
 
     useEffect(() => {
-        if (isWalletConnected) {
-            switchChain(base)
-        }
-    }, [isWalletConnected, selectedChain, switchChain])
+        switchChain(base)
+    }, [])
 
     function resetDepositWithdrawTx() {
         setDepositTx((prev: TDepositTx) => ({
