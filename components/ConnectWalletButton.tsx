@@ -142,8 +142,8 @@ export default function ConnectWalletButton() {
         try {
             await connect(async () => {
                 // Use thirdweb's EIP1193 provider for Farcaster
-                const wallet = EIP1193.fromProvider({ 
-                    provider: FrameSDK.wallet.ethProvider 
+                const wallet = EIP1193.fromProvider({
+                    provider: FrameSDK.wallet.ethProvider
                 })
                 await wallet.connect({ client })
                 return wallet
@@ -159,7 +159,7 @@ export default function ConnectWalletButton() {
             if (isFarcasterFrame && !isSDKLoaded) {
                 setIsSDKLoaded(true)
                 await FrameSDK.actions.ready({})
-                
+
                 // Auto-connect if wallet is available
                 if (FrameSDK.wallet) {
                     await connectFarcasterWallet()
@@ -172,16 +172,28 @@ export default function ConnectWalletButton() {
     // If we're in Farcaster Frame, show different UI
     if (isFarcasterFrame) {
         return (
-            <div className="flex items-center gap-2">
-                <Button
-                    variant="primary"
-                    size="lg"
-                    className="rounded-4 py-2 capitalize w-full"
-                    onClick={connectFarcasterWallet}
-                >
-                    Connect Wallet
-                </Button>
-            </div>
+            <>
+                {!walletAddress && (
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="primary"
+                            size="lg"
+                            className="rounded-4 py-2 capitalize w-full"
+                            onClick={connectFarcasterWallet}
+                        >
+                            Connect Wallet
+                        </Button>
+                    </div>)}
+                {walletAddress && (
+                    <ProfileMenuDropdown
+                        open={isProfileMenuOpen}
+                        setOpen={setIsProfileMenuOpen}
+                        displayText={displayText}
+                        walletAddress={walletAddress}
+                        logout={handleLogout}
+                    />
+                )}
+            </>
         )
     }
 
