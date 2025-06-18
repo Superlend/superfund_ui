@@ -65,64 +65,21 @@ export default function ConnectWalletButton() {
     // const [showSonicDialog, setShowSonicDialog] = useState(false)
     // const [portfolioValue, setPortfolioValue] = useState('0')
 
-    // Detect if we're in a Farcaster Frame
-    useEffect(() => {
-        const detectFarcaster = async () => {
-            try {
-                const isMiniApp = await FrameSDK.isInMiniApp()
-                setIsFarcasterFrame(isMiniApp)
-                
-                // Just initialize the SDK, don't auto-connect
-                if (isMiniApp) {
-                    await FrameSDK.actions.ready({})
-                    setIsSDKLoaded(true)
-                }
-            } catch (error) {
-                console.error('Error detecting Farcaster:', error)
-                setIsFarcasterFrame(false)
+    const wallets = [
+        inAppWallet({
+            auth: {
+                mode: "popup",
+                options: ["farcaster"],
+                redirectUrl: typeof window !== 'undefined'
+                    ? `${window.location.origin}/super-fund/base`
+                    : "https://funds.superlend.xyz/super-fund/base",
             }
-        }
-        detectFarcaster()
-    }, [])
-
-    // Create Farcaster wallet when needed
-    const createFarcasterWallet = useCallback(() => {
-        if (isFarcasterFrame && isSDKLoaded && FrameSDK.wallet?.ethProvider) {
-            return EIP1193.fromProvider({
-                provider: FrameSDK.wallet.ethProvider
-            })
-        }
-        return null
-    }, [isFarcasterFrame, isSDKLoaded])
-
-    // Dynamic wallets array based on environment
-    const wallets = useMemo(() => {
-        const baseWallets = [
-            inAppWallet({
-                auth: {
-                    mode: "popup",
-                    options: ["farcaster"],
-                    redirectUrl: typeof window !== 'undefined'
-                        ? `${window.location.origin}/super-fund/base`
-                        : "https://funds.superlend.xyz/super-fund/base",
-                }
-            }),
-            createWallet("io.metamask"),
-            createWallet("com.coinbase.wallet"),
-            createWallet("me.rainbow"),
-            createWallet("walletConnect"),
-        ]
-
-        // If we're in a Farcaster frame, add the Farcaster wallet as the first option
-        if (isFarcasterFrame && isSDKLoaded) {
-            const farcasterWallet = createFarcasterWallet()
-            if (farcasterWallet) {
-                return [farcasterWallet, ...baseWallets]
-            }
-        }
-
-        return baseWallets
-    }, [isFarcasterFrame, isSDKLoaded, createFarcasterWallet])
+        }),
+        createWallet("io.metamask"),
+        createWallet("com.coinbase.wallet"),
+        createWallet("me.rainbow"),
+        createWallet("walletConnect"),
+    ];
 
     const disableLogin = isConnecting
     const disableLogout = isConnecting
@@ -166,6 +123,81 @@ export default function ConnectWalletButton() {
     //     setPortfolioValue(value);
     // };
 
+    // Detect if we're in a Farcaster Frame
+    useEffect(() => {
+        const detectFarcaster = async () => {
+            try {
+                const isMiniApp = await FrameSDK.isInMiniApp()
+                setIsFarcasterFrame(isMiniApp)
+            } catch (error) {
+                console.error('Error detecting Farcaster:', error)
+                setIsFarcasterFrame(false)
+            }
+        }
+        detectFarcaster()
+    }, [])
+
+    // Farcaster-specific wallet connection
+    const connectFarcasterWallet = useCallback(async () => {
+        try {
+            await connect(async () => {
+                // Use thirdweb's EIP1193 provider for Farcaster
+                const wallet = EIP1193.fromProvider({
+                    provider: FrameSDK.wallet.ethProvider
+                })
+                await wallet.connect({ client })
+                return wallet
+            })
+        } catch (error) {
+            console.error('Farcaster wallet connection failed:', error)
+        }
+    }, [connect])
+
+    // Auto-connect when Farcaster SDK loads
+    useEffect(() => {
+        const load = async () => {
+            if (isFarcasterFrame && !isSDKLoaded) {
+                setIsSDKLoaded(true)
+                await FrameSDK.actions.ready({})
+
+                // Auto-connect if wallet is available
+                // if (FrameSDK.wallet) {
+                //     await connectFarcasterWallet()
+                // }
+            }
+        }
+        load()
+    }, [isFarcasterFrame, isSDKLoaded, connectFarcasterWallet])
+
+    // If we're in Farcaster Frame, show different UI
+    if (isFarcasterFrame) {
+        return (
+            <>
+                {!walletAddress && (
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="primary"
+                            size="lg"
+                            className="rounded-4 py-2 capitalize w-full"
+                            onClick={connectFarcasterWallet}
+                        >
+                            Connect Wallet
+                        </Button>
+                    </div>)}
+                {walletAddress && (
+                    <ProfileMenuDropdown
+                        open={isProfileMenuOpen}
+                        setOpen={setIsProfileMenuOpen}
+                        displayText={displayText}
+                        walletAddress={walletAddress}
+                        logout={handleLogout}
+                    />
+                )}
+            </>
+        )
+    }
+
+    // Regular ConnectButton for non-Farcaster environments
     return (
         <>
             {/* Conditionally render the PortfolioChecker only when wallet is connected */}
@@ -216,12 +248,56 @@ export default function ConnectWalletButton() {
                             logout={handleLogout}
                         />
                     )}
+                    {/* {!walletAddress && (
+                        <InfoTooltip
+                            size="none"
+                            className="px-2"
+                            classNameLabel="w-full"
+                            label={
+                                <Button
+                                    variant="primary"
+                                    size="lg"
+                                    className="rounded-4 py-2 capitalize w-full"
+                                    onClick={login}
+                                    disabled={isDisabled}
+                                >
+                                    {isDisabled ? 'Connecting...' : 'Connect Wallet'}
+                                </Button>
+                            }
+                            content={
+                                <div className="flex flex-col gap-2 bg-blue-50/50 p-3 rounded-lg">
+                                    <div className="flex items-start gap-3">
+                                        <div className="shrink-0 p-1.5 bg-blue-100 rounded-full">
+                                            <AlertCircle className="w-5 h-5 text-blue-600" />
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <BodyText level="body2" className="font-semibold text-blue-900">
+                                                Temporary Connection Issue
+                                            </BodyText>
+                                            <BodyText level="body2" className="text-blue-700">
+                                                We&apos;re currently experiencing technical difficulties with wallet connections on Superfund.
+                                            </BodyText>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-blue-600 pl-2">
+                                        <div className="shrink-0 p-1 bg-blue-100 rounded-full">
+                                            <Clock className="w-4 h-4 text-blue-600" />
+                                        </div>
+                                        <BodyText level="body2" className="font-medium">
+                                            A fix is in progress.
+                                        </BodyText>
+                                    </div>
+                                </div>
+                            }
+                            side="bottom"
+                        />
+                    )} */}
                     {!walletAddress &&
                         <ConnectButton
                             client={client}
                             theme="light"
                             connectModal={{
-                                title: isFarcasterFrame ? "Connect Wallet in Farcaster" : "Connect Wallet",
+                                title: "Connect Wallet",
                                 titleIcon: "https://funds.superlend.xyz/images/logos/favicon-32x32.png",
                                 size: "wide"
                             }}
