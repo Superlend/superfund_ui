@@ -4,7 +4,7 @@ const FAQ = [
     {
         value: "item-1",
         question: "Why doesn't my APY match the advertised rate on day one?",
-        answer: "When you deposit into SuperFund, your earnings (APY) don't start at the full rate right away. That's because we use a \"Yield Ramp-up\" system — built on Euler Earn — to make rates more stable and fair over time.",
+        answer: "When you deposit into SuperFund, your yield starts accruing immediately — but it is released gradually over a short period. This design helps ensure rewards are distributed fairly across all users, preventing anyone from gaming the system.",
         delay: 0.1
     },
     {
@@ -16,7 +16,7 @@ const FAQ = [
     {
         value: "item-3",
         question: "What This Means For You",
-        answer: "If you're a new depositor, your APY will start low and ramp up over about 7 days. You'll miss a small portion of your first week's yield (around 3 days' worth) because your funds didn't help generate the yield that's already being shared. And the new yield your funds generate also enters the \"slow drip.\" Don't worry — after that ramp-up, you'll earn like everyone else.",
+        answer: "When you join SuperFund, you immediately start receiving a share of the interest already earned by the vault over the past few days. This is part of our fair distribution model, where yield is spread out over time and shared across all participants. Because of this, if you withdraw early, you may miss out on some of the interest that your deposit helped generate — just as you benefited from past yield when you joined. Staying longer helps you earn your fair share and supports steady, reliable returns for everyone.",
         delay: 0.3
     },
     {
@@ -26,15 +26,16 @@ const FAQ = [
             <div className="space-y-3">
                 <div>
                     <strong>Vault 30-Day APY:</strong><br />
-                    8.40% – The average return experienced by long-term depositors.
+                    8.40% – The average return earned by long-term depositors over the past month.
                 </div>
                 <div>
                     <strong>Vault Projected APY:</strong><br />
-                    8.35% – Based on our current strategy performance and allocations.
+                    8.35% – The estimated rate based on current strategies and protocol performance.
                 </div>
                 <div>
                     <strong>Your Personal APY:</strong><br />
-                    6.87% (example for new user)<br />
+                    6.87% – What you’re currently earning based on the vault&apos;s fair distribution model.
+                    <br />
                     🕒 <em>Note: You're in your 7-day ramp-up. Returns will increase daily and match the vault APY after that.</em>
                 </div>
             </div>
@@ -58,10 +59,10 @@ const FAQ = [
         question: "Want to Learn More?",
         answer: (
             <div>
-                Check out our quick explainer video! 🎥 
+                Check out our quick explainer video! 🎥
                 <br />
-                <a 
-                    href="#" 
+                <a
+                    href="#"
                     className="text-secondary-500 hover:text-secondary-500/80 underline mt-2 inline-block"
                     onClick={(e) => {
                         e.preventDefault();
