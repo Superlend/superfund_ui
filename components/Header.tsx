@@ -216,6 +216,7 @@ const Header: React.FC = () => {
                                 {!isLoadingTotalTVL && <span>${abbreviateNumberWithoutRounding(totalTvl)}</span>}
                             </BodyText>
                             <InfoTooltip
+                                isResponsive={false}
                                 label={<InfoIcon className="w-3 h-3" />}
                                 content={<BodyText level="body2" weight="normal" className="text-gray-600">
                                     TVL across all superlend markets and vaults.
