@@ -37,6 +37,8 @@ const TxInitialState: TTxContext = {
     setClaimRewardsTx: () => { },
     initialPosition: 0,
     setInitialPosition: () => { },
+    isDialogOpen: false,
+    setIsDialogOpen: () => { },
 }
 
 export const TxContext = createContext<TTxContext>(TxInitialState)
@@ -81,6 +83,8 @@ export type TTxContext = {
     setClaimRewardsTx: any
     initialPosition: number
     setInitialPosition: (position: number) => void
+    isDialogOpen: boolean
+    setIsDialogOpen: (open: boolean) => void
 }
 
 export default function TxProvider({
@@ -120,6 +124,7 @@ export default function TxProvider({
     })
 
     const [initialPosition, setInitialPosition] = useState<number>(0)
+    const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
 
     return (
         <TxContext.Provider
@@ -132,6 +137,8 @@ export default function TxProvider({
                 setClaimRewardsTx,
                 initialPosition,
                 setInitialPosition,
+                isDialogOpen,
+                setIsDialogOpen,
             }}
         >
             {children}
