@@ -181,13 +181,58 @@ const DepositButton = ({
             })
 
             setIsConfirming(false)
-            setIsConfirmed(true)
 
-            setDepositTx((prev: TDepositTx) => ({
-                ...prev,
-                status: 'view',
-                errorMessage: '',
-            }))
+            console.log('Deposit transaction receipt:', receipt)
+            console.log('Deposit receipt status:', receipt.status)
+            console.log('Deposit receipt status type:', typeof receipt.status)
+
+            const statusValue = receipt.status as any
+            const isSuccess = statusValue === 'success' || 
+                             statusValue === 1 || 
+                             statusValue === '0x1' ||
+                             statusValue === true
+
+            const isFailed = statusValue === 'reverted' || 
+                            statusValue === 'failed' || 
+                            statusValue === 0 || 
+                            statusValue === '0x0' ||
+                            statusValue === false
+
+            console.log('Deposit isSuccess:', isSuccess, 'isFailed:', isFailed)
+
+            if (isSuccess) {
+                setIsConfirmed(true)
+
+                setDepositTx((prev: TDepositTx) => ({
+                    ...prev,
+                    status: 'view',
+                    errorMessage: '',
+                    isFailed: false,
+                }))
+            } else if (isFailed) {
+                console.log('Deposit transaction detected as failed')
+                
+                setDepositTx((prev: TDepositTx) => ({
+                    ...prev,
+                    isPending: false,
+                    isConfirming: false,
+                    errorMessage: 'Transaction failed on the blockchain. Please try again.',
+                    isFailed: true,
+                }))
+                return // Exit early, don't proceed with success logic
+            } else {
+                // Unknown status - treat as failure for safety
+                console.log('Unknown deposit transaction status, treating as failure')
+                
+                setDepositTx((prev: TDepositTx) => ({
+                    ...prev,
+                    isPending: false,
+                    isConfirming: false,
+                    errorMessage: 'Transaction status unclear. Please check the explorer.',
+                    isFailed: true,
+                }))
+                return
+            }
 
             logEvent('deposit_successful', {
                 amount: amount,
@@ -326,7 +371,28 @@ const DepositButton = ({
             })
 
             setIsConfirming(false)
-            setIsConfirmed(true)
+
+            console.log('Approval transaction receipt:', receipt)
+            console.log('Approval receipt status:', receipt.status)
+
+            const isApprovalSuccess = receipt.status === 'success' || 
+                                    (receipt.status as any) === 1 || 
+                                    (receipt.status as any) === '0x1' ||
+                                    (typeof receipt.status === 'string' && receipt.status.toLowerCase() === 'success')
+
+            if (isApprovalSuccess) {
+                setIsConfirmed(true)
+            } else {
+                // Approval transaction failed on blockchain
+                setDepositTx((prev: TDepositTx) => ({
+                    ...prev,
+                    isPending: false,
+                    isConfirming: false,
+                    errorMessage: 'Approval transaction failed on the blockchain. Please try again.',
+                    isFailed: true,
+                }))
+                return // Exit early
+            }
 
         } catch (error) {
             console.error('Approve transaction error:', error)

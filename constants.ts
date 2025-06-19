@@ -219,6 +219,13 @@ export const APPROVE_MESSAGE = 'Transaction was successful'
 export const TRANSACTION_CANCEL_TEXT =
     'Transaction was canceled because the action was not confirmed in your wallet'
 
+export const NETWORK_ERROR_MESSAGE =
+    'Network error. Please check your connection and try again.'
+export const INSUFFICIENT_FUNDS_MESSAGE =
+    'Insufficient funds to complete the transaction.'
+export const TRANSACTION_FAILED_MESSAGE =
+    'Transaction failed on the blockchain. Please try again.'
+
 export const SOMETHING_WENT_WRONG_WITH_RELOAD_MESSAGE =
     'Something went wrong, please reload the page'
 export const WALLET_CONNECTION_LOST_MESSAGE =

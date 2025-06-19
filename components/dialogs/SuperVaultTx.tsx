@@ -339,11 +339,7 @@ export default function SuperVaultTxDialog({
         if (!open) {
             resetDepositWithdrawTx()
         }
-        // Reset the tx status when the dialog is closed
-        return () => {
-            resetDepositWithdrawTx()
-        }
-    }, [])
+    }, [open])
 
     useEffect(() => {
         if (isWalletConnected) {
@@ -362,6 +358,7 @@ export default function SuperVaultTxDialog({
             isPending: false,
             isConfirming: false,
             isConfirmed: false,
+            isFailed: false,
         }))
         setWithdrawTx((prev: TWithdrawTx) => ({
             ...prev,
@@ -371,6 +368,7 @@ export default function SuperVaultTxDialog({
             isConfirming: false,
             isConfirmed: false,
             errorMessage: '',
+            isFailed: false,
         }))
         // Reset withdrawal retention state
         setHasConsentedToWithdrawal(false)
@@ -394,16 +392,11 @@ export default function SuperVaultTxDialog({
 
         // When opening the dialog, reset the amount and the tx status
         setOpen(open)
-        // When closing the dialog, reset the amount and the tx status
-        if (
-            !open &&
-            (depositTx.status !== 'approve' || withdrawTx.status !== 'withdraw')
-        ) {
+        // When closing the dialog, reset the amount
+        if (!open) {
             setAmount('')
-            setTimeout(() => {
-                resetDepositWithdrawTx()
-            }, 1000)
             setPendingEmail('') // Reset pendingEmail when closing
+            // Note: resetDepositWithdrawTx() is now handled by useEffect with [open] dependency
         }
     }
 
