@@ -196,6 +196,9 @@ export default function ConnectWalletButton() {
                         displayText={displayText}
                         walletAddress={walletAddress}
                         logout={handleLogout}
+                        showOptions={{
+                            disconnect: !isFarcasterFrame
+                        }}
                     />
                 )}
             </>

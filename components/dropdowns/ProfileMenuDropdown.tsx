@@ -40,6 +40,15 @@ interface ProfileMenuDropdownProps {
     displayText: string
     logout: () => Promise<void>
     walletAddress: string
+    showOptions?: {
+        disconnect?: boolean
+        viewTransactions?: boolean
+    }
+}
+
+const defaultShowOptions = {
+    disconnect: true,
+    viewTransactions: true
 }
 
 export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
@@ -48,6 +57,7 @@ export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
     displayText,
     walletAddress,
     logout,
+    showOptions = defaultShowOptions
 }) => {
     const { width: screenWidth } = useDimensions()
     const isDesktop = screenWidth > 768
@@ -227,29 +237,33 @@ export const ProfileMenuDropdown: FC<ProfileMenuDropdownProps> = ({
                 >
                     Add new wallet
                 </Button> */}
-                <Button
-                    variant="secondaryOutline"
-                    size="lg"
-                    className="w-full capitalize rounded-4 flex items-center justify-center gap-2"
-                    onClick={handleViewTransactions}
-                >
-                    View transactions
-                    <ArrowRightLeft className="w-4 h-4 text-secondary-500" />
-                </Button>
-                <Button
-                    variant="outline"
-                    size="lg"
-                    className="rounded-4 py-3 md:py-2 capitalize w-full flex items-center justify-center gap-2 hover:border-red-500 hover:text-red-500"
-                    onClick={handleLogout}
-                    disabled={isLoggingOut}
-                >
-                    {isLoggingOut ? 'Disconnecting...' : 'Disconnect'}
-                    {isLoggingOut ? (
-                        <LoaderCircle className="text-primary w-4 h-4 animate-spin" />
-                    ) : (
-                        <LogOut className="w-4 h-4" />
-                    )}
-                </Button>
+                {showOptions.viewTransactions && (
+                    <Button
+                        variant="secondaryOutline"
+                        size="lg"
+                        className="w-full capitalize rounded-4 flex items-center justify-center gap-2"
+                        onClick={handleViewTransactions}
+                    >
+                        View transactions
+                        <ArrowRightLeft className="w-4 h-4 text-secondary-500" />
+                    </Button>
+                )}
+                {showOptions.disconnect && (
+                    <Button
+                        variant="outline"
+                        size="lg"
+                        className="rounded-4 py-3 md:py-2 capitalize w-full flex items-center justify-center gap-2 hover:border-red-500 hover:text-red-500"
+                        onClick={handleLogout}
+                        disabled={isLoggingOut}
+                    >
+                        {isLoggingOut ? 'Disconnecting...' : 'Disconnect'}
+                        {isLoggingOut ? (
+                            <LoaderCircle className="text-primary w-4 h-4 animate-spin" />
+                        ) : (
+                            <LogOut className="w-4 h-4" />
+                        )}
+                    </Button>
+                )}
             </div>
         </div>
     )
