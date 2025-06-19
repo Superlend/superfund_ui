@@ -171,14 +171,17 @@ export default function AllocationDetailsChart({
                                             style={{ backgroundColor: vaultStrategiesColors[item.name as keyof typeof vaultStrategiesColors] }}
                                         />
                                         <div className="flex items-center gap-1 w-full">
-                                            <InfoTooltip
+                                            {/* <InfoTooltip
                                                 label={
                                                     <BodyText level="body2" weight="medium" className="truncate max-w-[200px]">
                                                         {item.name}
                                                     </BodyText>
                                                 }
                                                 content={item.name}
-                                            />
+                                            /> */}
+                                            <BodyText level="body2" weight="medium" className="truncate max-w-[200px]" title={item.name}>
+                                                {item.name}
+                                            </BodyText>
                                             {vaultStrategies && vaultStrategies[item.name as keyof typeof vaultStrategies] && (
                                                 <ExternalLink
                                                     href={vaultStrategies[item.name as keyof typeof vaultStrategies].details_url}

@@ -910,7 +910,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                         transition={{ duration: 0.4, delay: 0.5 }}
                                     >
                                         <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-200 to-blue-300 rounded-3 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 hover:-translate-y-1">
-                                            <Trophy className="h-5 w-5 text-blue-700 drop-shadow-sm animate-bounce" />
+                                            <Trophy className="h-5 w-5 text-blue-700 drop-shadow-sm" />
                                         </div>
                                         <HeadingText level="h5" weight="medium" className="text-gray-800">
                                             Loyalty Advantage

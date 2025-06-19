@@ -68,15 +68,15 @@ const WithdrawButton = ({
     const { selectedChain } = useChain()
     const { logEvent } = useAnalytics()
     const { isConnecting } = useConnect()
-    
+
     // Transaction state
     const [hash, setHash] = useState<string>('')
     const [isConfirming, setIsConfirming] = useState(false)
     const [isConfirmed, setIsConfirmed] = useState(false)
     const [error, setError] = useState<Error | null>(null)
-    
+
     const { withdrawTx, setWithdrawTx } = useTxContext() as TTxContext
-    
+
     const txBtnStatus: Record<string, string> = {
         pending: 'Withdrawing...',
         confirming: 'Confirming...',
@@ -87,7 +87,7 @@ const WithdrawButton = ({
     }
 
     useEffect(() => {
-        if (withdrawTx.status === 'view') return
+        if (withdrawTx.status === 'view' && withdrawTx.hash) return // Only return if both status is 'view' AND hash is already set
 
         if (hash && isConfirmed) {
             setWithdrawTx((prev: TWithdrawTx) => ({
@@ -118,7 +118,7 @@ const WithdrawButton = ({
                 window.dispatchEvent(event)
             }
         }
-    }, [hash, isConfirmed, withdrawTx.status, amount, selectedChain, asset.address, account?.address, walletAddress, logEvent, setWithdrawTx])
+    }, [hash, isConfirmed, withdrawTx.status, withdrawTx.hash, amount, selectedChain, asset.address, account?.address, walletAddress, logEvent, setWithdrawTx])
 
     // Update the status(Loading states) of the withdrawTx based on the isPending and isConfirming states
     useEffect(() => {
@@ -133,22 +133,22 @@ const WithdrawButton = ({
 
     const txBtnText =
         txBtnStatus[
-            isConnecting
-                ? 'connecting'
-                : isConfirming
-                  ? 'confirming'
-                  : isConfirmed
+        isConnecting
+            ? 'connecting'
+            : isConfirming
+                ? 'confirming'
+                : isConfirmed
                     ? withdrawTx.status === 'view'
                         ? 'success'
                         : 'default'
                     : isPending
-                      ? 'pending'
-                      : !isPending &&
-                          !isConfirming &&
-                          !isConfirmed &&
-                          withdrawTx.status === 'view'
-                        ? 'error'
-                        : 'default'
+                        ? 'pending'
+                        : !isPending &&
+                            !isConfirming &&
+                            !isConfirmed &&
+                            withdrawTx.status === 'view'
+                            ? 'error'
+                            : 'default'
         ]
 
     const handleWithdrawSuperVault = useCallback(async () => {
@@ -196,13 +196,68 @@ const WithdrawButton = ({
             })
 
             setIsConfirming(false)
-            setIsConfirmed(true)
+
+            // Debug logging to understand receipt structure
+            console.log('Transaction receipt:', receipt)
+            console.log('Receipt status:', receipt.status)
+            console.log('Receipt status type:', typeof receipt.status)
+
+            // Check if transaction succeeded or failed on blockchain
+            // More comprehensive status checking
+            const statusValue = receipt.status as any
+            const isSuccess = statusValue === 'success' ||
+                statusValue === 1 ||
+                statusValue === '0x1' ||
+                statusValue === true
+
+            const isFailed = statusValue === 'reverted' ||
+                statusValue === 'failed' ||
+                statusValue === 0 ||
+                statusValue === '0x0' ||
+                statusValue === false
+
+            if (isSuccess) {
+                setIsConfirmed(true)
+
+                setWithdrawTx((prev: TWithdrawTx) => ({
+                    ...prev,
+                    status: 'view',
+                    hash: result.transactionHash,
+                    errorMessage: '',
+                    isFailed: false,
+                    isConfirmed: true,
+                }))
+            } else if (isFailed) {
+                console.log('Transaction detected as failed')
+
+                setWithdrawTx((prev: TWithdrawTx) => ({
+                    ...prev,
+                    isPending: false,
+                    isConfirming: false,
+                    errorMessage: 'Transaction failed on the blockchain. Please try again.',
+                    isFailed: true,
+                }))
+                return // Exit early, don't proceed with success logic
+            } else {
+                // Unknown status - treat as failure for safety
+                console.log('Unknown transaction status, treating as failure')
+                // Don't set error state - use withdrawTx.errorMessage instead
+
+                setWithdrawTx((prev: TWithdrawTx) => ({
+                    ...prev,
+                    isPending: false,
+                    isConfirming: false,
+                    errorMessage: 'Transaction status unclear. Please check the explorer.',
+                    isFailed: true,
+                }))
+                return
+            }
 
         } catch (error) {
             console.error('Withdraw error:', error)
             setIsConfirming(false)
             setError(error as Error)
-            
+
             setWithdrawTx((prev: TWithdrawTx) => ({
                 ...prev,
                 isPending: false,
@@ -230,7 +285,7 @@ const WithdrawButton = ({
             {(error || withdrawTx.errorMessage) && (
                 <CustomAlert
                     description={
-                        error 
+                        error
                             ? getErrorText(error)
                             : withdrawTx.errorMessage
                     }

@@ -13,6 +13,7 @@ const TxInitialState: TTxContext = {
         isPending: false,
         isConfirming: false,
         isConfirmed: false,
+        isFailed: false,
     },
     setDepositTx: () => { },
     withdrawTx: {
@@ -22,6 +23,7 @@ const TxInitialState: TTxContext = {
         isPending: false,
         isConfirming: false,
         isConfirmed: false,
+        isFailed: false,
     },
     setWithdrawTx: () => { },
     claimRewardsTx: {
@@ -48,6 +50,7 @@ export type TDepositTx = {
     isPending: boolean
     isConfirming: boolean
     isConfirmed: boolean
+    isFailed: boolean
 }
 
 export type TWithdrawTx = {
@@ -57,6 +60,7 @@ export type TWithdrawTx = {
     isPending: boolean
     isConfirming: boolean
     isConfirmed: boolean
+    isFailed: boolean
 }
 
 export type TClaimRewardsTx = {
@@ -93,6 +97,7 @@ export default function TxProvider({
         isPending: false,
         isConfirming: false,
         isConfirmed: false,
+        isFailed: false,
     })
 
     const [withdrawTx, setWithdrawTx] = useState<TWithdrawTx>({
@@ -102,6 +107,7 @@ export default function TxProvider({
         isPending: false,
         isConfirming: false,
         isConfirmed: false,
+        isFailed: false,
     })
 
     const [claimRewardsTx, setClaimRewardsTx] = useState<TClaimRewardsTx>({

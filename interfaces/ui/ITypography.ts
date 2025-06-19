@@ -13,6 +13,7 @@ export interface IBodyTextProps {
     weight?: TFontWeight
     className?: string
     as?: string
+    title?: string
 }
 
 export interface ILabelProps {

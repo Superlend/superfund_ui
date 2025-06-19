@@ -108,9 +108,10 @@ export function BodyText({
     level,
     weight,
     className,
+    title = '',
 }: IBodyTextProps) {
     return (
-        <p className={getBodyClassName(level, weight, className)}>{children}</p>
+        <p className={getBodyClassName(level, weight, className)} title={title}>{children}</p>
     )
 }
 
