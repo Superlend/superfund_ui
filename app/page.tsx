@@ -819,7 +819,7 @@ const FAQSection = lazy(() =>
             shouldReduceMotion
         }: any) => (
             <Container>
-                <section className="pb-8 relative">
+                <section className="pb-8 relative overflow-hidden">
                     {/* Animated Background Elements - CSS only */}
                     <div className="absolute inset-0 overflow-hidden pointer-events-none">
                         <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-purple-400/5 to-indigo-400/5 rounded-full blur-xl animate-spin-slow" />

@@ -187,11 +187,11 @@ const Header: React.FC = () => {
         <>
             <header className={HEADER_STYLES}>
                 <nav className={NAV_BAR_STYLES}>
-                    <div className="flex items-center justify-between gap-4">
+                    <div className="flex flex-wrap items-center justify-between gap-1 md:gap-4">
                         <Link
                             href={isLandingPage ? 'https://www.superlend.xyz' : '/'}
                             target={miniAppUser ? '_self' : '_blank'}
-                            className="relative md:w-[24px] md:w-fit p-0"
+                            className="relative md:w-[24px] md:w-fit p-0 shrink-0"
                             onClick={logLogoClick}
                         >
                             <img
@@ -209,13 +209,14 @@ const Header: React.FC = () => {
                                     Beta
                                 </Badge> */}
                         </Link>
-                        <div className="flex items-center gap-1">
-                            <BodyText level="body2" weight="medium" className="text-gray-700 flex items-center gap-1">
+                        <div className={`flex items-center gap-1 ${isLandingPage ? 'max-md:ml-11' : 'max-md:ml-8'}`}>
+                            <BodyText level="body2" weight="medium" className={`${(isLandingPage && !scrolled) ? 'text-gray-200' : 'text-gray-700'} flex items-center gap-1`}>
                                 TVL
-                                {isLoadingTotalTVL && <Skeleton className="w-10 h-6 rounded-4" />}
+                                {isLoadingTotalTVL && <Skeleton className="w-8 h-4 rounded-3" />}
                                 {!isLoadingTotalTVL && <span>${abbreviateNumberWithoutRounding(totalTvl)}</span>}
                             </BodyText>
                             <InfoTooltip
+                                isResponsive={false}
                                 label={<InfoIcon className="w-3 h-3" />}
                                 content={<BodyText level="body2" weight="normal" className="text-gray-600">
                                     TVL across all superlend markets and vaults.
