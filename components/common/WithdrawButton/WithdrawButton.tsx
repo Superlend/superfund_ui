@@ -13,7 +13,7 @@ import { USDC_DECIMALS, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { useChain } from '@/context/chain-context'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
 import { useActiveAccount, useConnect, useSendTransaction } from "thirdweb/react"
-import { getContract, prepareContractCall, waitForReceipt } from "thirdweb"
+import { estimateGas, getContract, prepareContractCall, waitForReceipt } from "thirdweb"
 import { client } from "@/app/client"
 import { base, defineChain } from "thirdweb/chains"
 import { ChainId } from '@/types/chain'
@@ -174,6 +174,23 @@ const WithdrawButton = ({
                 chain: THIRDWEB_CHAINS[selectedChain as keyof typeof THIRDWEB_CHAINS],
             })
 
+            const rawTransaction = prepareContractCall({
+                contract: vaultContract,
+                method: "function withdraw(uint256 _assets, address _receiver, address _owner) returns (uint256)",
+                params: [
+                    amountInWei.toBigInt(),
+                    account.address as `0x${string}`,
+                    account.address as `0x${string}`,
+                ],
+            })
+
+            // Gas cost
+            const gasCost = await estimateGas({
+                transaction: rawTransaction,
+                from: account.address as `0x${string}`,
+            })
+            const requiredGas = (gasCost * BigInt(12)) / BigInt(10)
+
             const transaction = prepareContractCall({
                 contract: vaultContract,
                 method: "function withdraw(uint256 _assets, address _receiver, address _owner) returns (uint256)",
@@ -182,6 +199,7 @@ const WithdrawButton = ({
                     account.address as `0x${string}`,
                     account.address as `0x${string}`,
                 ],
+                gas: requiredGas,
             })
 
             const result = await sendTransaction(transaction)

@@ -23,7 +23,7 @@ import { USDC_ADDRESS_MAP, USDC_DECIMALS, VAULT_ADDRESS_MAP } from '@/lib/consta
 import { useChain } from '@/context/chain-context'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
 import { useActiveAccount, useConnect, useSendTransaction } from "thirdweb/react"
-import { getContract, prepareContractCall, waitForReceipt } from "thirdweb"
+import { estimateGas, getContract, prepareContractCall, waitForReceipt } from "thirdweb"
 import { client } from "@/app/client"
 import { base, defineChain } from "thirdweb/chains"
 import { ChainId } from '@/types/chain'
@@ -163,10 +163,24 @@ const DepositButton = ({
 
             const amountInWei = parseUnits(amount, USDC_DECIMALS)
 
+            const rawTransaction = prepareContractCall({
+                contract: vaultContract,
+                method: "function deposit(uint256 assets, address receiver)",
+                params: [amountInWei.toBigInt(), account.address],
+            })
+
+             // Gas cost
+             const gasCost = await estimateGas({
+                transaction: rawTransaction,
+                from: account.address as `0x${string}`,
+            })
+            const requiredGas = (gasCost * BigInt(12)) / BigInt(10)
+
             const transaction = prepareContractCall({
                 contract: vaultContract,
                 method: "function deposit(uint256 assets, address receiver)",
                 params: [amountInWei.toBigInt(), account.address],
+                gas: requiredGas,
             })
 
             const result = await sendTransaction(transaction)
