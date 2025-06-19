@@ -632,3 +632,26 @@ export function getBoostApy(totalAssets: number) {
 export function convertNegativeToZero(value: number) {
     return value < 0 ? 0 : value
 }
+
+export const abbreviateNumberWithoutRounding = (value: number = 0, decimals: number = 2): string => {
+    const truncateToDecimals = (num: number, decimals: number): number => {
+        const multiplier = Math.pow(10, decimals);
+        return Math.floor(num * multiplier) / multiplier;
+    };
+
+    if (value >= 1000000000) {
+        return truncateToDecimals(value / 1000000000, decimals) + 'B'
+    } else if (value >= 1000000) {
+        return truncateToDecimals(value / 1000000, decimals) + 'M'
+    } else if (value >= 1000) {
+        return truncateToDecimals(value / 1000, decimals) + 'K'
+    } else if (value <= -1000000000) {
+        return truncateToDecimals(value / 1000000000, decimals) + 'B'
+    } else if (value <= -1000000) {
+        return truncateToDecimals(value / 1000000, decimals) + 'M'
+    } else if (value <= -1000) {
+        return truncateToDecimals(value / 1000, decimals) + 'K'
+    } else {
+        return truncateToDecimals(value, decimals).toString()
+    }
+}

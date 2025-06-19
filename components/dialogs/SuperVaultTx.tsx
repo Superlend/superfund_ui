@@ -519,17 +519,20 @@ export default function SuperVaultTxDialog({
                             ],
                 })
             },
+            show: positionType === 'deposit',
         },
         {
             buttonText: 'Follow us on X',
             imageSrc: '/icons/x.svg',
             onClick: () => sdk.actions.openUrl('https://x.com/SuperlendHQ'),
+            show: true,
         },
         {
             buttonText: 'Explore More',
             imageSrc: '/icons/globe.svg',
             onClick: () =>
                 sdk.actions.openUrl('https://app.superlend.xyz/discover'),
+            show: true,
         },
         {
             buttonText: 'Add to Warpcast',
@@ -538,6 +541,7 @@ export default function SuperVaultTxDialog({
                 await sdk.actions.addFrame()
                 return
             },
+            show: true,
         },
     ]
 
@@ -1138,23 +1142,25 @@ export default function SuperVaultTxDialog({
                     transition={{ duration: 0.3, ease: 'easeOut' }}
                     className="w-full flex items-center flex-col justify-start gap-3"
                 >
-                    {shareScreenButtons.map((config, index) => (
-                        <Button
-                            key={index}
-                            variant="primary"
-                            size="lg"
-                            className="rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]"
-                            onClick={config.onClick}
-                        >
-                            <Image
-                                src={config.imageSrc}
-                                alt=""
-                                width={18}
-                                height={18}
-                            />
-                            {config.buttonText}
-                        </Button>
-                    ))}
+                    {shareScreenButtons
+                        .filter(config => config.show)
+                        .map((config, index) => (
+                            <Button
+                                key={index}
+                                variant="primary"
+                                size="lg"
+                                className="rounded-[16px] gap-1 w-full flex items-center justify-center py-3 px-6 border-2 border-[#FF5B00] shadow-[0px_-1px_2px_0px_#FFFFFF70_inset] bg-gradient-to-b from-[#FF5B00] to-[#F55700]"
+                                onClick={config.onClick}
+                            >
+                                <Image
+                                    src={config.imageSrc}
+                                    alt=""
+                                    width={18}
+                                    height={18}
+                                />
+                                {config.buttonText}
+                            </Button>
+                        ))}
                 </motion.div>
             )}
 
@@ -1264,13 +1270,13 @@ export default function SuperVaultTxDialog({
                             </div>
 
                             <BodyText level="body3" weight="normal" className="text-gray-600">
-                                To ensure fair rewards for everyone, your full yield is unlocked gradually over a short period (called the <span className="font-medium">Yield Ramp-up</span>)
+                                To keep rewards fair for everyone, your yield is distributed gradually over a short period. This prevents abuse and ensures all users — old and new — share yield proportionally.
                             </BodyText>
 
                             <div className="bg-amber-50 rounded-4 p-2 border border-amber-100 flex items-start gap-1">
                                 <Lightbulb className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                                 <BodyText level="body3" weight="normal" className="text-amber-800">
-                                    You&apos;ll start earning immediately, and your yield will reach its full potential in the coming days.
+                                    You&apos;ll start earning yield right away, but your rate may fluctuate slightly as others join the vault. It stabilizes and reaches full potential over time.
                                     <ExternalLink iconSize={12} href={UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL}>
                                         <BodyText level="body3" weight="normal" className="text-blue-600 ml-1">
                                             Learn more
