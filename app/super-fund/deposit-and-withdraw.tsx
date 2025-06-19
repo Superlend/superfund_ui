@@ -42,7 +42,7 @@ export default function DepositAndWithdrawAssets() {
     const [positionType, setPositionType] = useState<TActionType>('deposit')
     const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] =
         useState<boolean>(false)
-    const { depositTx, setDepositTx } = useTxContext() as TTxContext
+    const { depositTx, setDepositTx, isDialogOpen } = useTxContext() as TTxContext
 
     const [userEnteredDepositAmount, setUserEnteredDepositAmount] =
         useState<string>('')
@@ -81,7 +81,11 @@ export default function DepositAndWithdrawAssets() {
     const TOTAL_APY = Number(effectiveApyData?.rewards_apy ?? 0) + Number(BOOST_APY ?? 0) + Number(effectiveApyData?.base_apy ?? 0)
 
     useEffect(() => {
-        if (depositTx.status === 'approve' && depositTx.isRefreshingAllowance) {
+        // Only run this effect when the transaction dialog is open to prevent unwanted state changes during resets
+        if (depositTx.status === 'approve' && 
+            depositTx.isRefreshingAllowance &&
+            isDialogOpen
+        ) {
             setDepositTx((prev: TDepositTx) => ({
                 ...prev,
                 isConfirming: true,
@@ -107,7 +111,7 @@ export default function DepositAndWithdrawAssets() {
             })
         }
         // TODO: Add logic for approval of withdraw tx
-    }, [depositTx.isRefreshingAllowance])
+    }, [depositTx.isRefreshingAllowance, isDialogOpen])
 
     const getInputErrorText = (): string | null => {
         if (isDepositPositionType) {

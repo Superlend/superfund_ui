@@ -117,6 +117,7 @@ export default function SuperVaultTxDialog({
         setWithdrawTx,
         initialPosition,
         setInitialPosition,
+        setIsDialogOpen,
     } = useTxContext() as TTxContext
     // const { walletAddress, isWalletConnected, handleSwitchChain } =
     //     useWalletConnection()
@@ -341,6 +342,27 @@ export default function SuperVaultTxDialog({
         }
     }, [open])
 
+    // Additional effect to ensure withdraw state is properly reset
+    useEffect(() => {
+        if (!open && withdrawTx.status === 'view') {
+            const timer = setTimeout(() => {
+                setWithdrawTx((prev: TWithdrawTx) => ({
+                    ...prev,
+                    status: 'withdraw',
+                    hash: '',
+                    isPending: false,
+                    isConfirming: false,
+                    isConfirmed: false,
+                    errorMessage: '',
+                    isFailed: false,
+                }))
+            }, 0)
+            return () => clearTimeout(timer)
+        }
+    }, [open, withdrawTx.status])
+
+
+
     useEffect(() => {
         if (isWalletConnected) {
             switchChain(base)
@@ -392,6 +414,7 @@ export default function SuperVaultTxDialog({
 
         // When opening the dialog, reset the amount and the tx status
         setOpen(open)
+        setIsDialogOpen(open)
         // When closing the dialog, reset the amount
         if (!open) {
             setAmount('')

@@ -88,7 +88,7 @@ const DepositButton = ({
     const [isConfirmed, setIsConfirmed] = useState(false)
     const [error, setError] = useState<Error | null>(null)
 
-    const { depositTx, setDepositTx } = useTxContext() as TTxContext
+    const { depositTx, setDepositTx, isDialogOpen } = useTxContext() as TTxContext
 
     useEffect(() => {
         if (depositTx.status === 'deposit') {
@@ -285,7 +285,8 @@ const DepositButton = ({
         }))
 
         // If approval transaction is confirmed, move to deposit state after a brief delay
-        if (isConfirmed && !isPending && !isConfirming && depositTx.status === 'approve') {
+        // Only do this if the dialog is still open to prevent unwanted state changes during resets
+        if (isConfirmed && !isPending && !isConfirming && depositTx.status === 'approve' && isDialogOpen) {
             logEvent('approve_successful', {
                 amount: amount,
                 chain: selectedChain,
