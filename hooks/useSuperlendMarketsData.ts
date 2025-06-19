@@ -364,7 +364,8 @@ const POOL_ADDRESSES_PROVIDER = "0x5ccF60c7E10547c5389E9cBFf543E5D0Db9F4feC";
 const UI_POOL_DATA_PROVIDER = "0x9F9384Ef6a1A76AE1a95dF483be4b0214fda0Ef9";
 
 const provider = new ethers.providers.JsonRpcProvider(
-  "https://node.mainnet.etherlink.com"
+  "https://plend-etherlink-mainnet-djs2w.zeeve.net/TuychDxGCScIED1nCk0m/rpc"
+  // "https://node.mainnet.etherlink.com"
 );
 
 export const getMarketsTvlInUsd = async () => {
