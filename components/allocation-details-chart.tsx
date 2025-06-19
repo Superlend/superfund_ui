@@ -11,7 +11,7 @@ import ExternalLink from "./ExternalLink";
 import InfoTooltip from "./tooltips/InfoTooltip";
 import { useChain } from "@/context/chain-context";
 import { useVaultHook } from "@/hooks/vault_hooks/vaultHook";
-import { abbreviateNumber } from "@/lib/utils";
+import { abbreviateNumberWithoutRounding } from "@/lib/utils";
 
 const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -68,7 +68,7 @@ export default function AllocationDetailsChart({
                         Allocation Details
                     </HeadingText>
                     <HeadingText level="h5" weight="medium" className="text-muted-foreground">
-                        TVL{" "}:{" "}<span className="text-gray-800">${abbreviateNumber(Number(totalAssets), 4)}</span>
+                        TVL{" "}:{" "}<span className="text-gray-800">${abbreviateNumberWithoutRounding(Number(totalAssets), 4)}</span>
                     </HeadingText>
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-6 lg:gap-8 w-full bg-white rounded-4 px-4 pb-4 sm:px-12">
