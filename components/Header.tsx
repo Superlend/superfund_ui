@@ -1,13 +1,13 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Button } from './ui/button'
 import { usePathname, useRouter } from 'next/navigation'
 import HomeIcon from './icons/home-icon'
 import CompassIcon from './icons/compass-icon'
 import PieChartIcon from './icons/pie-chart-icon'
 import { Sheet, SheetContent, SheetHeader } from '@/components/ui/sheet'
-import { ArrowRight, Menu, X } from 'lucide-react'
+import { ArrowRight, InfoIcon, Menu, X } from 'lucide-react'
 import { motion } from 'framer-motion'
 import ConnectWalletButton from './ConnectWalletButton'
 import Link from 'next/link'
@@ -15,6 +15,12 @@ import { Badge } from './ui/badge'
 import AccessDialog from './AccessDialog'
 import sdk from '@farcaster/frame-sdk'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
+import { getMarketsTvlInUsd } from '@/hooks/useSuperlendMarketsData'
+import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
+import { BodyText, HeadingText } from './ui/typography'
+import { abbreviateNumberWithoutRounding } from '@/lib/utils'
+import InfoTooltip from './tooltips/InfoTooltip'
+import { Skeleton } from './ui/skeleton'
 
 type TTab = {
     id: number
@@ -45,6 +51,9 @@ const Header: React.FC = () => {
     const [scrolled, setScrolled] = useState(false)
     const [miniAppUser, setMiniAppUser] = useState<any>(null)
     const { logEvent } = useAnalytics()
+    const { totalAssets: superlendTvl, isLoading: isLoadingSuperlendTvl, error: errorSuperlendTvl } = useVaultHook()
+    const [totalTVL, setTotalTVL] = useState(0)
+    const [isLoadingMarketsTVL, setIsLoadingMarketsTVL] = useState(true)
 
     const logLogoClick = () => {
         logEvent('clicked_superlend_logo', {
@@ -60,6 +69,26 @@ const Header: React.FC = () => {
             url: "https://funds.superlend.xyz/super-fund/base"
         })
     }
+
+    useEffect(() => {
+        setIsLoadingMarketsTVL(true)
+        getMarketsTvlInUsd()
+            .then((totalTVL) => {
+                setTotalTVL(totalTVL)
+            })
+            .catch((error) => {
+                console.error('Error fetching total TVL:', error)
+            })
+            .finally(() => {
+                setIsLoadingMarketsTVL(false)
+            })
+    }, [])
+
+    const isLoadingTotalTVL = isLoadingSuperlendTvl || isLoadingMarketsTVL;
+
+    const totalTvl = useMemo(() => {
+        return Number(superlendTvl ?? 0) + Number(totalTVL ?? 0)
+    }, [superlendTvl, totalTVL])
 
     useEffect(() => {
         setActiveTab(activeTabInitialValue(pathname))
@@ -158,27 +187,42 @@ const Header: React.FC = () => {
         <>
             <header className={HEADER_STYLES}>
                 <nav className={NAV_BAR_STYLES}>
-                    <Link
-                        href={isLandingPage ? 'https://www.superlend.xyz' : '/'}
-                        target={miniAppUser ? '_self' : '_blank'}
-                        className="relative md:w-[24px] md:w-fit p-0"
-                        onClick={logLogoClick}
-                    >
-                        <img
-                            loading="lazy"
-                            src={isLandingPage && !scrolled ? '/images/logos/superlend_white_logo.svg' : '/images/logos/superlend-logo.webp'}
-                            alt="Superlend logo"
-                            className="object-contain shrink-0 my-auto aspect-[6.54] cursor-pointer"
-                            width={isLandingPage ? 180 : 144}
-                            height={isLandingPage ? 48 : 24}
-                        />
-                        {/* <Badge
-                            variant="blue"
-                            className="absolute top-1 -right-12 w-fit rounded-full px-2 py-0"
+                    <div className="flex items-center justify-between gap-4">
+                        <Link
+                            href={isLandingPage ? 'https://www.superlend.xyz' : '/'}
+                            target={miniAppUser ? '_self' : '_blank'}
+                            className="relative md:w-[24px] md:w-fit p-0"
+                            onClick={logLogoClick}
                         >
-                            Beta
-                        </Badge> */}
-                    </Link>
+                            <img
+                                loading="lazy"
+                                src={isLandingPage && !scrolled ? '/images/logos/superlend_white_logo.svg' : '/images/logos/superlend-logo.webp'}
+                                alt="Superlend logo"
+                                className="object-contain shrink-0 my-auto aspect-[6.54] cursor-pointer"
+                                width={isLandingPage ? 180 : 144}
+                                height={isLandingPage ? 48 : 24}
+                            />
+                            {/* <Badge
+                                    variant="blue"
+                                    className="absolute top-1 -right-12 w-fit rounded-full px-2 py-0"
+                                >
+                                    Beta
+                                </Badge> */}
+                        </Link>
+                        <div className="flex items-center gap-1">
+                            <BodyText level="body2" weight="medium" className="text-gray-700 flex items-center gap-1">
+                                TVL
+                                {isLoadingTotalTVL && <Skeleton className="w-10 h-6 rounded-4" />}
+                                {!isLoadingTotalTVL && <span>${abbreviateNumberWithoutRounding(totalTvl)}</span>}
+                            </BodyText>
+                            <InfoTooltip
+                                label={<InfoIcon className="w-3 h-3" />}
+                                content={<BodyText level="body2" weight="normal" className="text-gray-600">
+                                    TVL across all superlend markets and vaults.
+                                </BodyText>}
+                            />
+                        </div>
+                    </div>
                     {/* <nav className="hidden md:flex gap-3 lg:gap-5 items-center self-stretch my-auto text-sm tracking-normal leading-none whitespace-nowrap min-w-[240px] text-stone-800 max-md:max-w-full">
                         {tabs.map((tab) => (
                             <Button

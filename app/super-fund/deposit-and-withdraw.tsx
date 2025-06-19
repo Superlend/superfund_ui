@@ -62,6 +62,7 @@ export default function DepositAndWithdrawAssets() {
         isLoading: isLoadingBalance,
         error: balanceError,
     } = useUserBalance(walletAddress as `0x${string}`)
+
     // const {
     //     spotApy,
     //     isLoading: isLoadingVaultStats,

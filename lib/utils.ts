@@ -651,6 +651,8 @@ export const abbreviateNumberWithoutRounding = (value: number = 0, decimals: num
         return truncateToDecimals(value / 1000000, decimals) + 'M'
     } else if (value <= -1000) {
         return truncateToDecimals(value / 1000, decimals) + 'K'
+    } else if (value > 0 && value < (decimals === 2 ? 0.01 : 0.0001)) {
+        return '<' + (decimals === 2 ? '0.01' : '0.0001')
     } else {
         return truncateToDecimals(value, decimals).toString()
     }
