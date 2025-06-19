@@ -209,8 +209,8 @@ const Header: React.FC = () => {
                                     Beta
                                 </Badge> */}
                         </Link>
-                        <div className={`flex items-center gap-1 ${pathname === '/' ? 'max-md:ml-11' : 'max-md:ml-8'}`}>
-                            <BodyText level="body2" weight="medium" className={`${pathname === '/' ? 'text-gray-200' : 'text-gray-700'} flex items-center gap-1`}>
+                        <div className={`flex items-center gap-1 ${isLandingPage ? 'max-md:ml-11' : 'max-md:ml-8'}`}>
+                            <BodyText level="body2" weight="medium" className={`${(isLandingPage && !scrolled) ? 'text-gray-200' : 'text-gray-700'} flex items-center gap-1`}>
                                 TVL
                                 {isLoadingTotalTVL && <Skeleton className="w-8 h-4 rounded-3" />}
                                 {!isLoadingTotalTVL && <span>${abbreviateNumberWithoutRounding(totalTvl)}</span>}
