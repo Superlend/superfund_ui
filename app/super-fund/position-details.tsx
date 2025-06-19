@@ -790,6 +790,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                     Long-term Investment Benefits
                                 </HeadingText>
                                 <InfoTooltip
+                                    isResponsive={false}
                                     label={
                                         <CircleHelp className="h-5 w-5 text-gray-600 drop-shadow-sm" />
                                     }
