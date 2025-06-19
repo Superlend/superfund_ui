@@ -24,7 +24,7 @@ import { useRewardsHook } from '@/hooks/vault_hooks/vaultHook'
 import { starVariants } from '@/lib/animations'
 import { VAULT_ADDRESS, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { getRewardsTooltipContent } from '@/lib/ui/getRewardsTooltipContent'
-import { abbreviateNumber, convertNegativeToZero, getBoostApy, hasNoDecimals } from '@/lib/utils'
+import { abbreviateNumberWithoutRounding, convertNegativeToZero, getBoostApy, hasNoDecimals } from '@/lib/utils'
 import { Period } from '@/types/periodButtons'
 import { Expand, Lock, Maximize2, Minimize2, Percent } from 'lucide-react'
 import { motion } from 'motion/react'
@@ -70,7 +70,11 @@ export default function VaultStats() {
         return chainDetails[selectedChain as keyof typeof chainDetails]?.contractAddress || ''
     }
     const protocolId = getProtocolIdentifier()
-    const { data: { capital, interest_earned }, isLoading: isLoadingPositionDetails } = useTransactionHistory({
+    const {
+        // data: { capital, interest_earned },
+        isLoading: isLoadingPositionDetails,
+        startRefreshing
+    } = useTransactionHistory({
         protocolIdentifier: protocolId,
         chainId: selectedChain || 0,
         walletAddress: walletAddress || '',
@@ -87,6 +91,10 @@ export default function VaultStats() {
     const totalInterestEarned = useMemo(() => {
         return dailyEarningsHistoryData?.reduce((acc: number, item: any) => acc + item.earnings, 0) ?? 0
     }, [dailyEarningsHistoryData])
+
+    const capital = useMemo(() => {
+        return Number(userMaxWithdrawAmount ?? 0) - Number(totalInterestEarned ?? 0)
+    }, [userMaxWithdrawAmount, totalInterestEarned])
     // const { rewards, totalRewardApy, isLoading: isLoadingRewards, error: errorRewards } = useRewardsHook()
     // const { days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading: isLoading7DayAvg, error: error7DayAvg } = useHistoricalData({
     //     chain_id: selectedChain
@@ -101,12 +109,12 @@ export default function VaultStats() {
         {
             id: 'capital',
             label: 'Capital',
-            value: abbreviateNumber(convertNegativeToZero(Number(capital ?? 0)), 4)
+            value: abbreviateNumberWithoutRounding(convertNegativeToZero(Number(capital ?? 0)), 4)
         },
         {
             id: 'interest-earned',
             label: 'Interest earned',
-            value: abbreviateNumber(convertNegativeToZero(Number(totalInterestEarned ?? 0)), 4),
+            value: abbreviateNumberWithoutRounding(convertNegativeToZero(Number(totalInterestEarned ?? 0)), 4),
             description: 'Total interest earned since your first deposit.',
             tooltipContent: () => {
                 return (
@@ -122,7 +130,7 @@ export default function VaultStats() {
         {
             id: 'my-position',
             title: 'My Position',
-            value: isWalletConnectedForUI ? `$${abbreviateNumber(Number(userMaxWithdrawAmount), 4)}` : '',
+            value: isWalletConnectedForUI ? `$${abbreviateNumberWithoutRounding(Number(userMaxWithdrawAmount))}` : '',
             show: true,
             isLoading: isWalletConnectedForUI && isLoadingUserMaxWithdrawAmount,
             error: errorUserMaxWithdrawAmount,
@@ -164,7 +172,7 @@ export default function VaultStats() {
                                 </Label>
                             </div>
                             <BodyText level="body3" weight="medium" className="text-gray-800">
-                                ={' '}${abbreviateNumber(Number(userMaxWithdrawAmount), 4)}
+                                ={' '}${abbreviateNumberWithoutRounding(Number(userMaxWithdrawAmount), 4)}
                             </BodyText>
                         </div>
                     </div>
@@ -186,27 +194,27 @@ export default function VaultStats() {
                     </>
                 )
             },
-            value: `${(TOTAL_APY).toFixed(2)}%`,
+            value: `${abbreviateNumberWithoutRounding(TOTAL_APY)}%`,
             show: true,
             hasRewards: true,
             rewardsTooltipContent: getRewardsTooltipContent({
-                baseRateFormatted: abbreviateNumber(effectiveApyData?.base_apy),
+                baseRateFormatted: abbreviateNumberWithoutRounding(effectiveApyData?.base_apy),
                 rewardsCustomList: [
                     {
                         key: 'rewards_apy',
                         key_name: 'Rewards APY',
-                        value: abbreviateNumber(effectiveApyData?.rewards_apy),
+                        value: abbreviateNumberWithoutRounding(effectiveApyData?.rewards_apy),
                     },
                     {
                         key: 'superlend_rewards_apy',
                         key_name: 'Superlend USDC Reward',
-                        value: abbreviateNumber(GLOBAL_BOOST_APY ?? 0, 0),
+                        value: abbreviateNumberWithoutRounding(GLOBAL_BOOST_APY ?? 0, 0),
                         logo: "/images/tokens/usdc.webp"
                     },
                     {
                         key: 'farcaster_rewards_apy',
                         key_name: 'Farcaster Yieldrop',
-                        value: abbreviateNumber(Farcaster_BOOST_APY ?? 0, 0),
+                        value: abbreviateNumberWithoutRounding(Farcaster_BOOST_APY ?? 0, 0),
                         logo: "/icons/sparkles.svg",
                         show: hasFarcasterBoost,
                     },
@@ -286,7 +294,7 @@ export default function VaultStats() {
         //             </>
         //         )
         //     },
-        //     value: `${abbreviateNumber(days_7_avg_total_apy)}%`,
+        //     value: `${abbreviateNumberWithoutRounding(days_7_avg_total_apy)}%`,
         //     show: true,
         //     hasRewards: true,
         //     rewardsTooltipContent: getRewardsTooltipContent({

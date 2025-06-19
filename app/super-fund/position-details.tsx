@@ -10,7 +10,7 @@ import { BodyText, HeadingText } from "@/components/ui/typography"
 import ConnectWalletButton from "@/components/ConnectWalletButton"
 import useGetDailyEarningsHistory from "@/hooks/useGetDailyEarningsHistory"
 import { VAULT_ADDRESS_MAP } from "@/lib/constants"
-import { abbreviateNumber, convertNegativeToZero, getStartTimestamp } from "@/lib/utils"
+import { abbreviateNumber, abbreviateNumberWithoutRounding, convertNegativeToZero, getStartTimestamp } from "@/lib/utils"
 import { TAddress } from "@/types"
 import { useChain } from "@/context/chain-context"
 import { ChainId } from "@/types/chain"
@@ -29,6 +29,7 @@ import { starVariants } from "@/lib/animations"
 import useGetBoostRewards from "@/hooks/useGetBoostRewards"
 import { UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL } from "@/constants"
 import { useActiveAccount, useConnect } from "thirdweb/react"
+import { useUserBalance } from "@/hooks/vault_hooks/useUserBalanceHook"
 
 const variants = {
     hidden: { opacity: 0, y: 30 },
@@ -108,6 +109,12 @@ function NoActivePositionUI({
 
 function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAddress: TAddress; isConnecting?: boolean }) {
     const { selectedChain, chainDetails } = useChain()
+    const {
+        balance,
+        userMaxWithdrawAmount,
+        isLoading: isLoadingBalance,
+        error: balanceError,
+    } = useUserBalance(walletAddress as `0x${string}`)
 
     const protocolId = useMemo(() => {
         if (!selectedChain) return ''
@@ -118,12 +125,17 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
         return VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`
     }, [selectedChain])
 
-    const { data: { capital, interest_earned }, isLoading: isLoadingPositionDetails, startRefreshing } = useTransactionHistory({
+    const {
+        // data: { capital, interest_earned },
+        isLoading: isLoadingPositionDetails,
+        startRefreshing
+    } = useTransactionHistory({
         protocolIdentifier: protocolId,
         chainId: selectedChain || 0,
         walletAddress: walletAddress || '',
         refetchOnTransaction: true
     })
+
     const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
         vaultAddress: vaultAddress,
         chainId: selectedChain,
@@ -159,6 +171,10 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
         return allDailyEarningsHistoryData?.reduce((acc: number, item: any) => acc + item.earnings, 0) ?? 0
     }, [allDailyEarningsHistoryData])
 
+    const capital = useMemo(() => {
+        return Number(userMaxWithdrawAmount ?? 0) - Number(totalInterestEarned ?? 0)
+    }, [userMaxWithdrawAmount, totalInterestEarned])
+
     // New hooks for APY enhancement sections
     const { spotApy, isLoading: isLoadingSpotApy, error: errorSpotApy } = useVaultHook()
     const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
@@ -178,23 +194,23 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
     })
 
     // Listen for transaction events from the global event system if available
-  useEffect(() => {
-    const handleTransactionComplete = () => {
-      // Manually trigger refreshing for 30 seconds when transaction completes
-      startRefreshing();
-    };
+    useEffect(() => {
+        const handleTransactionComplete = () => {
+            // Manually trigger refreshing for 30 seconds when transaction completes
+            startRefreshing();
+        };
 
-    // Add event listener if window exists
-    if (typeof window !== 'undefined') {
-      window.addEventListener('transaction-complete', handleTransactionComplete);
-    }
+        // Add event listener if window exists
+        if (typeof window !== 'undefined') {
+            window.addEventListener('transaction-complete', handleTransactionComplete);
+        }
 
-    return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('transaction-complete', handleTransactionComplete);
-      }
-    };
-  }, [startRefreshing]);
+        return () => {
+            if (typeof window !== 'undefined') {
+                window.removeEventListener('transaction-complete', handleTransactionComplete);
+            }
+        };
+    }, [startRefreshing]);
 
     // Calculate 7-day average spot APY from historical data
     const days_7_avg_spot_apy = useMemo(() => {
@@ -309,7 +325,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                     <div className="flex flex-col items-start w-fit gap-1 m-auto">
                         <BodyText level="body2" weight="medium" className="text-gray-600">Capital</BodyText>
                         {!isLoadingPositionDetails && <HeadingText level="h3" weight="medium" className="text-gray-800">
-                            ${abbreviateNumber(convertNegativeToZero(Number(capital ?? 0)))}
+                            ${abbreviateNumberWithoutRounding(convertNegativeToZero(Number(capital ?? 0)))}
                         </HeadingText>}
                         {isLoadingPositionDetails && <Skeleton className="h-10 w-16 rounded-4" />}
                     </div>
@@ -317,7 +333,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                     <div className="flex flex-col items-start w-fit gap-1 m-auto">
                         <BodyText level="body2" weight="medium" className="text-gray-600">Interest Earned</BodyText>
                         {!isLoadingPositionDetails && <HeadingText level="h3" weight="medium" className="text-gray-800 flex items-center gap-1">
-                            ${abbreviateNumber(convertNegativeToZero(Number(totalInterestEarned ?? 0)))}
+                            ${abbreviateNumberWithoutRounding(convertNegativeToZero(Number(totalInterestEarned ?? 0)))}
                             <InfoTooltip
                                 content={<BodyText level="body2" weight="normal" className="text-gray-600">
                                     Total interest earned since your first deposit.
