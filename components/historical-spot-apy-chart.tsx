@@ -12,7 +12,8 @@ import { Period } from '@/types/periodButtons'
 import { abbreviateNumber, extractTimeFromDate } from '@/lib/utils'
 import { TimelineFilterTabs } from '@/components/tabs/timeline-filter-tabs'
 import { useApyData } from '@/context/apy-data-provider'
-import { getRewardsTooltipContent } from '@/lib/ui/getRewardsTooltipContent'
+import { getRewardsTooltipContent, getRewardsTooltipMobileContent } from '@/lib/ui/getRewardsTooltipContent'
+import useDimensions from '@/hooks/useDimensions'
 
 enum ChartType {
     Area = 'area',
@@ -36,12 +37,48 @@ type THistoricalSpotApyChartProps = {
 }
 
 function CustomTooltip({ active, payload, label }: any) {
+    const { width } = useDimensions();
+    const isDesktop = width > 768;
+
     if (active && payload && payload.length) {
         const data = payload[0]?.payload
         return (
             <div className="bg-white p-3 rounded-4 shadow-lg overflow-hidden">
-                {
+                {isDesktop &&
                     getRewardsTooltipContent({
+                        title: () => (
+                            <div className="flex items-center justify-between gap-2 mb-2">
+                                {/* <BodyText level="body1" weight="medium" className="text-gray-800">
+                                    Spot APY
+                                </BodyText> */}
+                                <BodyText level="body3" weight="normal" className="text-gray-800">
+                                    {data?.timestamp}
+                                </BodyText>
+                            </div>
+                        ),
+                        baseRateFormatted: abbreviateNumber(Number(data?.spotApy)),
+                        baseRateLabel: "Base Rate (Day avg.)",
+                        rewardsCustomList: [
+                            {
+                                key: 'rewards_apy',
+                                key_name: 'Rewards APY',
+                                value: abbreviateNumber(Number(data?.rewardsApy)),
+                            },
+                            {
+                                key: 'superlend_rewards_apy',
+                                key_name: 'Superlend USDC Reward',
+                                value: abbreviateNumber(Number(data?.boostApy)),
+                                logo: "/images/tokens/usdc.webp"
+                            },
+                        ],
+                        apyCurrent: Number(data?.totalApy),
+                        positionTypeParam: 'lend',
+                        netApyLabel: "Net Spot APY"
+                    })
+                }
+
+                {!isDesktop &&
+                    getRewardsTooltipMobileContent({
                         title: () => (
                             <div className="flex items-center justify-between gap-2 mb-2">
                                 {/* <BodyText level="body1" weight="medium" className="text-gray-800">
@@ -109,6 +146,8 @@ export default function HistoricalSpotApyChart({
     isErrorHistoricalData,
     noDataUI
 }: THistoricalSpotApyChartProps) {
+    const { width } = useDimensions();
+    const isDesktop = width > 768;
     const [chartType, setChartType] = useState<ChartType>(ChartType.Area)
     const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy, boostApyStartDate } = useApyData()
     const averageSpotApy = useMemo(() => {
@@ -152,6 +191,65 @@ export default function HistoricalSpotApyChart({
             }
         }).sort((a, b) => new Date(a.rawTimestamp).getTime() - new Date(b.rawTimestamp).getTime())
     }, [historicalData])
+
+    const yAxisDomain = useMemo(() => {
+        if (!chartData || chartData.length === 0) return [0, 100]
+        
+        const values = chartData.map(item => Number(item.totalApy))
+        const minValue = Math.min(...values)
+        const maxValue = Math.max(...values)
+        
+        // Add 10% padding to min and max for better visualization
+        const padding = (maxValue - minValue) * 0.1
+        const adjustedMin = Math.max(0, minValue - padding) // Ensure minimum is not negative
+        const adjustedMax = maxValue + padding
+        
+        return [adjustedMin, adjustedMax]
+    }, [chartData])
+
+    const getOptimalTickCount = useMemo(() => {
+        if (!chartData || chartData.length === 0) return 5
+        
+        const values = chartData.map(item => Number(item.totalApy))
+        const minValue = Math.min(...values)
+        const maxValue = Math.max(...values)
+        const range = maxValue - minValue
+        
+        // Determine optimal tick count based on data range
+        if (range <= 5) return 6  // 0.5% intervals
+        if (range <= 10) return 6 // 1-2% intervals  
+        if (range <= 25) return 6 // 2-5% intervals
+        return 6 // Default to 6 ticks for larger ranges
+    }, [chartData])
+
+    const formatYAxisTick = (value: number) => {
+        // Consistent formatting for Y-axis ticks
+        if (value >= 100) {
+            return `${Math.round(value)}%`
+        } else if (value >= 10) {
+            return `${value.toFixed(1)}%`
+        } else {
+            return `${value.toFixed(1)}%`
+        }
+    }
+
+    const getXAxisInterval = useMemo(() => {
+        if (!chartData || chartData.length === 0) return 0
+        
+        const dataLength = chartData.length
+        
+        // Calculate optimal interval based on period and data length
+        switch (selectedRange) {
+            case Period.oneWeek:
+                return Math.max(0, Math.floor(dataLength / 4)) // Show ~4-5 ticks
+            case Period.oneMonth:
+                return Math.max(0, Math.floor(dataLength / 5)) // Show ~5-6 ticks
+            case Period.oneYear:
+                return Math.max(0, Math.floor(dataLength / 6)) // Show ~6-7 ticks
+            default:
+                return Math.max(0, Math.floor(dataLength / 5))
+        }
+    }, [chartData, selectedRange])
 
     const handleRangeChange = (range: Period) => {
         setSelectedRange(range)
@@ -230,9 +328,9 @@ export default function HistoricalSpotApyChart({
                                         data={chartData}
                                         margin={{
                                             top: 40,
-                                            right: 10,
-                                            left: 10,
-                                            bottom: 10,
+                                            right: isDesktop ? 10 : 0,
+                                            left: isDesktop ? 10 : 0,
+                                            bottom: 0,
                                         }}
                                     >
                                         <defs>
@@ -261,34 +359,23 @@ export default function HistoricalSpotApyChart({
                                             fontSize={12}
                                             tickLine={true}
                                             axisLine={true}
-                                            tickCount={5}
-                                            padding={{ left: 0, right: 0 }}
-                                            allowDataOverflow={true}
+                                            padding={{ left: 10, right: 10 }}
+                                            allowDataOverflow={false}
                                             type="category"
-                                            interval={(chartData?.length || 0) > 5 ? Math.floor((chartData?.length || 0) / 5) : 0}
-                                            tick={({ x, y, payload, index }) => (
-                                                <CustomXAxisTick
-                                                    payload={payload as { value: number }}
-                                                    selectedRange={selectedRange}
-                                                    x={x as number}
-                                                    y={y as number}
-                                                    index={index as number}
-                                                    length={chartData?.length || 0}
-                                                />
-                                            )}
+                                            interval={getXAxisInterval}
+                                            tick={{ fontSize: 12, fill: '#888888' }}
                                         />
                                         <YAxis
-                                            dataKey="totalApy"
                                             stroke="#888888"
                                             fontSize={12}
                                             tickLine={true}
                                             axisLine={true}
-                                            tickCount={4}
-                                            tickFormatter={(value) => `${Number(value).toFixed(1)}%`}
+                                            tickCount={getOptimalTickCount}
+                                            tickFormatter={formatYAxisTick}
                                             padding={{ top: 20, bottom: 20 }}
                                             allowDataOverflow={false}
-                                            scale="auto"
-                                            interval="preserveStartEnd"
+                                            domain={yAxisDomain}
+                                            type="number"
                                         />
                                         <ChartTooltip content={<CustomTooltip />} />
                                         <Area
@@ -309,7 +396,7 @@ export default function HistoricalSpotApyChart({
                                             top: 40,
                                             right: 10,
                                             left: 10,
-                                            bottom: 10,
+                                            bottom: 0,
                                         }}
                                     >
                                         <XAxis
@@ -318,34 +405,23 @@ export default function HistoricalSpotApyChart({
                                             fontSize={12}
                                             tickLine={true}
                                             axisLine={true}
-                                            tickCount={5}
-                                            padding={{ left: 0, right: 0 }}
-                                            allowDataOverflow={true}
+                                            padding={{ left: 10, right: 10 }}
+                                            allowDataOverflow={false}
                                             type="category"
-                                            interval={(chartData?.length || 0) > 5 ? Math.floor((chartData?.length || 0) / 5) : 0}
-                                            tick={({ x, y, payload, index }) => (
-                                                <CustomXAxisTick
-                                                    payload={payload as { value: number }}
-                                                    selectedRange={selectedRange}
-                                                    x={x as number}
-                                                    y={y as number}
-                                                    index={index as number}
-                                                    length={chartData?.length || 0}
-                                                />
-                                            )}
+                                            interval={getXAxisInterval}
+                                            tick={{ fontSize: 12, fill: '#888888' }}
                                         />
                                         <YAxis
-                                            dataKey="totalApy"
                                             stroke="#888888"
                                             fontSize={12}
                                             tickLine={true}
                                             axisLine={true}
-                                            tickCount={4}
-                                            tickFormatter={(value) => `${Number(value).toFixed(1)}%`}
+                                            tickCount={getOptimalTickCount}
+                                            tickFormatter={formatYAxisTick}
                                             padding={{ top: 20, bottom: 20 }}
                                             allowDataOverflow={false}
-                                            scale="auto"
-                                            interval="preserveStartEnd"
+                                            domain={yAxisDomain}
+                                            type="number"
                                         />
                                         <ChartTooltip content={<CustomTooltip />} />
                                         <Bar
