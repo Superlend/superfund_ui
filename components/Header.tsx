@@ -138,7 +138,7 @@ const Header: React.FC = () => {
     const HEADER_STYLES = `z-50 sticky top-0 left-0 ${isLandingPage ? (scrolled ? 'bg-white shadow-sm' : 'bg-primary') : 'md:top-5'
         } w-full transition-all duration-300`
 
-    const NAV_BAR_STYLES = `flex overflow-hidden gap-5 max-lg:gap-10 justify-between items-center py-0 pr-[8px] pl-4 sm:pl-[20px] mb-5 md:mb-14 w-full font-semibold uppercase mx-auto ${isLandingPage
+    const NAV_BAR_STYLES = `flex overflow-hidden gap-5 max-lg:gap-10 justify-between items-center py-0 pr-[8px] pl-4 sm:pl-[20px] w-full font-semibold uppercase mx-auto ${isLandingPage
         ? `max-w-[1400px] py-4 ${scrolled ? 'text-gray-800' : 'text-white'}`
         : 'max-w-[1200px] md:rounded-6 bg-white bg-opacity-40 backdrop-blur shadow-[0px_2px_2px_rgba(0,0,0,0.02)] mx-auto min-h-[56px]'
         }`
@@ -210,11 +210,11 @@ const Header: React.FC = () => {
                                 </Badge> */}
                         </Link>
                         <div className={`flex items-center gap-1 ${isLandingPage ? 'max-md:ml-11' : 'max-md:ml-8'}`}>
-                            <BodyText level="body2" weight="medium" className={`${(isLandingPage && !scrolled) ? 'text-gray-200' : 'text-gray-700'} flex items-center gap-1`}>
+                            <div className={`text-sm font-medium leading-none ${(isLandingPage && !scrolled) ? 'text-gray-200' : 'text-gray-700'} flex items-center gap-1`}>
                                 TVL
                                 {isLoadingTotalTVL && <Skeleton className="w-8 h-4 rounded-3" />}
-                                {!isLoadingTotalTVL && <span>${abbreviateNumberWithoutRounding(totalTvl)}</span>}
-                            </BodyText>
+                                {!isLoadingTotalTVL && <span className="text-sm">${abbreviateNumberWithoutRounding(totalTvl)}</span>}
+                            </div>
                             <InfoTooltip
                                 isResponsive={false}
                                 label={<InfoIcon className="w-3 h-3" />}

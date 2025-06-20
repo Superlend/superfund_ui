@@ -1185,9 +1185,9 @@ export default function HomePage() {
     } = animationVariants
 
     return (
-        <div onMouseMove={handleMouseMove}>
+        <div onMouseMove={handleMouseMove} className="overflow-hidden">
             {/* SECTION 1: Hero with APY Highlight */}
-            <section className="py-28 relative overflow-hidden min-h-screen -mt-[70px] flex items-center justify-center">
+            <section className="py-28 relative min-h-screen flex items-center justify-center">
                 <div className="absolute inset-0 w-full h-full max-w-full z-[-1] bg-primary overflow-hidden">
                     <img src="/banners/hero_bg.svg" alt="Hero banner" className="absolute w-full h-full object-cover" />
                 </div>
