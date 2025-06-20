@@ -1,8 +1,9 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect } from 'react'
-import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
-import { getBoostApy } from '@/lib/utils'
+import React, { createContext, useContext } from 'react'
+import { useChain } from '@/context/chain-context'
+import useGetBoostRewards from '@/hooks/useGetBoostRewards'
+import { VAULT_ADDRESS_MAP } from '@/lib/constants'
 
 interface ApyDataContextType {
     boostApy: number
@@ -17,22 +18,24 @@ const ApyDataContext = createContext<ApyDataContextType>({
 })
 
 export function ApyDataProvider({ children }: { children: React.ReactNode }) {
-    const { totalAssets, isLoading: isLoadingVault } = useVaultHook()
-    const [boostApy, setBoostApy] = useState<number>(0)
+    const { selectedChain } = useChain()
     const boostApyStartDate = new Date('2025-05-12T00:00:00Z').getTime()
 
-    useEffect(() => {
-        if (!isLoadingVault) {
-            setBoostApy(getBoostApy(Number(totalAssets)))
-        }
-    }, [totalAssets, isLoadingVault])
+    const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
+        vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        chainId: selectedChain,
+        userAddress: undefined // Not required for global boost APY
+    })
+
+    const boostApy = boostRewardsData?.filter((item) => item.description?.includes('A global boost for all users') ?? false)
+        .reduce((acc, curr) => acc + (curr.boost_apy / 100), 0) ?? 0
 
     return (
         <ApyDataContext.Provider
             value={{
                 boostApy,
                 boostApyStartDate,
-                isLoading: isLoadingVault
+                isLoading: isLoadingBoostRewards
             }}
         >
             {children}
