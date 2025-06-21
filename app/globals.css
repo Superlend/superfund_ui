@@ -83,6 +83,16 @@
         --color-0xf42f5795D9ac7e9D757dB633D693cD548Cfd9169: #753ffd;
         --color-0x0A1a3b5f2041F33522C4efc754a7D096f880eE16: #17395e;
         --color-0x0000000000000000000000000000000000000000: #000000;
+        --tertiary-black: 0 0% 0%;
+        --tertiary-navy: 213 84% 18%;
+        --tertiary-blue: 228 100% 55%;
+        --tertiary-green: 143 39% 31%;
+        --tertiary-charcoal: 22 7% 16%;
+        --tertiary-lightblue: 201 100% 85%;
+        --tertiary-lightgreen: 135 100% 92%;
+        --tertiary-yellow: 56 100% 66%;
+        --tertiary-pink: 301 82% 90%;
+        --tertiary-cream: 60 100% 90%;
     }
 
     .dark {
@@ -127,6 +137,16 @@
         --color-0xf42f5795D9ac7e9D757dB633D693cD548Cfd9169: #753ffd;
         --color-0x0A1a3b5f2041F33522C4efc754a7D096f880eE16: #17395e;
         --color-0x0000000000000000000000000000000000000000: #000000;
+        --tertiary-black: 0 0% 0%;
+        --tertiary-navy: 213 84% 18%;
+        --tertiary-blue: 228 100% 55%;
+        --tertiary-green: 143 39% 31%;
+        --tertiary-charcoal: 22 7% 16%;
+        --tertiary-lightblue: 201 100% 85%;
+        --tertiary-lightgreen: 135 100% 92%;
+        --tertiary-yellow: 56 100% 66%;
+        --tertiary-pink: 301 82% 90%;
+        --tertiary-cream: 60 100% 90%;
     }
 }
 

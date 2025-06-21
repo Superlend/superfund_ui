@@ -12,6 +12,8 @@ import AllTransactions from '@/components/all-transactions'
 // import { ChainProvider } from '@/context/chain-context'
 import { ChainId } from '@/types/chain'
 import { useActiveAccount } from "thirdweb/react"
+import Statements from '@/components/Statements'
+import { VAULT_ADDRESS_MAP } from '@/lib/constants'
 
 interface ChainTxsPageProps {
   params: {
@@ -59,6 +61,12 @@ export default function ChainTransactionsPage({ params }: ChainTxsPageProps) {
         </Button>
         <h1 className="text-2xl font-semibold">Transactions</h1>
       </div>
+
+      {/* <Statements 
+        userAddress={walletAddress}
+        vaultAddress={VAULT_ADDRESS_MAP[chainId]}
+        chainId={chainId}
+      /> */}
 
       <AllTransactions />
     </MainContainer>

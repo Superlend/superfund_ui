@@ -38,6 +38,13 @@ const axiosPointsInstance = axios.create({
     },
 })
 
+const axiosRewardsInstance = axios.create({
+    baseURL: 'https://rewards.funds.superlend.xyz',
+    headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+    },
+})
+
 export async function request<TResponse = void>(config: IRequestConfig) {
     const axiosConfig: AxiosRequestConfig = {
         url: config.path,
@@ -104,6 +111,29 @@ export async function requestPoints<TResponse = void>(config: IRequestConfig) {
     
     try {
         const response = await axiosPointsInstance(axiosConfig)
+        return response.data.data as TResponse
+    } catch (error) {
+        throw new Error('HTTP request has been failed', {
+            cause: error,
+        })
+    }
+}
+
+export async function requestRewards<TResponse = void>(config: IRequestConfig) {
+    const axiosConfig: AxiosRequestConfig = {
+        url: config.path,
+        method: config.method,
+        params: config.query,
+        data: config.body,
+    }
+    
+    // Add custom headers if provided
+    if (config.headers) {
+        axiosConfig.headers = config.headers
+    }
+    
+    try {
+        const response = await axiosRewardsInstance(axiosConfig)
         return response.data.data as TResponse
     } catch (error) {
         throw new Error('HTTP request has been failed', {
