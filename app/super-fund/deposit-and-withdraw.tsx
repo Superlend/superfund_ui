@@ -30,6 +30,8 @@ import useGetBoostRewards from '@/hooks/useGetBoostRewards'
 import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import { useActiveAccount, useSwitchActiveWalletChain } from "thirdweb/react";
 import { base } from "thirdweb/chains";
+import FeedbackDialog from '@/components/dialogs/Feedback'
+import { useWhalesSupportDialog } from '@/hooks/useWhalesSupportDialog'
 
 export type THelperText = Record<
     string,
@@ -42,7 +44,7 @@ export default function DepositAndWithdrawAssets() {
     const [positionType, setPositionType] = useState<TActionType>('deposit')
     const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] =
         useState<boolean>(false)
-    const { depositTx, setDepositTx, isDialogOpen } = useTxContext() as TTxContext
+    const { depositTx, setDepositTx, isDialogOpen, depositTxCompleted } = useTxContext() as TTxContext
 
     const [userEnteredDepositAmount, setUserEnteredDepositAmount] =
         useState<string>('')
@@ -55,6 +57,8 @@ export default function DepositAndWithdrawAssets() {
     const account = useActiveAccount();
     const walletAddress = account?.address as `0x${string}`
     const isWalletConnectedForUI = !!account
+    const isDepositTxCompletedAndDialogClosed: boolean =
+        depositTxCompleted && !isConfirmationDialogOpen
 
     const {
         balance,
@@ -62,6 +66,14 @@ export default function DepositAndWithdrawAssets() {
         isLoading: isLoadingBalance,
         error: balanceError,
     } = useUserBalance(walletAddress as `0x${string}`)
+
+    const portfolioValue = Number(userMaxWithdrawAmount ?? 0);
+
+    const { showWhalesSupportDialog, setShowWhalesSupportDialog } = useWhalesSupportDialog({
+        portfolioValue,
+        lendTxCompleted: isDepositTxCompletedAndDialogClosed,
+        walletAddress,
+    })
 
     // const {
     //     spotApy,
@@ -83,7 +95,7 @@ export default function DepositAndWithdrawAssets() {
 
     useEffect(() => {
         // Only run this effect when the transaction dialog is open to prevent unwanted state changes during resets
-        if (depositTx.status === 'approve' && 
+        if (depositTx.status === 'approve' &&
             depositTx.isRefreshingAllowance &&
             isDialogOpen
         ) {
@@ -339,6 +351,11 @@ export default function DepositAndWithdrawAssets() {
                     )}
                 </CardFooter>
             </Card>
+            <FeedbackDialog
+                open={showWhalesSupportDialog}
+                setOpen={setShowWhalesSupportDialog}
+                portfolioValue={portfolioValue}
+            />
         </section>
     )
 }
