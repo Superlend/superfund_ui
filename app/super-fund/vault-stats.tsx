@@ -204,6 +204,7 @@ export default function VaultStats() {
                         key: 'rewards_apy',
                         key_name: 'Rewards APY',
                         value: abbreviateNumberWithoutRounding(effectiveApyData?.rewards_apy),
+                        show: Number(effectiveApyData?.rewards_apy ?? 0) > 0,
                     },
                     {
                         key: 'superlend_rewards_apy',

@@ -541,6 +541,15 @@ export function getExplorerLink(hash: string, chainId: ChainId) {
     return `${TX_EXPLORER_LINKS[chainId]}/tx/${hash}`
 }
 
+export const getBlockExplorerUrl = (chainId: ChainId, type: string, value: string) => {
+    if (type === 'tx') {
+        return `${TX_EXPLORER_LINKS[chainId]}/tx/${value}`;
+    } else if (type === 'address') {
+        return `${TX_EXPLORER_LINKS[chainId]}/address/${value}`;
+    }
+    return '#';
+};
+
 export function getTruncatedTxHash(hash: string) {
     return `${hash.slice(0, 7)}...${hash.slice(-4)}`
 }

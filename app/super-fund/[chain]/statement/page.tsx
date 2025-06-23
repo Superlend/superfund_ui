@@ -15,13 +15,13 @@ import { useActiveAccount } from "thirdweb/react"
 import Statements from '@/components/Statements'
 import { VAULT_ADDRESS_MAP } from '@/lib/constants'
 
-interface ChainTxsPageProps {
+interface ChainStatementPageProps {
   params: {
     chain: string
   }
 }
 
-export default function ChainTransactionsPage({ params }: ChainTxsPageProps) {
+export default function ChainStatementPage({ params }: ChainStatementPageProps) {
   // const { isWalletConnected } = useWalletConnection()
   const account = useActiveAccount();
   const walletAddress = account?.address as `0x${string}`
@@ -59,16 +59,16 @@ export default function ChainTransactionsPage({ params }: ChainTxsPageProps) {
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-2xl font-semibold">Transactions</h1>
+        <h1 className="text-2xl font-semibold">Statement</h1>
       </div>
 
-      {/* <Statements 
+      <Statements 
         userAddress={walletAddress}
         vaultAddress={VAULT_ADDRESS_MAP[chainId]}
         chainId={chainId}
-      /> */}
+      />
 
-      <AllTransactions />
+      {/* <AllTransactions /> */}
     </MainContainer>
   )
 }

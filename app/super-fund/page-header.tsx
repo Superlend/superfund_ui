@@ -8,6 +8,8 @@ import ChainSelector from '@/components/ChainSelector'
 import { useChain } from '@/context/chain-context'
 import ExternalLink from '@/components/ExternalLink'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 export default function PageHeader() {
     const { selectedChain, chainDetails } = useChain()
@@ -48,6 +50,15 @@ export default function PageHeader() {
                         </BodyText>
                     </div>
                 </div>
+                {/* <Button 
+                    variant="primaryOutline"
+                    size="sm"
+                    asChild
+                >
+                    <Link href={`/super-fund/${currentChainDetails.name.toLowerCase()}/statement`}>
+                        View Statement
+                    </Link>
+                </Button> */}
             </div>
         </motion.div>
     )

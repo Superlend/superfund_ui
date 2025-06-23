@@ -23,6 +23,7 @@ import useTransactionHistory from '@/hooks/useTransactionHistory'
 import { Transaction } from '@/queries/transaction-history-api'
 import { HeadingText } from '@/components/ui/typography'
 import { useActiveAccount } from 'thirdweb/react'
+import { TTxContext, useTxContext } from '@/context/super-vault-tx-provider'
 
 interface TransactionHistoryProps {
   protocolIdentifier: string
@@ -66,7 +67,7 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
   const isWalletConnected = !!account
   const { selectedChain } = useChain()
   const router = useRouter()
-
+  const { depositTxCompleted, withdrawTxCompleted } = useTxContext() as TTxContext
   const { data: { transactions }, isLoading, startRefreshing } = useTransactionHistory({
     protocolIdentifier,
     chainId: selectedChain || 0,
@@ -76,22 +77,10 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
 
   // Listen for transaction events from the global event system if available
   useEffect(() => {
-    const handleTransactionComplete = () => {
-      // Manually trigger refreshing for 30 seconds when transaction completes
+    if (depositTxCompleted || withdrawTxCompleted) {
       startRefreshing();
-    };
-
-    // Add event listener if window exists
-    if (typeof window !== 'undefined') {
-      window.addEventListener('transaction-complete', handleTransactionComplete);
     }
-
-    return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('transaction-complete', handleTransactionComplete);
-      }
-    };
-  }, [startRefreshing]);
+  }, [depositTxCompleted, withdrawTxCompleted, startRefreshing]);
 
   // Get the chain name for routing
   const getChainName = () => {

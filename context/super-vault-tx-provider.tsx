@@ -39,6 +39,8 @@ const TxInitialState: TTxContext = {
     setInitialPosition: () => { },
     isDialogOpen: false,
     setIsDialogOpen: () => { },
+    depositTxCompleted: false,
+    withdrawTxCompleted: false,
 }
 
 export const TxContext = createContext<TTxContext>(TxInitialState)
@@ -85,6 +87,8 @@ export type TTxContext = {
     setInitialPosition: (position: number) => void
     isDialogOpen: boolean
     setIsDialogOpen: (open: boolean) => void
+    depositTxCompleted: boolean
+    withdrawTxCompleted: boolean
 }
 
 export default function TxProvider({
@@ -126,6 +130,11 @@ export default function TxProvider({
     const [initialPosition, setInitialPosition] = useState<number>(0)
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
 
+    const depositTxCompleted: boolean =
+        depositTx.isConfirmed && !!depositTx.hash && depositTx.status === 'view'
+    const withdrawTxCompleted: boolean =
+        withdrawTx.isConfirmed && !!withdrawTx.hash && withdrawTx.status === 'view'
+
     return (
         <TxContext.Provider
             value={{
@@ -139,6 +148,8 @@ export default function TxProvider({
                 setInitialPosition,
                 isDialogOpen,
                 setIsDialogOpen,
+                depositTxCompleted,
+                withdrawTxCompleted,
             }}
         >
             {children}

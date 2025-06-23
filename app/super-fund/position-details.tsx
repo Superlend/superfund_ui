@@ -430,6 +430,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                                         key: 'rewards_apy',
                                                         key_name: 'Rewards APY',
                                                         value: abbreviateNumber(effectiveApyData?.rewards_apy),
+                                                        show: Number(effectiveApyData?.rewards_apy ?? 0) > 0,
                                                     },
                                                     {
                                                         key: 'superlend_rewards_apy',
@@ -522,6 +523,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                                         key: 'rewards_apy',
                                                         key_name: 'Rewards APY',
                                                         value: abbreviateNumber(effectiveApyData?.rewards_apy),
+                                                        show: Number(effectiveApyData?.rewards_apy ?? 0) > 0,
                                                     },
                                                     {
                                                         key: 'superlend_rewards_apy',
@@ -614,6 +616,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                                         key: 'rewards_apy',
                                                         key_name: 'Rewards APY Avg.',
                                                         value: abbreviateNumber(days_7_avg_rewards_apy),
+                                                        show: Number(days_7_avg_rewards_apy ?? 0) > 0,
                                                     },
                                                     {
                                                         key: 'superlend_rewards_apy',

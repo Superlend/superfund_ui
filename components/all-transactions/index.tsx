@@ -4,10 +4,10 @@ import React, { useEffect, useState } from 'react'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useChain } from '@/context/chain-context'
 import { Skeleton } from '@/components/ui/skeleton'
-import { format, isToday, isYesterday, parseISO, differenceInDays } from 'date-fns'
+import { format, isToday, isYesterday, parseISO, differenceInDays, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns'
 import Link from 'next/link'
 import { formatUnits } from 'ethers/lib/utils'
-import { ExternalLink, ArrowUpRight, ArrowDownRight, CheckCircle2, Copy, Filter, Calendar } from 'lucide-react'
+import { ExternalLink, ArrowUpRight, ArrowDownRight, CheckCircle2, Copy, Filter, Calendar as CalendarIcon, CalendarRange, X, ChevronDown, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { ChainId } from '@/types/chain'
 import Image from 'next/image'
 import {
@@ -23,11 +23,21 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
 import useTransactionHistory from '@/hooks/useTransactionHistory'
 import { Transaction } from '@/queries/transaction-history-api'
 import { useActiveAccount } from "thirdweb/react"
+import useDimensions from '@/hooks/useDimensions'
 
 interface AllTransactionsProps {
   protocolIdentifier?: string // Optional if we want to pass it directly
@@ -35,14 +45,19 @@ interface AllTransactionsProps {
 
 type FilterType = 'all' | 'deposit' | 'withdraw'
 
+interface DateRange {
+  startDate: string // ISO date string (YYYY-MM-DD)
+  endDate: string   // ISO date string (YYYY-MM-DD)
+}
+
 // Helper function to convert Unix timestamp to user's local timezone
 const convertTimestampToLocalDate = (timestamp: string): Date => {
   // Convert string timestamp to number and multiply by 1000 for milliseconds
   const timestampMs = parseInt(timestamp) * 1000;
-  
+
   // Create date object which automatically uses user's local timezone
   const date = new Date(timestampMs);
-  
+
   // Debug log to help identify timestamp issues
   // if (process.env.NODE_ENV === 'development') {
   //   console.log('All-transactions timestamp conversion:', {
@@ -53,7 +68,7 @@ const convertTimestampToLocalDate = (timestamp: string): Date => {
   //     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
   //   });
   // }
-  
+
   return date;
 };
 
@@ -66,6 +81,37 @@ const getUserTimezone = (): string => {
   }
 };
 
+// Helper function to check if transaction falls within date range
+const isTransactionInDateRange = (transaction: Transaction, dateRange: DateRange | null): boolean => {
+  if (!dateRange || (!dateRange.startDate && !dateRange.endDate)) return true;
+
+  const transactionDate = convertTimestampToLocalDate(transaction.blockTimestamp);
+  const transactionDayStart = startOfDay(transactionDate);
+
+  // If only start date is provided
+  if (dateRange.startDate && !dateRange.endDate) {
+    const startDate = startOfDay(new Date(dateRange.startDate));
+    return isAfter(transactionDayStart, startDate) || transactionDayStart.getTime() === startDate.getTime();
+  }
+
+  // If only end date is provided
+  if (!dateRange.startDate && dateRange.endDate) {
+    const endDate = endOfDay(new Date(dateRange.endDate));
+    return isBefore(transactionDayStart, endDate) || transactionDayStart.getTime() === startOfDay(endDate).getTime();
+  }
+
+  // If both dates are provided
+  if (dateRange.startDate && dateRange.endDate) {
+    const startDate = startOfDay(new Date(dateRange.startDate));
+    const endDate = endOfDay(new Date(dateRange.endDate));
+
+    return (isAfter(transactionDayStart, startDate) || transactionDayStart.getTime() === startDate.getTime()) &&
+      (isBefore(transactionDayStart, endDate) || transactionDayStart.getTime() === startOfDay(endDate).getTime());
+  }
+
+  return true;
+};
+
 export default function AllTransactions({ protocolIdentifier }: AllTransactionsProps) {
   // const { walletAddress, isWalletConnected } = useWalletConnection()
   const account = useActiveAccount();
@@ -73,6 +119,13 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
   const isWalletConnected = !!account
   const { selectedChain, chainDetails } = useChain()
   const [currentFilter, setCurrentFilter] = useState<FilterType>('all')
+  const [dateRange, setDateRange] = useState<DateRange | null>(null)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc') // Default descending
+  const { width } = useDimensions()
+  const isDesktop = width > 768;
+
+  // Pagination state
+  const [itemsToShow, setItemsToShow] = useState(10)
 
   // Get protocol identifier from chain context if not provided
   const getProtocolIdentifier = () => {
@@ -89,6 +142,22 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
     walletAddress: walletAddress || '',
     refetchOnTransaction: true
   })
+
+  // Calculate date bounds from transaction history
+  const getDateBounds = () => {
+    if (transactions.length === 0) return { minDate: null, maxDate: null }
+
+    const dates = transactions.map(tx => convertTimestampToLocalDate(tx.blockTimestamp))
+    const minDate = new Date(Math.min(...dates.map(d => d.getTime())))
+    const maxDate = new Date(Math.max(...dates.map(d => d.getTime())))
+
+    return {
+      minDate: format(minDate, 'yyyy-MM-dd'),
+      maxDate: format(maxDate, 'yyyy-MM-dd')
+    }
+  }
+
+  const { minDate, maxDate } = getDateBounds()
 
   // Listen for transaction events from the global event system if available
   useEffect(() => {
@@ -109,42 +178,145 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
     };
   }, [startRefreshing]);
 
-  // Filter transactions
-  const filteredTransactions = transactions.filter(tx => {
-    if (currentFilter === 'all') return true
-    return tx.type === currentFilter
-  })
+  // Filter and sort transactions by type and date range
+  const filteredAndSortedTransactions = React.useMemo(() => {
+    // First filter transactions
+    const filtered = transactions.filter(tx => {
+      // Filter by type
+      const typeMatch = currentFilter === 'all' || tx.type === currentFilter;
 
-  // Group transactions by month and date with improved timezone handling
+      // Filter by date range
+      const dateMatch = isTransactionInDateRange(tx, dateRange);
+
+      return typeMatch && dateMatch;
+    });
+
+    // Then sort based on current sort order
+    const sorted = [...filtered].sort((a, b) => {
+      const dateA = convertTimestampToLocalDate(a.blockTimestamp);
+      const dateB = convertTimestampToLocalDate(b.blockTimestamp);
+
+      if (sortOrder === 'asc') {
+        return dateA.getTime() - dateB.getTime(); // Ascending (earliest first)
+      } else {
+        return dateB.getTime() - dateA.getTime(); // Descending (latest first)
+      }
+    });
+
+    return sorted;
+  }, [transactions, currentFilter, dateRange, sortOrder])
+
+  // Reset pagination when filter changes
+  useEffect(() => {
+    setItemsToShow(10)
+  }, [currentFilter, dateRange])
+
+  // Group transactions by month and date with improved timezone handling and pagination
   const groupTransactionsByDate = () => {
-    const groups: { [key: string]: Transaction[] } = {}
+    const groups: { [key: string]: { transactions: Transaction[], sortIndex: number } } = {}
 
-    filteredTransactions.forEach(tx => {
+    // Limit transactions based on itemsToShow
+    const transactionsToShow = filteredAndSortedTransactions.slice(0, itemsToShow)
+
+    transactionsToShow.forEach(tx => {
       const date = convertTimestampToLocalDate(tx.blockTimestamp);
       let dateKey = ''
+      let sortIndex = 0 // Used to sort groups properly
 
       if (isToday(date)) {
         dateKey = 'Today'
+        sortIndex = 0
       } else if (isYesterday(date)) {
         dateKey = 'Yesterday'
+        sortIndex = 1
       } else if (differenceInDays(new Date(), date) < 7) {
         // Show day name for transactions within the last week
         dateKey = format(date, 'EEEE') // Monday, Tuesday, etc.
+        sortIndex = differenceInDays(new Date(), date)
       } else {
         dateKey = format(date, 'MMM dd, yyyy')
+        sortIndex = differenceInDays(new Date(), date)
       }
 
       if (!groups[dateKey]) {
-        groups[dateKey] = []
+        groups[dateKey] = { transactions: [], sortIndex }
       }
 
-      groups[dateKey].push(tx)
+      groups[dateKey].transactions.push(tx)
     })
 
-    return groups
+    // Sort groups based on sort order
+    const sortedGroups = Object.entries(groups).sort(([, a], [, b]) => {
+      if (sortOrder === 'asc') {
+        return b.sortIndex - a.sortIndex // Reverse for ascending (oldest first)
+      } else {
+        return a.sortIndex - b.sortIndex // Normal for descending (newest first)
+      }
+    })
+
+    // Convert back to the expected format
+    const finalGroups: { [key: string]: Transaction[] } = {}
+    sortedGroups.forEach(([dateKey, { transactions }]) => {
+      finalGroups[dateKey] = transactions
+    })
+
+    return finalGroups
   }
 
   const groupedTransactions = groupTransactionsByDate()
+
+  // Check if there are more transactions to show
+  const hasMoreTransactions = filteredAndSortedTransactions.length > itemsToShow
+  const displayedTransactionCount = Math.min(itemsToShow, filteredAndSortedTransactions.length)
+
+  // Handle filter changes with pagination reset
+  const handleFilterChange = (newFilter: FilterType) => {
+    setCurrentFilter(newFilter)
+    // itemsToShow will be reset by the useEffect
+  }
+
+  // Handle date range changes - apply immediately 
+  const handleDateRangeChange = (newDateRange: DateRange | null) => {
+    setDateRange(newDateRange)
+
+    // Auto-adjust sort order: ascending when date filter is active, descending when no filter
+    const hasDateFilter = newDateRange && (newDateRange.startDate || newDateRange.endDate)
+    setSortOrder(hasDateFilter ? 'asc' : 'desc')
+  }
+
+  // Handle individual date changes - immediate filtering
+  const handleStartDateChange = (startDate: string) => {
+    const newDateRange = {
+      startDate,
+      endDate: dateRange?.endDate || ''
+    }
+    handleDateRangeChange(newDateRange)
+  }
+
+  const handleEndDateChange = (endDate: string) => {
+    const newDateRange = {
+      startDate: dateRange?.startDate || '',
+      endDate
+    }
+    handleDateRangeChange(newDateRange)
+  }
+
+  // Clear date range filter
+  const clearDateRange = () => {
+    handleDateRangeChange(null)
+  }
+
+  // Toggle sort order manually
+  const toggleSortOrder = () => {
+    setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')
+  }
+
+  // Check if sort order has changed from default (due to date filter)
+  const hasDateFilter = dateRange && (dateRange.startDate || dateRange.endDate)
+  const isSortChanged = hasDateFilter || sortOrder !== 'desc'
+
+  // Check if any filters are active
+  const hasActiveFilters = currentFilter !== 'all' || dateRange
 
   if (!isWalletConnected) {
     return (
@@ -157,206 +329,545 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
   const hasTransactions = transactions.length > 0
 
   return (
-    <div className="bg-card rounded-2xl p-4 sm:p-6 flex flex-col">
-      {hasTransactions && (
-        <div className="flex flex-row justify-between items-start md:items-center mb-6 gap-4 md:gap-0">
-          <div className="flex flex-col gap-1">
-            <h3 className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Your Transactions
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {filteredTransactions.length} {filteredTransactions.length === 1 ? 'transaction' : 'transactions'}
-            </p>
-            {/* Debug info in development */}
-            {process.env.NODE_ENV === 'development' && (
-              <p className="text-xs text-muted-foreground">
-                Timezone: {getUserTimezone()}
-              </p>
-            )}
-          </div>
+    <TooltipProvider>
+      <div className="bg-card rounded-2xl p-4 sm:p-6 flex flex-col">
+        {hasTransactions && (
+          <div className="flex flex-wrap justify-between gap-4 mb-6">
+            {/* Header */}
+            <div className="flex justify-between items-start md:items-center gap-4 md:gap-0 max-md:w-full">
+              <div className="flex flex-col gap-1">
+                <h3 className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  Your Transactions
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {hasMoreTransactions ? (
+                    <>Showing {displayedTransactionCount} of {filteredAndSortedTransactions.length} {filteredAndSortedTransactions.length === 1 ? 'transaction' : 'transactions'}</>
+                  ) : (
+                    <>{filteredAndSortedTransactions.length} {filteredAndSortedTransactions.length === 1 ? 'transaction' : 'transactions'}</>
+                  )}
+                </p>
+                {/* Debug info in development */}
+                {process.env.NODE_ENV === 'development' && (
+                  <p className="text-xs text-muted-foreground">
+                    Timezone: {getUserTimezone()}
+                  </p>
+                )}
+              </div>
 
-          <div className="flex items-center gap-3 w-auto">
-            {/* Tablet & above Filter Pills */}
-            <div className="hidden md:flex items-center gap-1 p-1 bg-muted/50 rounded-4 border w-full md:w-auto">
-              <button
-                onClick={() => setCurrentFilter('all')}
-                className={`relative px-4 py-2 text-xs font-medium rounded-3 transition-all duration-300 flex-1 md:flex-none overflow-hidden min-w-[60px] ${currentFilter === 'all'
-                  ? 'text-white shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-                  }`}
-              >
-                <div className={`absolute inset-0 bg-blue-500 rounded-3 transition-all duration-300 ease-out ${currentFilter === 'all'
-                  ? 'scale-100 opacity-100'
-                  : 'scale-0 opacity-0'
-                  }`} />
-                <div className="relative z-10 flex items-center justify-center gap-2">
-                  <div className={`w-2 h-2 rounded-full bg-blue-500 transition-all duration-500 ease-out ${currentFilter === 'all'
-                    ? 'scale-0 opacity-0 hidden'
-                    : 'scale-100 opacity-100'
-                    }`} />
-                  <span>All</span>
-                </div>
-              </button>
-              <button
-                onClick={() => setCurrentFilter('deposit')}
-                className={`relative px-4 py-2 text-xs font-medium rounded-3 transition-all duration-300 flex-1 md:flex-none overflow-hidden min-w-[80px] ${currentFilter === 'deposit'
-                  ? 'text-white shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-                  }`}
-              >
-                <div className={`absolute inset-0 bg-green-500 rounded-3 transition-all duration-300 ease-out ${currentFilter === 'deposit'
-                  ? 'scale-100 opacity-100'
-                  : 'scale-0 opacity-0'
-                  }`} />
-                <div className="relative z-10 flex items-center justify-center gap-2">
-                  <div className={`w-2 h-2 rounded-full bg-green-500 transition-all duration-500 ease-out ${currentFilter === 'deposit'
-                    ? 'scale-0 opacity-0 hidden'
-                    : 'scale-100 opacity-100'
-                    }`} />
-                  <span>Deposits</span>
-                </div>
-              </button>
-              <button
-                onClick={() => setCurrentFilter('withdraw')}
-                className={`relative px-4 py-2 text-xs font-medium rounded-3 transition-all duration-300 flex-1 md:flex-none overflow-hidden min-w-[100px] ${currentFilter === 'withdraw'
-                  ? 'text-white shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-                  }`}
-              >
-                <div className={`absolute inset-0 bg-red-500 rounded-3 transition-all duration-300 ease-out ${currentFilter === 'withdraw'
-                  ? 'scale-100 opacity-100'
-                  : 'scale-0 opacity-0'
-                  }`} />
-                <div className="relative z-10 flex items-center justify-center gap-2">
-                  <div className={`w-2 h-2 rounded-full bg-red-500 transition-all duration-500 ease-out ${currentFilter === 'withdraw'
-                    ? 'scale-0 opacity-0 hidden'
-                    : 'scale-100 opacity-100'
-                    }`} />
-                  <span>Withdrawals</span>
-                </div>
-              </button>
+              {/* Mobile Filter Dropdown */}
+              {!isDesktop &&
+                <div className="">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-9 px-3 border-dashed hover:border-solid transition-all duration-200 hover:shadow-sm"
+                      >
+                        <Filter className="h-4 w-4" />
+                        {hasActiveFilters && (
+                          <div className="w-2 h-2 bg-blue-500 rounded-full ml-1" />
+                        )}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-80 p-3 rounded-4">
+                      <div className="space-y-4">
+                        {/* Type Filter Section */}
+                        <div>
+                          <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                            Transaction Type
+                          </div>
+                          <div className="space-y-1">
+                            <DropdownMenuItem
+                              onClick={() => handleFilterChange('all')}
+                              className={`relative rounded-3 cursor-pointer transition-all duration-200 overflow-hidden ${currentFilter === 'all' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'hover:bg-accent/50'
+                                }`}
+                            >
+                              <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-2">
+                                  <div className={`w-2 h-2 rounded-full bg-blue-500 transition-all duration-200 ${currentFilter === 'all' ? 'scale-125' : 'scale-100'
+                                    }`}></div>
+                                  <span>All Transactions</span>
+                                </div>
+                                {currentFilter === 'all' && (
+                                  <CheckCircle2 className="h-4 w-4 text-blue-500" />
+                                )}
+                              </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleFilterChange('deposit')}
+                              className={`relative rounded-3 cursor-pointer transition-all duration-200 overflow-hidden ${currentFilter === 'deposit' ? 'bg-green-50 text-green-700 border border-green-200' : 'hover:bg-accent/50'
+                                }`}
+                            >
+                              <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-2">
+                                  <div className={`w-2 h-2 rounded-full bg-green-500 transition-all duration-200 ${currentFilter === 'deposit' ? 'scale-125' : 'scale-100'
+                                    }`}></div>
+                                  <span>Deposits Only</span>
+                                </div>
+                                {currentFilter === 'deposit' && (
+                                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                )}
+                              </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleFilterChange('withdraw')}
+                              className={`relative rounded-3 cursor-pointer transition-all duration-200 overflow-hidden ${currentFilter === 'withdraw' ? 'bg-red-50 text-red-700 border border-red-200' : 'hover:bg-accent/50'
+                                }`}
+                            >
+                              <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-2">
+                                  <div className={`w-2 h-2 rounded-full bg-red-500 transition-all duration-200 ${currentFilter === 'withdraw' ? 'scale-125' : 'scale-100'
+                                    }`}></div>
+                                  <span>Withdrawals Only</span>
+                                </div>
+                                {currentFilter === 'withdraw' && (
+                                  <CheckCircle2 className="h-4 w-4 text-red-500" />
+                                )}
+                              </div>
+                            </DropdownMenuItem>
+                          </div>
+                        </div>
+
+                        <DropdownMenuSeparator />
+
+                        {/* Date Range Filter Section */}
+                        <div>
+                          <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                            Date Range
+                          </div>
+                          <DateRangePicker
+                            dateRange={dateRange}
+                            onStartDateChange={handleStartDateChange}
+                            onEndDateChange={handleEndDateChange}
+                            onClear={clearDateRange}
+                            minDate={minDate}
+                            maxDate={maxDate}
+                            isMobile={true}
+                          />
+
+                          {/* Sort Toggle for Mobile */}
+                          {isSortChanged && (
+                            <div className="flex items-center justify-between pt-2 mt-2 border-t border-border/30">
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                {sortOrder === 'asc' ? (
+                                  <ArrowUp className="h-3 w-3" />
+                                ) : (
+                                  <ArrowDown className="h-3 w-3" />
+                                )}
+                                <span>
+                                  {sortOrder === 'asc' ? 'Oldest first' : 'Newest first'}
+                                </span>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={toggleSortOrder}
+                                className="h-7 px-2 text-xs"
+                              >
+                                Switch to {sortOrder === 'asc' ? 'newest' : 'oldest'} first
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>}
             </div>
 
-            {/* Mobile Filter Dropdown */}
-            <div className="md:hidden">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-9 px-3 border-dashed hover:border-solid transition-all duration-200 hover:shadow-sm"
+            {/* Desktop Filters */}
+            {isDesktop &&
+              <div className="flex items-center gap-4 flex-wrap">
+                {/* Type Filter Pills */}
+                <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-4 border">
+                  <button
+                    onClick={() => handleFilterChange('all')}
+                    className={`relative px-4 py-2 text-xs font-medium rounded-3 transition-all duration-300 overflow-hidden min-w-[60px] ${currentFilter === 'all'
+                      ? 'text-white shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                      }`}
                   >
-                    <Filter className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 p-2 rounded-4">
-                  <div className="space-y-2">
-                    <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Filter Options
+                    <div className={`absolute inset-0 bg-blue-500 rounded-3 transition-all duration-300 ease-out ${currentFilter === 'all'
+                      ? 'scale-100 opacity-100'
+                      : 'scale-0 opacity-0'
+                      }`} />
+                    <div className="relative z-10 flex items-center justify-center gap-2">
+                      <div className={`w-2 h-2 rounded-full bg-blue-500 transition-all duration-500 ease-out ${currentFilter === 'all'
+                        ? 'scale-0 opacity-0 hidden'
+                        : 'scale-100 opacity-100'
+                        }`} />
+                      <span>All</span>
                     </div>
-                    <DropdownMenuGroup className="space-y-1">
-                      <DropdownMenuItem
-                        onClick={() => setCurrentFilter('all')}
-                        className={`relative rounded-2 cursor-pointer transition-all duration-200 rounded-3 overflow-hidden ${currentFilter === 'all' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'hover:bg-accent/50'
-                          }`}
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full bg-blue-500 transition-all duration-200 ${currentFilter === 'all' ? 'scale-125' : 'scale-100'
-                              }`}></div>
-                            <span>All Transactions</span>
-                          </div>
-                          {currentFilter === 'all' && (
-                            <CheckCircle2 className="h-4 w-4 text-blue-500" />
+                  </button>
+                  <button
+                    onClick={() => handleFilterChange('deposit')}
+                    className={`relative px-4 py-2 text-xs font-medium rounded-3 transition-all duration-300 overflow-hidden min-w-[80px] ${currentFilter === 'deposit'
+                      ? 'text-white shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                  >
+                    <div className={`absolute inset-0 bg-green-500 rounded-3 transition-all duration-300 ease-out ${currentFilter === 'deposit'
+                      ? 'scale-100 opacity-100'
+                      : 'scale-0 opacity-0'
+                      }`} />
+                    <div className="relative z-10 flex items-center justify-center gap-2">
+                      <div className={`w-2 h-2 rounded-full bg-green-500 transition-all duration-500 ease-out ${currentFilter === 'deposit'
+                        ? 'scale-0 opacity-0 hidden'
+                        : 'scale-100 opacity-100'
+                        }`} />
+                      <span>Deposits</span>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => handleFilterChange('withdraw')}
+                    className={`relative px-4 py-2 text-xs font-medium rounded-3 transition-all duration-300 overflow-hidden min-w-[100px] ${currentFilter === 'withdraw'
+                      ? 'text-white shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                  >
+                    <div className={`absolute inset-0 bg-red-500 rounded-3 transition-all duration-300 ease-out ${currentFilter === 'withdraw'
+                      ? 'scale-100 opacity-100'
+                      : 'scale-0 opacity-0'
+                      }`} />
+                    <div className="relative z-10 flex items-center justify-center gap-2">
+                      <div className={`w-2 h-2 rounded-full bg-red-500 transition-all duration-500 ease-out ${currentFilter === 'withdraw'
+                        ? 'scale-0 opacity-0 hidden'
+                        : 'scale-100 opacity-100'
+                        }`} />
+                      <span>Withdrawals</span>
+                    </div>
+                  </button>
+                </div>
+
+                {/* Date Range Picker */}
+                <div className="flex items-center gap-2">
+                  <DateRangePicker
+                    dateRange={dateRange}
+                    onStartDateChange={handleStartDateChange}
+                    onEndDateChange={handleEndDateChange}
+                    onClear={clearDateRange}
+                    minDate={minDate}
+                    maxDate={maxDate}
+                    isMobile={false}
+                  />
+
+                  {/* Sort Toggle Button */}
+                  {isSortChanged && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={toggleSortOrder}
+                          className="h-9 px-3 border-dashed hover:border-solid transition-all duration-200 hover:shadow-sm"
+                        >
+                          {sortOrder === 'asc' ? (
+                            <ArrowUp className="h-4 w-4" />
+                          ) : (
+                            <ArrowDown className="h-4 w-4" />
                           )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="bg-card border shadow-lg">
+                        <div className="text-xs">
+                          <p className="font-medium">
+                            {sortOrder === 'asc' ? 'Oldest first' : 'Newest first'}
+                          </p>
+                          <p className="text-muted-foreground">
+                            Click to sort by {sortOrder === 'asc' ? 'newest' : 'oldest'} first
+                          </p>
                         </div>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setCurrentFilter('deposit')}
-                        className={`relative rounded-3 cursor-pointer transition-all duration-200 rounded-3 overflow-hidden ${currentFilter === 'deposit' ? 'bg-green-50 text-green-700 border border-green-200' : 'hover:bg-accent/50'
-                          }`}
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full bg-green-500 transition-all duration-200 ${currentFilter === 'deposit' ? 'scale-125' : 'scale-100'
-                              }`}></div>
-                            <span>Deposits Only</span>
-                          </div>
-                          {currentFilter === 'deposit' && (
-                            <CheckCircle2 className="h-4 w-4 text-green-500" />
-                          )}
-                        </div>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setCurrentFilter('withdraw')}
-                        className={`relative rounded-3 cursor-pointer transition-all duration-200 rounded-3 overflow-hidden ${currentFilter === 'withdraw' ? 'bg-red-50 text-red-700 border border-red-200' : 'hover:bg-accent/50'
-                          }`}
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full bg-red-500 transition-all duration-200 ${currentFilter === 'withdraw' ? 'scale-125' : 'scale-100'
-                              }`}></div>
-                            <span>Withdrawals Only</span>
-                          </div>
-                          {currentFilter === 'withdraw' && (
-                            <CheckCircle2 className="h-4 w-4 text-red-500" />
-                          )}
-                        </div>
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                  </div>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
+
+                {/* Clear All Filters */}
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setCurrentFilter('all')
+                      clearDateRange()
+                      setSortOrder('desc') // Reset to default sort
+                    }}
+                    className="text-muted-foreground hover:text-foreground p-0"
+                  >
+                    Clear filters
+                    <X className="h-3 w-3 ml-1" />
+                  </Button>
+                )}
+              </div>
+            }
+          </div>
+        )}
+
+        <div className="space-y-6">
+          {isLoading ? (
+            <TransactionSkeleton count={5} />
+          ) : transactions.length === 0 ? (
+            <EmptyTransactionsState />
+          ) : filteredAndSortedTransactions.length === 0 ? (
+            <div className="text-center py-12 px-4">
+              <div className="mb-6 text-muted-foreground">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center">
+                  <Filter className="w-8 h-8 text-accent" />
+                </div>
+                <p className="text-lg font-semibold mb-2">No transactions found</p>
+                <p className="text-sm">Try adjusting your filters or check back later</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4 hover:shadow-md transition-all duration-200"
+                onClick={() => {
+                  setCurrentFilter('all')
+                  clearDateRange()
+                  setSortOrder('desc') // Reset to default sort
+                }}
+              >
+                Clear all filters
+              </Button>
             </div>
+          ) : (
+            <>
+              {Object.entries(groupedTransactions).map(([dateGroup, txs]) => (
+                <div key={dateGroup} className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-foreground bg-gradient-to-r from-accent/10 to-accent/5 py-2 px-4 rounded-3 border border-accent/20">
+                      <CalendarIcon className="w-3.5 h-3.5 text-accent" />
+                      {dateGroup}
+                    </div>
+                    <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
+                    <Badge variant="outline" className="text-[10px] px-2 py-1 font-medium">
+                      {txs.length} {txs.length === 1 ? 'transaction' : 'transactions'}
+                    </Badge>
+                  </div>
+                  <div className="space-y-3 pl-2">
+                    {txs.map(tx => (
+                      <TransactionItem key={tx.transactionHash} transaction={tx} expanded={true} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              {/* Show More section */}
+              {hasMoreTransactions && (
+                <div className="flex flex-col items-center gap-4 pt-6 border-t border-border/30">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Showing {displayedTransactionCount} of {filteredAndSortedTransactions.length} transactions
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {filteredAndSortedTransactions.length - displayedTransactionCount} more available
+                    </p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setItemsToShow(prev => Math.min(prev + 10, filteredAndSortedTransactions.length))}
+                      className="flex-1 sm:flex-none hover:shadow-md transition-all duration-200 hover:border-primary/30 hover:bg-primary/5"
+                    >
+                      Show 10 more
+                      <ArrowDownRight className="h-4 w-4 ml-2" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setItemsToShow(filteredAndSortedTransactions.length)}
+                      className="flex-1 sm:flex-none text-primary hover:text-primary/80 hover:bg-primary/5"
+                    >
+                      Show all {filteredAndSortedTransactions.length}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </TooltipProvider>
+  )
+}
+
+// Shadcn Date Picker Component (following official documentation pattern)
+function DatePicker({
+  date,
+  onDateChange,
+  placeholder = "Select date",
+  minDate,
+  maxDate,
+  className = "",
+  side = "bottom",
+  disabled = false
+}: {
+  date: string
+  onDateChange: (date: string) => void
+  placeholder?: string
+  minDate?: string | null
+  maxDate?: string | null
+  className?: string
+  side?: "top" | "bottom" | "left" | "right"
+  disabled?: boolean
+}) {
+  const [open, setOpen] = useState(false)
+
+  // Convert string date to Date object for Calendar component
+  const selectedDate = date ? new Date(date) : undefined
+
+  // Create disabled function for Calendar
+  const isDateDisabled = (date: Date): boolean => {
+    const dateStr = format(date, 'yyyy-MM-dd')
+
+    if (minDate && dateStr < minDate) return true
+    if (maxDate && dateStr > maxDate) return true
+
+    return false
+  }
+
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (selectedDate) {
+      const isoDate = format(selectedDate, 'yyyy-MM-dd')
+      onDateChange(isoDate)
+    } else {
+      onDateChange('')
+    }
+    setOpen(false)
+  }
+
+  return (
+    <div className={className}>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn(
+              "w-full justify-start text-left font-normal h-9 text-xs",
+              !selectedDate && "text-muted-foreground"
+            )}
+            disabled={disabled}
+          >
+            <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+            {selectedDate ? format(selectedDate, "MMM dd, yyyy") : <span>{placeholder}</span>}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start" side={side}>
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={handleDateSelect}
+            disabled={isDateDisabled}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
+  )
+}
+
+// Date Range Picker Component
+function DateRangePicker({
+  dateRange,
+  onStartDateChange,
+  onEndDateChange,
+  onClear,
+  minDate,
+  maxDate,
+  isMobile = false
+}: {
+  dateRange: DateRange | null
+  onStartDateChange: (startDate: string) => void
+  onEndDateChange: (endDate: string) => void
+  onClear: () => void
+  minDate?: string | null
+  maxDate?: string | null
+  isMobile?: boolean
+}) {
+  const hasDateRange = dateRange && (dateRange.startDate || dateRange.endDate)
+
+  if (isMobile) {
+    return (
+      <div className="space-y-3">
+        <div className="grid grid-cols-1 gap-3">
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">From</label>
+            <DatePicker
+              date={dateRange?.startDate || ''}
+              onDateChange={onStartDateChange}
+              placeholder="Start date"
+              minDate={minDate}
+              maxDate={dateRange?.endDate || maxDate}
+              side="bottom"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">To</label>
+            <DatePicker
+              date={dateRange?.endDate || ''}
+              onDateChange={onEndDateChange}
+              placeholder="End date"
+              minDate={dateRange?.startDate || minDate}
+              maxDate={maxDate}
+              side="bottom"
+              disabled={!dateRange?.startDate}
+            />
           </div>
         </div>
-      )}
-
-      <div className="space-y-6">
-        {isLoading ? (
-          <TransactionSkeleton count={5} />
-        ) : transactions.length === 0 ? (
-          <EmptyTransactionsState />
-        ) : filteredTransactions.length === 0 ? (
-          <div className="text-center py-12 px-4">
-            <div className="mb-6 text-muted-foreground">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center">
-                <Filter className="w-8 h-8 text-accent" />
-              </div>
-              <p className="text-lg font-semibold mb-2">No {currentFilter} transactions found</p>
-              <p className="text-sm">Try adjusting your filter or check back later</p>
-            </div>
+        {/* {hasDateRange && (
+          <div className="flex justify-end">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="mt-4 hover:shadow-md transition-all duration-200"
-              onClick={() => setCurrentFilter('all')}
+              onClick={onClear}
+              className="h-8 text-xs px-2"
             >
-              View all transactions
+              <X className="h-3 w-3 mr-1" />
+              Clear
             </Button>
           </div>
-        ) : (
-          Object.entries(groupedTransactions).map(([dateGroup, txs]) => (
-            <div key={dateGroup} className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 text-sm font-semibold text-foreground bg-gradient-to-r from-accent/10 to-accent/5 py-2 px-4 rounded-3 border border-accent/20">
-                  <Calendar className="w-3.5 h-3.5 text-accent" />
-                  {dateGroup}
-                </div>
-                <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
-                <Badge variant="outline" className="text-[10px] px-2 py-1 font-medium">
-                  {txs.length} {txs.length === 1 ? 'transaction' : 'transactions'}
-                </Badge>
-              </div>
-              <div className="space-y-3 pl-2">
-                {txs.map(tx => (
-                  <TransactionItem key={tx.transactionHash} transaction={tx} expanded={true} />
-                ))}
-              </div>
-            </div>
-          ))
-        )}
+        )} */}
       </div>
+    )
+  }
+
+  return (
+    <div className="flex items-center gap-2 p-1 bg-muted/50 rounded-4 border">
+      <div className="flex items-center gap-1">
+        {/* <CalendarRange className="h-3.5 w-3.5 text-muted-foreground" /> */}
+        <DatePicker
+          date={dateRange?.startDate || ''}
+          onDateChange={onStartDateChange}
+          placeholder="Start date"
+          minDate={minDate}
+          maxDate={dateRange?.endDate || maxDate}
+          className="w-36"
+          side="bottom"
+        />
+        <span className="text-xs text-muted-foreground px-1">to</span>
+        <DatePicker
+          date={dateRange?.endDate || ''}
+          onDateChange={onEndDateChange}
+          placeholder="End date"
+          minDate={dateRange?.startDate || minDate}
+          maxDate={maxDate}
+          className="w-36"
+          side="bottom"
+          disabled={!dateRange?.startDate}
+        />
+      </div>
+      {/* {hasDateRange && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClear}
+          className="h-6 w-6 p-0 hover:bg-muted/80"
+        >
+          <X className="h-3 w-3" />
+        </Button>
+      )} */}
     </div>
   )
 }
