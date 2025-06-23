@@ -291,6 +291,8 @@ input[type='number'] {
     transition: all 0.3s ease !important;
     padding-left: .75rem !important;
     padding-right: .75rem !important;
+    padding-top: 0.55rem !important;
+    padding-bottom: 0.75rem !important;
     font-size: 14px !important;
     font-weight: 600 !important;
     height: 40px !important;
