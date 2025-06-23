@@ -304,7 +304,7 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                                     }`}>
                                         {type.startsWith('transfer') ? 'Transfer' : type}
                                     </span>
-                                    <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 h-4 font-medium whitespace-nowrap bg-green-50 border-green-200 text-green-700">
+                                    <Badge variant="outline" className="hidden md:flex gap-0.5 text-[9px] px-1.5 py-0.5 h-4 font-medium whitespace-nowrap bg-green-50 border-green-200 text-green-700">
                                         <CheckCircle2 className="h-2 w-2 mr-0.5 text-green-500" />
                                         CONFIRMED
                                     </Badge>
