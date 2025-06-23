@@ -10,6 +10,7 @@ import ExternalLink from '@/components/ExternalLink'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { ArrowRightIcon, ReceiptText } from 'lucide-react'
 
 export default function PageHeader() {
     const { selectedChain, chainDetails } = useChain()
@@ -50,15 +51,20 @@ export default function PageHeader() {
                         </BodyText>
                     </div>
                 </div>
-                {/* <Button 
-                    variant="primaryOutline"
+                <Button 
+                    variant="primary"
                     size="sm"
                     asChild
                 >
-                    <Link href={`/super-fund/${currentChainDetails.name.toLowerCase()}/statement`}>
+                    <Link 
+                        href={`/super-fund/${currentChainDetails.name.toLowerCase()}/statement`}
+                        className="flex items-center gap-1 group"
+                    >
+                        <ReceiptText className="w-4 h-4" />
                         View Statement
+                        <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                     </Link>
-                </Button> */}
+                </Button>
             </div>
         </motion.div>
     )

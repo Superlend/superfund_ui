@@ -7,8 +7,8 @@ import { abbreviateNumberWithoutRounding, getBlockExplorerUrl } from '@/lib/util
 import { ChainId, ChainNameMap } from '@/types/chain';
 import { format, isToday, isYesterday } from 'date-fns';
 import { formatUnits } from 'ethers/lib/utils';
-import { useState } from 'react';
-import { ChevronRight, ExternalLink as LucideExternalLink, Copy, ArrowUpRight, ArrowDownRight, CheckCircle2, Calendar } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ChevronRight, ExternalLink as LucideExternalLink, Copy, ArrowUpRight, ArrowDownRight, CheckCircle2, Calendar, ChevronLeft } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -36,13 +36,21 @@ interface StatementsProps {
  * />
  */
 function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [transactionsPerPage] = useState(5);
+    
+    // Reset to page 1 when key parameters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [userAddress, vaultAddress, chainId]);
+    
     const { data: response, isLoading, isError, error } = useUserStatements({
         userAddress,
         vaultAddress,
         chainId,
     });
     const data = response?.[0]
-    console.log(data)
 
     // Helper function to format Unix timestamps into a readable date string
     const formatTimestamp = (timestamp: string) => {
@@ -91,6 +99,135 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
             blockNumber: tx.blockNumber
         };
     };
+
+    // Client-side pagination logic
+    const allTransactions = data?.transactions || [];
+    const totalTransactions = allTransactions.length;
+    const totalPages = Math.ceil(totalTransactions / transactionsPerPage);
+    
+    // Calculate start and end indices for current page
+    const startIndex = (currentPage - 1) * transactionsPerPage;
+    const endIndex = startIndex + transactionsPerPage;
+    const currentTransactions = allTransactions.slice(startIndex, endIndex);
+    
+    // Pagination state
+    const hasMorePages = currentPage < totalPages;
+    const isLastPage = currentPage >= totalPages;
+
+    // Debug log
+    console.log('Client-side Pagination Debug:', {
+        totalTransactions,
+        currentPage,
+        totalPages,
+        startIndex,
+        endIndex: Math.min(endIndex, totalTransactions),
+        currentTransactionsShown: currentTransactions.length
+    });
+    
+    // Pagination handlers
+    const goToPage = (page: number) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
+    
+    const goToPreviousPage = () => goToPage(currentPage - 1);
+    const goToNextPage = () => goToPage(currentPage + 1);
+
+    // Pagination component for client-side pagination
+    function PaginationControls() {
+        // Don't show pagination if no transactions or only one page
+        if (totalPages <= 1) return null;
+        
+        const getPageNumbers = () => {
+            const pageNumbers = [];
+            const maxPagesToShow = 5;
+            
+            if (totalPages <= maxPagesToShow) {
+                for (let i = 1; i <= totalPages; i++) {
+                    pageNumbers.push(i);
+                }
+            } else {
+                const startPage = Math.max(1, currentPage - 2);
+                const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    pageNumbers.push(i);
+                }
+            }
+            
+            return pageNumbers;
+        };
+
+        return (
+            <div className="flex flex-col lg:flex-row items-center justify-between max-lg:gap-8 mt-6 pt-4 border-t border-gray-200">
+                {/* Left side - Page info */}
+                <div className="text-sm text-gray-600">
+                    Showing {startIndex + 1}-{Math.min(endIndex, totalTransactions)} of {totalTransactions} transactions
+                </div>
+
+                {/* Center - Page numbers and navigation */}
+                <div className="flex items-center gap-2">
+                    {/* Previous button */}
+                    <button
+                        onClick={goToPreviousPage}
+                        disabled={currentPage === 1 || isLoading}
+                        className="flex items-center gap-1 px-3 py-1 text-sm font-medium text-gray-800 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                        <span className="hidden sm:block">Previous</span>
+                    </button>
+
+                    {/* Page numbers */}
+                    <div className="flex items-center gap-1">
+                        {getPageNumbers().map((pageNum) => (
+                            <button
+                                key={pageNum}
+                                onClick={() => goToPage(pageNum)}
+                                disabled={isLoading}
+                                className={`px-3 py-1 text-sm font-medium transition-colors rounded-full duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                                    pageNum === currentPage
+                                        ? 'bg-blue-600 text-white font-bold'
+                                        : 'text-gray-700'
+                                }`}
+                            >
+                                {pageNum}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Next button */}
+                    <button
+                        onClick={goToNextPage}
+                        disabled={currentPage >= totalPages || isLoading}
+                        className="flex items-center gap-1 px-3 py-1 text-sm font-medium text-gray-800 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                    >
+                        <span className="hidden sm:block">Next</span>
+                        <ChevronRight className="h-4 w-4" />
+                    </button>
+                </div>
+
+                {/* Right side - Go to page input */}
+                {/* <div className="flex items-center gap-2 text-sm">
+                    <span className="text-gray-600">Go to:</span>
+                    <input
+                        type="number"
+                        min="1"
+                        max={totalPages}
+                        value={currentPage}
+                        disabled={isLoading}
+                        onChange={(e) => {
+                            const page = parseInt(e.target.value);
+                            if (!isNaN(page) && page >= 1) {
+                                goToPage(page);
+                            }
+                        }}
+                        className="w-16 px-2 py-1 text-center border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                </div> */}
+            </div>
+        );
+    }
 
     // Extracted TransactionItem component for statements
     function StatementTransactionItem({ transaction, chainId }: { transaction: any; chainId: number }) {
@@ -411,21 +548,40 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
             )}
 
             {/* Transactions Section */}
-            {data.transactions && data.transactions.length > 0 && (
+            {allTransactions.length > 0 && (
                 <section className="mb-8">
                     <h2 className="text-2xl font-bold text-gray-800 mb-5">Transactions</h2>
-                    <div className="space-y-3">
-                        {data.transactions.map((tx, index) => {
-                            const transformedTx = transformStatementTransaction(tx);
-                            return (
-                                <StatementTransactionItem 
-                                    key={index} 
-                                    transaction={transformedTx} 
-                                    chainId={data.chainId}
-                                />
-                            );
-                        })}
+                    
+                    {/* Top pagination controls */}
+                    {/* <PaginationControls /> */}
+                    
+                    {/* Transaction list */}
+                    <div className="space-y-3 my-6">
+                        {isLoading ? (
+                            <div className="text-center py-8">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                                <p className="text-sm text-gray-500">Loading transactions...</p>
+                            </div>
+                        ) : currentTransactions.length > 0 ? (
+                            currentTransactions.map((tx, index) => {
+                                const transformedTx = transformStatementTransaction(tx);
+                                return (
+                                    <StatementTransactionItem 
+                                        key={startIndex + index} 
+                                        transaction={transformedTx} 
+                                        chainId={data.chainId}
+                                    />
+                                );
+                            })
+                        ) : (
+                            <div className="text-center py-8 text-gray-500">
+                                <p>No transactions found for this page.</p>
+                            </div>
+                        )}
                     </div>
+                    
+                    {/* Bottom pagination controls */}
+                    <PaginationControls />
                 </section>
             )}
 
