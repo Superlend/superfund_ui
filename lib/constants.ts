@@ -65,6 +65,7 @@ export const VAULT_STRATEGIES_COLORS = {
     'Cash Reserve': "#F4A460",
     'Spark USDC Vault': "#3366CC",
     'Seamless USDC Vault': "#8A2BE2",
+    'Universal USDC Vault': "#3151b0",
 }
 
 export const SONIC_VAULT_STRATEGIES_COLORS = {
@@ -136,6 +137,11 @@ export const VAULT_STRATEGIES: Record<string, BaseStrategy> = {
         address: "0x616a4E1db48e22028f6bbf20444Cd3b8e3273738",
         strategy_type: StrategiesType.Morpho,
         details_url: `${MORPHO_BASE_URL}/vault/0x616a4E1db48e22028f6bbf20444Cd3b8e3273738/seamless-usdc-vault`,
+    },
+    "Universal USDC Vault": {
+        address: "0xB7890CEE6CF4792cdCC13489D36D9d42726ab863",
+        strategy_type: StrategiesType.Morpho,
+        details_url: `${MORPHO_BASE_URL}/vault/0xB7890CEE6CF4792cdCC13489D36D9d42726ab863/universal-usdc-vault`,
     }
 }
 
