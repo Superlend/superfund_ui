@@ -8,7 +8,7 @@ import { ChainId, ChainNameMap } from '@/types/chain';
 import { format, isToday, isYesterday } from 'date-fns';
 import { formatUnits } from 'ethers/lib/utils';
 import { useState, useEffect } from 'react';
-import { ChevronRight, ExternalLink as LucideExternalLink, Copy, ArrowUpRight, ArrowDownRight, CheckCircle2, Calendar, ChevronLeft } from 'lucide-react';
+import { ChevronRight, ExternalLink as LucideExternalLink, Copy, ArrowUpRight, ArrowDownRight, ArrowRight, ArrowLeft, CheckCircle2, Calendar, ChevronLeft } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -96,7 +96,9 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
             shares: (parseFloat(tx.shareAmount) * 1e6).toString(), // Convert to Wei format
             blockTimestamp: convertBlockNumberToTimestamp(tx.blockNumber),
             transactionHash: tx.txHash,
-            blockNumber: tx.blockNumber
+            blockNumber: tx.blockNumber,
+            from: tx.from,
+            to: tx.to
         };
     };
 
@@ -231,13 +233,12 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
 
     // Extracted TransactionItem component for statements
     function StatementTransactionItem({ transaction, chainId }: { transaction: any; chainId: number }) {
-        const { type, assets, shares, blockTimestamp, transactionHash } = transaction;
+        const { type, assets, shares, blockTimestamp, transactionHash, from, to } = transaction;
         const date = convertTimestampToLocalDate(blockTimestamp);
         const [copied, setCopied] = useState(false);
 
-        // Format the asset amount (using 1e6 decimals as specified)
-        const formattedAssets = parseFloat(formatUnits(assets, 6)).toFixed(4);
-        const formattedShares = parseFloat(formatUnits(shares, 6)).toFixed(4);
+        const formattedAssets = abbreviateNumberWithoutRounding(Number(formatUnits(assets, 6)));
+        const formattedShares = abbreviateNumberWithoutRounding(Number(formatUnits(shares, 6)));
 
         // Get explorer URL based on the chain
         const getExplorerUrl = () => {
@@ -272,6 +273,14 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
             <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
                 <ArrowUpRight className="h-2.5 w-2.5 text-green-500" />
             </div>
+        ) : type === 'transfer-received' ? (
+            <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                <ArrowLeft className="h-2.5 w-2.5 text-green-500" />
+            </div>
+        ) : type === 'transfer-sent' ? (
+            <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
+                <ArrowRight className="h-2.5 w-2.5 text-red-500" />
+            </div>
         ) : (
             <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
                 <ArrowDownRight className="h-2.5 w-2.5 text-red-500" />
@@ -290,8 +299,10 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                             {DirectionIcon}
                             <div className="flex flex-col space-y-1.5 flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                    <span className={`text-sm font-semibold capitalize ${type === 'deposit' ? 'text-green-600' : 'text-red-600'}`}>
-                                        {type}
+                                    <span className={`text-sm font-semibold capitalize ${
+                                        type === 'deposit' || type === 'transfer-received' ? 'text-green-600' : 'text-red-600'
+                                    }`}>
+                                        {type.startsWith('transfer') ? 'Transfer' : type}
                                     </span>
                                     <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 h-4 font-medium whitespace-nowrap bg-green-50 border-green-200 text-green-700">
                                         <CheckCircle2 className="h-2 w-2 mr-0.5 text-green-500" />
@@ -385,6 +396,72 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                                         </TooltipTrigger>
                                         <TooltipContent side="left" className="bg-card border shadow-lg">
                                             <p className="text-xs font-medium">Shares received</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </>
+                            ) : type === 'transfer-sent' ? (
+                                <>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex items-center gap-1 px-2 py-1 rounded-2 bg-red-50/70 border border-red-100/70 hover:bg-red-50 hover:border-red-200 transition-colors duration-200 cursor-pointer">
+                                                <span className="text-red-500 font-medium tabular-nums text-xs">-{formattedShares}</span>
+                                                <span className="text-[9px] font-medium text-red-600/80 bg-red-100/50 px-1 py-0.5 rounded">
+                                                    slUSD
+                                                </span>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left" className="bg-card border shadow-lg">
+                                            <p className="text-xs font-medium">slUSD sent</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex items-center gap-1 px-1.5 py-1 rounded-2 bg-orange-50/70 border border-orange-100/70 hover:bg-orange-50 hover:border-orange-200 transition-colors duration-200 cursor-pointer">
+                                                <span className="text-orange-600 font-mono text-[10px]">To: {shortenAddress(to)}</span>
+                                                {/* <Link
+                                                    href={`${getExplorerUrl()}${transactionHash}`}
+                                                    target="_blank"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <LucideExternalLink className="h-2 w-2 text-orange-500 hover:text-orange-600" />
+                                                </Link> */}
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left" className="bg-card border shadow-lg">
+                                            <p className="text-xs font-medium">Recipient address: {to}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </>
+                            ) : type === 'transfer-received' ? (
+                                <>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex items-center gap-1 px-2 py-1 rounded-2 bg-green-50/70 border border-green-100/70 hover:bg-green-50 hover:border-green-200 transition-colors duration-200 cursor-pointer">
+                                                <span className="text-green-500 font-medium tabular-nums text-xs">+{formattedShares}</span>
+                                                <span className="text-[9px] font-medium text-green-600/80 bg-green-100/50 px-1 py-0.5 rounded">
+                                                    slUSD
+                                                </span>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left" className="bg-card border shadow-lg">
+                                            <p className="text-xs font-medium">slUSD received</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex items-center gap-1 px-1.5 py-1 rounded-2 bg-blue-50/70 border border-blue-100/70 hover:bg-blue-50 hover:border-blue-200 transition-colors duration-200 cursor-pointer">
+                                                <span className="text-blue-600 font-mono text-[10px]">From: {shortenAddress(from)}</span>
+                                                {/* <Link
+                                                    href={`${getExplorerUrl()}${transactionHash}`}
+                                                    target="_blank"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <LucideExternalLink className="h-2 w-2 text-blue-500 hover:text-blue-600" />
+                                                </Link> */}
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left" className="bg-card border shadow-lg">
+                                            <p className="text-xs font-medium">Sender address: {from}</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 </>
