@@ -1,6 +1,6 @@
 'use client'
 
-import { getUserStatements, UserStatementsData, UserStatementsParams } from '@/queries/user-statements-api'
+import { getUserStatements, UserStatementData, UserStatementsParams } from '@/queries/user-statements-api'
 import { useQuery } from '@tanstack/react-query'
 
 export interface UseUserStatementsProps {
@@ -15,7 +15,7 @@ export default function useUserStatements({
   chainId,
 }: UseUserStatementsProps) {
   const { data, isLoading, isError, error, refetch } = useQuery<
-    UserStatementsData,
+    UserStatementData[],
     Error
   >({
     queryKey: ['user-statements', userAddress, vaultAddress, chainId],

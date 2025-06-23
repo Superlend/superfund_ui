@@ -12,7 +12,7 @@ export interface TokenReward {
   }
 }
 
-export interface UserStatementsData {
+export interface UserStatementData {
   openingBalance: number
   closingBalance: number
   startBlock: number
@@ -23,7 +23,7 @@ export interface UserStatementsData {
   closingExchangeRate: number
   vault: string
   chainId: number
-  transactions?: any[] // We ignore this as mentioned
+  transactions?: any[]
   rewards: TokenReward[]
   baseApr: number
   rewardApr: number
@@ -36,7 +36,7 @@ export interface UserStatementsData {
 export interface UserStatementsResponse {
   success: boolean
   message: string
-  data: UserStatementsData
+  data: UserStatementData[]
 }
 
 export interface UserStatementsParams {
@@ -45,10 +45,10 @@ export interface UserStatementsParams {
   chainId: number
 }
 
-export async function getUserStatements(params: UserStatementsParams): Promise<UserStatementsData> {
+export async function getUserStatements(params: UserStatementsParams): Promise<UserStatementData[]> {
   const { userAddress, vaultAddress, chainId } = params
   
-  return requestRewards<UserStatementsData>({
+  return requestRewards<UserStatementData[]>({
     method: 'GET',
     path: `/user/statements/${userAddress}/${vaultAddress}/${chainId}`,
   })

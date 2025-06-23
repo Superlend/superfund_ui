@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const ALLOWED_PATHS = ['/', '/waitlist', '/super-fund/base', '/super-fund/base/txs']
+const ALLOWED_PATHS = ['/', '/waitlist', '/super-fund/base', '/super-fund/base/txs', '/super-fund/base/statement']
 
 export function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
