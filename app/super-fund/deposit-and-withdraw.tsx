@@ -351,11 +351,11 @@ export default function DepositAndWithdrawAssets() {
                     )}
                 </CardFooter>
             </Card>
-            <FeedbackDialog
+            {/* <FeedbackDialog
                 open={showWhalesSupportDialog}
                 setOpen={setShowWhalesSupportDialog}
                 portfolioValue={portfolioValue}
-            />
+            /> */}
         </section>
     )
 }
