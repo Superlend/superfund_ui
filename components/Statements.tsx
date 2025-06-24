@@ -8,16 +8,23 @@ import { ChainId, ChainNameMap } from '@/types/chain';
 import { format, isToday, isYesterday } from 'date-fns';
 import { formatUnits } from 'ethers/lib/utils';
 import { useState, useEffect } from 'react';
-import { ChevronRight, ExternalLink as LucideExternalLink, Copy, ArrowUpRight, ArrowDownRight, ArrowRight, ArrowLeft, CheckCircle2, Calendar, ChevronLeft } from 'lucide-react';
+import { ChevronRight, ExternalLink as LucideExternalLink, Copy, ArrowUpRight, ArrowDownRight, ArrowRight, ArrowLeft, CheckCircle2, Calendar, ChevronLeft, CalendarIcon, CalendarRange, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
 } from "./ui/tooltip";
 import { Badge } from "./ui/badge";
+import { Button } from './ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 interface StatementsProps {
     userAddress: string;
@@ -36,25 +43,60 @@ interface StatementsProps {
  * />
  */
 function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
+    // Statement selection state
+    const [selectedStatementIndex, setSelectedStatementIndex] = useState(0);
+
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const [transactionsPerPage] = useState(5);
-    
+
     // Reset to page 1 when key parameters change
     useEffect(() => {
         setCurrentPage(1);
     }, [userAddress, vaultAddress, chainId]);
-    
+
+    // Reset selected statement when key parameters change
+    useEffect(() => {
+        setSelectedStatementIndex(0);
+    }, [userAddress, vaultAddress, chainId]);
+
     const { data: response, isLoading, isError, error } = useUserStatements({
         userAddress,
         vaultAddress,
         chainId,
     });
-    const data = response?.[0]
+
+    // Safeguard: if selectedStatementIndex is out of bounds, reset to 0
+    useEffect(() => {
+        if (response && selectedStatementIndex >= response.length) {
+            setSelectedStatementIndex(0);
+        }
+    }, [response, selectedStatementIndex]);
+
+    const data = response?.[selectedStatementIndex]
 
     // Helper function to format Unix timestamps into a readable date string
     const formatTimestamp = (timestamp: string) => {
         return new Date(parseInt(timestamp)).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+    };
+
+    // Helper function to format date range for dropdown options
+    const formatDateRange = (openingTimestamp: string, closingTimestamp: string) => {
+        const startDate = new Date(parseInt(openingTimestamp));
+        const endDate = new Date(parseInt(closingTimestamp));
+
+        const startFormatted = startDate.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+        const endFormatted = endDate.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        return `${startFormatted} - ${endFormatted}`;
     };
 
     // Helper function to shorten blockchain addresses for better readability
@@ -106,12 +148,12 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
     const allTransactions = data?.transactions || [];
     const totalTransactions = allTransactions.length;
     const totalPages = Math.ceil(totalTransactions / transactionsPerPage);
-    
+
     // Calculate start and end indices for current page
     const startIndex = (currentPage - 1) * transactionsPerPage;
     const endIndex = startIndex + transactionsPerPage;
     const currentTransactions = allTransactions.slice(startIndex, endIndex);
-    
+
     // Pagination state
     const hasMorePages = currentPage < totalPages;
     const isLastPage = currentPage >= totalPages;
@@ -125,14 +167,14 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
         endIndex: Math.min(endIndex, totalTransactions),
         currentTransactionsShown: currentTransactions.length
     });
-    
+
     // Pagination handlers
     const goToPage = (page: number) => {
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
         }
     };
-    
+
     const goToPreviousPage = () => goToPage(currentPage - 1);
     const goToNextPage = () => goToPage(currentPage + 1);
 
@@ -140,11 +182,11 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
     function PaginationControls() {
         // Don't show pagination if no transactions or only one page
         if (totalPages <= 1) return null;
-        
+
         const getPageNumbers = () => {
             const pageNumbers = [];
             const maxPagesToShow = 5;
-            
+
             if (totalPages <= maxPagesToShow) {
                 for (let i = 1; i <= totalPages; i++) {
                     pageNumbers.push(i);
@@ -152,12 +194,12 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
             } else {
                 const startPage = Math.max(1, currentPage - 2);
                 const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
-                
+
                 for (let i = startPage; i <= endPage; i++) {
                     pageNumbers.push(i);
                 }
             }
-            
+
             return pageNumbers;
         };
 
@@ -187,11 +229,10 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                                 key={pageNum}
                                 onClick={() => goToPage(pageNum)}
                                 disabled={isLoading}
-                                className={`px-3 py-1 text-sm font-medium transition-colors rounded-full duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                                    pageNum === currentPage
-                                        ? 'bg-blue-600 text-white font-bold'
-                                        : 'text-gray-700'
-                                }`}
+                                className={`px-3 py-1 text-sm font-medium transition-colors rounded-full duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${pageNum === currentPage
+                                    ? 'bg-blue-600 text-white font-bold'
+                                    : 'text-gray-700'
+                                    }`}
                             >
                                 {pageNum}
                             </button>
@@ -292,16 +333,15 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                 <div className="group relative p-3 bg-gradient-to-r from-background to-background/50 rounded-3 hover:from-accent/5 hover:to-accent/10 transition-all duration-300 border border-border/50 hover:border-accent/30 hover:shadow-md hover:shadow-accent/5">
                     {/* Subtle gradient overlay on hover */}
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3 pointer-events-none" />
-                    
+
                     <div className="relative flex items-start justify-between gap-3">
                         {/* Left section */}
                         <div className="flex items-start gap-2 flex-1 min-w-0">
                             {DirectionIcon}
                             <div className="flex flex-col space-y-1.5 flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                    <span className={`text-sm font-semibold capitalize ${
-                                        type === 'deposit' || type === 'transfer-received' ? 'text-green-600' : 'text-red-600'
-                                    }`}>
+                                    <span className={`text-sm font-semibold capitalize ${type === 'deposit' || type === 'transfer-received' ? 'text-green-600' : 'text-red-600'
+                                        }`}>
                                         {type.startsWith('transfer') ? 'Transfer' : type}
                                     </span>
                                     <Badge variant="outline" className="hidden md:flex gap-0.5 text-[9px] px-1.5 py-0.5 h-4 font-medium whitespace-nowrap bg-green-50 border-green-200 text-green-700">
@@ -550,9 +590,35 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
             <header className="text-center mb-8 pb-6 border-b border-tertiary-charcoal/20">
                 {/* Adjusted text color to a darker shade for professionalism */}
                 <h1 className="text-4xl font-extrabold text-gray-800 mb-2">Weekly Statement</h1>
-                <p className="text-lg text-gray-600">
-                    Period: <span className="font-semibold">{formatTimestamp(data.openingBlockTimestamp)}</span> to <span className="font-semibold">{formatTimestamp(data.closingBlockTimestamp)}</span>
-                </p>
+                <div className="flex items-center gap-2 w-fit mx-auto">
+                    <p className="text-lg text-gray-600">
+                        Period: <span className="font-semibold">{formatTimestamp(data.openingBlockTimestamp)}</span> to <span className="font-semibold">{formatTimestamp(data.closingBlockTimestamp)}</span>
+                    </p>
+                    {(response && (response.length > 1)) && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button type='button'>
+                                    <CalendarRange className="w-4 h-4 text-tertiary-navy hover:text-tertiary-navy/80" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="center" className="w-64 rounded-4 overflow-hidden p-0">
+                                {response.map((statement, index) => (
+                                    <DropdownMenuItem
+                                        key={index}
+                                        onClick={() => setSelectedStatementIndex(index)}
+                                        className={`cursor-pointer hover:bg-tertiary-charcoal/5 py-2 px-4 ${index === selectedStatementIndex ? 'bg-tertiary-charcoal/15' : ''}`}
+                                    >
+                                        <div className="flex items-center justify-between w-full">
+                                            <span className="text-sm">
+                                                {formatDateRange(statement.openingBlockTimestamp, statement.closingBlockTimestamp)}
+                                            </span>
+                                        </div>
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                </div>
                 <p className="text-md text-gray-600 mt-2">
                     Chain: <span className="text-tertiary-charcoal font-medium">{ChainNameMap[data.chainId as ChainId]}</span>
                 </p>
@@ -628,10 +694,10 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
             {allTransactions.length > 0 && (
                 <section className="mb-8">
                     <h2 className="text-2xl font-bold text-gray-800 mb-5">Transactions</h2>
-                    
+
                     {/* Top pagination controls */}
                     {/* <PaginationControls /> */}
-                    
+
                     {/* Transaction list */}
                     <div className="space-y-3 my-6">
                         {isLoading ? (
@@ -643,9 +709,9 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                             currentTransactions.map((tx, index) => {
                                 const transformedTx = transformStatementTransaction(tx);
                                 return (
-                                    <StatementTransactionItem 
-                                        key={startIndex + index} 
-                                        transaction={transformedTx} 
+                                    <StatementTransactionItem
+                                        key={startIndex + index}
+                                        transaction={transformedTx}
                                         chainId={data.chainId}
                                     />
                                 );
@@ -656,7 +722,7 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                             </div>
                         )}
                     </div>
-                    
+
                     {/* Bottom pagination controls */}
                     <PaginationControls />
                 </section>

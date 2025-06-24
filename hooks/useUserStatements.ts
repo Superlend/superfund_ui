@@ -15,8 +15,8 @@ export default function useUserStatements({
   userAddress,
   vaultAddress,
   chainId,
-  limit = 5,
-  offset = 0,
+  limit, // = 5,
+  offset, // = 0,
 }: UseUserStatementsProps) {
   const { data, isLoading, isError, error, refetch } = useQuery<
     UserStatementData[],
