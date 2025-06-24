@@ -200,7 +200,8 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
         )
     }, [walletAddress, liquidityLandUsers])
 
-    const baseAPY = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(effectiveApyData?.base_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
+    // Use spotApy consistently for both boost calculation and display
+    const baseAPY = Number(spotApy ?? 0) + Number(effectiveApyData?.rewards_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
     const LIQUIDITY_LAND_BOOST_APY = useMemo(() => {
         if (!isLiquidityLandUser) return 0
         const targetAPY = LIQUIDITY_LAND_TARGET_APY
@@ -267,8 +268,8 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
     const [infoCardsLayout, setInfoCardsLayout] = useState<'grid' | 'row'>('grid')
 
     const TOTAL_SPOT_APY = useMemo(() => {
-        return Number(spotApy ?? 0) + Number(effectiveApyData?.rewards_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0) + Number(LIQUIDITY_LAND_BOOST_APY ?? 0)
-    }, [spotApy, effectiveApyData, GLOBAL_BOOST_APY, Farcaster_BOOST_APY, LIQUIDITY_LAND_BOOST_APY])
+        return baseAPY + Number(LIQUIDITY_LAND_BOOST_APY ?? 0)
+    }, [baseAPY, LIQUIDITY_LAND_BOOST_APY])
 
     // Combine all APY calculations in a single useMemo to prevent cascading re-renders
     const apyCalculations = useMemo(() => {
