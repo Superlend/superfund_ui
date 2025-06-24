@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { TActionType, TPositionType } from '@/types'
 import { LoaderCircle } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { abbreviateNumberWithoutRounding, getBoostApy, getLowestDisplayValue } from '@/lib/utils'
 import { BodyText } from '@/components/ui/typography'
 import { cn } from '@/lib/utils'
@@ -32,6 +32,8 @@ import { useActiveAccount, useSwitchActiveWalletChain } from "thirdweb/react";
 import { base } from "thirdweb/chains";
 import FeedbackDialog from '@/components/dialogs/Feedback'
 import { useWhalesSupportDialog } from '@/hooks/useWhalesSupportDialog'
+import { LIQUIDITY_LAND_TARGET_APY } from '@/constants'
+import { useGetLiquidityLandUsers } from '@/hooks/useGetLiquidityLandUsers'
 
 export type THelperText = Record<
     string,
@@ -90,8 +92,30 @@ export default function DepositAndWithdrawAssets() {
         chainId: selectedChain,
         userAddress: walletAddress
     })
-    const BOOST_APY = boostRewardsData?.reduce((acc, curr) => acc + (curr.boost_apy / 100), 0) ?? 0
-    const TOTAL_APY = Number(effectiveApyData?.rewards_apy ?? 0) + Number(BOOST_APY ?? 0) + Number(effectiveApyData?.base_apy ?? 0)
+    const GLOBAL_BOOST_APY =
+        boostRewardsData?.filter((item) => item.description?.includes('A global boost for all users') ?? false)
+            .reduce((acc, curr) => acc + (curr.boost_apy / 100), 0) ?? 0
+    const Farcaster_BOOST_APY =
+        boostRewardsData?.filter((item) => !item.description?.includes('A global boost for all users'))
+            .reduce((acc, curr) => acc + (curr.boost_apy / 100), 0) ?? 0
+    // Liquidity Land boost logic
+    const { data: liquidityLandUsers, isLoading: isLoadingLiquidityLandUsers } = useGetLiquidityLandUsers()
+    const isLiquidityLandUser = useMemo(() => {
+        if (!walletAddress || !liquidityLandUsers) return false
+        return liquidityLandUsers.some(user =>
+            user.walletAddress.toLowerCase() === walletAddress.toLowerCase()
+        )
+    }, [walletAddress, liquidityLandUsers])
+
+    const baseAPY = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(effectiveApyData?.base_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
+    const LIQUIDITY_LAND_BOOST_APY = useMemo(() => {
+        if (!isLiquidityLandUser) return 0
+        const targetAPY = LIQUIDITY_LAND_TARGET_APY
+        const boost = Math.max(0, targetAPY - baseAPY)
+        return boost
+    }, [isLiquidityLandUser, baseAPY])
+    const hasLiquidityLandBoost = LIQUIDITY_LAND_BOOST_APY > 0
+    const TOTAL_APY = Number(effectiveApyData?.rewards_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0) + Number(effectiveApyData?.base_apy ?? 0) + Number(LIQUIDITY_LAND_BOOST_APY ?? 0)
 
     useEffect(() => {
         // Only run this effect when the transaction dialog is open to prevent unwanted state changes during resets
