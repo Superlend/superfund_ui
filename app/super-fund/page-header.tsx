@@ -10,10 +10,14 @@ import ExternalLink from '@/components/ExternalLink'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { ArrowRightIcon, ReceiptText } from 'lucide-react'
+import { useActiveAccount } from 'thirdweb/react'
 
 export default function PageHeader() {
     const { selectedChain, chainDetails } = useChain()
     const currentChainDetails = chainDetails[selectedChain as keyof typeof chainDetails]
+    const activeAccount = useActiveAccount();
+    const isWalletConnected = !!activeAccount;
 
     return (
         <motion.div
@@ -50,15 +54,21 @@ export default function PageHeader() {
                         </BodyText>
                     </div>
                 </div>
-                {/* <Button 
-                    variant="primaryOutline"
-                    size="sm"
-                    asChild
-                >
-                    <Link href={`/super-fund/${currentChainDetails.name.toLowerCase()}/statement`}>
-                        View Statement
-                    </Link>
-                </Button> */}
+                {isWalletConnected &&
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        asChild
+                    >
+                        <Link
+                            href={`/super-fund/${currentChainDetails.name.toLowerCase()}/statement`}
+                            className="flex items-center gap-1 group"
+                        >
+                            <ReceiptText className="w-4 h-4" />
+                            View Statement
+                            <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                        </Link>
+                    </Button>}
             </div>
         </motion.div>
     )

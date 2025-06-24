@@ -7,17 +7,24 @@ import { abbreviateNumberWithoutRounding, getBlockExplorerUrl } from '@/lib/util
 import { ChainId, ChainNameMap } from '@/types/chain';
 import { format, isToday, isYesterday } from 'date-fns';
 import { formatUnits } from 'ethers/lib/utils';
-import { useState } from 'react';
-import { ChevronRight, ExternalLink as LucideExternalLink, Copy, ArrowUpRight, ArrowDownRight, CheckCircle2, Calendar } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ChevronRight, ExternalLink as LucideExternalLink, Copy, ArrowUpRight, ArrowDownRight, ArrowRight, ArrowLeft, CheckCircle2, Calendar, ChevronLeft, CalendarIcon, CalendarRange, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
 } from "./ui/tooltip";
 import { Badge } from "./ui/badge";
+import { Button } from './ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 interface StatementsProps {
     userAddress: string;
@@ -36,17 +43,60 @@ interface StatementsProps {
  * />
  */
 function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
+    // Statement selection state
+    const [selectedStatementIndex, setSelectedStatementIndex] = useState(0);
+
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [transactionsPerPage] = useState(5);
+
+    // Reset to page 1 when key parameters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [userAddress, vaultAddress, chainId]);
+
+    // Reset selected statement when key parameters change
+    useEffect(() => {
+        setSelectedStatementIndex(0);
+    }, [userAddress, vaultAddress, chainId]);
+
     const { data: response, isLoading, isError, error } = useUserStatements({
         userAddress,
         vaultAddress,
         chainId,
     });
-    const data = response?.[0]
-    console.log(data)
+
+    // Safeguard: if selectedStatementIndex is out of bounds, reset to 0
+    useEffect(() => {
+        if (response && selectedStatementIndex >= response.length) {
+            setSelectedStatementIndex(0);
+        }
+    }, [response, selectedStatementIndex]);
+
+    const data = response?.[selectedStatementIndex]
 
     // Helper function to format Unix timestamps into a readable date string
     const formatTimestamp = (timestamp: string) => {
         return new Date(parseInt(timestamp)).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+    };
+
+    // Helper function to format date range for dropdown options
+    const formatDateRange = (openingTimestamp: string, closingTimestamp: string) => {
+        const startDate = new Date(parseInt(openingTimestamp));
+        const endDate = new Date(parseInt(closingTimestamp));
+
+        const startFormatted = startDate.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+        const endFormatted = endDate.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        return `${startFormatted} - ${endFormatted}`;
     };
 
     // Helper function to shorten blockchain addresses for better readability
@@ -88,19 +138,148 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
             shares: (parseFloat(tx.shareAmount) * 1e6).toString(), // Convert to Wei format
             blockTimestamp: convertBlockNumberToTimestamp(tx.blockNumber),
             transactionHash: tx.txHash,
-            blockNumber: tx.blockNumber
+            blockNumber: tx.blockNumber,
+            from: tx.from,
+            to: tx.to
         };
     };
 
+    // Client-side pagination logic
+    const allTransactions = data?.transactions || [];
+    const totalTransactions = allTransactions.length;
+    const totalPages = Math.ceil(totalTransactions / transactionsPerPage);
+
+    // Calculate start and end indices for current page
+    const startIndex = (currentPage - 1) * transactionsPerPage;
+    const endIndex = startIndex + transactionsPerPage;
+    const currentTransactions = allTransactions.slice(startIndex, endIndex);
+
+    // Pagination state
+    const hasMorePages = currentPage < totalPages;
+    const isLastPage = currentPage >= totalPages;
+
+    // Debug log
+    console.log('Client-side Pagination Debug:', {
+        totalTransactions,
+        currentPage,
+        totalPages,
+        startIndex,
+        endIndex: Math.min(endIndex, totalTransactions),
+        currentTransactionsShown: currentTransactions.length
+    });
+
+    // Pagination handlers
+    const goToPage = (page: number) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
+
+    const goToPreviousPage = () => goToPage(currentPage - 1);
+    const goToNextPage = () => goToPage(currentPage + 1);
+
+    // Pagination component for client-side pagination
+    function PaginationControls() {
+        // Don't show pagination if no transactions or only one page
+        if (totalPages <= 1) return null;
+
+        const getPageNumbers = () => {
+            const pageNumbers = [];
+            const maxPagesToShow = 5;
+
+            if (totalPages <= maxPagesToShow) {
+                for (let i = 1; i <= totalPages; i++) {
+                    pageNumbers.push(i);
+                }
+            } else {
+                const startPage = Math.max(1, currentPage - 2);
+                const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+                for (let i = startPage; i <= endPage; i++) {
+                    pageNumbers.push(i);
+                }
+            }
+
+            return pageNumbers;
+        };
+
+        return (
+            <div className="flex flex-col lg:flex-row items-center justify-between max-lg:gap-8 mt-6 pt-4 border-t border-gray-200">
+                {/* Left side - Page info */}
+                <div className="text-sm text-gray-600">
+                    Showing {startIndex + 1}-{Math.min(endIndex, totalTransactions)} of {totalTransactions} transactions
+                </div>
+
+                {/* Center - Page numbers and navigation */}
+                <div className="flex items-center gap-2">
+                    {/* Previous button */}
+                    <button
+                        onClick={goToPreviousPage}
+                        disabled={currentPage === 1 || isLoading}
+                        className="flex items-center gap-1 px-3 py-1 text-sm font-medium text-gray-800 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                        <span className="hidden sm:block">Previous</span>
+                    </button>
+
+                    {/* Page numbers */}
+                    <div className="flex items-center gap-1">
+                        {getPageNumbers().map((pageNum) => (
+                            <button
+                                key={pageNum}
+                                onClick={() => goToPage(pageNum)}
+                                disabled={isLoading}
+                                className={`px-3 py-1 text-sm font-medium transition-colors rounded-full duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${pageNum === currentPage
+                                    ? 'bg-blue-600 text-white font-bold'
+                                    : 'text-gray-700'
+                                    }`}
+                            >
+                                {pageNum}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Next button */}
+                    <button
+                        onClick={goToNextPage}
+                        disabled={currentPage >= totalPages || isLoading}
+                        className="flex items-center gap-1 px-3 py-1 text-sm font-medium text-gray-800 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                    >
+                        <span className="hidden sm:block">Next</span>
+                        <ChevronRight className="h-4 w-4" />
+                    </button>
+                </div>
+
+                {/* Right side - Go to page input */}
+                {/* <div className="flex items-center gap-2 text-sm">
+                    <span className="text-gray-600">Go to:</span>
+                    <input
+                        type="number"
+                        min="1"
+                        max={totalPages}
+                        value={currentPage}
+                        disabled={isLoading}
+                        onChange={(e) => {
+                            const page = parseInt(e.target.value);
+                            if (!isNaN(page) && page >= 1) {
+                                goToPage(page);
+                            }
+                        }}
+                        className="w-16 px-2 py-1 text-center border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                </div> */}
+            </div>
+        );
+    }
+
     // Extracted TransactionItem component for statements
     function StatementTransactionItem({ transaction, chainId }: { transaction: any; chainId: number }) {
-        const { type, assets, shares, blockTimestamp, transactionHash } = transaction;
+        const { type, assets, shares, blockTimestamp, transactionHash, from, to } = transaction;
         const date = convertTimestampToLocalDate(blockTimestamp);
         const [copied, setCopied] = useState(false);
 
-        // Format the asset amount (using 1e6 decimals as specified)
-        const formattedAssets = parseFloat(formatUnits(assets, 6)).toFixed(4);
-        const formattedShares = parseFloat(formatUnits(shares, 6)).toFixed(4);
+        const formattedAssets = abbreviateNumberWithoutRounding(Number(formatUnits(assets, 6)));
+        const formattedShares = abbreviateNumberWithoutRounding(Number(formatUnits(shares, 6)));
 
         // Get explorer URL based on the chain
         const getExplorerUrl = () => {
@@ -135,6 +314,14 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
             <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
                 <ArrowUpRight className="h-2.5 w-2.5 text-green-500" />
             </div>
+        ) : type === 'transfer-received' ? (
+            <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                <ArrowLeft className="h-2.5 w-2.5 text-green-500" />
+            </div>
+        ) : type === 'transfer-sent' ? (
+            <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
+                <ArrowRight className="h-2.5 w-2.5 text-red-500" />
+            </div>
         ) : (
             <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
                 <ArrowDownRight className="h-2.5 w-2.5 text-red-500" />
@@ -146,17 +333,18 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                 <div className="group relative p-3 bg-gradient-to-r from-background to-background/50 rounded-3 hover:from-accent/5 hover:to-accent/10 transition-all duration-300 border border-border/50 hover:border-accent/30 hover:shadow-md hover:shadow-accent/5">
                     {/* Subtle gradient overlay on hover */}
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3 pointer-events-none" />
-                    
+
                     <div className="relative flex items-start justify-between gap-3">
                         {/* Left section */}
                         <div className="flex items-start gap-2 flex-1 min-w-0">
                             {DirectionIcon}
                             <div className="flex flex-col space-y-1.5 flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                    <span className={`text-sm font-semibold capitalize ${type === 'deposit' ? 'text-green-600' : 'text-red-600'}`}>
-                                        {type}
+                                    <span className={`text-sm font-semibold capitalize ${type === 'deposit' || type === 'transfer-received' ? 'text-green-600' : 'text-red-600'
+                                        }`}>
+                                        {type.startsWith('transfer') ? 'Transfer' : type}
                                     </span>
-                                    <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 h-4 font-medium whitespace-nowrap bg-green-50 border-green-200 text-green-700">
+                                    <Badge variant="outline" className="hidden md:flex gap-0.5 text-[9px] px-1.5 py-0.5 h-4 font-medium whitespace-nowrap bg-green-50 border-green-200 text-green-700">
                                         <CheckCircle2 className="h-2 w-2 mr-0.5 text-green-500" />
                                         CONFIRMED
                                     </Badge>
@@ -251,6 +439,72 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                                         </TooltipContent>
                                     </Tooltip>
                                 </>
+                            ) : type === 'transfer-sent' ? (
+                                <>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex items-center gap-1 px-2 py-1 rounded-2 bg-red-50/70 border border-red-100/70 hover:bg-red-50 hover:border-red-200 transition-colors duration-200 cursor-pointer">
+                                                <span className="text-red-500 font-medium tabular-nums text-xs">-{formattedShares}</span>
+                                                <span className="text-[9px] font-medium text-red-600/80 bg-red-100/50 px-1 py-0.5 rounded">
+                                                    slUSD
+                                                </span>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left" className="bg-card border shadow-lg">
+                                            <p className="text-xs font-medium">slUSD sent</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex items-center gap-1 px-1.5 py-1 rounded-2 bg-orange-50/70 border border-orange-100/70 hover:bg-orange-50 hover:border-orange-200 transition-colors duration-200 cursor-pointer">
+                                                <span className="text-orange-600 font-mono text-[10px]">To: {shortenAddress(to)}</span>
+                                                {/* <Link
+                                                    href={`${getExplorerUrl()}${transactionHash}`}
+                                                    target="_blank"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <LucideExternalLink className="h-2 w-2 text-orange-500 hover:text-orange-600" />
+                                                </Link> */}
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left" className="bg-card border shadow-lg">
+                                            <p className="text-xs font-medium">Recipient address: {to}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </>
+                            ) : type === 'transfer-received' ? (
+                                <>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex items-center gap-1 px-2 py-1 rounded-2 bg-green-50/70 border border-green-100/70 hover:bg-green-50 hover:border-green-200 transition-colors duration-200 cursor-pointer">
+                                                <span className="text-green-500 font-medium tabular-nums text-xs">+{formattedShares}</span>
+                                                <span className="text-[9px] font-medium text-green-600/80 bg-green-100/50 px-1 py-0.5 rounded">
+                                                    slUSD
+                                                </span>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left" className="bg-card border shadow-lg">
+                                            <p className="text-xs font-medium">slUSD received</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex items-center gap-1 px-1.5 py-1 rounded-2 bg-blue-50/70 border border-blue-100/70 hover:bg-blue-50 hover:border-blue-200 transition-colors duration-200 cursor-pointer">
+                                                <span className="text-blue-600 font-mono text-[10px]">From: {shortenAddress(from)}</span>
+                                                {/* <Link
+                                                    href={`${getExplorerUrl()}${transactionHash}`}
+                                                    target="_blank"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <LucideExternalLink className="h-2 w-2 text-blue-500 hover:text-blue-600" />
+                                                </Link> */}
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left" className="bg-card border shadow-lg">
+                                            <p className="text-xs font-medium">Sender address: {from}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </>
                             ) : (
                                 <>
                                     <Tooltip>
@@ -336,9 +590,38 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
             <header className="text-center mb-8 pb-6 border-b border-tertiary-charcoal/20">
                 {/* Adjusted text color to a darker shade for professionalism */}
                 <h1 className="text-4xl font-extrabold text-gray-800 mb-2">Weekly Statement</h1>
-                <p className="text-lg text-gray-600">
-                    Period: <span className="font-semibold">{formatTimestamp(data.openingBlockTimestamp)}</span> to <span className="font-semibold">{formatTimestamp(data.closingBlockTimestamp)}</span>
-                </p>
+                <div className="flex items-center gap-2 w-fit mx-auto">
+                    <p className="text-lg text-gray-600">
+                        Period: <span className="font-semibold">{formatTimestamp(data.openingBlockTimestamp)}</span> to <span className="font-semibold">{formatTimestamp(data.closingBlockTimestamp)}</span>
+                    </p>
+                    {(response && (response.length > 1)) && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button type='button'>
+                                    <CalendarRange className="w-4 h-4 text-secondary-500 hover:text-secondary-500/80" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="center" className="w-64 rounded-4 overflow-hidden p-0 divide-y divide-tertiary-charcoal/10">
+                                {response.map((statement, index) => (
+                                    <DropdownMenuItem
+                                        key={index}
+                                        onClick={() => setSelectedStatementIndex(index)}
+                                        className={`cursor-pointer hover:bg-tertiary-charcoal/5 py-2 px-4`}
+                                    >
+                                        <div className="flex items-center justify-between w-full">
+                                            <span className="text-sm">
+                                                {formatDateRange(statement.openingBlockTimestamp, statement.closingBlockTimestamp)}
+                                            </span>
+                                        </div>
+                                        {index === selectedStatementIndex && (
+                                            <CheckCircle2 className="h-5 w-5 fill-secondary-500 text-white" />
+                                        )}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                </div>
                 <p className="text-md text-gray-600 mt-2">
                     Chain: <span className="text-tertiary-charcoal font-medium">{ChainNameMap[data.chainId as ChainId]}</span>
                 </p>
@@ -411,21 +694,40 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
             )}
 
             {/* Transactions Section */}
-            {data.transactions && data.transactions.length > 0 && (
+            {allTransactions.length > 0 && (
                 <section className="mb-8">
                     <h2 className="text-2xl font-bold text-gray-800 mb-5">Transactions</h2>
-                    <div className="space-y-3">
-                        {data.transactions.map((tx, index) => {
-                            const transformedTx = transformStatementTransaction(tx);
-                            return (
-                                <StatementTransactionItem 
-                                    key={index} 
-                                    transaction={transformedTx} 
-                                    chainId={data.chainId}
-                                />
-                            );
-                        })}
+
+                    {/* Top pagination controls */}
+                    {/* <PaginationControls /> */}
+
+                    {/* Transaction list */}
+                    <div className="space-y-3 my-6">
+                        {isLoading ? (
+                            <div className="text-center py-8">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                                <p className="text-sm text-gray-500">Loading transactions...</p>
+                            </div>
+                        ) : currentTransactions.length > 0 ? (
+                            currentTransactions.map((tx, index) => {
+                                const transformedTx = transformStatementTransaction(tx);
+                                return (
+                                    <StatementTransactionItem
+                                        key={startIndex + index}
+                                        transaction={transformedTx}
+                                        chainId={data.chainId}
+                                    />
+                                );
+                            })
+                        ) : (
+                            <div className="text-center py-8 text-gray-500">
+                                <p>No transactions found for this page.</p>
+                            </div>
+                        )}
                     </div>
+
+                    {/* Bottom pagination controls */}
+                    <PaginationControls />
                 </section>
             )}
 

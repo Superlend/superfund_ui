@@ -7,24 +7,30 @@ export interface UseUserStatementsProps {
   userAddress: string
   vaultAddress: string
   chainId: number
+  limit?: number
+  offset?: number
 }
 
 export default function useUserStatements({
   userAddress,
   vaultAddress,
   chainId,
+  limit, // = 5,
+  offset, // = 0,
 }: UseUserStatementsProps) {
   const { data, isLoading, isError, error, refetch } = useQuery<
     UserStatementData[],
     Error
   >({
-    queryKey: ['user-statements', userAddress, vaultAddress, chainId],
+    queryKey: ['user-statements', userAddress, vaultAddress, chainId, limit, offset],
     queryFn: async () => {
       try {
         const responseData = await getUserStatements({
           userAddress,
           vaultAddress,
           chainId,
+          limit,
+          offset,
         });
         return responseData;
       } catch (error) {

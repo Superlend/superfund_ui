@@ -43,13 +43,27 @@ export interface UserStatementsParams {
   userAddress: string
   vaultAddress: string
   chainId: number
+  limit?: number
+  offset?: number
 }
 
 export async function getUserStatements(params: UserStatementsParams): Promise<UserStatementData[]> {
-  const { userAddress, vaultAddress, chainId } = params
+  const { userAddress, vaultAddress, chainId, limit, offset } = params
+  
+  // Build query parameters
+  const queryParams = new URLSearchParams()
+  if (limit !== undefined) {
+    queryParams.append('limit', limit.toString())
+  }
+  if (offset !== undefined) {
+    queryParams.append('offset', offset.toString())
+  }
+  
+  const queryString = queryParams.toString()
+  const path = `/user/statements/${userAddress}/${vaultAddress}/${chainId}${queryString ? `?${queryString}` : ''}`
   
   return requestRewards<UserStatementData[]>({
     method: 'GET',
-    path: `/user/statements/${userAddress}/${vaultAddress}/${chainId}`,
+    path,
   })
 } 
