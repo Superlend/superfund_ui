@@ -598,21 +598,24 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <button type='button'>
-                                    <CalendarRange className="w-4 h-4 text-tertiary-navy hover:text-tertiary-navy/80" />
+                                    <CalendarRange className="w-4 h-4 text-secondary-500 hover:text-secondary-500/80" />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="center" className="w-64 rounded-4 overflow-hidden p-0">
+                            <DropdownMenuContent align="center" className="w-64 rounded-4 overflow-hidden p-0 divide-y divide-tertiary-charcoal/10">
                                 {response.map((statement, index) => (
                                     <DropdownMenuItem
                                         key={index}
                                         onClick={() => setSelectedStatementIndex(index)}
-                                        className={`cursor-pointer hover:bg-tertiary-charcoal/5 py-2 px-4 ${index === selectedStatementIndex ? 'bg-tertiary-charcoal/15' : ''}`}
+                                        className={`cursor-pointer hover:bg-tertiary-charcoal/5 py-2 px-4`}
                                     >
                                         <div className="flex items-center justify-between w-full">
                                             <span className="text-sm">
                                                 {formatDateRange(statement.openingBlockTimestamp, statement.closingBlockTimestamp)}
                                             </span>
                                         </div>
+                                        {index === selectedStatementIndex && (
+                                            <CheckCircle2 className="h-5 w-5 fill-secondary-500 text-white" />
+                                        )}
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>
