@@ -8,7 +8,7 @@ export interface LiquidityLandUser {
 
 export async function getLiquidityLandUsers(): Promise<LiquidityLandUser[]> {
   try {
-    const response = await axios.get('https://api.liquidity.land/project/cmc8sragi0001rg0ihberoqt2/activities.json')
+    const response = await axios.get('/api/liquidity-land')
     return response.data
   } catch (error) {
     throw new Error('Failed to fetch Liquidity Land users', {
