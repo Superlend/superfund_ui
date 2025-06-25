@@ -332,7 +332,7 @@ export function WhalesSupportDialog({
             ) : (
                 <>
                     {/* Portfolio value context */}
-                    {/* <Card className="p-4 bg-gradient-to-r from-blue-50 to-gray-50 border border-blue-300 rounded-5 shadow-sm">
+                    <Card className="p-4 bg-gradient-to-r from-blue-50 to-gray-50 border border-blue-300 rounded-5 shadow-sm">
                         <div className="flex items-center gap-3">
                             <div className="w-16 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                                 <Wallet className="w-5 h-5 text-blue-600" strokeWidth={2} />
@@ -345,7 +345,7 @@ export function WhalesSupportDialog({
                                 Your portfolio of <span className="text-blue-600 font-semibold">{formattedPortfolioValue}</span> qualifies you for personalized support from Superlend Team.
                             </BodyText>
                         </div>
-                    </Card> */}
+                    </Card>
                     {/* Message */}
                     <BodyText
                         level="body2"

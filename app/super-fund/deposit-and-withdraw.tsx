@@ -30,7 +30,7 @@ import useGetBoostRewards from '@/hooks/useGetBoostRewards'
 import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import { useActiveAccount, useSwitchActiveWalletChain } from "thirdweb/react";
 import { base } from "thirdweb/chains";
-import FeedbackDialog from '@/components/dialogs/Feedback'
+import WhalesSupportDialog from '@/components/dialogs/WhalesSupportDialog'
 import { useWhalesSupportDialog } from '@/hooks/useWhalesSupportDialog'
 import { LIQUIDITY_LAND_TARGET_APY } from '@/constants'
 import { useGetLiquidityLandUsers } from '@/hooks/useGetLiquidityLandUsers'
@@ -375,11 +375,11 @@ export default function DepositAndWithdrawAssets() {
                     )}
                 </CardFooter>
             </Card>
-            {/* <FeedbackDialog
+            <WhalesSupportDialog
                 open={showWhalesSupportDialog}
                 setOpen={setShowWhalesSupportDialog}
                 portfolioValue={portfolioValue}
-            /> */}
+            />
         </section>
     )
 }
