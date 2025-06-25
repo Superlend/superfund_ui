@@ -112,7 +112,7 @@ const TelegramButton = ({ logEvent, portfolioValue, walletAddress, onInteraction
                 variant="outline"
                 className={`flex items-center justify-center gap-2 w-full bg-[#0088CC]/10 border-[#0088CC]/40 hover:bg-[#0088CC]/20 text-[#0088CC] transition-all duration-300 rounded-4 p-2 py-3 hover:py-4`}>
                 <ImageWithDefault src="/images/logos/telegram.png" alt="Telegram" width={20} height={20} />
-                Join Our Telegram Channel
+                Connect with us on Telegram
             </Button>
         </Link>
     );
@@ -139,7 +139,7 @@ const DiscordButton = ({ logEvent, portfolioValue, walletAddress, onInteraction 
                 variant="outline"
                 className={`flex items-center justify-center gap-2 w-full bg-[#5865F2]/10 border-[#5865F2]/40 hover:bg-[#5865F2]/20 text-[#5865F2] transition-all duration-300 rounded-4 p-2 py-3 hover:py-4`}>
                 <ImageWithDefault src="/images/logos/discord.png" alt="Discord" width={20} height={20} />
-                Join Our Discord Server
+                Join the community on Discord
             </Button>
         </Link>
     );
@@ -299,7 +299,7 @@ export function WhalesSupportDialog({
             weight="medium"
             className="text-gray-800 text-center"
         >
-            We need your inputs!
+            🎉 You&apos;ve unlocked priority support!
         </HeadingText>
     )
 
@@ -342,7 +342,7 @@ export function WhalesSupportDialog({
                                 weight="medium"
                                 className="text-gray-800"
                             >
-                                Your portfolio of <span className="text-blue-600 font-semibold">{formattedPortfolioValue}</span> qualifies you for personalized support from Superlend Team.
+                                Your SuperFund portfolio of <span className="text-blue-600 font-semibold">{formattedPortfolioValue}</span> qualifies you for personalized support from our team.
                             </BodyText>
                         </div>
                     </Card>
@@ -352,17 +352,7 @@ export function WhalesSupportDialog({
                         weight="normal"
                         className="text-gray-800"
                     >
-                        Hope you&apos;ve been enjoying Superlend.
-                        Our product manager would like to have a chat with you and ask you a few questions to understand how best we can add value to you.
-                        This will help us build the best DeFi products for you.
-                    </BodyText>
-
-                    <BodyText
-                        level="body2"
-                        weight="normal"
-                        className="text-gray-800"
-                    >
-                        Connect with our product manager, and we will get in touch with you in the next 24-48 hours
+                        We&apos;re also building with our users in mind and your feedback helps us make it better.
                     </BodyText>
 
                     <div className="flex flex-col items-center justify-between gap-3">
