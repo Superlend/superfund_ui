@@ -24,6 +24,7 @@ import YourApiJourney from '@/components/your-api-journey'
 import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
 import { useActiveAccount, useConnect } from "thirdweb/react"
 import useDimensions from '@/hooks/useDimensions'
+import LiquidityLandBanner from '@/components/LiquidityLandBanner'
 
 interface ChainPageProps {
     params: {
@@ -237,6 +238,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
     return (
         <MainContainer className="flex flex-col flex-wrap gap-[40px] w-full mx-auto md:my-14">
             <PageHeader />
+            <LiquidityLandBanner />
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-[16px]">
                 <div className="flex flex-col gap-10">
                     <VaultStats />
