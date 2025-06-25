@@ -285,7 +285,7 @@ export function WhalesSupportDialog({
     const closeContentButton = (
         <button
             onClick={() => handleInteraction()}
-            className="h-6 w-6 flex items-center justify-center absolute right-6 top-[1.6rem] rounded-full opacity-70 bg-white ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground p-0"
+            className="h-6 w-6 flex items-center justify-center absolute right-6 top-[1.8rem] rounded-full opacity-70 bg-white ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground p-0"
         >
             <X strokeWidth={2.5} className="h-4 w-4 text-black" />
             <span className="sr-only">Close</span>
@@ -334,8 +334,8 @@ export function WhalesSupportDialog({
                     {/* Portfolio value context */}
                     <Card className="p-4 bg-gradient-to-r from-blue-50 to-gray-50 border border-blue-300 rounded-5 shadow-sm">
                         <div className="flex items-center gap-3">
-                            <div className="w-16 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                <Wallet className="w-5 h-5 text-blue-600" strokeWidth={2} />
+                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+                                <Wallet className="w-5 h-5 text-blue-600 shrink-0" strokeWidth={2} />
                             </div>
                             <BodyText
                                 level="body2"
