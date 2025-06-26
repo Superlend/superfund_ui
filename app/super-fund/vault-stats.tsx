@@ -243,7 +243,7 @@ export default function VaultStats() {
                     {
                         key: 'liquidity_land_boost_apy',
                         key_name: 'Liquidity Land',
-                        value: abbreviateNumberWithoutRounding(LIQUIDITY_LAND_BOOST_APY ?? 0, 0),
+                        value: abbreviateNumberWithoutRounding(LIQUIDITY_LAND_BOOST_APY ?? 0),
                         logo: "/icons/liquidity-land.svg",
                         show: hasLiquidityLandBoost,
                     },

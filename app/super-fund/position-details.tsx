@@ -450,7 +450,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                                     {
                                                         key: 'rewards_apy',
                                                         key_name: 'Rewards APY',
-                                                        value: abbreviateNumberWithoutRounding(effectiveApyData?.rewards_apy),
+                                                        value: abbreviateNumberWithoutRounding(effectiveApyData?.rewards_apy ?? 0),
                                                         show: Number(effectiveApyData?.rewards_apy ?? 0) > 0,
                                                     },
                                                     {
@@ -469,7 +469,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                                     {
                                                         key: 'liquidity_land_boost_apy',
                                                         key_name: 'Liquidity Land',
-                                                        value: abbreviateNumberWithoutRounding(LIQUIDITY_LAND_BOOST_APY ?? 0, 0),
+                                                        value: abbreviateNumberWithoutRounding(LIQUIDITY_LAND_BOOST_APY ?? 0),
                                                         logo: "/icons/liquidity-land.svg",
                                                         show: hasLiquidityLandBoost,
                                                     },
