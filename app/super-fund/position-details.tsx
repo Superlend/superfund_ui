@@ -27,9 +27,10 @@ import TooltipText from "@/components/tooltips/TooltipText"
 import { getRewardsTooltipContent } from "@/lib/ui/getRewardsTooltipContent"
 import { starVariants } from "@/lib/animations"
 import useGetBoostRewards from "@/hooks/useGetBoostRewards"
-import { UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL } from "@/constants"
+import { LIQUIDITY_LAND_TARGET_APY, UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL } from "@/constants"
 import { useActiveAccount, useConnect } from "thirdweb/react"
 import { useUserBalance } from "@/hooks/vault_hooks/useUserBalanceHook"
+import { useGetLiquidityLandUsers } from "@/hooks/useGetLiquidityLandUsers"
 
 const variants = {
     hidden: { opacity: 0, y: 30 },
@@ -181,9 +182,6 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
         vault_address: vaultAddress,
         chain_id: selectedChain || 0
     })
-    const TOTAL_SPOT_APY = useMemo(() => {
-        return Number(spotApy ?? 0) + Number(effectiveApyData?.rewards_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
-    }, [spotApy, effectiveApyData, GLOBAL_BOOST_APY, Farcaster_BOOST_APY])
     const {
         historicalData: historicalWeeklyData,
         isLoading: isLoadingHistoricalWeeklyData,
@@ -192,6 +190,25 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
         period: Period.oneWeek,
         chain_id: selectedChain
     })
+
+    // Liquidity Land boost logic
+    const { data: liquidityLandUsers, isLoading: isLoadingLiquidityLandUsers } = useGetLiquidityLandUsers()
+    const isLiquidityLandUser = useMemo(() => {
+        if (!walletAddress || !liquidityLandUsers) return false
+        return liquidityLandUsers.some(user =>
+            user.walletAddress.toLowerCase() === walletAddress.toLowerCase()
+        )
+    }, [walletAddress, liquidityLandUsers])
+
+    // Use spotApy consistently for both boost calculation and display
+    const baseAPY = Number(spotApy ?? 0) + Number(effectiveApyData?.rewards_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
+    const LIQUIDITY_LAND_BOOST_APY = useMemo(() => {
+        if (!isLiquidityLandUser) return 0
+        const targetAPY = LIQUIDITY_LAND_TARGET_APY
+        const boost = Math.max(0, targetAPY - baseAPY)
+        return boost
+    }, [isLiquidityLandUser, baseAPY])
+    const hasLiquidityLandBoost = LIQUIDITY_LAND_BOOST_APY > 0
 
     // Listen for transaction events from the global event system if available
     useEffect(() => {
@@ -250,9 +267,13 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
 
     const [infoCardsLayout, setInfoCardsLayout] = useState<'grid' | 'row'>('grid')
 
+    const TOTAL_SPOT_APY = useMemo(() => {
+        return baseAPY + Number(LIQUIDITY_LAND_BOOST_APY ?? 0)
+    }, [baseAPY, LIQUIDITY_LAND_BOOST_APY])
+
     // Combine all APY calculations in a single useMemo to prevent cascading re-renders
     const apyCalculations = useMemo(() => {
-        const totalApy = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(spotApy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
+        const totalApy = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(spotApy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0) + Number(LIQUIDITY_LAND_BOOST_APY ?? 0)
         const totalVaultApy = Number(effectiveApyData?.total_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
         const total7DayAvgVaultApy = Number(days_7_avg_base_apy ?? 0) + Number(days_7_avg_rewards_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
 
@@ -261,7 +282,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
             TOTAL_VAULT_APY: totalVaultApy,
             TOTAL_7_DAY_AVG_VAULT_APY: total7DayAvgVaultApy
         }
-    }, [effectiveApyData, spotApy, GLOBAL_BOOST_APY, Farcaster_BOOST_APY, days_7_avg_base_apy, days_7_avg_rewards_apy])
+    }, [effectiveApyData, spotApy, GLOBAL_BOOST_APY, Farcaster_BOOST_APY, days_7_avg_base_apy, days_7_avg_rewards_apy, LIQUIDITY_LAND_BOOST_APY])
 
     const { TOTAL_APY, TOTAL_VAULT_APY, TOTAL_7_DAY_AVG_VAULT_APY } = apyCalculations
 
@@ -397,7 +418,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                     className="flex items-center gap-2"
                                 >
                                     <HeadingText level="h3" weight="medium" className="text-blue-700">
-                                        {Number(TOTAL_SPOT_APY).toFixed(2)}%
+                                        {abbreviateNumberWithoutRounding(TOTAL_SPOT_APY)}%
                                     </HeadingText>
                                     <InfoTooltip
                                         label={
@@ -424,26 +445,33 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                         }
                                         content={
                                             getRewardsTooltipContent({
-                                                baseRateFormatted: abbreviateNumber(Number(spotApy)),
+                                                baseRateFormatted: abbreviateNumberWithoutRounding(Number(spotApy)),
                                                 rewardsCustomList: [
                                                     {
                                                         key: 'rewards_apy',
                                                         key_name: 'Rewards APY',
-                                                        value: abbreviateNumber(effectiveApyData?.rewards_apy),
+                                                        value: abbreviateNumberWithoutRounding(effectiveApyData?.rewards_apy ?? 0),
                                                         show: Number(effectiveApyData?.rewards_apy ?? 0) > 0,
                                                     },
                                                     {
                                                         key: 'superlend_rewards_apy',
                                                         key_name: 'Superlend USDC Reward',
-                                                        value: abbreviateNumber(GLOBAL_BOOST_APY ?? 0, 0),
+                                                        value: abbreviateNumberWithoutRounding(GLOBAL_BOOST_APY ?? 0, 0),
                                                         logo: "/images/tokens/usdc.webp"
                                                     },
                                                     {
                                                         key: 'farcaster_rewards_apy',
                                                         key_name: 'Farcaster Yieldrop',
-                                                        value: abbreviateNumber(Farcaster_BOOST_APY ?? 0, 0),
+                                                        value: abbreviateNumberWithoutRounding(Farcaster_BOOST_APY ?? 0, 0),
                                                         logo: "/icons/sparkles.svg",
                                                         show: hasFarcasterBoost,
+                                                    },
+                                                    {
+                                                        key: 'liquidity_land_boost_apy',
+                                                        key_name: 'Liquidity Land',
+                                                        value: abbreviateNumberWithoutRounding(LIQUIDITY_LAND_BOOST_APY ?? 0),
+                                                        logo: "/icons/liquidity-land.svg",
+                                                        show: hasLiquidityLandBoost,
                                                     },
                                                 ],
                                                 apyCurrent: TOTAL_APY,

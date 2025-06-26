@@ -5,12 +5,12 @@
 /**
  * Checks if a user's portfolio value exceeds the specified threshold
  * @param portfolioValue The user's current portfolio value in USD
- * @param threshold The minimum value required to qualify (default: $1,000)
+ * @param threshold The minimum value required to qualify (default: $1000)
  * @returns boolean indicating if the portfolio value exceeds the threshold
  */
 export function isPortfolioAboveThreshold(
     portfolioValue: number, 
-    threshold: number = 0
+    threshold: number = 1000
   ): boolean {
     return portfolioValue >= threshold;
   }

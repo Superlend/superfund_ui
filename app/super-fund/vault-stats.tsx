@@ -8,10 +8,12 @@ import InfoTooltip from '@/components/tooltips/InfoTooltip'
 import TooltipText from '@/components/tooltips/TooltipText'
 import { Skeleton } from '@/components/ui/skeleton'
 import { BodyText, HeadingText, Label } from '@/components/ui/typography'
+import { LIQUIDITY_LAND_TARGET_APY } from '@/constants'
 import { useApyData } from '@/context/apy-data-provider'
 import { useChain } from '@/context/chain-context'
 import useGetBoostRewards from '@/hooks/useGetBoostRewards'
 import useGetDailyEarningsHistory from '@/hooks/useGetDailyEarningsHistory'
+import { useGetLiquidityLandUsers } from '@/hooks/useGetLiquidityLandUsers'
 import useIsClient from '@/hooks/useIsClient'
 import useTransactionHistory from '@/hooks/useTransactionHistory'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
@@ -64,6 +66,25 @@ export default function VaultStats() {
         vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
         chain_id: selectedChain
     })
+
+    // Liquidity Land boost logic
+    const { data: liquidityLandUsers, isLoading: isLoadingLiquidityLandUsers } = useGetLiquidityLandUsers()
+    const isLiquidityLandUser = useMemo(() => {
+        if (!walletAddress || !liquidityLandUsers) return false
+        return liquidityLandUsers.some(user =>
+            user.walletAddress.toLowerCase() === walletAddress.toLowerCase()
+        )
+    }, [walletAddress, liquidityLandUsers])
+
+    const baseAPY = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(effectiveApyData?.base_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
+    const LIQUIDITY_LAND_BOOST_APY = useMemo(() => {
+        if (!isLiquidityLandUser) return 0
+        const targetAPY = LIQUIDITY_LAND_TARGET_APY
+        const boost = Math.max(0, targetAPY - baseAPY)
+        return boost
+    }, [isLiquidityLandUser, baseAPY])
+    const hasLiquidityLandBoost = LIQUIDITY_LAND_BOOST_APY > 0
+
     const { isClient } = useIsClient()
     const getProtocolIdentifier = () => {
         if (!selectedChain) return ''
@@ -100,7 +121,7 @@ export default function VaultStats() {
     //     chain_id: selectedChain
     // })
     const isLoadingSection = !isClient;
-    const TOTAL_APY = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(effectiveApyData?.base_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
+    const TOTAL_APY = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(effectiveApyData?.base_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0) + Number(LIQUIDITY_LAND_BOOST_APY ?? 0)
     // const totalPositionAmountInDollars = useMemo(() => {
     //     return Number(capital ?? 0) + Number(totalInterestEarned ?? 0)
     // }, [capital, totalInterestEarned])
@@ -218,6 +239,13 @@ export default function VaultStats() {
                         value: abbreviateNumberWithoutRounding(Farcaster_BOOST_APY ?? 0, 0),
                         logo: "/icons/sparkles.svg",
                         show: hasFarcasterBoost,
+                    },
+                    {
+                        key: 'liquidity_land_boost_apy',
+                        key_name: 'Liquidity Land',
+                        value: abbreviateNumberWithoutRounding(LIQUIDITY_LAND_BOOST_APY ?? 0),
+                        logo: "/icons/liquidity-land.svg",
+                        show: hasLiquidityLandBoost,
                     },
                 ],
                 apyCurrent: TOTAL_APY,
