@@ -754,7 +754,7 @@ export default function SuperVaultTxDialog({
                     transfer: true,
                 }) && (
                         <div className="flex items-center gap-4 px-6 py-2 bg-gray-200 lg:bg-white rounded-5 w-full">
-                            <WalletIcon className="shrink-0 w-6 h-6 stroke-gray-600" />
+                            <WalletIcon className="shrink-0 w-8 h-8 stroke-gray-600" />
                             <div className="flex flex-col items-start gap-0 w-full">
                                 <div className="flex items-center justify-between w-fit">
                                     <HeadingText
