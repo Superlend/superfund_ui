@@ -13,6 +13,7 @@ import {
     X,
     Zap,
     Lightbulb,
+    CircleArrowRight,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -39,6 +40,7 @@ import {
     TWithdrawTx,
     TTxContext,
     useTxContext,
+    TTransferTx,
 } from '@/context/super-vault-tx-provider'
 import { BigNumber } from 'ethers'
 import useDimensions from '@/hooks/useDimensions'
@@ -69,6 +71,7 @@ import { ScrollArea } from '@radix-ui/react-scroll-area'
 import { UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL } from '@/constants'
 import { useActiveAccount, useSwitchActiveWalletChain } from "thirdweb/react"
 import { base } from 'thirdweb/chains'
+import { CopyToClipBoardButton } from '../CopyToClipBoardButton'
 
 // Function to calculate days until next Tuesday
 function getDaysUntilNextTuesday(): number {
@@ -115,6 +118,8 @@ export default function SuperVaultTxDialog({
         setDepositTx,
         withdrawTx,
         setWithdrawTx,
+        transferTx,
+        setTransferTx,
         initialPosition,
         setInitialPosition,
         setIsDialogOpen,
@@ -140,6 +145,7 @@ export default function SuperVaultTxDialog({
         useState(false)
     const { logEvent } = useAnalytics()
     const router = useRouter()
+    const isTransferTx = positionType === 'transfer'
 
     // Simple scroll state
     const [showScrollButton, setShowScrollButton] = useState(false)
@@ -163,6 +169,10 @@ export default function SuperVaultTxDialog({
     }
 
     const getScrollableHeight = () => {
+        if (isTransferTx) {
+            return 'h-full'
+        }
+
         if (isDepositPositionType) {
             return isDepositTxInSuccess ? isDesktop ? 'h-[180px]' : 'h-[200px]' : ''
         }
@@ -361,6 +371,25 @@ export default function SuperVaultTxDialog({
         }
     }, [open, withdrawTx.status])
 
+    // Additional effect to ensure transfer state is properly reset
+    useEffect(() => {
+        if (!open && transferTx.status === 'view') {
+            const timer = setTimeout(() => {
+                setTransferTx((prev: TTransferTx) => ({
+                    ...prev,
+                    status: 'transfer',
+                    hash: '',
+                    isPending: false,
+                    isConfirming: false,
+                    isConfirmed: false,
+                    errorMessage: '',
+                    isFailed: false,
+                }))
+            }, 0)
+            return () => clearTimeout(timer)
+        }
+    }, [open, transferTx.status])
+
 
 
     useEffect(() => {
@@ -385,6 +414,16 @@ export default function SuperVaultTxDialog({
         setWithdrawTx((prev: TWithdrawTx) => ({
             ...prev,
             status: 'withdraw',
+            hash: '',
+            isPending: false,
+            isConfirming: false,
+            isConfirmed: false,
+            errorMessage: '',
+            isFailed: false,
+        }))
+        setTransferTx((prev: TTransferTx) => ({
+            ...prev,
+            status: 'transfer',
             hash: '',
             isPending: false,
             isConfirming: false,
@@ -431,8 +470,8 @@ export default function SuperVaultTxDialog({
         resetDepositWithdrawTx()
     }
 
-    function isShowBlock(status: { deposit: boolean; withdraw: boolean }) {
-        return isDepositPositionType ? status.deposit : status.withdraw
+    function isShowBlock(status: { deposit?: boolean; withdraw?: boolean; transfer?: boolean }) {
+        return isDepositPositionType ? status.deposit : positionType === 'withdraw' ? status.withdraw : status.transfer
     }
 
     const inputUsdAmount = Number(amount)
@@ -451,20 +490,26 @@ export default function SuperVaultTxDialog({
     const isDepositTxInProgress = depositTx.isPending || depositTx.isConfirming
     const isWithdrawTxInProgress =
         withdrawTx.isPending || withdrawTx.isConfirming
-
+    const isTransferTxInProgress =
+        transferTx.isPending || transferTx.isConfirming
     const isDepositTxInSuccess =
         depositTx.isConfirmed && !!depositTx.hash && depositTx.status === 'view'
     const isWithdrawTxInSuccess =
         withdrawTx.isConfirmed &&
         !!withdrawTx.hash &&
         withdrawTx.status === 'view'
+    const isTransferTxInSuccess =
+        transferTx.isConfirmed &&
+        !!transferTx.hash &&
+        transferTx.status === 'view'
 
-    const isTxInProgress = isDepositTxInProgress || isWithdrawTxInProgress
+    const isTxInProgress = isDepositTxInProgress || isWithdrawTxInProgress || isTransferTxInProgress
     const isTxInSuccess = isDepositTxInSuccess || isWithdrawTxInSuccess
     const isTxFailed = false
 
     const hasDepositTxStarted = depositTx.status === 'view'
     const hasWithdrawTxStarted = withdrawTx.status === 'view'
+    const hasTransferTxStarted = transferTx.status === 'view'
 
     const depositTxSpinnerColor = depositTx.isPending
         ? 'text-secondary-500'
@@ -479,7 +524,9 @@ export default function SuperVaultTxDialog({
         : withdrawTx.hash.length > 0 &&
         (withdrawTx.isConfirming || withdrawTx.isPending)
 
-    const disableActionButton = disabled || (!isDepositPositionType && showWithdrawalRetention && !hasConsentedToWithdrawal)
+    const noWithdrawConset = (positionType === 'withdraw' && showWithdrawalRetention && !hasConsentedToWithdrawal)
+
+    const disableActionButton = disabled || noWithdrawConset;
 
 
 
@@ -492,7 +539,7 @@ export default function SuperVaultTxDialog({
             className="group flex items-center gap-[4px] py-[13px] w-full rounded-5"
         >
             <span className="uppercase leading-[0]">
-                {positionType === 'deposit' ? 'Deposit' : 'Withdraw'}
+                {positionType === 'deposit' ? 'Deposit' : positionType === 'withdraw' ? 'Withdraw' : 'Transfer'}
             </span>
             <ArrowRightIcon
                 width={16}
@@ -607,6 +654,7 @@ export default function SuperVaultTxDialog({
             {isShowBlock({
                 deposit: true,
                 withdraw: true,
+                transfer: true,
             }) && (
                     // <DialogTitle asChild>
                     <HeadingText
@@ -616,7 +664,8 @@ export default function SuperVaultTxDialog({
                     >
                         {isDepositPositionType
                             ? `${isDepositTxInSuccess ? 'Deposit Successful' : 'Review Deposit'}`
-                            : `${isWithdrawTxInSuccess ? 'Withdraw Successful' : 'Review Withdraw'}`}
+                            : positionType === 'withdraw' ? `${isWithdrawTxInSuccess ? 'Withdraw Successful' : 'Review Withdraw'}` :
+                                `${isTransferTxInSuccess ? 'Transfer Successful' : 'Review Transfer'}`}
                     </HeadingText>
                     // </DialogTitle>
                 )}
@@ -696,10 +745,62 @@ export default function SuperVaultTxDialog({
     const contentBody = (
         <>
             <div className="flex flex-col gap-[12px] justify-start">
+                {/* Transfer block */}
+                {isShowBlock({
+                    transfer: true,
+                }) && (
+                        <div className="flex items-center gap-4 px-6 py-2 bg-gray-200 lg:bg-white rounded-5 w-full">
+                            <CircleArrowRight
+                                className="shrink-0 w-[24px] h-[24px] rounded-full text-gray-500"
+                            />
+                            <div className="flex flex-col items-start gap-0 w-full">
+                                <div className="flex items-center justify-between w-fit">
+                                    <HeadingText
+                                        level="h3"
+                                        weight="normal"
+                                        className="text-gray-800 flex items-center gap-1"
+                                    >
+                                        {getTruncatedTxHash(assetDetails?.asset?.toWalletAddress)}
+                                    </HeadingText>
+                                    <CopyToClipBoardButton text={assetDetails?.asset?.toWalletAddress} />
+                                </div>
+                                <div className="flex items-center justify-start gap-1.5">
+                                    <BodyText
+                                        level="body2"
+                                        weight="medium"
+                                        className="text-gray-600"
+                                    >
+                                        Receiver
+                                    </BodyText>
+                                    <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
+                                    <BodyText
+                                        level="body2"
+                                        weight="medium"
+                                        className="text-gray-600 flex items-center gap-1"
+                                    >
+                                        {
+                                            chainDetails[
+                                                selectedChain as keyof typeof chainDetails
+                                            ]?.name
+                                        }
+                                    </BodyText>
+                                    {/* <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
+                                    <BodyText
+                                        level="body3"
+                                        weight="medium"
+                                        className="text-gray-600"
+                                    >
+                                        {PlatformTypeMap[assetDetails?.protocol_type as keyof typeof PlatformTypeMap]}
+                                    </BodyText> */}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 {/* Block 1 */}
                 {isShowBlock({
                     deposit: true,
                     withdraw: true,
+                    transfer: true,
                 }) && (
                         <div className="flex items-center gap-4 px-6 py-2 bg-gray-200 lg:bg-white rounded-5 w-full">
                             <ImageWithBadge
@@ -846,7 +947,7 @@ export default function SuperVaultTxDialog({
     )
 
     // SUB_COMPONENT: Transaction progress and status sections
-    const transactionStatusContent = (isTxInProgress || hasDepositTxStarted || hasWithdrawTxStarted) ? (
+    const transactionStatusContent = (isTxInProgress || hasDepositTxStarted || hasWithdrawTxStarted || hasTransferTxStarted) ? (
         <div className="flex-shrink-0 flex flex-col gap-[12px]">
             {/* Block 3 - Deposit and withdraw loading state */}
             {isShowBlock({
@@ -1144,6 +1245,94 @@ export default function SuperVaultTxDialog({
                             )}
                     </div>
                 )}
+            {/* Transfer flow - Core transaction status only */}
+            {isShowBlock({
+                transfer:
+                    (transferTx.status === 'view' &&
+                        transferTx.isConfirmed) ||
+                    isTransferTxInProgress,
+            }) && (
+                    <div className="py-1">
+                        {isTransferTxInProgress && (
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center justify-start gap-2">
+                                    <LoaderCircle className="animate-spin w-8 h-8 text-secondary-500" />
+                                    <BodyText
+                                        level="body2"
+                                        weight="normal"
+                                        className="text-gray-600"
+                                    >
+                                        {transferTx.isPending &&
+                                            'Waiting for confirmation...'}
+                                        {transferTx.isConfirming &&
+                                            'Transferring...'}
+                                    </BodyText>
+                                </div>
+                                {transferTx.hash &&
+                                    (transferTx.isConfirming ||
+                                        transferTx.isConfirmed) && (
+                                        <ExternalLink
+                                            href={getExplorerLink(
+                                                transferTx.hash,
+                                                assetDetails?.chain_id ||
+                                                assetDetails?.platform
+                                                    ?.chain_id
+                                            )}
+                                        >
+                                            <BodyText
+                                                level="body2"
+                                                weight="normal"
+                                                className="text-inherit"
+                                            >
+                                                View on explorer
+                                            </BodyText>
+                                        </ExternalLink>
+                                    )}
+                            </div>
+                        )}
+                        {transferTx.status === 'view' &&
+                            transferTx.isConfirmed && (
+                                <div className="flex items-center justify-between gap-2 w-full">
+                                    <div className="flex items-center justify-start gap-2">
+                                        <div className="w-8 h-8 bg-[#00AD31] bg-opacity-15 rounded-full flex items-center justify-center">
+                                            <Check
+                                                className="w-5 h-5 stroke-[#013220]/75"
+                                                strokeWidth={1.5}
+                                            />
+                                        </div>
+                                        <BodyText
+                                            level="body2"
+                                            weight="medium"
+                                            className="text-gray-800"
+                                        >
+                                            Transfer successful
+                                        </BodyText>
+                                    </div>
+                                    {transferTx.hash &&
+                                        (transferTx.isConfirming ||
+                                            transferTx.isConfirmed) && (
+                                            <ExternalLink
+                                                href={getExplorerLink(
+                                                    transferTx.hash,
+                                                    assetDetails?.chain_id ||
+                                                    assetDetails
+                                                        ?.platform
+                                                        ?.chain_id
+                                                )}
+                                            >
+                                                <BodyText
+                                                    level="body2"
+                                                    weight="normal"
+                                                    className="text-inherit"
+                                                >
+                                                    View on explorer
+                                                </BodyText>
+                                            </ExternalLink>
+                                        )}
+                                </div>
+                            )}
+                    </div>
+                )}
         </div>
     ) : null;
 
@@ -1404,7 +1593,7 @@ export default function SuperVaultTxDialog({
                                 }}
                             >
                                 <AnimatePresence mode="wait">
-                                    {(!isDepositPositionType && !isWithdrawTxInSuccess) && (
+                                    {(!isDepositPositionType && !isWithdrawTxInSuccess && !isTransferTx) && (
                                         <motion.div
                                             key="withdrawal-alert"
                                             initial={{ opacity: 0, y: 20 }}
@@ -1550,7 +1739,7 @@ export default function SuperVaultTxDialog({
                             }}
                         >
                             <AnimatePresence mode="wait">
-                                {(!isDepositPositionType && !isWithdrawTxInSuccess) && (
+                                {(!isDepositPositionType && !isWithdrawTxInSuccess && !isTransferTx) && (
                                     <motion.div
                                         key="withdrawal-alert-mobile"
                                         initial={{ opacity: 0, y: 20 }}

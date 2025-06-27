@@ -16,6 +16,16 @@ const TxInitialState: TTxContext = {
         isFailed: false,
     },
     setDepositTx: () => { },
+    transferTx: {
+        status: 'transfer',
+        hash: '',
+        errorMessage: '',
+        isPending: false,
+        isConfirming: false,
+        isConfirmed: false,
+        isFailed: false,
+    },
+    setTransferTx: () => { },
     withdrawTx: {
         status: 'withdraw',
         hash: '',
@@ -41,6 +51,7 @@ const TxInitialState: TTxContext = {
     setIsDialogOpen: () => { },
     depositTxCompleted: false,
     withdrawTxCompleted: false,
+    transferTxCompleted: false,
 }
 
 export const TxContext = createContext<TTxContext>(TxInitialState)
@@ -50,6 +61,16 @@ export type TDepositTx = {
     hash: string
     allowanceBN: BigNumber
     isRefreshingAllowance: boolean
+    errorMessage: string
+    isPending: boolean
+    isConfirming: boolean
+    isConfirmed: boolean
+    isFailed: boolean
+}
+
+export type TTransferTx = {
+    status: 'transfer' | 'view'
+    hash: string
     errorMessage: string
     isPending: boolean
     isConfirming: boolean
@@ -79,6 +100,8 @@ export type TClaimRewardsTx = {
 export type TTxContext = {
     depositTx: TDepositTx
     setDepositTx: any
+    transferTx: TTransferTx
+    setTransferTx: any
     withdrawTx: TWithdrawTx
     setWithdrawTx: any
     claimRewardsTx: TClaimRewardsTx
@@ -89,6 +112,7 @@ export type TTxContext = {
     setIsDialogOpen: (open: boolean) => void
     depositTxCompleted: boolean
     withdrawTxCompleted: boolean
+    transferTxCompleted: boolean
 }
 
 export default function TxProvider({
@@ -101,6 +125,16 @@ export default function TxProvider({
         hash: '',
         allowanceBN: BigNumber.from(0),
         isRefreshingAllowance: false,
+        errorMessage: '',
+        isPending: false,
+        isConfirming: false,
+        isConfirmed: false,
+        isFailed: false,
+    })
+
+    const [transferTx, setTransferTx] = useState<TTransferTx>({
+        status: 'transfer',
+        hash: '',
         errorMessage: '',
         isPending: false,
         isConfirming: false,
@@ -134,12 +168,16 @@ export default function TxProvider({
         depositTx.isConfirmed && !!depositTx.hash && depositTx.status === 'view'
     const withdrawTxCompleted: boolean =
         withdrawTx.isConfirmed && !!withdrawTx.hash && withdrawTx.status === 'view'
+    const transferTxCompleted: boolean =
+        transferTx.isConfirmed && !!transferTx.hash && transferTx.status === 'view'
 
     return (
         <TxContext.Provider
             value={{
                 depositTx,
                 setDepositTx,
+                transferTx,
+                setTransferTx,
                 withdrawTx,
                 setWithdrawTx,
                 claimRewardsTx,
@@ -150,6 +188,7 @@ export default function TxProvider({
                 setIsDialogOpen,
                 depositTxCompleted,
                 withdrawTxCompleted,
+                transferTxCompleted,
             }}
         >
             {children}

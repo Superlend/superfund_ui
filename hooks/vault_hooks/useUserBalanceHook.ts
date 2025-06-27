@@ -77,6 +77,7 @@ export function useUserBalance(walletAddress: `0x${string}`) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [userMaxWithdrawAmount, setUserMaxWithdrawAmount] = useState<string>('0')
+    const [shareTokenBalance, setShareTokenBalance] = useState<string>('0')
     const timeoutRef = useRef<NodeJS.Timeout | null>(null)
     const isMountedRef = useRef(true)
     
@@ -117,7 +118,7 @@ export function useUserBalance(walletAddress: `0x${string}`) {
                 throw new Error(`Public client not found for chain ID ${selectedChain}`)
             }
 
-            const [balance, maxWithdraw] = await Promise.all([
+            const [balance, maxWithdraw, shareTokenBalance] = await Promise.all([
                 client.readContract({
                     address: config.usdcAddress as `0x${string}`,
                     abi: USDC_ABI,
@@ -130,13 +131,24 @@ export function useUserBalance(walletAddress: `0x${string}`) {
                     functionName: 'maxWithdraw',
                     args: [walletAddress as `0x${string}`],
                 }),
+                client.readContract({
+                    address: config.vaultAddress as `0x${string}`,
+                    abi: USDC_ABI,
+                    functionName: 'balanceOf',
+                    args: [walletAddress as `0x${string}`],
+                }),
             ])
 
             const formattedBalance = formatUnits(balance, USDC_DECIMALS)
+            const formattedShareTokenBalance = formatUnits(shareTokenBalance, USDC_DECIMALS)
             const formattedMaxWithdraw = formatUnits(maxWithdraw, USDC_DECIMALS)
 
+            // console.log('shareTokenBalance', formattedShareTokenBalance)
+            // console.log('maxWithdraw', formattedMaxWithdraw)
+            // console.log('balance', formattedBalance)
             if (isMountedRef.current) {
                 setUserMaxWithdrawAmount(formattedMaxWithdraw)
+                setShareTokenBalance(formattedShareTokenBalance)
                 setBalance(formattedBalance)
                 setError(null)
             }
@@ -146,6 +158,7 @@ export function useUserBalance(walletAddress: `0x${string}`) {
                 setError('Failed to fetch user balance')
             }
             setUserMaxWithdrawAmount('0')
+            setShareTokenBalance('0')
             setBalance('0')
         } finally {
             if (isFirstTimeCall && isMountedRef.current) {
@@ -181,6 +194,7 @@ export function useUserBalance(walletAddress: `0x${string}`) {
             setIsLoading(false)
             setBalance('0')
             setUserMaxWithdrawAmount('0')
+            setShareTokenBalance('0')
             setError(null)
         }
 
@@ -193,5 +207,5 @@ export function useUserBalance(walletAddress: `0x${string}`) {
         }
     }, [walletAddress, selectedChain, isValidWalletAddress])
 
-    return { balance, userMaxWithdrawAmount, isLoading, error }
+    return { balance, userMaxWithdrawAmount, shareTokenBalance, isLoading, error }
 }
