@@ -72,6 +72,7 @@ import { UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL } from '@/constants'
 import { useActiveAccount, useSwitchActiveWalletChain } from "thirdweb/react"
 import { base } from 'thirdweb/chains'
 import { CopyToClipBoardButton } from '../CopyToClipBoardButton'
+import WalletIcon from '../icons/wallet-icon'
 
 // Function to calculate days until next Tuesday
 function getDaysUntilNextTuesday(): number {
@@ -96,6 +97,7 @@ export default function SuperVaultTxDialog({
     assetDetails,
     amount,
     setAmount,
+    setToWalletAddress,
     balance,
     open,
     setOpen,
@@ -112,6 +114,7 @@ export default function SuperVaultTxDialog({
     setOpen: (open: boolean) => void
     setActionType?: (actionType: TPositionType) => void
     userMaxWithdrawAmount?: number
+    setToWalletAddress?: (toWalletAddress: string) => void
 }) {
     const {
         depositTx,
@@ -457,6 +460,7 @@ export default function SuperVaultTxDialog({
         // When closing the dialog, reset the amount
         if (!open) {
             setAmount('')
+            setToWalletAddress && setToWalletAddress('')
             setPendingEmail('') // Reset pendingEmail when closing
             // Note: resetDepositWithdrawTx() is now handled by useEffect with [open] dependency
         }
@@ -750,9 +754,7 @@ export default function SuperVaultTxDialog({
                     transfer: true,
                 }) && (
                         <div className="flex items-center gap-4 px-6 py-2 bg-gray-200 lg:bg-white rounded-5 w-full">
-                            <CircleArrowRight
-                                className="shrink-0 w-[24px] h-[24px] rounded-full text-gray-500"
-                            />
+                            <WalletIcon className="shrink-0 w-6 h-6 stroke-gray-600" />
                             <div className="flex flex-col items-start gap-0 w-full">
                                 <div className="flex items-center justify-between w-fit">
                                     <HeadingText

@@ -5,7 +5,7 @@ import ToggleTab, { TTypeToMatch } from '@/components/ToggleTab'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { TActionType, TPositionType } from '@/types'
-import { CircleArrowRight, LoaderCircle } from 'lucide-react'
+import { CircleArrowRight, LoaderCircle, SendHorizontal, Wallet } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
 import {
     abbreviateNumberWithoutRounding,
@@ -45,6 +45,7 @@ import { LIQUIDITY_LAND_TARGET_APY } from '@/constants'
 import { useGetLiquidityLandUsers } from '@/hooks/useGetLiquidityLandUsers'
 import { Input } from '@/components/ui/input'
 import { parseUnits } from 'ethers/lib/utils'
+import WalletIcon from '@/components/icons/wallet-icon'
 
 export type THelperText = Record<
     string,
@@ -85,13 +86,10 @@ export default function DepositAndWithdrawAssets() {
     const {
         balance,
         userMaxWithdrawAmount,
-        shareTokenBalance,
         isLoading: isLoadingBalance,
         getShareAmountFromTokenAmount,
         error: balanceError,
     } = useUserBalance(walletAddress as `0x${string}`)
-
-    // console.log('result', (((Number(userEnteredTransferAmount ?? 0) * Number(shareTokenBalance ?? 0)) / Number(userMaxWithdrawAmount ?? 0)) * 10 ** 6).toFixed())
 
     const portfolioValue = Number(userMaxWithdrawAmount ?? 0)
 
@@ -287,8 +285,8 @@ export default function DepositAndWithdrawAssets() {
             isDepositPositionType
                 ? userEnteredDepositAmount !== ''
                 : positionType === 'withdraw'
-                  ? userEnteredWithdrawAmount !== ''
-                  : userEnteredTransferAmount !== '' &&
+                    ? userEnteredWithdrawAmount !== ''
+                    : userEnteredTransferAmount !== '' &&
                     toWalletAddress.length === 42
         ) {
             return inputText
@@ -306,7 +304,7 @@ export default function DepositAndWithdrawAssets() {
         } else if (positionType === 'withdraw') {
             return (
                 Number(userEnteredWithdrawAmount) >
-                    Number(userMaxWithdrawAmount) ||
+                Number(userMaxWithdrawAmount) ||
                 Number(userEnteredWithdrawAmount) === 0
             )
         }
@@ -330,7 +328,7 @@ export default function DepositAndWithdrawAssets() {
                 setInputAmountInSlUSD(result.toString())
             }
         )
-    }, [userEnteredTransferAmount, shareTokenBalance, userMaxWithdrawAmount])
+    }, [userEnteredTransferAmount, userMaxWithdrawAmount])
 
     // const inputAmountInSlUSD = useMemo(async () => {
     //     const _transferAmount = parseUnits(
@@ -353,8 +351,8 @@ export default function DepositAndWithdrawAssets() {
                     positionType === 'deposit'
                         ? 'tab1'
                         : positionType === 'withdraw'
-                          ? 'tab2'
-                          : ('tab3' as TTypeToMatch)
+                            ? 'tab2'
+                            : ('tab3' as TTypeToMatch)
                 }
                 handleToggle={(positionType: TTypeToMatch) => {
                     if (positionType === 'tab1') {
@@ -378,8 +376,8 @@ export default function DepositAndWithdrawAssets() {
                         {isDepositPositionType
                             ? 'Deposit'
                             : positionType === 'withdraw'
-                              ? `Withdraw`
-                              : `Transfer`}
+                                ? `Withdraw`
+                                : `Transfer`}
                     </BodyText>
                     {isWalletConnectedForUI && (
                         <BodyText
@@ -415,7 +413,7 @@ export default function DepositAndWithdrawAssets() {
                             )}
                         >
                             {/* Single token */}
-                            <CircleArrowRight className="shrink-0 w-[24px] h-[24px] rounded-full text-gray-500" />
+                            <WalletIcon className="shrink-0 w-6 h-6 stroke-gray-600" />
                             <BodyText
                                 level="body2"
                                 weight="normal"
@@ -438,7 +436,7 @@ export default function DepositAndWithdrawAssets() {
                     )}
                     <div
                         className={cn(
-                            true
+                            positionType === 'transfer'
                                 ? 'border rounded-5 rounded-t-none shadow-[0px_4px_16px_rgba(0,0,0,0.04)]'
                                 : 'border-t rounded-t-5',
                             'border-gray-200 py-[12px] px-[20px] flex items-center gap-[12px]'
@@ -468,15 +466,15 @@ export default function DepositAndWithdrawAssets() {
                                     isDepositPositionType
                                         ? userEnteredDepositAmount
                                         : positionType === 'withdraw'
-                                          ? userEnteredWithdrawAmount
-                                          : userEnteredTransferAmount
+                                            ? userEnteredWithdrawAmount
+                                            : userEnteredTransferAmount
                                 }
                                 setAmount={
                                     isDepositPositionType
                                         ? setUserEnteredDepositAmount
                                         : positionType === 'withdraw'
-                                          ? setUserEnteredWithdrawAmount
-                                          : setUserEnteredTransferAmount
+                                            ? setUserEnteredWithdrawAmount
+                                            : setUserEnteredTransferAmount
                                 }
                             />
                         </div>
@@ -487,10 +485,10 @@ export default function DepositAndWithdrawAssets() {
                                     isDepositPositionType
                                         ? setUserEnteredDepositAmount(balance)
                                         : positionType === 'withdraw'
-                                          ? setUserEnteredWithdrawAmount(
+                                            ? setUserEnteredWithdrawAmount(
                                                 userMaxWithdrawAmount
                                             )
-                                          : setUserEnteredTransferAmount(
+                                            : setUserEnteredTransferAmount(
                                                 userMaxWithdrawAmount
                                             )
                                 }
@@ -537,25 +535,24 @@ export default function DepositAndWithdrawAssets() {
                                 isDepositPositionType
                                     ? userEnteredDepositAmount
                                     : positionType === 'withdraw'
-                                      ? userEnteredWithdrawAmount
-                                      : userEnteredTransferAmount
+                                        ? userEnteredWithdrawAmount
+                                        : userEnteredTransferAmount
                             }
                             balance={
                                 isDepositPositionType
                                     ? balance
-                                    : positionType === 'withdraw'
-                                      ? userMaxWithdrawAmount
-                                      : shareTokenBalance
+                                    : userMaxWithdrawAmount
                             }
                             setAmount={
                                 isDepositPositionType
                                     ? setUserEnteredDepositAmount
                                     : positionType === 'withdraw'
-                                      ? setUserEnteredWithdrawAmount
-                                      : setUserEnteredTransferAmount
+                                        ? setUserEnteredWithdrawAmount
+                                        : setUserEnteredTransferAmount
                             }
                             open={isConfirmationDialogOpen}
                             setOpen={setIsConfirmationDialogOpen}
+                            setToWalletAddress={setToWalletAddress}
                             userMaxWithdrawAmount={
                                 positionType === 'withdraw'
                                     ? Number(userMaxWithdrawAmount)
