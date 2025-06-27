@@ -55,7 +55,7 @@ export default function DepositAndWithdrawAssets() {
     const [userEnteredWithdrawAmount, setUserEnteredWithdrawAmount] =
         useState<string>('')
     const [userEnteredTransferAmount, setUserEnteredTransferAmount] =
-        useState<string>('0')
+        useState<string>('')
     const [toWalletAddress, setToWalletAddress] = useState<string>('')
 
     function handleTransferAmount(amount: string) {
