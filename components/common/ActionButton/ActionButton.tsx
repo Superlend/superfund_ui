@@ -1,14 +1,15 @@
 import WithdrawButton from '../WithdrawButton'
-import { TPositionType } from '@/types'
+import { TActionType, TPositionType } from '@/types'
 import DepositButton from '../DepositButton'
 import ClaimRewardsButton from '../ClaimRewardsButton'
+import TransferButton from '../TransferButton'
 
 interface IActionButtonSelectComponent {
     disabled?: boolean
     asset: any
     amount: string
     handleCloseModal: (isVisible: boolean) => void
-    actionType: 'deposit' | 'withdraw' | 'claim'
+    actionType: TActionType
     setActionType?: (actionType: TPositionType) => void
     walletAddress: `0x${string}`
     cta?: {
@@ -65,6 +66,18 @@ const ActionButton = ({
         )
     }
 
+    if (actionType === 'transfer') {
+        return (
+            <TransferButton
+                disabled={disabled}
+                handleCloseModal={handleCloseModal}
+                walletAddress={walletAddress}
+                asset={asset}
+                amount={amount}
+                cta={cta}
+            />
+        )
+    }
     return null
 }
 
