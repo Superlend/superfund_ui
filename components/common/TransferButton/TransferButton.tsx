@@ -173,6 +173,8 @@ const TransferButton = ({
                 chain: THIRDWEB_CHAINS[selectedChain as keyof typeof THIRDWEB_CHAINS],
             })
 
+            console.log('amount in slUSD', asset.asset.amountInSlUSD, asset, asset.asset)
+
             const transaction = prepareContractCall({
                 contract: vaultContract,
                 method: "function transfer(address to, uint256 value) returns (bool)",
