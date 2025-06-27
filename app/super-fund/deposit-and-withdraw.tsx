@@ -261,6 +261,10 @@ export default function DepositAndWithdrawAssets() {
 
     }
 
+    const inputAmountInSlUSD = useMemo(() => {
+        return (((Number(userEnteredTransferAmount ?? 0) * Number(shareTokenBalance ?? 0)) / Number(userMaxWithdrawAmount ?? 0)) * 10 ** 6).toFixed()
+    }, [userEnteredTransferAmount, shareTokenBalance, userMaxWithdrawAmount])
+
     // Render component
     return (
         <section className="tx-widget-section-wrapper flex flex-col gap-[12px]">
@@ -431,7 +435,7 @@ export default function DepositAndWithdrawAssets() {
                                     },
                                     effective_apy: TOTAL_APY,
                                     toWalletAddress: toWalletAddress,
-                                    amountInSlUSD: (((Number(userEnteredTransferAmount ?? 0) * Number(shareTokenBalance ?? 0)) / Number(userMaxWithdrawAmount ?? 0)) * (10 ** 6)).toFixed(),
+                                    amountInSlUSD: inputAmountInSlUSD,
                                 },
                                 chain_id: selectedChain,
                             }}
