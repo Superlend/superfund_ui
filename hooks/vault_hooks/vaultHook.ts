@@ -115,8 +115,8 @@ export function useVaultHook() {
                 spotApy: formattedSpotApy
             }
         },
-        staleTime: 10 * 1000, // 10 seconds - vault data changes frequently
-        refetchInterval: 15 * 1000, // 15 seconds - same as original implementation
+        staleTime: 5 * 1000, // 5 seconds - vault data changes frequently
+        refetchInterval: 5 * 1000, // 5 seconds
         enabled: !!selectedChain,
     })
 
