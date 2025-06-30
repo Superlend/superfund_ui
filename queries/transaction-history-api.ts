@@ -1,8 +1,11 @@
 import { requestIndexer, requestSuperlend } from './request'
 
 export interface Transaction {
+  id?: string
+  from?: string
+  to?: string
   user: string
-  type: 'deposit' | 'withdraw'
+  type: 'deposit' | 'withdraw' | 'transfer'
   assets: string
   shares: string
   blockNumber: string

@@ -6,7 +6,7 @@ import { useChain } from '@/context/chain-context'
 import { Skeleton } from '@/components/ui/skeleton'
 import { format, isToday, isYesterday } from 'date-fns'
 import { Button } from '@/components/ui/button'
-import { ChevronRight, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, CheckCircle2, Calendar } from 'lucide-react'
+import { ChevronRight, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ArrowLeft, ArrowRight, CheckCircle2, Calendar } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { formatUnits } from 'ethers/lib/utils'
 import Link from 'next/link'
@@ -156,7 +156,7 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
               </div>
               <div className="space-y-2">
                 {txs.map(tx => (
-                  <TransactionItem key={tx.transactionHash} transaction={tx} />
+                  <TransactionItem key={tx.transactionHash} transaction={tx} walletAddress={walletAddress} />
                 ))}
               </div>
             </div>
@@ -178,8 +178,8 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
   )
 }
 
-function TransactionItem({ transaction }: { transaction: Transaction }) {
-  const { type, assets, shares, blockTimestamp, transactionHash } = transaction
+function TransactionItem({ transaction, walletAddress }: { transaction: Transaction; walletAddress: string }) {
+  const { type, assets, shares, blockTimestamp, transactionHash, from, to } = transaction
   const date = convertTimestampToLocalDate(blockTimestamp);
   const { selectedChain, chainDetails } = useChain()
   const [copied, setCopied] = useState(false)
@@ -187,6 +187,16 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
   // Format the asset amount (using 1e6 decimals as specified)
   const formattedAssets = parseFloat(formatUnits(assets, 6)).toFixed(4)
   const formattedShares = parseFloat(formatUnits(shares, 6)).toFixed(4)
+
+  // Transfer direction logic
+  const isTransferReceived = type === 'transfer' && to?.toLowerCase() === walletAddress?.toLowerCase()
+  const isTransferSent = type === 'transfer' && from?.toLowerCase() === walletAddress?.toLowerCase()
+
+  // Helper function to shorten addresses
+  const shortenAddress = (address: string) => {
+    if (!address) return '';
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  }
 
   // Get explorer URL based on the chain
   const getExplorerUrl = () => {
@@ -222,6 +232,14 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
     <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
       <ArrowUpRight className="h-2.5 w-2.5 text-green-500" />
     </div>
+  ) : type === 'transfer' && isTransferReceived ? (
+    <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+      <ArrowLeft className="h-2.5 w-2.5 text-green-500" />
+    </div>
+  ) : type === 'transfer' && isTransferSent ? (
+    <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
+      <ArrowRight className="h-2.5 w-2.5 text-red-500" />
+    </div>
   ) : (
     <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
       <ArrowDownRight className="h-2.5 w-2.5 text-red-500" />
@@ -240,8 +258,12 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
             {DirectionIcon}
             <div className="flex flex-col space-y-1.5 flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className={`text-sm font-semibold capitalize ${type === 'deposit' ? 'text-green-600' : 'text-red-600'}`}>
-                  {type}
+                <span className={`text-sm font-semibold capitalize ${
+                  type === 'deposit' || (type === 'transfer' && isTransferReceived) 
+                    ? 'text-green-600' 
+                    : 'text-red-600'
+                }`}>
+                  {type === 'transfer' ? 'Transfer' : type}
                 </span>
                 <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 h-4 font-medium whitespace-nowrap bg-green-50 border-green-200 text-green-700">
                   <CheckCircle2 className="h-2 w-2 mr-0.5 text-green-500" />
@@ -332,6 +354,58 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
                   </TooltipTrigger>
                   <TooltipContent side="left" className="bg-card border shadow-lg">
                     <p className="text-xs font-medium">Shares received</p>
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            ) : type === 'transfer' && isTransferReceived ? (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-2 bg-green-50/70 border border-green-100/70 hover:bg-green-50 hover:border-green-200 transition-colors duration-200 cursor-pointer">
+                      <span className="text-green-500 font-medium tabular-nums text-xs">+{formattedShares}</span>
+                      <span className="text-[9px] font-medium text-green-600/80 bg-green-100/50 px-1 py-0.5 rounded">
+                        slUSD
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="bg-card border shadow-lg">
+                    <p className="text-xs font-medium">slUSD received</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-1.5 py-1 rounded-2 bg-blue-50/70 border border-blue-100/70 hover:bg-blue-50 hover:border-blue-200 transition-colors duration-200 cursor-pointer">
+                      <span className="text-blue-600 font-mono text-[10px]">From: {shortenAddress(from || '')}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="bg-card border shadow-lg">
+                    <p className="text-xs font-medium">Sender address: {from}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            ) : type === 'transfer' && isTransferSent ? (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-2 bg-red-50/70 border border-red-100/70 hover:bg-red-50 hover:border-red-200 transition-colors duration-200 cursor-pointer">
+                      <span className="text-red-500 font-medium tabular-nums text-xs">-{formattedShares}</span>
+                      <span className="text-[9px] font-medium text-red-600/80 bg-red-100/50 px-1 py-0.5 rounded">
+                        slUSD
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="bg-card border shadow-lg">
+                    <p className="text-xs font-medium">slUSD sent</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-1.5 py-1 rounded-2 bg-orange-50/70 border border-orange-100/70 hover:bg-orange-50 hover:border-orange-200 transition-colors duration-200 cursor-pointer">
+                      <span className="text-orange-600 font-mono text-[10px]">To: {shortenAddress(to || '')}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="bg-card border shadow-lg">
+                    <p className="text-xs font-medium">Recipient address: {to}</p>
                   </TooltipContent>
                 </Tooltip>
               </>
