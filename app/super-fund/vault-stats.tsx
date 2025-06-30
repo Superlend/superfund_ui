@@ -339,13 +339,13 @@ export default function VaultStats() {
         //     isLoading: isLoading7DayAvg,
         //     error: error7DayAvg,
         // },
-        {
-            id: 'tvl',
-            title: 'TVL',
-            value: '$' + Number(totalAssets).toFixed(4),
-            show: true,
-            error: !!errorVault,
-        },
+        // {
+        //     id: 'tvl',
+        //     title: 'TVL',
+        //     value: '$' + Number(totalAssets).toFixed(4),
+        //     show: true,
+        //     error: !!errorVault,
+        // },
     ]
 
     if (isLoadingSection) {
