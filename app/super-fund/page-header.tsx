@@ -58,12 +58,12 @@ export default function PageHeader() {
                     </div>
                 </div>
                 {isWalletConnected && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 max-md:mt-4 max-md:mb-2">
                         <Button
                             variant="primaryOutline"
                             size="sm"
                             onClick={() => setIsTransferDialogOpen(true)}
-                            className="flex items-center gap-1 group"
+                            className="flex items-center gap-1 group max-md:flex-1"
                         >
                             <SendHorizontal className="w-4 h-4" />
                             Transfer
@@ -76,7 +76,7 @@ export default function PageHeader() {
                         >
                             <Link
                                 href={`/super-fund/${currentChainDetails.name.toLowerCase()}/statement`}
-                                className="flex items-center gap-1 group"
+                                className="flex items-center gap-1 group max-md:flex-1"
                             >
                                 <ReceiptText className="w-4 h-4" />
                                 View Statement
