@@ -473,7 +473,7 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
                     </div>
 
                     {/* Helper Text */}
-                    {isWalletConnectedForUI && (
+                    {!isWalletConnectedForUI && (
                         <div className="card-content-bottom max-md:px-2 py-3 max-w-[250px] mx-auto">
                             <BodyText
                                 level="body2"
@@ -546,7 +546,7 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
                 className="w-full p-5 pt-2 flex flex-col gap-3"
                 style={{
                     maxHeight: '70vh',
-                    minHeight: '400px',
+                    minHeight: '300px',
                     bottom: 'env(keyboard-inset-height, 0px)',
                     transform: 'translateY(0)',
                     transition: 'transform 0.3s ease-out'
