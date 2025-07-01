@@ -61,7 +61,6 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
     const [toWalletAddress, setToWalletAddress] = useState<string>('')
     const [inputAmountInSlUSD, setInputAmountInSlUSD] = useState<string>('0')
     const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] = useState<boolean>(false)
-    const [drawerHeight, setDrawerHeight] = useState<number>(0)
 
     const { selectedChain } = useChain()
     const account = useActiveAccount()
@@ -228,37 +227,29 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
     // Get transfer transaction context to monitor completion
     const { setTransferTx } = useTxContext() as TTxContext
 
-    // Handle mobile keyboard viewport changes for iOS
+        // Fix mobile keyboard auto-scroll issue  
     useEffect(() => {
         if (!isDesktop && open) {
-            // Store original values
-            const originalScrollY = window.scrollY
-            const screenHeight = window.screen.height
-            const availableHeight = window.screen.availHeight
-
-            // Calculate drawer height based on actual screen dimensions
-            // Use screen.height instead of window.innerHeight to avoid keyboard issues
-            const calculatedHeight = Math.min(screenHeight * 0.6, 500)
-            setDrawerHeight(calculatedHeight)
-
-            // Prevent body scroll and fix position
+            // Prevent body scroll and auto-scroll to inputs
             document.body.style.overflow = 'hidden'
-            document.body.style.position = 'fixed'
-            document.body.style.top = `-${originalScrollY}px`
-            document.body.style.width = '100%'
-
-            return () => {
-                // Restore original styles
-                document.body.style.overflow = ''
-                document.body.style.position = ''
-                document.body.style.top = ''
-                document.body.style.width = ''
-
-                // Restore scroll position
-                window.scrollTo(0, originalScrollY)
+            
+            // Prevent auto-scroll when inputs are focused
+            const handleFocus = (e: FocusEvent) => {
+                if (e.target instanceof HTMLInputElement) {
+                    e.preventDefault()
+                    // Small delay to prevent the auto-scroll
+                    setTimeout(() => {
+                        window.scrollTo(0, 0)
+                    }, 100)
+                }
             }
-        } else if (!open) {
-            setDrawerHeight(0)
+            
+            document.addEventListener('focusin', handleFocus)
+            
+            return () => {
+                document.body.style.overflow = ''
+                document.removeEventListener('focusin', handleFocus)
+            }
         }
     }, [open, isDesktop])
 
@@ -484,24 +475,10 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
     // Mobile UI
     return (
         <Drawer open={open} onOpenChange={handleOpenChange}>
-            <DrawerContent
-                className="w-full p-5 pt-2 flex flex-col gap-3 overflow-hidden border-0 rounded-t-[10px]"
-                style={{
-                    height: drawerHeight > 0 ? `${drawerHeight}px` : '450px',
-                    minHeight: '400px',
-                    maxHeight: '600px',
-                    position: 'fixed',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    zIndex: 51,
-                    transform: 'translateY(0)',
-                    transition: 'none',
-                }}
-            >
+            <DrawerContent className="w-full p-5 pt-2 max-h-[70vh] flex flex-col gap-3">
                 {closeContentButton}
                 <DrawerHeader className="flex-shrink-0">{contentHeader}</DrawerHeader>
-                <div className="flex-1 overflow-y-auto overscroll-contain">
+                <div className="flex-shrink-0">
                     {contentBody}
                 </div>
             </DrawerContent>
