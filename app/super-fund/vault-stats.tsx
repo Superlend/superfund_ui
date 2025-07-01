@@ -51,7 +51,7 @@ export default function VaultStats() {
         chainId: selectedChain,
         userAddress: walletAddress
     })
-    const { totalAssets, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
+    // const { totalAssets, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
     // const { boostApy: GLOBAL_BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
     const GLOBAL_BOOST_APY =
         boostRewardsData?.filter((item) => item.description?.includes('A global boost for all users') ?? false)

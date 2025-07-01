@@ -24,7 +24,8 @@ export function useGetEffectiveApy({
                 throw error
             }
         },
-        staleTime: 10 * 60 * 1000, // 10 minutes
+        staleTime: 10 * 1000, // 10 seconds
+        refetchInterval: 10 * 1000, // 10 seconds
         refetchOnMount: true,
         refetchOnWindowFocus: true,
     })

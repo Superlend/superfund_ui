@@ -40,6 +40,8 @@ import { useActiveAccount } from "thirdweb/react"
 import useDimensions from '@/hooks/useDimensions'
 import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import { abbreviateNumberWithoutRounding } from '@/lib/utils'
+import useGetUsdcExchangeRate from '@/hooks/useGetUsdcExchangeRate'
+import { VAULT_ADDRESS_MAP } from '@/lib/constants'
 
 interface AllTransactionsProps {
   protocolIdentifier?: string // Optional if we want to pass it directly
@@ -145,6 +147,12 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
     refetchOnTransaction: true
   })
 
+  // Get vault address for exchange rate API
+  const vaultAddress = VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP]
+  
+  // Get fallback USDC price from vault hook
+  const { usdcPrice } = useVaultHook()
+
   // Calculate date bounds from transaction history
   const getDateBounds = () => {
     if (transactions.length === 0) return { minDate: null, maxDate: null }
@@ -217,6 +225,25 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
 
     return sorted;
   }, [transactions, currentFilter, dateRange, sortOrder, walletAddress])
+
+  // Extract unique block numbers from filtered transactions for exchange rate API
+  const uniqueBlockNumbers = React.useMemo(() => {
+    const blockNumbers = filteredAndSortedTransactions.map(tx => tx.blockNumber)
+    return blockNumbers.filter((blockNumber, index) => blockNumbers.indexOf(blockNumber) === index)
+  }, [filteredAndSortedTransactions])
+
+  // Get block-specific exchange rates with fallback to live USDC price
+  const { 
+    getExchangeRateForBlock, 
+    isLoading: isLoadingExchangeRates,
+    isUsingFallback 
+  } = useGetUsdcExchangeRate({
+    vaultAddress,
+    chainId: selectedChain || 0,
+    blockNumbers: uniqueBlockNumbers,
+    fallbackUsdcPrice: usdcPrice,
+    enabled: !!vaultAddress && !!selectedChain && uniqueBlockNumbers.length > 0
+  })
 
   // Reset pagination when filter changes
   useEffect(() => {
@@ -358,6 +385,12 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
                     <>{filteredAndSortedTransactions.length} {filteredAndSortedTransactions.length === 1 ? 'transaction' : 'transactions'}</>
                   )}
                 </p>
+                {/* Exchange rate status indicator */}
+                {isUsingFallback && filteredAndSortedTransactions.length > 0 && (
+                  <p className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-2 border border-amber-200 w-fit">
+                    Using estimated exchange rates
+                  </p>
+                )}
                 {/* Debug info in development */}
                 {process.env.NODE_ENV === 'development' && (
                   <p className="text-xs text-muted-foreground">
@@ -652,7 +685,7 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
         )}
 
         <div className="space-y-6">
-          {isLoading ? (
+          {isLoading || isLoadingExchangeRates ? (
             <TransactionSkeleton count={5} />
           ) : transactions.length === 0 ? (
             <EmptyTransactionsState />
@@ -694,7 +727,13 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
                   </div>
                   <div className="space-y-3 pl-2">
                     {txs.map(tx => (
-                      <TransactionItem key={tx.transactionHash} transaction={tx} expanded={true} walletAddress={walletAddress} />
+                      <TransactionItem 
+                        key={tx.transactionHash} 
+                        transaction={tx} 
+                        expanded={true} 
+                        walletAddress={walletAddress}
+                        getExchangeRateForBlock={getExchangeRateForBlock}
+                      />
                     ))}
                   </div>
                 </div>
@@ -919,17 +958,32 @@ function DateRangePicker({
   )
 }
 
-function TransactionItem({ transaction, expanded = false, walletAddress }: { transaction: Transaction; expanded?: boolean; walletAddress: string }) {
+function TransactionItem({ 
+  transaction, 
+  expanded = false, 
+  walletAddress,
+  getExchangeRateForBlock
+}: { 
+  transaction: Transaction
+  expanded?: boolean
+  walletAddress: string
+  getExchangeRateForBlock?: (blockNumber: string) => number
+}) {
   const { type, assets, shares, blockNumber, blockTimestamp, transactionHash, from, to } = transaction
   const date = convertTimestampToLocalDate(blockTimestamp);
   const { selectedChain, chainDetails } = useChain()
   const [copied, setCopied] = useState(false)
-  const { usdcPrice } = useVaultHook()
 
   // Format the asset amount (using 1e6 decimals as specified)
   const formattedAssets = parseFloat(formatUnits(assets, 6)).toFixed(4)
   const formattedShares = parseFloat(formatUnits(shares, 6)).toFixed(4)
-  const formattedUsdcTransferAmount = abbreviateNumberWithoutRounding(Number(formattedShares) * Number(usdcPrice), 4)
+  
+  // Get block-specific exchange rate or fallback to 1:1 ratio
+  const blockSpecificExchangeRate = getExchangeRateForBlock 
+    ? getExchangeRateForBlock(blockNumber)
+    : 1
+  
+  const formattedUsdcTransferAmount = abbreviateNumberWithoutRounding(Number(formattedShares) * blockSpecificExchangeRate, 4)
 
   // Transfer direction logic
   const isTransferReceived = type === 'transfer' && to?.toLowerCase() === walletAddress?.toLowerCase()
