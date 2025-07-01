@@ -61,6 +61,7 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
     const [toWalletAddress, setToWalletAddress] = useState<string>('')
     const [inputAmountInSlUSD, setInputAmountInSlUSD] = useState<string>('0')
     const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] = useState<boolean>(false)
+    const [drawerHeight, setDrawerHeight] = useState<number>(0)
 
     const { selectedChain } = useChain()
     const account = useActiveAccount()
@@ -227,34 +228,37 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
     // Get transfer transaction context to monitor completion
     const { setTransferTx } = useTxContext() as TTxContext
 
-    // Handle mobile keyboard viewport changes
+    // Handle mobile keyboard viewport changes for iOS
     useEffect(() => {
         if (!isDesktop && open) {
-            // Store original scroll position and body styles
+            // Store original values
             const originalScrollY = window.scrollY
-            const originalBodyStyle = {
-                overflow: document.body.style.overflow,
-                position: document.body.style.position,
-                top: document.body.style.top,
-                width: document.body.style.width,
-            }
-            
-            // Prevent body scroll and viewport jumping when drawer is open on mobile
+            const screenHeight = window.screen.height
+            const availableHeight = window.screen.availHeight
+
+            // Calculate drawer height based on actual screen dimensions
+            // Use screen.height instead of window.innerHeight to avoid keyboard issues
+            const calculatedHeight = Math.min(screenHeight * 0.6, 500)
+            setDrawerHeight(calculatedHeight)
+
+            // Prevent body scroll and fix position
             document.body.style.overflow = 'hidden'
             document.body.style.position = 'fixed'
             document.body.style.top = `-${originalScrollY}px`
             document.body.style.width = '100%'
-            
+
             return () => {
-                // Restore original body styles
-                document.body.style.overflow = originalBodyStyle.overflow
-                document.body.style.position = originalBodyStyle.position
-                document.body.style.top = originalBodyStyle.top
-                document.body.style.width = originalBodyStyle.width
-                
+                // Restore original styles
+                document.body.style.overflow = ''
+                document.body.style.position = ''
+                document.body.style.top = ''
+                document.body.style.width = ''
+
                 // Restore scroll position
                 window.scrollTo(0, originalScrollY)
             }
+        } else if (!open) {
+            setDrawerHeight(0)
         }
     }, [open, isDesktop])
 
@@ -480,12 +484,19 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
     // Mobile UI
     return (
         <Drawer open={open} onOpenChange={handleOpenChange}>
-            <DrawerContent 
-                className="w-full p-5 pt-2 flex flex-col gap-3 overflow-hidden"
+            <DrawerContent
+                className="w-full p-5 pt-2 flex flex-col gap-3 overflow-hidden border-0 rounded-t-[10px]"
                 style={{
-                    height: '60vh',
+                    height: drawerHeight > 0 ? `${drawerHeight}px` : '450px',
                     minHeight: '400px',
-                    maxHeight: '80vh'
+                    maxHeight: '600px',
+                    position: 'fixed',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    zIndex: 51,
+                    transform: 'translateY(0)',
+                    transition: 'none',
                 }}
             >
                 {closeContentButton}
