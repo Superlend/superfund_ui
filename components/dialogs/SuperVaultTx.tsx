@@ -103,6 +103,7 @@ export default function SuperVaultTxDialog({
     setOpen,
     setActionType,
     userMaxWithdrawAmount,
+    onDialogClose,
 }: {
     disabled: boolean
     positionType: TPositionType
@@ -115,6 +116,7 @@ export default function SuperVaultTxDialog({
     setActionType?: (actionType: TPositionType) => void
     userMaxWithdrawAmount?: number
     setToWalletAddress?: (toWalletAddress: string) => void
+    onDialogClose?: () => void
 }) {
     const {
         depositTx,
@@ -462,6 +464,8 @@ export default function SuperVaultTxDialog({
             setAmount('')
             setToWalletAddress && setToWalletAddress('')
             setPendingEmail('') // Reset pendingEmail when closing
+            // Call the parent dialog close callback if provided
+            onDialogClose?.()
             // Note: resetDepositWithdrawTx() is now handled by useEffect with [open] dependency
         }
     }
@@ -472,6 +476,8 @@ export default function SuperVaultTxDialog({
         setOpen(false)
         setAmount('')
         resetDepositWithdrawTx()
+        // Call the parent dialog close callback if provided
+        onDialogClose?.()
     }
 
     function isShowBlock(status: { deposit?: boolean; withdraw?: boolean; transfer?: boolean }) {
@@ -1267,7 +1273,7 @@ export default function SuperVaultTxDialog({
                                         {transferTx.isPending &&
                                             'Waiting for confirmation...'}
                                         {transferTx.isConfirming &&
-                                            'Transferring...'}
+                                            'Sending...'}
                                     </BodyText>
                                 </div>
                                 {transferTx.hash &&
@@ -1307,7 +1313,7 @@ export default function SuperVaultTxDialog({
                                             weight="medium"
                                             className="text-gray-800"
                                         >
-                                            Transfer successful
+                                            Send USDC successful
                                         </BodyText>
                                     </div>
                                     {transferTx.hash &&

@@ -19,7 +19,7 @@ export default function PageHeader() {
     const currentChainDetails = chainDetails[selectedChain as keyof typeof chainDetails]
     const activeAccount = useActiveAccount();
     const isWalletConnected = !!activeAccount;
-    
+
     const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false)
 
     return (
@@ -66,7 +66,7 @@ export default function PageHeader() {
                             className="flex items-center gap-1 group max-md:flex-1"
                         >
                             <SendHorizontal className="w-4 h-4" />
-                            Transfer
+                            Send
                             <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                         </Button>
                         <Button
@@ -86,7 +86,7 @@ export default function PageHeader() {
                     </div>
                 )}
             </div>
-            <TransferDialog 
+            <TransferDialog
                 open={isTransferDialogOpen}
                 setOpen={setIsTransferDialogOpen}
             />

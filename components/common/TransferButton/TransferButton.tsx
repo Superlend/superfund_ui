@@ -78,11 +78,11 @@ const TransferButton = ({
     const { transferTx, setTransferTx } = useTxContext() as TTxContext
 
     const txBtnStatus: Record<string, string> = {
-        pending: 'Transferring...',
+        pending: 'Sending...',
         confirming: 'Confirming...',
         success: 'Close',
         error: 'Close',
-        default: 'Start transferring',
+        default: 'Start sending',
         connecting: 'Connecting wallet...',
     }
 

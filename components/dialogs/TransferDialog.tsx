@@ -268,7 +268,7 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
             weight="medium"
             className="text-gray-800 text-center capitalize"
         >
-            Transfer USDC
+            Send USDC
         </HeadingText>
     )
 
@@ -281,7 +281,7 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
                     weight="normal"
                     className="capitalize text-gray-600"
                 >
-                    Transfer
+                    Send
                 </BodyText>
                 {isWalletConnectedForUI && (
                     <BodyText
@@ -420,6 +420,7 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
                         setOpen={setIsConfirmationDialogOpen}
                         setToWalletAddress={setToWalletAddress}
                         userMaxWithdrawAmount={0}
+                        onDialogClose={() => handleOpenChange(false)}
                     />
                 </CardFooter>
             </Card>
@@ -448,10 +449,10 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
     // Mobile UI
     return (
         <Drawer open={open} onOpenChange={handleOpenChange}>
-            <DrawerContent className="w-full p-5 pt-2 max-h-[100vh] flex flex-col gap-3">
+            <DrawerContent className="w-full p-5 pt-2 min-h-[50vh] max-h-[90vh] flex flex-col gap-3 overflow-hidden">
                 {closeContentButton}
                 <DrawerHeader className="flex-shrink-0">{contentHeader}</DrawerHeader>
-                <div className="flex-shrink-0">
+                <div className="flex-1 overflow-y-auto">
                     {contentBody}
                 </div>
             </DrawerContent>
