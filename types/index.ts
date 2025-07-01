@@ -1,8 +1,8 @@
 import { WarningMessages } from '@/constants'
 import { Period } from './periodButtons'
 
-export type TPositionType = 'deposit' | 'withdraw' | 'claim'
-export type TActionType = 'deposit' | 'withdraw' | 'claim'
+export type TPositionType = 'deposit' | 'withdraw' | 'claim' | 'transfer'
+export type TActionType = 'deposit' | 'withdraw' | 'claim' | 'transfer'
 export type TAddress = `0x${string}`
 
 // Claim Rewards START =====================================

@@ -51,6 +51,7 @@ export default function VaultStats() {
         chainId: selectedChain,
         userAddress: walletAddress
     })
+    // const { totalAssets, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
     // const { boostApy: GLOBAL_BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
     const GLOBAL_BOOST_APY =
         boostRewardsData?.filter((item) => item.description?.includes('A global boost for all users') ?? false)
@@ -93,8 +94,7 @@ export default function VaultStats() {
     const protocolId = getProtocolIdentifier()
     const {
         // data: { capital, interest_earned },
-        isLoading: isLoadingPositionDetails,
-        startRefreshing
+        isLoading: isLoadingPositionDetails
     } = useTransactionHistory({
         protocolIdentifier: protocolId,
         chainId: selectedChain || 0,
@@ -370,7 +370,7 @@ export default function VaultStats() {
                 {vaultStats.map((item, index) => (
                     <motion.div
                         key={index}
-                        className="flex-1 basis-[180px]"
+                        className="flex-1"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{

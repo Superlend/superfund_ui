@@ -6,7 +6,7 @@ import { useChain } from '@/context/chain-context'
 import { Skeleton } from '@/components/ui/skeleton'
 import { format, isToday, isYesterday } from 'date-fns'
 import { Button } from '@/components/ui/button'
-import { ChevronRight, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, CheckCircle2, Calendar } from 'lucide-react'
+import { ChevronRight, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ArrowLeft, ArrowRight, CheckCircle2, Calendar, ArrowDownLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { formatUnits } from 'ethers/lib/utils'
 import Link from 'next/link'
@@ -24,6 +24,8 @@ import { Transaction } from '@/queries/transaction-history-api'
 import { HeadingText } from '@/components/ui/typography'
 import { useActiveAccount } from 'thirdweb/react'
 import { TTxContext, useTxContext } from '@/context/super-vault-tx-provider'
+import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
+import { abbreviateNumberWithoutRounding } from '@/lib/utils'
 
 interface TransactionHistoryProps {
   protocolIdentifier: string
@@ -33,10 +35,10 @@ interface TransactionHistoryProps {
 const convertTimestampToLocalDate = (timestamp: string): Date => {
   // Convert string timestamp to number and multiply by 1000 for milliseconds
   const timestampMs = parseInt(timestamp) * 1000;
-  
+
   // Create date object which automatically uses user's local timezone
   const date = new Date(timestampMs);
-  
+
   // Debug log to help identify timestamp issues
   // if (process.env.NODE_ENV === 'development') {
   //   console.log('Timestamp conversion:', {
@@ -47,7 +49,7 @@ const convertTimestampToLocalDate = (timestamp: string): Date => {
   //     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
   //   });
   // }
-  
+
   return date;
 };
 
@@ -68,7 +70,7 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
   const { selectedChain } = useChain()
   const router = useRouter()
   const { depositTxCompleted, withdrawTxCompleted } = useTxContext() as TTxContext
-  const { data: { transactions }, isLoading, startRefreshing } = useTransactionHistory({
+  const { data: { transactions }, isLoading, refetch: refetchTransactionHistory } = useTransactionHistory({
     protocolIdentifier,
     chainId: selectedChain || 0,
     walletAddress: walletAddress || '',
@@ -78,9 +80,9 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
   // Listen for transaction events from the global event system if available
   useEffect(() => {
     if (depositTxCompleted || withdrawTxCompleted) {
-      startRefreshing();
+      refetchTransactionHistory();
     }
-  }, [depositTxCompleted, withdrawTxCompleted, startRefreshing]);
+  }, [depositTxCompleted, withdrawTxCompleted]);
 
   // Get the chain name for routing
   const getChainName = () => {
@@ -99,7 +101,20 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
     const groups: { [key: string]: Transaction[] } = {}
     const userTimezone = getUserTimezone();
 
-    transactions.slice(0, 3).forEach(tx => {
+    // Filter out edge case transfers (self-transfers and unknown transfers)
+    const filteredTransactions = transactions.filter(tx => {
+      if (tx.type === 'transfer') {
+        const isReceived = tx.to?.toLowerCase() === walletAddress?.toLowerCase()
+        const isSent = tx.from?.toLowerCase() === walletAddress?.toLowerCase()
+
+        // Only show transfers that have a clear direction (either received OR sent, not both or neither)
+        return (isReceived && !isSent) || (!isReceived && isSent)
+      }
+      // Keep all non-transfer transactions
+      return true
+    })
+
+    filteredTransactions.slice(0, 3).forEach(tx => {
       const date = convertTimestampToLocalDate(tx.blockTimestamp);
       let dateKey = ''
 
@@ -156,7 +171,7 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
               </div>
               <div className="space-y-2">
                 {txs.map(tx => (
-                  <TransactionItem key={tx.transactionHash} transaction={tx} />
+                  <TransactionItem key={tx.transactionHash} transaction={tx} walletAddress={walletAddress} />
                 ))}
               </div>
             </div>
@@ -178,15 +193,25 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
   )
 }
 
-function TransactionItem({ transaction }: { transaction: Transaction }) {
-  const { type, assets, shares, blockTimestamp, transactionHash } = transaction
+function TransactionItem({ transaction, walletAddress }: { transaction: Transaction; walletAddress: string }) {
+  const { type, assets, shares, blockTimestamp, transactionHash, from, to } = transaction
   const date = convertTimestampToLocalDate(blockTimestamp);
   const { selectedChain, chainDetails } = useChain()
   const [copied, setCopied] = useState(false)
-
-  // Format the asset amount (using 1e6 decimals as specified)
+  const { usdcPrice } = useVaultHook()
   const formattedAssets = parseFloat(formatUnits(assets, 6)).toFixed(4)
   const formattedShares = parseFloat(formatUnits(shares, 6)).toFixed(4)
+  const formattedUsdcTransferAmount = abbreviateNumberWithoutRounding(Number(formattedShares) * Number(usdcPrice), 4)
+
+  // Transfer direction logic
+  const isTransferReceived = type === 'transfer' && to?.toLowerCase() === walletAddress?.toLowerCase()
+  const isTransferSent = type === 'transfer' && from?.toLowerCase() === walletAddress?.toLowerCase()
+
+  // Helper function to shorten addresses
+  const shortenAddress = (address: string) => {
+    if (!address) return '';
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  }
 
   // Get explorer URL based on the chain
   const getExplorerUrl = () => {
@@ -222,6 +247,14 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
     <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
       <ArrowUpRight className="h-2.5 w-2.5 text-green-500" />
     </div>
+  ) : type === 'transfer' && isTransferReceived ? (
+    <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+      <ArrowDownLeft className="h-2.5 w-2.5 text-green-500" />
+    </div>
+  ) : type === 'transfer' && isTransferSent ? (
+    <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
+      <ArrowUpRight className="h-2.5 w-2.5 text-red-500" />
+    </div>
   ) : (
     <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
       <ArrowDownRight className="h-2.5 w-2.5 text-red-500" />
@@ -233,15 +266,18 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
       <div className="group relative p-3 bg-gradient-to-r from-background to-background/50 rounded-3 hover:from-accent/5 hover:to-accent/10 transition-all duration-300 border border-border/50 hover:border-accent/30 hover:shadow-md hover:shadow-accent/5">
         {/* Subtle gradient overlay on hover */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3 pointer-events-none" />
-        
+
         <div className="relative flex items-start justify-between gap-3">
           {/* Left section */}
           <div className="flex items-start gap-2 flex-1 min-w-0">
             {DirectionIcon}
             <div className="flex flex-col space-y-1.5 flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className={`text-sm font-semibold capitalize ${type === 'deposit' ? 'text-green-600' : 'text-red-600'}`}>
-                  {type}
+                <span className={`text-sm font-semibold capitalize ${type === 'deposit' || (type === 'transfer' && isTransferReceived)
+                  ? 'text-green-600'
+                  : 'text-red-600'
+                  }`}>
+                  {type === 'transfer' ? 'Transfer' : type}
                 </span>
                 <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 h-4 font-medium whitespace-nowrap bg-green-50 border-green-200 text-green-700">
                   <CheckCircle2 className="h-2 w-2 mr-0.5 text-green-500" />
@@ -332,6 +368,54 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
                   </TooltipTrigger>
                   <TooltipContent side="left" className="bg-card border shadow-lg">
                     <p className="text-xs font-medium">Shares received</p>
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            ) : type === 'transfer' && isTransferReceived ? (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-2 bg-green-50/70 border border-green-100/70 hover:bg-green-50 hover:border-green-200 transition-colors duration-200 cursor-pointer">
+                      <span className="text-green-500 font-medium tabular-nums text-xs">+{formattedUsdcTransferAmount}</span>
+                      {USDCIcon}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="bg-card border shadow-lg">
+                    <p className="text-xs font-medium">USDC received</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-1.5 py-1 rounded-2 bg-blue-50/70 border border-blue-100/70 hover:bg-blue-50 hover:border-blue-200 transition-colors duration-200 cursor-pointer">
+                      <span className="text-blue-600 font-mono text-[10px]">From: {shortenAddress(from || '')}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="bg-card border shadow-lg">
+                    <p className="text-xs font-medium">Sender address: {from}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            ) : type === 'transfer' && isTransferSent ? (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-2 bg-red-50/70 border border-red-100/70 hover:bg-red-50 hover:border-red-200 transition-colors duration-200 cursor-pointer">
+                      <span className="text-red-500 font-medium tabular-nums text-xs">-{formattedUsdcTransferAmount}</span>
+                      {USDCIcon}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="bg-card border shadow-lg">
+                    <p className="text-xs font-medium">USDC sent</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-1.5 py-1 rounded-2 bg-orange-50/70 border border-orange-100/70 hover:bg-orange-50 hover:border-orange-200 transition-colors duration-200 cursor-pointer">
+                      <span className="text-orange-600 font-mono text-[10px]">To: {shortenAddress(to || '')}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="bg-card border shadow-lg">
+                    <p className="text-xs font-medium">Recipient address: {to}</p>
                   </TooltipContent>
                 </Tooltip>
               </>

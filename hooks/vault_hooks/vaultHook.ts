@@ -32,6 +32,8 @@ const VAULT_ABI = parseAbi([
     'function getEulerEarnSavingRate() view returns (uint40, uint40, uint168)',
 
     'function getStrategy(address _strategy) view returns (uint120, uint96, uint160, uint8)',
+
+    'function convertToAssets(uint256 amount) view returns (uint256)',
 ])
 
 // Chain-specific configuration
@@ -82,7 +84,7 @@ export function useVaultHook() {
                 throw new Error(`Public client not found for chain ID ${selectedChain}`)
             }
 
-            const [assets, eulerEarnSavingRate] = await Promise.all([
+            const [assets, eulerEarnSavingRate, usdcPrice] = await Promise.all([
                 client.readContract({
                     address: config.vaultAddress as `0x${string}`,
                     abi: VAULT_ABI,
@@ -92,6 +94,12 @@ export function useVaultHook() {
                     address: config.vaultAddress as `0x${string}`,
                     abi: VAULT_ABI,
                     functionName: 'getEulerEarnSavingRate',
+                }),
+                client.readContract({
+                    address: config.vaultAddress as `0x${string}`,
+                    abi: VAULT_ABI,
+                    functionName: 'convertToAssets',
+                    args: [BigInt(1000000)],
                 }),
             ])
 
@@ -109,23 +117,26 @@ export function useVaultHook() {
 
             const formattedAssets = formatUnits(assets, USDC_DECIMALS)
             const formattedSpotApy = convertAPRtoAPY(rate / 100).toFixed(2)
+            const formattedUsdcPrice = Number(formatUnits(usdcPrice, USDC_DECIMALS))
 
             return {
                 totalAssets: formattedAssets,
-                spotApy: formattedSpotApy
+                spotApy: formattedSpotApy,
+                usdcPrice: formattedUsdcPrice,
             }
         },
-        staleTime: 10 * 1000, // 10 seconds - vault data changes frequently
-        refetchInterval: 15 * 1000, // 15 seconds - same as original implementation
+        staleTime: 5 * 1000, // 5 seconds - vault data changes frequently
+        refetchInterval: 5 * 1000, // 5 seconds
         enabled: !!selectedChain,
     })
 
     // Return the exact same interface as the original hook
-    return { 
-        totalAssets: data?.totalAssets || '0', 
-        spotApy: data?.spotApy || '0', 
-        isLoading, 
-        error: error ? 'Failed to fetch vault data' : null 
+    return {
+        totalAssets: data?.totalAssets || '0',
+        spotApy: data?.spotApy || '0',
+        usdcPrice: data?.usdcPrice || 0,
+        isLoading,
+        error: error ? 'Failed to fetch vault data' : null
     }
 }
 
@@ -276,13 +287,13 @@ export function useRewardsHook() {
 
     useEffect(() => {
         isMountedRef.current = true
-        
+
         // Clear any existing timeout when chain changes
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current)
             timeoutRef.current = null
         }
-        
+
         fetchRewards()
 
         return () => {

@@ -41,9 +41,11 @@ const CustomNumberInput = ({
             placeholder="0.00"
             id="numberInput"
             type="text"
+            inputMode="decimal"
             value={amount}
             onChange={handleChange}
             className="w-full focus:outline-none text-[24px] font-medium placeholder:text-gray-500 empty:bg-transparent p-0 truncate"
+            style={{ fontSize: '24px' }}
         />
     )
 }

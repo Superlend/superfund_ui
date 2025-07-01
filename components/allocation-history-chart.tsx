@@ -215,6 +215,10 @@ const BASE_CHAIN_CONFIG = {
     '0x616a4E1db48e22028f6bbf20444Cd3b8e3273738': {
         label: 'Seamless USDC Vault',
         color: '#8A2BE2', // Bright purple
+    },
+    '0xB7890CEE6CF4792cdCC13489D36D9d42726ab863': {
+        label: 'Universal USDC Vault',
+        color: '#3151b0', // Dark blue
     }
 }
 

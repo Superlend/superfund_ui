@@ -31,6 +31,7 @@ import { LIQUIDITY_LAND_TARGET_APY, UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL } 
 import { useActiveAccount, useConnect } from "thirdweb/react"
 import { useUserBalance } from "@/hooks/vault_hooks/useUserBalanceHook"
 import { useGetLiquidityLandUsers } from "@/hooks/useGetLiquidityLandUsers"
+import { TTxContext, useTxContext } from "@/context/super-vault-tx-provider"
 
 const variants = {
     hidden: { opacity: 0, y: 30 },
@@ -109,6 +110,7 @@ function NoActivePositionUI({
 }
 
 function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAddress: TAddress; isConnecting?: boolean }) {
+    const { depositTxCompleted, withdrawTxCompleted } = useTxContext() as TTxContext
     const { selectedChain, chainDetails } = useChain()
     const {
         balance,
@@ -129,7 +131,7 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
     const {
         // data: { capital, interest_earned },
         isLoading: isLoadingPositionDetails,
-        startRefreshing
+        refetch: refetchTransactionHistory
     } = useTransactionHistory({
         protocolIdentifier: protocolId,
         chainId: selectedChain || 0,
@@ -210,24 +212,11 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
     }, [isLiquidityLandUser, baseAPY])
     const hasLiquidityLandBoost = LIQUIDITY_LAND_BOOST_APY > 0
 
-    // Listen for transaction events from the global event system if available
     useEffect(() => {
-        const handleTransactionComplete = () => {
-            // Manually trigger refreshing for 30 seconds when transaction completes
-            startRefreshing();
-        };
-
-        // Add event listener if window exists
-        if (typeof window !== 'undefined') {
-            window.addEventListener('transaction-complete', handleTransactionComplete);
+        if (depositTxCompleted || withdrawTxCompleted) {
+            refetchTransactionHistory();
         }
-
-        return () => {
-            if (typeof window !== 'undefined') {
-                window.removeEventListener('transaction-complete', handleTransactionComplete);
-            }
-        };
-    }, [startRefreshing]);
+    }, [depositTxCompleted, withdrawTxCompleted]);
 
     // Calculate 7-day average spot APY from historical data
     const days_7_avg_spot_apy = useMemo(() => {

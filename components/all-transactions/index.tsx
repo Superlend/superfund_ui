@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { format, isToday, isYesterday, parseISO, differenceInDays, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns'
 import Link from 'next/link'
 import { formatUnits } from 'ethers/lib/utils'
-import { ExternalLink, ArrowUpRight, ArrowDownRight, CheckCircle2, Copy, Filter, Calendar as CalendarIcon, CalendarRange, X, ChevronDown, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { ExternalLink, ArrowUpRight, ArrowDownRight, ArrowLeft, ArrowRight, CheckCircle2, Copy, Filter, Calendar as CalendarIcon, CalendarRange, X, ChevronDown, ArrowUpDown, ArrowUp, ArrowDown, ArrowDownLeft } from 'lucide-react'
 import { ChainId } from '@/types/chain'
 import Image from 'next/image'
 import {
@@ -38,12 +38,17 @@ import useTransactionHistory from '@/hooks/useTransactionHistory'
 import { Transaction } from '@/queries/transaction-history-api'
 import { useActiveAccount } from "thirdweb/react"
 import useDimensions from '@/hooks/useDimensions'
+import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
+import { abbreviateNumberWithoutRounding } from '@/lib/utils'
+import useGetUsdcExchangeRate from '@/hooks/useGetUsdcExchangeRate'
+import { VAULT_ADDRESS_MAP } from '@/lib/constants'
+import { TTxContext, useTxContext } from '@/context/super-vault-tx-provider'
 
 interface AllTransactionsProps {
   protocolIdentifier?: string // Optional if we want to pass it directly
 }
 
-type FilterType = 'all' | 'deposit' | 'withdraw'
+type FilterType = 'all' | 'deposit' | 'withdraw' | 'transfer'
 
 interface DateRange {
   startDate: string // ISO date string (YYYY-MM-DD)
@@ -114,6 +119,7 @@ const isTransactionInDateRange = (transaction: Transaction, dateRange: DateRange
 
 export default function AllTransactions({ protocolIdentifier }: AllTransactionsProps) {
   // const { walletAddress, isWalletConnected } = useWalletConnection()
+  const { depositTxCompleted, withdrawTxCompleted } = useTxContext() as TTxContext
   const account = useActiveAccount();
   const walletAddress = account?.address as `0x${string}`
   const isWalletConnected = !!account
@@ -136,12 +142,18 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
 
   // Use the custom hook instead of direct fetch and local state
   const protocolId = getProtocolIdentifier()
-  const { data: { transactions }, isLoading, startRefreshing } = useTransactionHistory({
+  const { data: { transactions }, isLoading, refetch: refetchTransactionHistory } = useTransactionHistory({
     protocolIdentifier: protocolId,
     chainId: selectedChain || 0,
     walletAddress: walletAddress || '',
     refetchOnTransaction: true
   })
+
+  // Get vault address for exchange rate API
+  const vaultAddress = VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP]
+  
+  // Get fallback USDC price from vault hook
+  const { usdcPrice } = useVaultHook()
 
   // Calculate date bounds from transaction history
   const getDateBounds = () => {
@@ -159,29 +171,26 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
 
   const { minDate, maxDate } = getDateBounds()
 
-  // Listen for transaction events from the global event system if available
   useEffect(() => {
-    const handleTransactionComplete = () => {
-      // Manually trigger refreshing for 30 seconds when transaction completes
-      startRefreshing();
-    };
-
-    // Add event listener if window exists
-    if (typeof window !== 'undefined') {
-      window.addEventListener('transaction-complete', handleTransactionComplete);
+    if (depositTxCompleted || withdrawTxCompleted) {
+      refetchTransactionHistory();
     }
-
-    return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('transaction-complete', handleTransactionComplete);
-      }
-    };
-  }, [startRefreshing]);
+  }, [depositTxCompleted, withdrawTxCompleted]);
 
   // Filter and sort transactions by type and date range
   const filteredAndSortedTransactions = React.useMemo(() => {
     // First filter transactions
     const filtered = transactions.filter(tx => {
+      // Filter out edge case transfers (self-transfers and unknown transfers)
+      if (tx.type === 'transfer') {
+        const isReceived = tx.to?.toLowerCase() === walletAddress?.toLowerCase()
+        const isSent = tx.from?.toLowerCase() === walletAddress?.toLowerCase()
+        
+        // Only show transfers that have a clear direction (either received OR sent, not both or neither)
+        const hasValidDirection = (isReceived && !isSent) || (!isReceived && isSent)
+        if (!hasValidDirection) return false
+      }
+
       // Filter by type
       const typeMatch = currentFilter === 'all' || tx.type === currentFilter;
 
@@ -204,7 +213,26 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
     });
 
     return sorted;
-  }, [transactions, currentFilter, dateRange, sortOrder])
+  }, [transactions, currentFilter, dateRange, sortOrder, walletAddress])
+
+  // Extract unique block numbers from filtered transactions for exchange rate API
+  const uniqueBlockNumbers = React.useMemo(() => {
+    const blockNumbers = filteredAndSortedTransactions.map(tx => tx.blockNumber)
+    return blockNumbers.filter((blockNumber, index) => blockNumbers.indexOf(blockNumber) === index)
+  }, [filteredAndSortedTransactions])
+
+  // Get block-specific exchange rates with fallback to live USDC price
+  const { 
+    getExchangeRateForBlock, 
+    isLoading: isLoadingExchangeRates,
+    isUsingFallback 
+  } = useGetUsdcExchangeRate({
+    vaultAddress,
+    chainId: selectedChain || 0,
+    blockNumbers: uniqueBlockNumbers,
+    fallbackUsdcPrice: usdcPrice,
+    enabled: !!vaultAddress && !!selectedChain && uniqueBlockNumbers.length > 0
+  })
 
   // Reset pagination when filter changes
   useEffect(() => {
@@ -334,7 +362,7 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
         {hasTransactions && (
           <div className="flex flex-wrap justify-between gap-4 mb-6">
             {/* Header */}
-            <div className="flex justify-between items-start md:items-center gap-4 md:gap-0 max-md:w-full">
+            <div className="flex justify-between items-start md:items-center gap-4 md:gap-0 max-lg:w-full">
               <div className="flex flex-col gap-1">
                 <h3 className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                   Your Transactions
@@ -346,6 +374,12 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
                     <>{filteredAndSortedTransactions.length} {filteredAndSortedTransactions.length === 1 ? 'transaction' : 'transactions'}</>
                   )}
                 </p>
+                {/* Exchange rate status indicator */}
+                {isUsingFallback && filteredAndSortedTransactions.length > 0 && (
+                  <p className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-2 border border-amber-200 w-fit">
+                    Using estimated exchange rates
+                  </p>
+                )}
                 {/* Debug info in development */}
                 {process.env.NODE_ENV === 'development' && (
                   <p className="text-xs text-muted-foreground">
@@ -423,6 +457,22 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
                                 </div>
                                 {currentFilter === 'withdraw' && (
                                   <CheckCircle2 className="h-4 w-4 text-red-500" />
+                                )}
+                              </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleFilterChange('transfer')}
+                              className={`relative rounded-3 cursor-pointer transition-all duration-200 overflow-hidden ${currentFilter === 'transfer' ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'hover:bg-accent/50'
+                                }`}
+                            >
+                              <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-2">
+                                  <div className={`w-2 h-2 rounded-full bg-purple-500 transition-all duration-200 ${currentFilter === 'transfer' ? 'scale-125' : 'scale-100'
+                                    }`}></div>
+                                  <span>Transfers Only</span>
+                                </div>
+                                {currentFilter === 'transfer' && (
+                                  <CheckCircle2 className="h-4 w-4 text-purple-500" />
                                 )}
                               </div>
                             </DropdownMenuItem>
@@ -538,6 +588,25 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
                       <span>Withdrawals</span>
                     </div>
                   </button>
+                  <button
+                    onClick={() => handleFilterChange('transfer')}
+                    className={`relative px-4 py-2 text-xs font-medium rounded-3 transition-all duration-300 overflow-hidden min-w-[90px] ${currentFilter === 'transfer'
+                      ? 'text-white shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                  >
+                    <div className={`absolute inset-0 bg-purple-500 rounded-3 transition-all duration-300 ease-out ${currentFilter === 'transfer'
+                      ? 'scale-100 opacity-100'
+                      : 'scale-0 opacity-0'
+                      }`} />
+                    <div className="relative z-10 flex items-center justify-center gap-2">
+                      <div className={`w-2 h-2 rounded-full bg-purple-500 transition-all duration-500 ease-out ${currentFilter === 'transfer'
+                        ? 'scale-0 opacity-0 hidden'
+                        : 'scale-100 opacity-100'
+                        }`} />
+                      <span>Transfers</span>
+                    </div>
+                  </button>
                 </div>
 
                 {/* Date Range Picker */}
@@ -605,7 +674,7 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
         )}
 
         <div className="space-y-6">
-          {isLoading ? (
+          {isLoading || isLoadingExchangeRates ? (
             <TransactionSkeleton count={5} />
           ) : transactions.length === 0 ? (
             <EmptyTransactionsState />
@@ -647,7 +716,13 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
                   </div>
                   <div className="space-y-3 pl-2">
                     {txs.map(tx => (
-                      <TransactionItem key={tx.transactionHash} transaction={tx} expanded={true} />
+                      <TransactionItem 
+                        key={tx.transactionHash} 
+                        transaction={tx} 
+                        expanded={true} 
+                        walletAddress={walletAddress}
+                        getExchangeRateForBlock={getExchangeRateForBlock}
+                      />
                     ))}
                   </div>
                 </div>
@@ -872,8 +947,18 @@ function DateRangePicker({
   )
 }
 
-function TransactionItem({ transaction, expanded = false }: { transaction: Transaction; expanded?: boolean }) {
-  const { type, assets, shares, blockNumber, blockTimestamp, transactionHash } = transaction
+function TransactionItem({ 
+  transaction, 
+  expanded = false, 
+  walletAddress,
+  getExchangeRateForBlock
+}: { 
+  transaction: Transaction
+  expanded?: boolean
+  walletAddress: string
+  getExchangeRateForBlock?: (blockNumber: string) => number
+}) {
+  const { type, assets, shares, blockNumber, blockTimestamp, transactionHash, from, to } = transaction
   const date = convertTimestampToLocalDate(blockTimestamp);
   const { selectedChain, chainDetails } = useChain()
   const [copied, setCopied] = useState(false)
@@ -881,6 +966,23 @@ function TransactionItem({ transaction, expanded = false }: { transaction: Trans
   // Format the asset amount (using 1e6 decimals as specified)
   const formattedAssets = parseFloat(formatUnits(assets, 6)).toFixed(4)
   const formattedShares = parseFloat(formatUnits(shares, 6)).toFixed(4)
+  
+  // Get block-specific exchange rate or fallback to 1:1 ratio
+  const blockSpecificExchangeRate = getExchangeRateForBlock 
+    ? getExchangeRateForBlock(blockNumber)
+    : 1
+  
+  const formattedUsdcTransferAmount = abbreviateNumberWithoutRounding(Number(formattedShares) * blockSpecificExchangeRate, 4)
+
+  // Transfer direction logic
+  const isTransferReceived = type === 'transfer' && to?.toLowerCase() === walletAddress?.toLowerCase()
+  const isTransferSent = type === 'transfer' && from?.toLowerCase() === walletAddress?.toLowerCase()
+
+  // Helper function to shorten addresses
+  const shortenAddress = (address: string) => {
+    if (!address) return '';
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  }
 
   // Get explorer URL based on the chain
   const getExplorerUrl = () => {
@@ -898,6 +1000,14 @@ function TransactionItem({ transaction, expanded = false }: { transaction: Trans
   const DirectionIcon = type === 'deposit' ? (
     <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
       <ArrowUpRight className="h-3 w-3 text-green-500" />
+    </div>
+  ) : type === 'transfer' && isTransferReceived ? (
+    <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+      <ArrowDownLeft className="h-3 w-3 text-green-500" />
+    </div>
+  ) : type === 'transfer' && isTransferSent ? (
+    <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center">
+      <ArrowUpRight className="h-3 w-3 text-red-500" />
     </div>
   ) : (
     <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center">
@@ -933,8 +1043,12 @@ function TransactionItem({ transaction, expanded = false }: { transaction: Trans
               <div className="flex flex-wrap items-center gap-2 mb-1.5">
                 <div className="flex items-center gap-1">
                   <div className="block md:hidden">{DirectionIcon}</div>
-                  <span className={`font-semibold capitalize text-sm ${type === 'deposit' ? 'text-green-600' : 'text-red-600'}`}>
-                    {type}
+                  <span className={`font-semibold capitalize text-sm ${
+                    type === 'deposit' || (type === 'transfer' && isTransferReceived) 
+                      ? 'text-green-600' 
+                      : 'text-red-600'
+                  }`}>
+                    {type === 'transfer' ? 'Transfer' : type}
                   </span>
                 </div>
                 <Badge variant="outline" className="text-[10px] px-2 py-0.5 h-5 font-medium whitespace-nowrap bg-green-50 border-green-200 text-green-700">
@@ -1032,6 +1146,54 @@ function TransactionItem({ transaction, expanded = false }: { transaction: Trans
                   </TooltipTrigger>
                   <TooltipContent side="left" className="bg-card border shadow-lg">
                     <p className="text-xs font-medium">Shares received</p>
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            ) : type === 'transfer' && isTransferReceived ? (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-2 sm:rounded-3 bg-green-50/70 border border-green-100/70 hover:bg-green-50 hover:border-green-200 transition-colors duration-200 cursor-pointer">
+                      <span className="text-green-500 font-medium tabular-nums text-sm">+{formattedUsdcTransferAmount}</span>
+                      {USDCIcon}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="bg-card border shadow-lg">
+                    <p className="text-xs font-medium">USDC received</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-1.5 py-1 rounded-2 bg-blue-50/70 border border-blue-100/70 hover:bg-blue-50 hover:border-blue-200 transition-colors duration-200 cursor-pointer">
+                      <span className="text-blue-600 font-mono text-[10px]">From: {shortenAddress(from || '')}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="bg-card border shadow-lg">
+                    <p className="text-xs font-medium">Sender address: {from}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            ) : type === 'transfer' && isTransferSent ? (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-2 sm:rounded-3 bg-red-50/70 border border-red-100/70 hover:bg-red-50 hover:border-red-200 transition-colors duration-200 cursor-pointer">
+                      <span className="text-red-500 font-medium tabular-nums text-sm">-{formattedUsdcTransferAmount}</span>
+                      {USDCIcon}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="bg-card border shadow-lg">
+                    <p className="text-xs font-medium">USDC sent</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-1.5 py-1 rounded-2 bg-orange-50/70 border border-orange-100/70 hover:bg-orange-50 hover:border-orange-200 transition-colors duration-200 cursor-pointer">
+                      <span className="text-orange-600 font-mono text-[10px]">To: {shortenAddress(to || '')}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="bg-card border shadow-lg">
+                    <p className="text-xs font-medium">Recipient address: {to}</p>
                   </TooltipContent>
                 </Tooltip>
               </>

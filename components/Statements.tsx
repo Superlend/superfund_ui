@@ -8,7 +8,7 @@ import { ChainId, ChainNameMap } from '@/types/chain';
 import { format, isToday, isYesterday } from 'date-fns';
 import { formatUnits } from 'ethers/lib/utils';
 import { useState, useEffect } from 'react';
-import { ChevronRight, ExternalLink as LucideExternalLink, Copy, ArrowUpRight, ArrowDownRight, ArrowRight, ArrowLeft, CheckCircle2, Calendar, ChevronLeft, CalendarIcon, CalendarRange, ChevronDown } from 'lucide-react';
+import { ChevronRight, ExternalLink as LucideExternalLink, Copy, ArrowUpRight, ArrowDownRight, ArrowRight, ArrowLeft, CheckCircle2, Calendar, ChevronLeft, CalendarIcon, CalendarRange, ChevronDown, ArrowDownLeft } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -25,6 +25,9 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { useVaultHook } from '@/hooks/vault_hooks/vaultHook';
+import useGetUsdcExchangeRate from '@/hooks/useGetUsdcExchangeRate';
+import { VAULT_ADDRESS_MAP } from '@/lib/constants';
 
 interface StatementsProps {
     userAddress: string;
@@ -65,6 +68,9 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
         vaultAddress,
         chainId,
     });
+
+    // Get fallback USDC price from vault hook
+    const { usdcPrice } = useVaultHook();
 
     // Safeguard: if selectedStatementIndex is out of bounds, reset to 0
     useEffect(() => {
@@ -131,11 +137,31 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
     };
 
     // Transform statements transaction data to match TransactionHistory format
+    // Helper function to convert decimal string to wei-like format without precision loss
+    const parseDecimalToWei = (decimalStr: string, decimals: number = 6): string => {
+        if (!decimalStr || decimalStr === '0') return '0';
+        
+        // Remove any whitespace
+        const cleanStr = decimalStr.trim();
+        
+        // Split by decimal point
+        const [integerPart = '0', fractionalPart = ''] = cleanStr.split('.');
+        
+        // Pad or truncate fractional part to exactly `decimals` places
+        const paddedFractional = fractionalPart.padEnd(decimals, '0').substring(0, decimals);
+        
+        // Combine and convert to number string
+        const weiValue = integerPart + paddedFractional;
+        
+        // Remove leading zeros but keep at least one digit
+        return weiValue.replace(/^0+/, '') || '0';
+    };
+
     const transformStatementTransaction = (tx: any) => {
         return {
             type: tx.type,
-            assets: (parseFloat(tx.tokenAmount) * 1e6).toString(), // Convert to Wei format
-            shares: (parseFloat(tx.shareAmount) * 1e6).toString(), // Convert to Wei format
+            assets: parseDecimalToWei(tx.tokenAmount, 6), // Convert to Wei format without precision loss
+            shares: parseDecimalToWei(tx.shareAmount, 6), // Convert to Wei format without precision loss
             blockTimestamp: convertBlockNumberToTimestamp(tx.blockNumber),
             transactionHash: tx.txHash,
             blockNumber: tx.blockNumber,
@@ -153,6 +179,25 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
     const startIndex = (currentPage - 1) * transactionsPerPage;
     const endIndex = startIndex + transactionsPerPage;
     const currentTransactions = allTransactions.slice(startIndex, endIndex);
+
+    // Extract unique block numbers from current page transactions for exchange rate API
+    const uniqueBlockNumbers = React.useMemo(() => {
+        const blockNumbers = currentTransactions.map(tx => tx.blockNumber?.toString()).filter(Boolean);
+        return blockNumbers.filter((blockNumber, index) => blockNumbers.indexOf(blockNumber) === index);
+    }, [currentTransactions]);
+
+    // Get block-specific exchange rates with fallback to live USDC price
+    const { 
+        getExchangeRateForBlock, 
+        isLoading: isLoadingExchangeRates,
+        isUsingFallback 
+    } = useGetUsdcExchangeRate({
+        vaultAddress: VAULT_ADDRESS_MAP[chainId as keyof typeof VAULT_ADDRESS_MAP] || vaultAddress,
+        chainId: chainId,
+        blockNumbers: uniqueBlockNumbers,
+        fallbackUsdcPrice: usdcPrice,
+        enabled: !!vaultAddress && !!chainId && uniqueBlockNumbers.length > 0
+    });
 
     // Pagination state
     const hasMorePages = currentPage < totalPages;
@@ -273,13 +318,28 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
     }
 
     // Extracted TransactionItem component for statements
-    function StatementTransactionItem({ transaction, chainId }: { transaction: any; chainId: number }) {
-        const { type, assets, shares, blockTimestamp, transactionHash, from, to } = transaction;
+    function StatementTransactionItem({ 
+        transaction, 
+        chainId, 
+        getExchangeRateForBlock 
+    }: { 
+        transaction: any; 
+        chainId: number;
+        getExchangeRateForBlock?: (blockNumber: string) => number;
+    }) {
+        const { type, assets, shares, blockTimestamp, transactionHash, from, to, blockNumber } = transaction;
         const date = convertTimestampToLocalDate(blockTimestamp);
         const [copied, setCopied] = useState(false);
 
         const formattedAssets = abbreviateNumberWithoutRounding(Number(formatUnits(assets, 6)));
         const formattedShares = abbreviateNumberWithoutRounding(Number(formatUnits(shares, 6)));
+        
+        // Get block-specific exchange rate or fallback to 1:1 ratio
+        const blockSpecificExchangeRate = getExchangeRateForBlock && blockNumber
+            ? getExchangeRateForBlock(blockNumber.toString())
+            : 1;
+        
+        const formattedUsdcTransferAmount = abbreviateNumberWithoutRounding(Number(formatUnits(shares, 6)) * blockSpecificExchangeRate, 4)
 
         // Get explorer URL based on the chain
         const getExplorerUrl = () => {
@@ -316,11 +376,11 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
             </div>
         ) : type === 'transfer-received' ? (
             <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
-                <ArrowLeft className="h-2.5 w-2.5 text-green-500" />
+                <ArrowDownLeft className="h-2.5 w-2.5 text-green-500" />
             </div>
         ) : type === 'transfer-sent' ? (
             <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
-                <ArrowRight className="h-2.5 w-2.5 text-red-500" />
+                <ArrowUpRight className="h-2.5 w-2.5 text-red-500" />
             </div>
         ) : (
             <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
@@ -444,14 +504,12 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <div className="flex items-center gap-1 px-2 py-1 rounded-2 bg-red-50/70 border border-red-100/70 hover:bg-red-50 hover:border-red-200 transition-colors duration-200 cursor-pointer">
-                                                <span className="text-red-500 font-medium tabular-nums text-xs">-{formattedShares}</span>
-                                                <span className="text-[9px] font-medium text-red-600/80 bg-red-100/50 px-1 py-0.5 rounded">
-                                                    slUSD
-                                                </span>
+                                                <span className="text-red-500 font-medium tabular-nums text-xs">-{formattedUsdcTransferAmount}</span>
+                                                {USDCIcon}
                                             </div>
                                         </TooltipTrigger>
                                         <TooltipContent side="left" className="bg-card border shadow-lg">
-                                            <p className="text-xs font-medium">slUSD sent</p>
+                                            <p className="text-xs font-medium">USDC sent</p>
                                         </TooltipContent>
                                     </Tooltip>
                                     <Tooltip>
@@ -477,14 +535,12 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <div className="flex items-center gap-1 px-2 py-1 rounded-2 bg-green-50/70 border border-green-100/70 hover:bg-green-50 hover:border-green-200 transition-colors duration-200 cursor-pointer">
-                                                <span className="text-green-500 font-medium tabular-nums text-xs">+{formattedShares}</span>
-                                                <span className="text-[9px] font-medium text-green-600/80 bg-green-100/50 px-1 py-0.5 rounded">
-                                                    slUSD
-                                                </span>
+                                                <span className="text-green-500 font-medium tabular-nums text-xs">+{formattedUsdcTransferAmount}</span>
+                                                {USDCIcon}
                                             </div>
                                         </TooltipTrigger>
                                         <TooltipContent side="left" className="bg-card border shadow-lg">
-                                            <p className="text-xs font-medium">slUSD received</p>
+                                            <p className="text-xs font-medium">USDC received</p>
                                         </TooltipContent>
                                     </Tooltip>
                                     <Tooltip>
@@ -701,12 +757,23 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                     {/* Top pagination controls */}
                     {/* <PaginationControls /> */}
 
+                    {/* Exchange rate status indicator */}
+                    {isUsingFallback && currentTransactions.length > 0 && (
+                        <div className="mb-4">
+                            <p className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-3 border border-amber-200 w-fit">
+                                Using estimated exchange rates for transaction amounts
+                            </p>
+                        </div>
+                    )}
+
                     {/* Transaction list */}
                     <div className="space-y-3 my-6">
-                        {isLoading ? (
+                        {isLoading || isLoadingExchangeRates ? (
                             <div className="text-center py-8">
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                                <p className="text-sm text-gray-500">Loading transactions...</p>
+                                <p className="text-sm text-gray-500">
+                                    {isLoading ? 'Loading transactions...' : 'Loading exchange rates...'}
+                                </p>
                             </div>
                         ) : currentTransactions.length > 0 ? (
                             currentTransactions.map((tx, index) => {
@@ -716,6 +783,7 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                                         key={startIndex + index}
                                         transaction={transformedTx}
                                         chainId={data.chainId}
+                                        getExchangeRateForBlock={getExchangeRateForBlock}
                                     />
                                 );
                             })
