@@ -227,28 +227,94 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
     // Get transfer transaction context to monitor completion
     const { setTransferTx } = useTxContext() as TTxContext
 
-        // Fix mobile keyboard auto-scroll issue  
+        // iOS-specific keyboard handling
     useEffect(() => {
         if (!isDesktop && open) {
-            // Prevent body scroll and auto-scroll to inputs
-            document.body.style.overflow = 'hidden'
+            // Store original values
+            const originalBodyStyle = document.body.style.cssText
+            const originalHtmlStyle = document.documentElement.style.cssText
             
-            // Prevent auto-scroll when inputs are focused
+            // Prevent body scroll and fix iOS issues
+            document.body.style.overflow = 'hidden'
+            document.body.style.position = 'fixed'
+            document.body.style.width = '100%'
+            document.body.style.height = '100%'
+            
+            // Set viewport meta to prevent zoom on iOS
+            let viewport = document.querySelector('meta[name="viewport"]')
+            const originalViewport = viewport?.getAttribute('content')
+            
+            if (!viewport) {
+                viewport = document.createElement('meta')
+                viewport.setAttribute('name', 'viewport')
+                document.head.appendChild(viewport)
+            }
+            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no')
+            
+            // Prevent iOS auto-scroll and zoom
             const handleFocus = (e: FocusEvent) => {
-                if (e.target instanceof HTMLInputElement) {
+                const target = e.target as HTMLElement
+                if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+                    // Prevent scrollIntoView
                     e.preventDefault()
-                    // Small delay to prevent the auto-scroll
+                    
+                    // Keep focus but prevent scroll
                     setTimeout(() => {
+                        target.focus({ preventScroll: true })
                         window.scrollTo(0, 0)
                     }, 100)
                 }
             }
             
-            document.addEventListener('focusin', handleFocus)
+            // Enable VirtualKeyboard API if available
+            if ('virtualKeyboard' in navigator) {
+                (navigator as any).virtualKeyboard.overlaysContent = true
+            }
+            
+            // Handle Visual Viewport API for modern iOS
+            const handleViewportChange = () => {
+                const vv = (window as any).visualViewport
+                if (vv) {
+                    const drawer = document.querySelector('[data-state="open"]') as HTMLElement
+                    if (drawer) {
+                        const keyboardHeight = Math.max(0, window.innerHeight - vv.height)
+                        if (keyboardHeight > 0) {
+                            drawer.style.transform = `translateY(-${Math.min(keyboardHeight, 150)}px)`
+                        } else {
+                            drawer.style.transform = 'translateY(0)'
+                        }
+                    }
+                }
+            }
+            
+            document.addEventListener('focusin', handleFocus, { passive: false })
+            
+            const vv = (window as any).visualViewport
+            if (vv) {
+                vv.addEventListener('resize', handleViewportChange)
+            }
             
             return () => {
-                document.body.style.overflow = ''
+                // Restore everything
+                document.body.style.cssText = originalBodyStyle
+                document.documentElement.style.cssText = originalHtmlStyle
+                
+                if (viewport && originalViewport) {
+                    viewport.setAttribute('content', originalViewport)
+                }
+                
                 document.removeEventListener('focusin', handleFocus)
+                
+                const vv = (window as any).visualViewport
+                if (vv) {
+                    vv.removeEventListener('resize', handleViewportChange)
+                }
+                
+                // Reset any transforms
+                const drawer = document.querySelector('[data-state="open"]') as HTMLElement
+                if (drawer) {
+                    drawer.style.transform = ''
+                }
             }
         }
     }, [open, isDesktop])
@@ -356,6 +422,7 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
                                     setToWalletAddress(e.target.value)
                                 }
                                 placeholder="Enter To/Receiver address"
+                                style={{ fontSize: '16px' }}
                             />
                         </div>
                     </div>
@@ -475,7 +542,16 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
     // Mobile UI
     return (
         <Drawer open={open} onOpenChange={handleOpenChange}>
-            <DrawerContent className="w-full p-5 pt-2 max-h-[70vh] flex flex-col gap-3">
+            <DrawerContent 
+                className="w-full p-5 pt-2 flex flex-col gap-3"
+                style={{
+                    maxHeight: '70vh',
+                    minHeight: '400px',
+                    bottom: 'env(keyboard-inset-height, 0px)',
+                    transform: 'translateY(0)',
+                    transition: 'transform 0.3s ease-out'
+                }}
+            >
                 {closeContentButton}
                 <DrawerHeader className="flex-shrink-0">{contentHeader}</DrawerHeader>
                 <div className="flex-shrink-0">
