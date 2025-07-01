@@ -6,7 +6,7 @@ import { useChain } from '@/context/chain-context'
 import { Skeleton } from '@/components/ui/skeleton'
 import { format, isToday, isYesterday } from 'date-fns'
 import { Button } from '@/components/ui/button'
-import { ChevronRight, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ArrowLeft, ArrowRight, CheckCircle2, Calendar } from 'lucide-react'
+import { ChevronRight, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ArrowLeft, ArrowRight, CheckCircle2, Calendar, ArrowDownLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { formatUnits } from 'ethers/lib/utils'
 import Link from 'next/link'
@@ -24,6 +24,8 @@ import { Transaction } from '@/queries/transaction-history-api'
 import { HeadingText } from '@/components/ui/typography'
 import { useActiveAccount } from 'thirdweb/react'
 import { TTxContext, useTxContext } from '@/context/super-vault-tx-provider'
+import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
+import { abbreviateNumberWithoutRounding } from '@/lib/utils'
 
 interface TransactionHistoryProps {
   protocolIdentifier: string
@@ -33,10 +35,10 @@ interface TransactionHistoryProps {
 const convertTimestampToLocalDate = (timestamp: string): Date => {
   // Convert string timestamp to number and multiply by 1000 for milliseconds
   const timestampMs = parseInt(timestamp) * 1000;
-  
+
   // Create date object which automatically uses user's local timezone
   const date = new Date(timestampMs);
-  
+
   // Debug log to help identify timestamp issues
   // if (process.env.NODE_ENV === 'development') {
   //   console.log('Timestamp conversion:', {
@@ -47,7 +49,7 @@ const convertTimestampToLocalDate = (timestamp: string): Date => {
   //     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
   //   });
   // }
-  
+
   return date;
 };
 
@@ -99,7 +101,20 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
     const groups: { [key: string]: Transaction[] } = {}
     const userTimezone = getUserTimezone();
 
-    transactions.slice(0, 3).forEach(tx => {
+    // Filter out edge case transfers (self-transfers and unknown transfers)
+    const filteredTransactions = transactions.filter(tx => {
+      if (tx.type === 'transfer') {
+        const isReceived = tx.to?.toLowerCase() === walletAddress?.toLowerCase()
+        const isSent = tx.from?.toLowerCase() === walletAddress?.toLowerCase()
+        
+        // Only show transfers that have a clear direction (either received OR sent, not both or neither)
+        return (isReceived && !isSent) || (!isReceived && isSent)
+      }
+      // Keep all non-transfer transactions
+      return true
+    })
+
+    filteredTransactions.slice(0, 3).forEach(tx => {
       const date = convertTimestampToLocalDate(tx.blockTimestamp);
       let dateKey = ''
 
@@ -183,10 +198,10 @@ function TransactionItem({ transaction, walletAddress }: { transaction: Transact
   const date = convertTimestampToLocalDate(blockTimestamp);
   const { selectedChain, chainDetails } = useChain()
   const [copied, setCopied] = useState(false)
-
-  // Format the asset amount (using 1e6 decimals as specified)
+  const { usdcPrice } = useVaultHook()
   const formattedAssets = parseFloat(formatUnits(assets, 6)).toFixed(4)
   const formattedShares = parseFloat(formatUnits(shares, 6)).toFixed(4)
+  const formattedUsdcTransferAmount = abbreviateNumberWithoutRounding(Number(formattedShares) * Number(usdcPrice), 4)
 
   // Transfer direction logic
   const isTransferReceived = type === 'transfer' && to?.toLowerCase() === walletAddress?.toLowerCase()
@@ -234,11 +249,11 @@ function TransactionItem({ transaction, walletAddress }: { transaction: Transact
     </div>
   ) : type === 'transfer' && isTransferReceived ? (
     <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
-      <ArrowLeft className="h-2.5 w-2.5 text-green-500" />
+      <ArrowDownLeft className="h-2.5 w-2.5 text-green-500" />
     </div>
   ) : type === 'transfer' && isTransferSent ? (
     <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
-      <ArrowRight className="h-2.5 w-2.5 text-red-500" />
+      <ArrowUpRight className="h-2.5 w-2.5 text-red-500" />
     </div>
   ) : (
     <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
@@ -251,18 +266,17 @@ function TransactionItem({ transaction, walletAddress }: { transaction: Transact
       <div className="group relative p-3 bg-gradient-to-r from-background to-background/50 rounded-3 hover:from-accent/5 hover:to-accent/10 transition-all duration-300 border border-border/50 hover:border-accent/30 hover:shadow-md hover:shadow-accent/5">
         {/* Subtle gradient overlay on hover */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3 pointer-events-none" />
-        
+
         <div className="relative flex items-start justify-between gap-3">
           {/* Left section */}
           <div className="flex items-start gap-2 flex-1 min-w-0">
             {DirectionIcon}
             <div className="flex flex-col space-y-1.5 flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className={`text-sm font-semibold capitalize ${
-                  type === 'deposit' || (type === 'transfer' && isTransferReceived) 
-                    ? 'text-green-600' 
-                    : 'text-red-600'
-                }`}>
+                <span className={`text-sm font-semibold capitalize ${type === 'deposit' || (type === 'transfer' && isTransferReceived)
+                  ? 'text-green-600'
+                  : 'text-red-600'
+                  }`}>
                   {type === 'transfer' ? 'Transfer' : type}
                 </span>
                 <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 h-4 font-medium whitespace-nowrap bg-green-50 border-green-200 text-green-700">
@@ -362,14 +376,12 @@ function TransactionItem({ transaction, walletAddress }: { transaction: Transact
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="flex items-center gap-1 px-2 py-1 rounded-2 bg-green-50/70 border border-green-100/70 hover:bg-green-50 hover:border-green-200 transition-colors duration-200 cursor-pointer">
-                      <span className="text-green-500 font-medium tabular-nums text-xs">+{formattedShares}</span>
-                      <span className="text-[9px] font-medium text-green-600/80 bg-green-100/50 px-1 py-0.5 rounded">
-                        slUSD
-                      </span>
+                      <span className="text-green-500 font-medium tabular-nums text-xs">+{formattedUsdcTransferAmount}</span>
+                      {USDCIcon}
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="left" className="bg-card border shadow-lg">
-                    <p className="text-xs font-medium">slUSD received</p>
+                    <p className="text-xs font-medium">USDC received</p>
                   </TooltipContent>
                 </Tooltip>
                 <Tooltip>
@@ -388,14 +400,12 @@ function TransactionItem({ transaction, walletAddress }: { transaction: Transact
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="flex items-center gap-1 px-2 py-1 rounded-2 bg-red-50/70 border border-red-100/70 hover:bg-red-50 hover:border-red-200 transition-colors duration-200 cursor-pointer">
-                      <span className="text-red-500 font-medium tabular-nums text-xs">-{formattedShares}</span>
-                      <span className="text-[9px] font-medium text-red-600/80 bg-red-100/50 px-1 py-0.5 rounded">
-                        slUSD
-                      </span>
+                      <span className="text-red-500 font-medium tabular-nums text-xs">-{formattedUsdcTransferAmount}</span>
+                      {USDCIcon}
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="left" className="bg-card border shadow-lg">
-                    <p className="text-xs font-medium">slUSD sent</p>
+                    <p className="text-xs font-medium">USDC sent</p>
                   </TooltipContent>
                 </Tooltip>
                 <Tooltip>
