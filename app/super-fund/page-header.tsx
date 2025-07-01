@@ -58,7 +58,7 @@ export default function PageHeader() {
                     </div>
                 </div>
                 <div className="flex items-center gap-2 max-md:mt-4 max-md:mb-2">
-                    {isWalletConnected && (<Button
+                    <Button
                         variant="primaryOutline"
                         size="sm"
                         onClick={() => setIsTransferDialogOpen(true)}
@@ -67,7 +67,7 @@ export default function PageHeader() {
                         <SendHorizontal className="w-4 h-4" />
                         Send
                         <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-                    </Button>)}
+                    </Button>
                     <Button
                         variant="primary"
                         size="sm"
