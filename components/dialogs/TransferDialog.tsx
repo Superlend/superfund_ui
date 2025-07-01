@@ -57,6 +57,20 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
     const { width: screenWidth } = useDimensions()
     const isDesktop = screenWidth > 768
 
+    // Function to detect iOS devices
+    const isIOS = () => {
+        return [
+            'iPad Simulator',
+            'iPhone Simulator',
+            'iPod Simulator',
+            'iPad',
+            'iPhone',
+            'iPod'
+        ].includes(navigator.platform)
+        // iOS 13+
+        || (navigator.userAgent.includes("Mac") && "ontouchend" in document)
+    }
+
     const [userEnteredTransferAmount, setUserEnteredTransferAmount] = useState<string>('')
     const [toWalletAddress, setToWalletAddress] = useState<string>('')
     const [inputAmountInSlUSD, setInputAmountInSlUSD] = useState<string>('0')
@@ -227,9 +241,9 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
     // Get transfer transaction context to monitor completion
     const { setTransferTx } = useTxContext() as TTxContext
 
-        // iOS-specific keyboard handling
+    // iOS-specific keyboard handling
     useEffect(() => {
-        if (!isDesktop && open) {
+        if (!isDesktop && open && isIOS()) {
             // Store original values
             const originalBodyStyle = document.body.style.cssText
             const originalHtmlStyle = document.documentElement.style.cssText
@@ -545,11 +559,21 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
             <DrawerContent 
                 className="w-full p-5 pt-2 flex flex-col gap-3"
                 style={{
-                    maxHeight: '70vh',
-                    minHeight: '300px',
-                    bottom: 'env(keyboard-inset-height, 0px)',
-                    transform: 'translateY(0)',
-                    transition: 'transform 0.3s ease-out'
+                    // Only apply iOS-specific styles for iOS devices
+                    ...((() => {
+                        if (isIOS()) {
+                            return {
+                                maxHeight: '70vh',
+                                minHeight: '300px',
+                                bottom: 'env(keyboard-inset-height, 0px)',
+                                transform: 'translateY(0)',
+                                transition: 'transform 0.3s ease-out'
+                            }
+                        }
+                        
+                        // Default styles for Android and other browsers
+                        return {}
+                    })())
                 }}
             >
                 {closeContentButton}
