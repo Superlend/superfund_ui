@@ -675,7 +675,7 @@ export default function SuperVaultTxDialog({
                         {isDepositPositionType
                             ? `${isDepositTxInSuccess ? 'Deposit Successful' : 'Review Deposit'}`
                             : positionType === 'withdraw' ? `${isWithdrawTxInSuccess ? 'Withdraw Successful' : 'Review Withdraw'}` :
-                                `${isTransferTxInSuccess ? 'Transfer Successful' : 'Review Transfer'}`}
+                                `${isTransferTxInSuccess ? 'Send USDC Successful' : 'Review Send USDC'}`}
                     </HeadingText>
                     // </DialogTitle>
                 )}
