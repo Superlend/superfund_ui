@@ -227,6 +227,37 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
     // Get transfer transaction context to monitor completion
     const { setTransferTx } = useTxContext() as TTxContext
 
+    // Handle mobile keyboard viewport changes
+    useEffect(() => {
+        if (!isDesktop && open) {
+            // Store original scroll position and body styles
+            const originalScrollY = window.scrollY
+            const originalBodyStyle = {
+                overflow: document.body.style.overflow,
+                position: document.body.style.position,
+                top: document.body.style.top,
+                width: document.body.style.width,
+            }
+            
+            // Prevent body scroll and viewport jumping when drawer is open on mobile
+            document.body.style.overflow = 'hidden'
+            document.body.style.position = 'fixed'
+            document.body.style.top = `-${originalScrollY}px`
+            document.body.style.width = '100%'
+            
+            return () => {
+                // Restore original body styles
+                document.body.style.overflow = originalBodyStyle.overflow
+                document.body.style.position = originalBodyStyle.position
+                document.body.style.top = originalBodyStyle.top
+                document.body.style.width = originalBodyStyle.width
+                
+                // Restore scroll position
+                window.scrollTo(0, originalScrollY)
+            }
+        }
+    }, [open, isDesktop])
+
     function handleOpenChange(open: boolean) {
         setOpen(open)
         if (!open) {
@@ -449,10 +480,17 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
     // Mobile UI
     return (
         <Drawer open={open} onOpenChange={handleOpenChange}>
-            <DrawerContent className="w-full p-5 pt-2 min-h-[50vh] max-h-[90vh] flex flex-col gap-3 overflow-hidden">
+            <DrawerContent 
+                className="w-full p-5 pt-2 flex flex-col gap-3 overflow-hidden"
+                style={{
+                    height: '60vh',
+                    minHeight: '400px',
+                    maxHeight: '80vh'
+                }}
+            >
                 {closeContentButton}
                 <DrawerHeader className="flex-shrink-0">{contentHeader}</DrawerHeader>
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto overscroll-contain">
                     {contentBody}
                 </div>
             </DrawerContent>
