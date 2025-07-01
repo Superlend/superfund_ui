@@ -57,7 +57,7 @@ export default function PageHeader() {
                         </BodyText>
                     </div>
                 </div>
-                {/* {isWalletConnected && */}
+                {isWalletConnected &&
                     <div className="flex items-center gap-2 max-md:mt-4 max-md:mb-2">
                         <Button
                             variant="primaryOutline"
@@ -84,7 +84,7 @@ export default function PageHeader() {
                             </Link>
                         </Button>
                     </div>
-                     {/* } */}
+                }
             </div>
             <TransferDialog
                 open={isTransferDialogOpen}
