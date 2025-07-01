@@ -57,32 +57,33 @@ export default function PageHeader() {
                         </BodyText>
                     </div>
                 </div>
-                <div className="flex items-center gap-2 max-md:mt-4 max-md:mb-2">
-                    <Button
-                        variant="primaryOutline"
-                        size="sm"
-                        onClick={() => setIsTransferDialogOpen(true)}
-                        className="flex items-center gap-1 group max-md:flex-1"
-                    >
-                        <SendHorizontal className="w-4 h-4" />
-                        Send
-                        <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-                    </Button>
-                    <Button
-                        variant="primary"
-                        size="sm"
-                        asChild
-                    >
-                        <Link
-                            href={`/super-fund/${currentChainDetails.name.toLowerCase()}/statement`}
+                {isWalletConnected &&
+                    <div className="flex items-center gap-2 max-md:mt-4 max-md:mb-2">
+                        <Button
+                            variant="primaryOutline"
+                            size="sm"
+                            onClick={() => setIsTransferDialogOpen(true)}
                             className="flex items-center gap-1 group max-md:flex-1"
                         >
-                            <ReceiptText className="w-4 h-4" />
-                            View Statement
+                            <SendHorizontal className="w-4 h-4" />
+                            Send
                             <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-                        </Link>
-                    </Button>
-                </div>
+                        </Button>
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            asChild
+                        >
+                            <Link
+                                href={`/super-fund/${currentChainDetails.name.toLowerCase()}/statement`}
+                                className="flex items-center gap-1 group max-md:flex-1"
+                            >
+                                <ReceiptText className="w-4 h-4" />
+                                View Statement
+                                <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                            </Link>
+                        </Button>
+                    </div>}
             </div>
             <TransferDialog
                 open={isTransferDialogOpen}

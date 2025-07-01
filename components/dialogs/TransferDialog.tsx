@@ -473,7 +473,7 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
                     </div>
 
                     {/* Helper Text */}
-                    {!isWalletConnectedForUI && (
+                    {isWalletConnectedForUI && (
                         <div className="card-content-bottom max-md:px-2 py-3 max-w-[250px] mx-auto">
                             <BodyText
                                 level="body2"
