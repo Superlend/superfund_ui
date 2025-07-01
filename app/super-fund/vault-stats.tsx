@@ -94,8 +94,7 @@ export default function VaultStats() {
     const protocolId = getProtocolIdentifier()
     const {
         // data: { capital, interest_earned },
-        isLoading: isLoadingPositionDetails,
-        startRefreshing
+        isLoading: isLoadingPositionDetails
     } = useTransactionHistory({
         protocolIdentifier: protocolId,
         chainId: selectedChain || 0,

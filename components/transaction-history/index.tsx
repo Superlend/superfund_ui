@@ -70,7 +70,7 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
   const { selectedChain } = useChain()
   const router = useRouter()
   const { depositTxCompleted, withdrawTxCompleted } = useTxContext() as TTxContext
-  const { data: { transactions }, isLoading, startRefreshing } = useTransactionHistory({
+  const { data: { transactions }, isLoading, refetch: refetchTransactionHistory } = useTransactionHistory({
     protocolIdentifier,
     chainId: selectedChain || 0,
     walletAddress: walletAddress || '',
@@ -80,9 +80,9 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
   // Listen for transaction events from the global event system if available
   useEffect(() => {
     if (depositTxCompleted || withdrawTxCompleted) {
-      startRefreshing();
+      refetchTransactionHistory();
     }
-  }, [depositTxCompleted, withdrawTxCompleted, startRefreshing]);
+  }, [depositTxCompleted, withdrawTxCompleted]);
 
   // Get the chain name for routing
   const getChainName = () => {
@@ -106,7 +106,7 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
       if (tx.type === 'transfer') {
         const isReceived = tx.to?.toLowerCase() === walletAddress?.toLowerCase()
         const isSent = tx.from?.toLowerCase() === walletAddress?.toLowerCase()
-        
+
         // Only show transfers that have a clear direction (either received OR sent, not both or neither)
         return (isReceived && !isSent) || (!isReceived && isSent)
       }

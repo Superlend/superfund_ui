@@ -42,6 +42,7 @@ import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import { abbreviateNumberWithoutRounding } from '@/lib/utils'
 import useGetUsdcExchangeRate from '@/hooks/useGetUsdcExchangeRate'
 import { VAULT_ADDRESS_MAP } from '@/lib/constants'
+import { TTxContext, useTxContext } from '@/context/super-vault-tx-provider'
 
 interface AllTransactionsProps {
   protocolIdentifier?: string // Optional if we want to pass it directly
@@ -118,6 +119,7 @@ const isTransactionInDateRange = (transaction: Transaction, dateRange: DateRange
 
 export default function AllTransactions({ protocolIdentifier }: AllTransactionsProps) {
   // const { walletAddress, isWalletConnected } = useWalletConnection()
+  const { depositTxCompleted, withdrawTxCompleted } = useTxContext() as TTxContext
   const account = useActiveAccount();
   const walletAddress = account?.address as `0x${string}`
   const isWalletConnected = !!account
@@ -140,7 +142,7 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
 
   // Use the custom hook instead of direct fetch and local state
   const protocolId = getProtocolIdentifier()
-  const { data: { transactions }, isLoading, startRefreshing } = useTransactionHistory({
+  const { data: { transactions }, isLoading, refetch: refetchTransactionHistory } = useTransactionHistory({
     protocolIdentifier: protocolId,
     chainId: selectedChain || 0,
     walletAddress: walletAddress || '',
@@ -169,24 +171,11 @@ export default function AllTransactions({ protocolIdentifier }: AllTransactionsP
 
   const { minDate, maxDate } = getDateBounds()
 
-  // Listen for transaction events from the global event system if available
   useEffect(() => {
-    const handleTransactionComplete = () => {
-      // Manually trigger refreshing for 30 seconds when transaction completes
-      startRefreshing();
-    };
-
-    // Add event listener if window exists
-    if (typeof window !== 'undefined') {
-      window.addEventListener('transaction-complete', handleTransactionComplete);
+    if (depositTxCompleted || withdrawTxCompleted) {
+      refetchTransactionHistory();
     }
-
-    return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('transaction-complete', handleTransactionComplete);
-      }
-    };
-  }, [startRefreshing]);
+  }, [depositTxCompleted, withdrawTxCompleted]);
 
   // Filter and sort transactions by type and date range
   const filteredAndSortedTransactions = React.useMemo(() => {

@@ -103,20 +103,6 @@ const TransferButton = ({
                 token: asset.asset.address,
                 walletAddress: account?.address || walletAddress,
             })
-            // Dispatch custom event to notify transaction is complete
-            if (typeof window !== 'undefined') {
-                console.log(
-                    'Dispatching transaction-complete event for transfer'
-                )
-                const event = new CustomEvent('transaction-complete', {
-                    detail: {
-                        type: 'transfer',
-                        hash: hash,
-                        amount: amount,
-                    },
-                })
-                window.dispatchEvent(event)
-            }
         }
     }, [hash, isConfirmed, transferTx.status, transferTx.hash, amount, selectedChain, asset.asset.address, account?.address, walletAddress, logEvent, setTransferTx])
 
