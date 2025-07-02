@@ -85,25 +85,6 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
   // Get fallback USDC price from vault hook
   const { usdcPrice } = useVaultHook()
 
-  // Listen for transaction events from the global event system if available
-  useEffect(() => {
-    if (depositTxCompleted || withdrawTxCompleted) {
-      refetchTransactionHistory();
-    }
-  }, [depositTxCompleted, withdrawTxCompleted]);
-
-  // Get the chain name for routing
-  const getChainName = () => {
-    if (selectedChain === ChainId.Base) return 'base'
-    if (selectedChain === ChainId.Sonic) return 'sonic'
-    return 'sonic'
-  }
-
-  // Hide if wallet not connected
-  if (!isWalletConnected) {
-    return null
-  }
-
   // Group transactions by date with improved timezone handling
   const groupTransactionsByDate = () => {
     const groups: { [key: string]: Transaction[] } = {}
@@ -167,6 +148,25 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
     fallbackUsdcPrice: usdcPrice,
     enabled: !!vaultAddress && !!selectedChain && uniqueBlockNumbers.length > 0
   })
+
+  // Listen for transaction events from the global event system if available
+  useEffect(() => {
+    if (depositTxCompleted || withdrawTxCompleted) {
+      refetchTransactionHistory();
+    }
+  }, [depositTxCompleted, withdrawTxCompleted]);
+
+  // Get the chain name for routing
+  const getChainName = () => {
+    if (selectedChain === ChainId.Base) return 'base'
+    if (selectedChain === ChainId.Sonic) return 'sonic'
+    return 'sonic'
+  }
+
+  // Hide if wallet not connected
+  if (!isWalletConnected) {
+    return null
+  }
 
   return (
     <div className="bg-card rounded-2xl p-4 flex flex-col">
