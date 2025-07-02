@@ -204,14 +204,14 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
     const isLastPage = currentPage >= totalPages;
 
     // Debug log
-    console.log('Client-side Pagination Debug:', {
-        totalTransactions,
-        currentPage,
-        totalPages,
-        startIndex,
-        endIndex: Math.min(endIndex, totalTransactions),
-        currentTransactionsShown: currentTransactions.length
-    });
+    // console.log('Client-side Pagination Debug:', {
+    //     totalTransactions,
+    //     currentPage,
+    //     totalPages,
+    //     startIndex,
+    //     endIndex: Math.min(endIndex, totalTransactions),
+    //     currentTransactionsShown: currentTransactions.length
+    // });
 
     // Pagination handlers
     const goToPage = (page: number) => {
@@ -339,7 +339,7 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
             ? getExchangeRateForBlock(blockNumber.toString())
             : 1;
         
-        const formattedUsdcTransferAmount = abbreviateNumberWithoutRounding(Number(formatUnits(shares, 6)) * blockSpecificExchangeRate, 4)
+        const formattedUsdcTransferAmount = abbreviateNumberWithoutRounding(Number(formatUnits(shares, 6)) * blockSpecificExchangeRate)
 
         // Get explorer URL based on the chain
         const getExplorerUrl = () => {

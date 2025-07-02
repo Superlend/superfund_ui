@@ -964,15 +964,15 @@ function TransactionItem({
   const [copied, setCopied] = useState(false)
 
   // Format the asset amount (using 1e6 decimals as specified)
-  const formattedAssets = parseFloat(formatUnits(assets, 6)).toFixed(4)
-  const formattedShares = parseFloat(formatUnits(shares, 6)).toFixed(4)
+  const formattedAssets = abbreviateNumberWithoutRounding(parseFloat(formatUnits(assets, 6)))
+  const formattedShares = abbreviateNumberWithoutRounding(parseFloat(formatUnits(shares, 6)))
   
   // Get block-specific exchange rate or fallback to 1:1 ratio
   const blockSpecificExchangeRate = getExchangeRateForBlock 
     ? getExchangeRateForBlock(blockNumber)
     : 1
   
-  const formattedUsdcTransferAmount = abbreviateNumberWithoutRounding(Number(formattedShares) * blockSpecificExchangeRate, 4)
+  const formattedUsdcTransferAmount = abbreviateNumberWithoutRounding(Number(formattedShares) * blockSpecificExchangeRate)
 
   // Transfer direction logic
   const isTransferReceived = type === 'transfer' && to?.toLowerCase() === walletAddress?.toLowerCase()

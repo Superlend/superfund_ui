@@ -26,6 +26,8 @@ import { useActiveAccount } from 'thirdweb/react'
 import { TTxContext, useTxContext } from '@/context/super-vault-tx-provider'
 import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import { abbreviateNumberWithoutRounding } from '@/lib/utils'
+import useGetUsdcExchangeRate from '@/hooks/useGetUsdcExchangeRate'
+import { VAULT_ADDRESS_MAP } from '@/lib/constants'
 
 interface TransactionHistoryProps {
   protocolIdentifier: string
@@ -77,24 +79,11 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
     refetchOnTransaction: true
   })
 
-  // Listen for transaction events from the global event system if available
-  useEffect(() => {
-    if (depositTxCompleted || withdrawTxCompleted) {
-      refetchTransactionHistory();
-    }
-  }, [depositTxCompleted, withdrawTxCompleted]);
-
-  // Get the chain name for routing
-  const getChainName = () => {
-    if (selectedChain === ChainId.Base) return 'base'
-    if (selectedChain === ChainId.Sonic) return 'sonic'
-    return 'sonic'
-  }
-
-  // Hide if wallet not connected
-  if (!isWalletConnected) {
-    return null
-  }
+  // Get vault address for exchange rate API
+  const vaultAddress = VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP]
+  
+  // Get fallback USDC price from vault hook
+  const { usdcPrice } = useVaultHook()
 
   // Group transactions by date with improved timezone handling
   const groupTransactionsByDate = () => {
@@ -140,12 +129,57 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
 
   const groupedTransactions = groupTransactionsByDate()
 
+  // Extract unique block numbers from visible transactions for exchange rate API
+  const uniqueBlockNumbers = React.useMemo(() => {
+    const allVisibleTransactions = Object.values(groupedTransactions).flat()
+    const blockNumbers = allVisibleTransactions.map(tx => tx.blockNumber)
+    return blockNumbers.filter((blockNumber, index) => blockNumbers.indexOf(blockNumber) === index)
+  }, [groupedTransactions])
+
+  // Get block-specific exchange rates with fallback to live USDC price
+  const { 
+    getExchangeRateForBlock, 
+    isLoading: isLoadingExchangeRates,
+    isUsingFallback 
+  } = useGetUsdcExchangeRate({
+    vaultAddress,
+    chainId: selectedChain || 0,
+    blockNumbers: uniqueBlockNumbers,
+    fallbackUsdcPrice: usdcPrice,
+    enabled: !!vaultAddress && !!selectedChain && uniqueBlockNumbers.length > 0
+  })
+
+  // Listen for transaction events from the global event system if available
+  useEffect(() => {
+    if (depositTxCompleted || withdrawTxCompleted) {
+      refetchTransactionHistory();
+    }
+  }, [depositTxCompleted, withdrawTxCompleted]);
+
+  // Get the chain name for routing
+  const getChainName = () => {
+    if (selectedChain === ChainId.Base) return 'base'
+    if (selectedChain === ChainId.Sonic) return 'sonic'
+    return 'sonic'
+  }
+
+  // Hide if wallet not connected
+  if (!isWalletConnected) {
+    return null
+  }
+
   return (
     <div className="bg-card rounded-2xl p-4 flex flex-col">
       <div className="mb-4">
         <HeadingText level="h5" weight="medium" className="text-gray-800 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
           Your Recent Transactions
         </HeadingText>
+        {/* Exchange rate status indicator */}
+        {isUsingFallback && uniqueBlockNumbers.length > 0 && (
+          <p className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-2 border border-amber-200 w-fit mt-2">
+            Using estimated exchange rates
+          </p>
+        )}
         {/* Debug info in development */}
         {process.env.NODE_ENV === 'development' && (
           <p className="text-xs text-muted-foreground mt-1">
@@ -155,7 +189,7 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
       </div>
 
       <div className="space-y-4">
-        {isLoading ? (
+        {isLoading || isLoadingExchangeRates ? (
           <TransactionSkeleton count={3} />
         ) : transactions.length === 0 ? (
           <EmptyTransactionsState />
@@ -171,7 +205,12 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
               </div>
               <div className="space-y-2">
                 {txs.map(tx => (
-                  <TransactionItem key={tx.transactionHash} transaction={tx} walletAddress={walletAddress} />
+                  <TransactionItem 
+                    key={tx.transactionHash} 
+                    transaction={tx} 
+                    walletAddress={walletAddress}
+                    getExchangeRateForBlock={getExchangeRateForBlock}
+                  />
                 ))}
               </div>
             </div>
@@ -193,15 +232,29 @@ export default function TransactionHistory({ protocolIdentifier }: TransactionHi
   )
 }
 
-function TransactionItem({ transaction, walletAddress }: { transaction: Transaction; walletAddress: string }) {
-  const { type, assets, shares, blockTimestamp, transactionHash, from, to } = transaction
+function TransactionItem({ 
+  transaction, 
+  walletAddress,
+  getExchangeRateForBlock
+}: { 
+  transaction: Transaction; 
+  walletAddress: string;
+  getExchangeRateForBlock?: (blockNumber: string) => number;
+}) {
+  const { type, assets, shares, blockTimestamp, transactionHash, from, to, blockNumber } = transaction
   const date = convertTimestampToLocalDate(blockTimestamp);
   const { selectedChain, chainDetails } = useChain()
   const [copied, setCopied] = useState(false)
-  const { usdcPrice } = useVaultHook()
-  const formattedAssets = parseFloat(formatUnits(assets, 6)).toFixed(4)
-  const formattedShares = parseFloat(formatUnits(shares, 6)).toFixed(4)
-  const formattedUsdcTransferAmount = abbreviateNumberWithoutRounding(Number(formattedShares) * Number(usdcPrice), 4)
+  
+  const formattedAssets = abbreviateNumberWithoutRounding(parseFloat(formatUnits(assets, 6)))
+  const formattedShares = abbreviateNumberWithoutRounding(parseFloat(formatUnits(shares, 6)))
+  
+  // Get block-specific exchange rate or fallback to 1:1 ratio
+  const blockSpecificExchangeRate = getExchangeRateForBlock 
+    ? getExchangeRateForBlock(blockNumber)
+    : 1
+  
+  const formattedUsdcTransferAmount = abbreviateNumberWithoutRounding(Number(formattedShares) * blockSpecificExchangeRate)
 
   // Transfer direction logic
   const isTransferReceived = type === 'transfer' && to?.toLowerCase() === walletAddress?.toLowerCase()
