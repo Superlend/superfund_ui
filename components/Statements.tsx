@@ -18,16 +18,12 @@ import {
     TooltipTrigger,
 } from "./ui/tooltip";
 import { Badge } from "./ui/badge";
-import { Button } from './ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { useVaultHook } from '@/hooks/vault_hooks/vaultHook';
-import useGetUsdcExchangeRate from '@/hooks/useGetUsdcExchangeRate';
-import { VAULT_ADDRESS_MAP } from '@/lib/constants';
 
 interface StatementsProps {
     userAddress: string;
@@ -68,9 +64,6 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
         vaultAddress,
         chainId,
     });
-
-    // Get fallback USDC price from vault hook
-    const { usdcPrice } = useVaultHook();
 
     // Safeguard: if selectedStatementIndex is out of bounds, reset to 0
     useEffect(() => {
@@ -179,29 +172,6 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
     const startIndex = (currentPage - 1) * transactionsPerPage;
     const endIndex = startIndex + transactionsPerPage;
     const currentTransactions = allTransactions.slice(startIndex, endIndex);
-
-    // Extract unique block numbers from current page transactions for exchange rate API
-    const uniqueBlockNumbers = React.useMemo(() => {
-        const blockNumbers = currentTransactions.map(tx => tx.blockNumber?.toString()).filter(Boolean);
-        return blockNumbers.filter((blockNumber, index) => blockNumbers.indexOf(blockNumber) === index);
-    }, [currentTransactions]);
-
-    // Get block-specific exchange rates with fallback to live USDC price
-    const { 
-        getExchangeRateForBlock, 
-        isLoading: isLoadingExchangeRates,
-        isUsingFallback 
-    } = useGetUsdcExchangeRate({
-        vaultAddress: VAULT_ADDRESS_MAP[chainId as keyof typeof VAULT_ADDRESS_MAP] || vaultAddress,
-        chainId: chainId,
-        blockNumbers: uniqueBlockNumbers,
-        fallbackUsdcPrice: usdcPrice,
-        enabled: !!vaultAddress && !!chainId && uniqueBlockNumbers.length > 0
-    });
-
-    // Pagination state
-    const hasMorePages = currentPage < totalPages;
-    const isLastPage = currentPage >= totalPages;
 
     // Debug log
     // console.log('Client-side Pagination Debug:', {
@@ -321,26 +291,17 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
     function StatementTransactionItem({ 
         transaction, 
         chainId, 
-        getExchangeRateForBlock 
     }: { 
         transaction: any; 
         chainId: number;
-        getExchangeRateForBlock?: (blockNumber: string) => number;
     }) {
-        const { type, assets, shares, blockTimestamp, transactionHash, from, to, blockNumber } = transaction;
+        const { type, assets, shares, blockTimestamp, transactionHash, from, to } = transaction;
         const date = convertTimestampToLocalDate(blockTimestamp);
         const [copied, setCopied] = useState(false);
 
         const formattedAssets = abbreviateNumberWithoutRounding(Number(formatUnits(assets, 6)));
         const formattedShares = abbreviateNumberWithoutRounding(Number(formatUnits(shares, 6)));
         
-        // Get block-specific exchange rate or fallback to 1:1 ratio
-        const blockSpecificExchangeRate = getExchangeRateForBlock && blockNumber
-            ? getExchangeRateForBlock(blockNumber.toString())
-            : 1;
-        
-        const formattedUsdcTransferAmount = abbreviateNumberWithoutRounding(Number(formatUnits(shares, 6)) * blockSpecificExchangeRate)
-
         // Get explorer URL based on the chain
         const getExplorerUrl = () => {
             return getBlockExplorerUrl(chainId, 'tx', '');
@@ -504,7 +465,7 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <div className="flex items-center gap-1 px-2 py-1 rounded-2 bg-red-50/70 border border-red-100/70 hover:bg-red-50 hover:border-red-200 transition-colors duration-200 cursor-pointer">
-                                                <span className="text-red-500 font-medium tabular-nums text-xs">-{formattedUsdcTransferAmount}</span>
+                                                <span className="text-red-500 font-medium tabular-nums text-xs">-{formattedAssets}</span>
                                                 {USDCIcon}
                                             </div>
                                         </TooltipTrigger>
@@ -535,7 +496,7 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <div className="flex items-center gap-1 px-2 py-1 rounded-2 bg-green-50/70 border border-green-100/70 hover:bg-green-50 hover:border-green-200 transition-colors duration-200 cursor-pointer">
-                                                <span className="text-green-500 font-medium tabular-nums text-xs">+{formattedUsdcTransferAmount}</span>
+                                                <span className="text-green-500 font-medium tabular-nums text-xs">+{formattedAssets}</span>
                                                 {USDCIcon}
                                             </div>
                                         </TooltipTrigger>
@@ -757,22 +718,13 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                     {/* Top pagination controls */}
                     {/* <PaginationControls /> */}
 
-                    {/* Exchange rate status indicator */}
-                    {isUsingFallback && currentTransactions.length > 0 && (
-                        <div className="mb-4">
-                            <p className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-3 border border-amber-200 w-fit">
-                                Using estimated exchange rates for transaction amounts
-                            </p>
-                        </div>
-                    )}
-
                     {/* Transaction list */}
                     <div className="space-y-3 my-6">
-                        {isLoading || isLoadingExchangeRates ? (
+                        {isLoading ? (
                             <div className="text-center py-8">
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
                                 <p className="text-sm text-gray-500">
-                                    {isLoading ? 'Loading transactions...' : 'Loading exchange rates...'}
+                                    Loading transactions...
                                 </p>
                             </div>
                         ) : currentTransactions.length > 0 ? (
@@ -783,7 +735,6 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                                         key={startIndex + index}
                                         transaction={transformedTx}
                                         chainId={data.chainId}
-                                        getExchangeRateForBlock={getExchangeRateForBlock}
                                     />
                                 );
                             })
