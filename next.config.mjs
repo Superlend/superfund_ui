@@ -14,6 +14,10 @@ const nextConfig = {
                 hostname: 'v2.silo.finance',
                 protocol: 'https',
             },
+            {
+                hostname: 'www.40acres.finance',
+                protocol: 'https',
+            },
         ],
     },
     webpack: (config) => {

@@ -33,6 +33,13 @@ export const rebalancedAssetsList = [
         link: 'https://v2.silo.finance',
         chainIds: [ChainId.Sonic],
     },
+    {
+        title: '40 Acres',
+        logo: 'https://www.40acres.finance/favicon.ico',
+        link: 'https://www.40acres.finance',
+        chainIds: [ChainId.Base],
+    },
+    
 ]
 
 export const tokensSupportedList = [
