@@ -23,7 +23,7 @@ export enum StrategiesType {
     EulerBaseUSDC = 'Euler Base USDC',
     SILO_V2 = 'Silo V2',
     CASH_RESERVE = 'Cash Reserve',
-    _40_ACRES = '40 Acres',
+    _40_ACRES = '40 Acres USDC Vault',
 }
 
 // BASE

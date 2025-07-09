@@ -25,7 +25,7 @@ import { TimelineFilterTabs } from './tabs/timeline-filter-tabs'
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useRebalanceHistory } from '@/hooks/vault_hooks/useHistoricalDataHook'
 import { abbreviateNumber, extractTimeFromDate, formatDateAccordingToPeriod, shortNubers } from '@/lib/utils'
-import { VAULT_STRATEGIES_COLORS } from '@/lib/constants'
+import { VAULT_STRATEGIES_COLORS, VAULT_STRATEGIES_COLORS_MAP } from '@/lib/constants'
 import { BodyText, HeadingText, Label } from './ui/typography'
 import { Skeleton } from './ui/skeleton'
 import { Expand } from 'lucide-react'
@@ -266,6 +266,7 @@ export function AllocationHistoryChart() {
     const [openDialog, setOpenDialog] = useState(false)
     const { selectedChain } = useChain()
     const chartConfig: ChartConfig = CHART_CONFIG_MAP[selectedChain as keyof typeof CHART_CONFIG_MAP]
+    const chainColors = VAULT_STRATEGIES_COLORS_MAP[selectedChain as keyof typeof VAULT_STRATEGIES_COLORS_MAP]
 
     useEffect(() => {
         setStartIndex(0)
@@ -370,34 +371,58 @@ export function AllocationHistoryChart() {
     }, [rebalanceHistory])
 
     const memoizedAreasForChart = useMemo(() => {
-        // Get only the addresses that have non-zero values at any point in time
-        const activeAddresses = Object.keys(chartConfig).filter(address =>
-            chartData.some(data => data[address] > 0)
-        ).sort((a, b) => {
-            const minA = Math.min(...chartData.map(data => data[a]))
-            const minB = Math.min(...chartData.map(data => data[b]))
-            return minB - minA
+        // Get unique strategy names from the allocation data
+        const uniqueStrategies = new Set<string>()
+        chartData.forEach(data => {
+            data.allocations.forEach(allocation => {
+                if (allocation.value > 0) {
+                    uniqueStrategies.add(allocation.name)
+                }
+            })
         })
 
-        return activeAddresses.map((address) => (
-            <Area
-                key={address}
-                type="stepAfter"
-                dataKey={address}
-                name={chartConfig[address].label}
-                stackId="stack"
-                stroke={chartConfig[address].color}
-                fill={chartConfig[address].color}
-                fillOpacity={1}
-                strokeOpacity={1}
-                strokeWidth={0}
-                connectNulls={true}
-                isAnimationActive={false}
-                dot={false}
-                activeDot={false}
-            />
-        ))
-    }, [chartData])
+        // Convert to array and sort by total value across all time periods
+        const activeStrategies = Array.from(uniqueStrategies).sort((a, b) => {
+            const totalA = chartData.reduce((sum, data) => {
+                const allocation = data.allocations.find(alloc => alloc.name === a)
+                return sum + (allocation?.value || 0)
+            }, 0)
+            const totalB = chartData.reduce((sum, data) => {
+                const allocation = data.allocations.find(alloc => alloc.name === b)
+                return sum + (allocation?.value || 0)
+            }, 0)
+            return totalB - totalA
+        })
+
+        return activeStrategies.map((strategyName) => {
+            // Find the address for this strategy from any data point
+            const sampleAllocation = chartData
+                .flatMap(data => data.allocations)
+                .find(allocation => allocation.name === strategyName)
+            
+            const address = sampleAllocation?.address || ''
+            const color = chainColors[strategyName as keyof typeof chainColors] || chartConfig[address]?.color || '#cccccc'
+
+            return (
+                <Area
+                    key={address}
+                    type="stepAfter"
+                    dataKey={address}
+                    name={strategyName}
+                    stackId="stack"
+                    stroke={color}
+                    fill={color}
+                    fillOpacity={1}
+                    strokeOpacity={1}
+                    strokeWidth={0}
+                    connectNulls={true}
+                    isAnimationActive={false}
+                    dot={false}
+                    activeDot={false}
+                />
+            )
+        })
+    }, [chartData, chainColors, chartConfig])
 
     const memoizedBrush = useMemo(() => (
         <Brush
