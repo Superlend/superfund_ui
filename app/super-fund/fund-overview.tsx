@@ -157,7 +157,7 @@ export default function FundOverview() {
                 <Card>
                     <CardContent className={
                         clsx(
-                            'p-5 flex items-center justify-center flex-wrap gap-6 sm:gap-8 lg:gap-12 sm:px-6 xl:px-24',
+                            'p-5 grid min-[320px]:grid-cols-2 md:grid-cols-3 items-center justify-center gap-6 sm:px-6 xl:px-24',
                         )
                     }>
                         {rebalancedAssetsListFiltered.map((token) => (
@@ -178,7 +178,7 @@ export default function FundOverview() {
                                         variant="ghost"
                                         iconSize={14}
                                     >
-                                        <BodyText level="body1" weight="medium" className="uppercase">
+                                        <BodyText level="body1" weight="medium" className="uppercase shrink-0">
                                             {token.title}
                                         </BodyText>
                                     </ExternalLink>
