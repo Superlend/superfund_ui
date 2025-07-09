@@ -221,7 +221,7 @@ const BASE_CHAIN_CONFIG = {
         color: '#3151b0', // Dark blue
     },
     '0xb99b6df96d4d5448cc0a5b3e0ef7896df9507cf5': {
-        label: '40 Acres USDC Aerodrome Vault',
+        label: '40 Acres USDC Vault',
         color: '#00745f', // Dark green
     }
 }
