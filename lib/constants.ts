@@ -23,6 +23,7 @@ export enum StrategiesType {
     EulerBaseUSDC = 'Euler Base USDC',
     SILO_V2 = 'Silo V2',
     CASH_RESERVE = 'Cash Reserve',
+    _40_ACRES = '40 Acres USDC Vault',
 }
 
 // BASE
@@ -66,6 +67,7 @@ export const VAULT_STRATEGIES_COLORS = {
     'Spark USDC Vault': "#3366CC",
     'Seamless USDC Vault': "#8A2BE2",
     'Universal USDC Vault': "#3151b0",
+    '40 Acres USDC Vault': "#00745f",
 }
 
 export const SONIC_VAULT_STRATEGIES_COLORS = {
@@ -142,6 +144,11 @@ export const VAULT_STRATEGIES: Record<string, BaseStrategy> = {
         address: "0xB7890CEE6CF4792cdCC13489D36D9d42726ab863",
         strategy_type: StrategiesType.Morpho,
         details_url: `${MORPHO_BASE_URL}/vault/0xB7890CEE6CF4792cdCC13489D36D9d42726ab863/universal-usdc-vault`,
+    },
+    "40 Acres USDC Vault": {
+        address: "0xb99b6df96d4d5448cc0a5b3e0ef7896df9507cf5",
+        strategy_type: StrategiesType._40_ACRES,
+        details_url: `https://www.40acres.finance`,
     }
 }
 
