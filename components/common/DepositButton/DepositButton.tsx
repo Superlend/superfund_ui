@@ -22,7 +22,7 @@ import { BodyText } from '@/components/ui/typography'
 import { USDC_ADDRESS_MAP, USDC_DECIMALS, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { useChain } from '@/context/chain-context'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
-import { useActiveAccount, useConnect, useSendTransaction } from "thirdweb/react"
+import { useActiveAccount, useConnect, useSendAndConfirmTransaction } from "thirdweb/react"
 import { estimateGas, getContract, prepareContractCall, waitForReceipt } from "thirdweb"
 import { client } from "@/app/client"
 import { base, defineChain } from "thirdweb/chains"
@@ -77,7 +77,7 @@ const DepositButton = ({
     cta,
 }: IDepositButtonProps) => {
     const account = useActiveAccount()
-    const { mutateAsync: sendTransaction, isPending } = useSendTransaction()
+    const { mutateAsync: sendAndConfirmTransaction, isPending } = useSendAndConfirmTransaction()
     const { selectedChain } = useChain()
     const { logEvent } = useAnalytics()
     const { isConnecting } = useConnect()
@@ -183,7 +183,7 @@ const DepositButton = ({
                 gas: requiredGas,
             })
 
-            const result = await sendTransaction(transaction)
+            const result = await sendAndConfirmTransaction(transaction)
             setHash(result.transactionHash)
 
             // Wait for confirmation
@@ -284,7 +284,7 @@ const DepositButton = ({
         amount,
         selectedChain,
         underlyingAssetAdress,
-        sendTransaction,
+        sendAndConfirmTransaction,
         logEvent,
         setDepositTx,
     ])
@@ -374,7 +374,7 @@ const DepositButton = ({
                 params: [VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`, amountInWei.toBigInt()],
             })
 
-            const result = await sendTransaction(transaction)
+            const result = await sendAndConfirmTransaction(transaction)
             setHash(result.transactionHash)
 
             // Wait for confirmation
