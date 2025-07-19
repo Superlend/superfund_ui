@@ -304,7 +304,7 @@ const TransferButton = ({
                 variant="primary"
                 className="group flex items-center gap-[4px] py-3 w-full rounded-5 uppercase"
                 disabled={
-                    (isPending || isConfirming || disabled || !account) &&
+                    (transferTx.isPending || transferTx.isConfirming || disabled || !account) &&
                     transferTx.status !== 'view'
                 }
                 onClick={() => {
