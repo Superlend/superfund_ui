@@ -153,7 +153,7 @@ const ClaimRewardsButton = ({
             setError(null)
             setClaimRewardsTx((prev: TClaimRewardsTx) => ({
                 ...prev,
-                status: 'pending',
+                isPending: true,
                 hash: '',
                 errorMessage: '',
             }))

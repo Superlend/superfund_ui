@@ -168,7 +168,7 @@ const WithdrawButton = ({
             setError(null)
             setWithdrawTx((prev: TWithdrawTx) => ({
                 ...prev,
-                status: 'pending',
+                isPending: true,
                 hash: '',
                 errorMessage: '',
             }))

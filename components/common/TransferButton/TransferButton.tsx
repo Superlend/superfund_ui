@@ -154,7 +154,7 @@ const TransferButton = ({
             setError(null)
             setTransferTx((prev: TTransferTx) => ({
                 ...prev,
-                status: 'pending',
+                isPending: true,
                 hash: '',
                 errorMessage: '',
             }))
