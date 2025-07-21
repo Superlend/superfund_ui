@@ -12,7 +12,7 @@ import { ArrowRightIcon } from 'lucide-react'
 import { USDC_DECIMALS, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { useChain } from '@/context/chain-context'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
-import { useActiveAccount, useConnect, useSendTransaction } from "thirdweb/react"
+import { useActiveAccount, useConnect, useSendAndConfirmTransaction } from "thirdweb/react"
 import { estimateGas, getContract, prepareContractCall, waitForReceipt } from "thirdweb"
 import { client } from "@/app/client"
 import { base, defineChain } from "thirdweb/chains"
@@ -64,7 +64,7 @@ const TransferButton = ({
     walletAddress,
 }: ITransferButtonProps) => {
     const account = useActiveAccount()
-    const { mutateAsync: sendTransaction, isPending } = useSendTransaction()
+    const { mutateAsync: sendAndConfirmTransaction, isPending } = useSendAndConfirmTransaction()
     const { selectedChain } = useChain()
     const { logEvent } = useAnalytics()
     const { isConnecting } = useConnect()
@@ -152,6 +152,12 @@ const TransferButton = ({
 
         try {
             setError(null)
+            setTransferTx((prev: TTransferTx) => ({
+                ...prev,
+                isPending: true,
+                hash: '',
+                errorMessage: '',
+            }))
 
             const vaultContract = getContract({
                 client,
@@ -159,7 +165,8 @@ const TransferButton = ({
                 chain: THIRDWEB_CHAINS[selectedChain as keyof typeof THIRDWEB_CHAINS],
             })
 
-            const transaction = prepareContractCall({
+            // Prepare raw transaction for gas estimation
+            const rawTransaction = prepareContractCall({
                 contract: vaultContract,
                 method: "function transfer(address to, uint256 value) returns (bool)",
                 params: [
@@ -168,7 +175,25 @@ const TransferButton = ({
                 ],
             })
 
-            const result = await sendTransaction(transaction)
+            // Gas estimation with buffer
+            const gasCost = await estimateGas({
+                transaction: rawTransaction,
+                from: account.address as `0x${string}`,
+            })
+            const requiredGas = (gasCost * BigInt(12)) / BigInt(10) // 20% buffer
+
+            // Prepare final transaction with optimized gas
+            const transaction = prepareContractCall({
+                contract: vaultContract,
+                method: "function transfer(address to, uint256 value) returns (bool)",
+                params: [
+                    asset.asset.toWalletAddress as `0x${string}`,
+                    asset.asset.amountInSlUSD,
+                ],
+                gas: requiredGas,
+            })
+
+            const result = await sendAndConfirmTransaction(transaction)
             setHash(result.transactionHash)
 
             // Wait for confirmation
@@ -249,7 +274,7 @@ const TransferButton = ({
                 errorMessage: getErrorText(error as any),
             }))
         }
-    }, [account, amount, selectedChain, sendTransaction, setTransferTx])
+    }, [account, amount, selectedChain, sendAndConfirmTransaction, setTransferTx])
 
     const onTransfer = async () => {
         await handleTransferSuperVault()
@@ -279,7 +304,7 @@ const TransferButton = ({
                 variant="primary"
                 className="group flex items-center gap-[4px] py-3 w-full rounded-5 uppercase"
                 disabled={
-                    (isPending || isConfirming || disabled || !account) &&
+                    (transferTx.isPending || transferTx.isConfirming || disabled || !account) &&
                     transferTx.status !== 'view'
                 }
                 onClick={() => {

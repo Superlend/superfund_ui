@@ -14,8 +14,8 @@ import { USDC_DECIMALS, VAULT_ADDRESS } from '@/lib/constants'
 import REWARD_ABI from '@/data/abi/rewardsABI.json'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
 import { useChain } from '@/context/chain-context'
-import { useActiveAccount, useConnect, useSendTransaction } from "thirdweb/react"
-import { getContract, prepareContractCall, waitForReceipt } from "thirdweb"
+import { useActiveAccount, useConnect, useSendAndConfirmTransaction } from "thirdweb/react"
+import { getContract, prepareContractCall, waitForReceipt, estimateGas } from "thirdweb"
 import { client } from "@/app/client"
 import { base, defineChain } from "thirdweb/chains"
 import { ChainId } from '@/types/chain'
@@ -57,7 +57,7 @@ const ClaimRewardsButton = ({
     handleCloseModal,
 }: IClaimRewardsButtonProps) => {
     const account = useActiveAccount()
-    const { mutateAsync: sendTransaction, isPending } = useSendTransaction()
+    const { mutateAsync: sendAndConfirmTransaction, isPending } = useSendAndConfirmTransaction()
     const { logEvent } = useAnalytics()
     const { claimRewardsTx, setClaimRewardsTx } = useTxContext() as TTxContext
     const { isConnecting } = useConnect()
@@ -151,6 +151,12 @@ const ClaimRewardsButton = ({
 
         try {
             setError(null)
+            setClaimRewardsTx((prev: TClaimRewardsTx) => ({
+                ...prev,
+                isPending: true,
+                hash: '',
+                errorMessage: '',
+            }))
             
             const rewardsContract = getContract({
                 client,
@@ -158,7 +164,8 @@ const ClaimRewardsButton = ({
                 chain: THIRDWEB_CHAINS[selectedChain as keyof typeof THIRDWEB_CHAINS],
             })
 
-            const transaction = prepareContractCall({
+            // Prepare raw transaction for gas estimation
+            const rawTransaction = prepareContractCall({
                 contract: rewardsContract,
                 method: "function claim(address _account, address _token, uint256 _amount, bytes32[] calldata _merkleProof)",
                 params: [
@@ -169,7 +176,27 @@ const ClaimRewardsButton = ({
                 ],
             })
 
-            const result = await sendTransaction(transaction)
+            // Gas estimation with buffer
+            const gasCost = await estimateGas({
+                transaction: rawTransaction,
+                from: account.address as `0x${string}`,
+            })
+            const requiredGas = (gasCost * BigInt(12)) / BigInt(10) // 20% buffer
+
+            // Prepare final transaction with optimized gas
+            const transaction = prepareContractCall({
+                contract: rewardsContract,
+                method: "function claim(address _account, address _token, uint256 _amount, bytes32[] calldata _merkleProof)",
+                params: [
+                    account.address,
+                    rewardDetails.reward.token.address,
+                    rewardDetails.reward.claimable,
+                    rewardDetails.reward.proof,
+                ],
+                gas: requiredGas,
+            })
+
+            const result = await sendAndConfirmTransaction(transaction)
             setHash(result.transactionHash)
 
             // Wait for confirmation
@@ -181,7 +208,59 @@ const ClaimRewardsButton = ({
             })
 
             setIsConfirming(false)
-            setIsConfirmed(true)
+
+            console.log('Claim rewards transaction receipt:', receipt)
+            console.log('Claim rewards receipt status:', receipt.status)
+
+            const statusValue = receipt.status as any
+            const isSuccess = statusValue === 'success' || 
+                             statusValue === 1 || 
+                             statusValue === '0x1' ||
+                             statusValue === true
+
+            const isFailed = statusValue === 'reverted' || 
+                            statusValue === 'failed' || 
+                            statusValue === 0 || 
+                            statusValue === '0x0' ||
+                            statusValue === false
+
+            console.log('Claim rewards isSuccess:', isSuccess, 'isFailed:', isFailed)
+
+            if (isSuccess) {
+                setIsConfirmed(true)
+
+                setClaimRewardsTx((prev: TClaimRewardsTx) => ({
+                    ...prev,
+                    status: 'view',
+                    hash: result.transactionHash,
+                    errorMessage: '',
+                    isFailed: false,
+                    isConfirmed: true,
+                }))
+            } else if (isFailed) {
+                console.log('Claim rewards transaction detected as failed')
+                
+                setClaimRewardsTx((prev: TClaimRewardsTx) => ({
+                    ...prev,
+                    isPending: false,
+                    isConfirming: false,
+                    errorMessage: 'Transaction failed on the blockchain. Please try again.',
+                    isFailed: true,
+                }))
+                return // Exit early, don't proceed with success logic
+            } else {
+                // Unknown status - treat as failure for safety
+                console.log('Unknown claim rewards transaction status, treating as failure')
+                
+                setClaimRewardsTx((prev: TClaimRewardsTx) => ({
+                    ...prev,
+                    isPending: false,
+                    isConfirming: false,
+                    errorMessage: 'Transaction status unclear. Please check the explorer.',
+                    isFailed: true,
+                }))
+                return
+            }
 
         } catch (error) {
             console.error('Claim rewards error:', error)
@@ -195,7 +274,7 @@ const ClaimRewardsButton = ({
                 errorMessage: getErrorText(error as any),
             }))
         }
-    }, [account, rewardDetails, selectedChain, sendTransaction, setClaimRewardsTx])
+    }, [account, rewardDetails, selectedChain, sendAndConfirmTransaction, setClaimRewardsTx])
 
     const onClaimRewards = async () => {
         await handleClaimRewards()
@@ -225,7 +304,7 @@ const ClaimRewardsButton = ({
                 variant="primary"
                 className="group flex items-center gap-[4px] py-3 w-full rounded-5 uppercase"
                 disabled={
-                    (isPending || isConfirming || disabled || !account) &&
+                    (claimRewardsTx.isPending || claimRewardsTx.isConfirming || disabled || !account) &&
                     claimRewardsTx.status !== 'view'
                 }
                 onClick={() => {

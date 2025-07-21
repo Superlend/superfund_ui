@@ -12,7 +12,7 @@ import { ArrowRightIcon } from 'lucide-react'
 import { USDC_DECIMALS, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { useChain } from '@/context/chain-context'
 import { useAnalytics } from '@/context/amplitude-analytics-provider'
-import { useActiveAccount, useConnect, useSendTransaction } from "thirdweb/react"
+import { useActiveAccount, useConnect, useSendAndConfirmTransaction } from "thirdweb/react"
 import { estimateGas, getContract, prepareContractCall, waitForReceipt } from "thirdweb"
 import { client } from "@/app/client"
 import { base, defineChain } from "thirdweb/chains"
@@ -64,7 +64,7 @@ const WithdrawButton = ({
     walletAddress,
 }: IWithdrawButtonProps) => {
     const account = useActiveAccount()
-    const { mutateAsync: sendTransaction, isPending } = useSendTransaction()
+    const { mutateAsync: sendAndConfirmTransaction, isPending } = useSendAndConfirmTransaction()
     const { selectedChain } = useChain()
     const { logEvent } = useAnalytics()
     const { isConnecting } = useConnect()
@@ -166,6 +166,13 @@ const WithdrawButton = ({
 
         try {
             setError(null)
+            setWithdrawTx((prev: TWithdrawTx) => ({
+                ...prev,
+                isPending: true,
+                hash: '',
+                errorMessage: '',
+            }))
+
             const amountInWei = parseUnits(amount, USDC_DECIMALS)
 
             const vaultContract = getContract({
@@ -174,6 +181,7 @@ const WithdrawButton = ({
                 chain: THIRDWEB_CHAINS[selectedChain as keyof typeof THIRDWEB_CHAINS],
             })
 
+            // Prepare raw transaction for gas estimation
             const rawTransaction = prepareContractCall({
                 contract: vaultContract,
                 method: "function withdraw(uint256 _assets, address _receiver, address _owner) returns (uint256)",
@@ -184,13 +192,14 @@ const WithdrawButton = ({
                 ],
             })
 
-            // Gas cost
+            // Gas estimation with buffer
             const gasCost = await estimateGas({
                 transaction: rawTransaction,
                 from: account.address as `0x${string}`,
             })
-            const requiredGas = (gasCost * BigInt(12)) / BigInt(10)
+            const requiredGas = (gasCost * BigInt(12)) / BigInt(10) // 20% buffer
 
+            // Prepare final transaction with optimized gas
             const transaction = prepareContractCall({
                 contract: vaultContract,
                 method: "function withdraw(uint256 _assets, address _receiver, address _owner) returns (uint256)",
@@ -202,7 +211,8 @@ const WithdrawButton = ({
                 gas: requiredGas,
             })
 
-            const result = await sendTransaction(transaction)
+            // Send transaction
+            const result = await sendAndConfirmTransaction(transaction)
             setHash(result.transactionHash)
 
             // Wait for confirmation
@@ -215,24 +225,23 @@ const WithdrawButton = ({
 
             setIsConfirming(false)
 
-            // Debug logging to understand receipt structure
-            console.log('Transaction receipt:', receipt)
-            console.log('Receipt status:', receipt.status)
-            console.log('Receipt status type:', typeof receipt.status)
+            console.log('Withdraw transaction receipt:', receipt)
+            console.log('Withdraw receipt status:', receipt.status)
+            console.log('Withdraw receipt status type:', typeof receipt.status)
 
-            // Check if transaction succeeded or failed on blockchain
-            // More comprehensive status checking
             const statusValue = receipt.status as any
-            const isSuccess = statusValue === 'success' ||
-                statusValue === 1 ||
-                statusValue === '0x1' ||
-                statusValue === true
+            const isSuccess = statusValue === 'success' || 
+                             statusValue === 1 || 
+                             statusValue === '0x1' ||
+                             statusValue === true
 
-            const isFailed = statusValue === 'reverted' ||
-                statusValue === 'failed' ||
-                statusValue === 0 ||
-                statusValue === '0x0' ||
-                statusValue === false
+            const isFailed = statusValue === 'reverted' || 
+                            statusValue === 'failed' || 
+                            statusValue === 0 || 
+                            statusValue === '0x0' ||
+                            statusValue === false
+
+            console.log('Withdraw isSuccess:', isSuccess, 'isFailed:', isFailed)
 
             if (isSuccess) {
                 setIsConfirmed(true)
@@ -246,8 +255,8 @@ const WithdrawButton = ({
                     isConfirmed: true,
                 }))
             } else if (isFailed) {
-                console.log('Transaction detected as failed')
-
+                console.log('Withdraw transaction detected as failed')
+                
                 setWithdrawTx((prev: TWithdrawTx) => ({
                     ...prev,
                     isPending: false,
@@ -258,9 +267,8 @@ const WithdrawButton = ({
                 return // Exit early, don't proceed with success logic
             } else {
                 // Unknown status - treat as failure for safety
-                console.log('Unknown transaction status, treating as failure')
-                // Don't set error state - use withdrawTx.errorMessage instead
-
+                console.log('Unknown withdraw transaction status, treating as failure')
+                
                 setWithdrawTx((prev: TWithdrawTx) => ({
                     ...prev,
                     isPending: false,
@@ -283,7 +291,7 @@ const WithdrawButton = ({
                 errorMessage: getErrorText(error as any),
             }))
         }
-    }, [account, amount, selectedChain, sendTransaction, setWithdrawTx])
+    }, [account, amount, selectedChain, sendAndConfirmTransaction, setWithdrawTx])
 
     const onWithdraw = async () => {
         await handleWithdrawSuperVault()
@@ -313,7 +321,7 @@ const WithdrawButton = ({
                 variant="primary"
                 className="group flex items-center gap-[4px] py-3 w-full rounded-5 uppercase"
                 disabled={
-                    (isPending || isConfirming || disabled || !account) &&
+                    (withdrawTx.isPending || withdrawTx.isConfirming || disabled || !account) &&
                     withdrawTx.status !== 'view'
                 }
                 onClick={() => {
