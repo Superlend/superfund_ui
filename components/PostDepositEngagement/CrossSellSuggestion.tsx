@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { TrendingUp, ArrowUpRight, Zap } from 'lucide-react'
 import { BodyText } from '@/components/ui/typography'
 import { Button } from '@/components/ui/button'

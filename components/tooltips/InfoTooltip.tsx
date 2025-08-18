@@ -14,7 +14,7 @@ import {
     DrawerFooter,
     DrawerTrigger,
 } from '@/components/ui/drawer'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Label } from '../ui/typography'
 import InfoCircleIcon from '../icons/info-circle-icon'
 import useDimensions from '@/hooks/useDimensions'

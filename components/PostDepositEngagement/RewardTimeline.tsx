@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Clock, Calendar, TrendingUp } from 'lucide-react'
 import { BodyText, HeadingText } from '@/components/ui/typography'
 import { Badge } from '@/components/ui/badge'

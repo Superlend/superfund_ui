@@ -1,7 +1,7 @@
 'use client'
 
 import { Period } from "@/types/periodButtons"
-import { motion } from "motion/react"
+import { motion, Transition } from "motion/react"
 import React, { useEffect, useMemo, useState } from "react"
 import ClaimRewards from "./claim-rewards"
 import { useWalletConnection } from "@/hooks/useWalletConnection"
@@ -38,7 +38,7 @@ const variants = {
     visible: { opacity: 1, y: 0 },
 }
 
-const transition = {
+const transition: Transition = {
     duration: 0.4,
     ease: 'easeOut'
 }

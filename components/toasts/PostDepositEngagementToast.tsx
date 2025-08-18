@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { X, ChevronLeft, ChevronRight, TrendingUp, Zap, Calendar, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BodyText, HeadingText } from '@/components/ui/typography'

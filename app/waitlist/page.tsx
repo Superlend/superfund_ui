@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, Variants } from 'motion/react'
 import Image from 'next/image'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
@@ -189,7 +189,7 @@ export default function WaitlistPage() {
             setCurrentStep(2)
         } catch (err) {
             if (err instanceof z.ZodError) {
-                setError(err.errors[0].message)
+                setError(err.message)
             } else if (err instanceof Error) {
                 setError(err.message)
             } else {
@@ -280,7 +280,7 @@ export default function WaitlistPage() {
     }
 
     // Main content animations
-    const containerVariants = {
+    const containerVariants: Variants = {
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
@@ -290,7 +290,7 @@ export default function WaitlistPage() {
         }
     }
 
-    const itemVariants = {
+    const itemVariants: Variants = {
         hidden: { opacity: 0, y: 30 },
         visible: {
             opacity: 1,
@@ -303,7 +303,7 @@ export default function WaitlistPage() {
         }
     }
 
-    const successVariants = {
+    const successVariants: Variants = {
         hidden: { opacity: 0, scale: 0.8 },
         visible: {
             opacity: 1,
@@ -317,7 +317,7 @@ export default function WaitlistPage() {
     }
 
     // Decorative background image animations
-    const imageVariants = {
+    const imageVariants: Variants = {
         hidden: { opacity: 0, scale: 0.8 },
         visible: {
             opacity: 0.25,
@@ -326,7 +326,7 @@ export default function WaitlistPage() {
         }
     }
 
-    const smallImageVariants = {
+    const smallImageVariants: Variants = {
         hidden: { opacity: 0, y: 20 },
         visible: {
             opacity: 0.15,

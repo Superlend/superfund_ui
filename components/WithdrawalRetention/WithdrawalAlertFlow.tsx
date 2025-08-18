@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import EarlyWithdrawalWarning from './EarlyWithdrawalWarning'
 import YieldLossCalculator from './YieldLossCalculator'
 import ConsentCheckbox from './ConsentCheckbox'

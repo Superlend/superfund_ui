@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react'
 import MainContainer from '@/components/MainContainer'
 import { HeadingText, BodyText } from '@/components/ui/typography'
-import { motion, useAnimation, useReducedMotion } from 'framer-motion'
+import { motion, Transition, useAnimation, useReducedMotion, Variants } from 'motion/react'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 import { Asterisk, ArrowRight, Play, ChevronDown, TrendingUp, ChevronUp, BookText, MessageCircleQuestion, Github, FileText, Shield, AlertTriangle, Lock, Users, CheckCircle, BarChart3, Zap } from 'lucide-react'
@@ -908,6 +908,13 @@ const FAQSection = lazy(() =>
     })
 )
 
+// type Variants = {
+//     containerVariants: Variants
+//     childVariants: Variants
+//     cardVariants: Variants
+//     shouldReduceMotion: boolean
+// }
+
 // Chain selector with benchmark table component
 function ChainSelectorWithBenchmarkTable() {
     const { selectedChain, setSelectedChain } = useChain();
@@ -1076,7 +1083,7 @@ export default function HomePage() {
 
     // Memoized animation variants with reduced motion support
     const animationVariants = useMemo(() => {
-        const baseTransition = shouldReduceMotion ? { duration: 0.1 } : { duration: 0.6, ease: "easeOut" }
+        const baseTransition = shouldReduceMotion ? { duration: 0.1 } : { duration: 0.6, ease: "easeOut" } satisfies Transition
 
         return {
             containerVariants: {
@@ -1089,7 +1096,7 @@ export default function HomePage() {
                         staggerChildren: shouldReduceMotion ? 0 : 0.2
                     }
                 }
-            },
+            } satisfies Variants,
             childVariants: {
                 hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 20 },
                 visible: {
@@ -1097,7 +1104,7 @@ export default function HomePage() {
                     y: 0,
                     transition: shouldReduceMotion ? { duration: 0.1 } : { duration: 0.5 }
                 }
-            },
+            } satisfies Variants,
             cardVariants: {
                 hidden: { opacity: 0, scale: shouldReduceMotion ? 1 : 0.8, y: shouldReduceMotion ? 0 : 20 },
                 visible: {
@@ -1111,7 +1118,7 @@ export default function HomePage() {
                         stiffness: 100
                     }
                 }
-            },
+            } satisfies Variants,
             cardVariantsLeft: {
                 hidden: { opacity: 0, x: shouldReduceMotion ? 0 : -40 },
                 visible: {
@@ -1123,7 +1130,7 @@ export default function HomePage() {
                         type: "spring"
                     }
                 }
-            },
+            } satisfies Variants,
             cardVariantsRight: {
                 hidden: { opacity: 0, x: shouldReduceMotion ? 0 : 40 },
                 visible: {
@@ -1135,7 +1142,7 @@ export default function HomePage() {
                         type: "spring"
                     }
                 }
-            },
+            } satisfies Variants,
             statVariants: {
                 hidden: { opacity: 0, scale: shouldReduceMotion ? 1 : 0.7 },
                 visible: {
@@ -1148,7 +1155,7 @@ export default function HomePage() {
                         bounce: 0.4
                     }
                 }
-            },
+            } satisfies Variants,
             iconVariants: {
                 hidden: { opacity: 0, rotate: shouldReduceMotion ? 0 : -15, scale: shouldReduceMotion ? 1 : 0.8 },
                 visible: {
@@ -1162,14 +1169,14 @@ export default function HomePage() {
                         stiffness: 200
                     }
                 }
-            },
+            } satisfies Variants,
             fadeInVariants: {
                 hidden: { opacity: 0 },
                 visible: {
                     opacity: 1,
                     transition: shouldReduceMotion ? { duration: 0.1 } : { duration: 0.6 }
                 }
-            }
+            } satisfies Variants,
         }
     }, [shouldReduceMotion])
 

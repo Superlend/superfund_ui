@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { BodyText } from '@/components/ui/typography'
 import { LoaderCircle, X, Wallet, Check } from 'lucide-react'
 import useDimensions from '@/hooks/useDimensions'
