@@ -67,7 +67,7 @@ export default function HomePage() {
             <motion.div
                 initial="hidden"
                 animate="visible"
-                variants={containerVariants}
+                // variants={containerVariants}
                 className="w-full"
             >
                 <Card className="max-w-3xl w-full mx-auto bg-white/75 backdrop-blur-sm hover:shadow-lg transition-shadow duration-300 relative overflow-hidden">
