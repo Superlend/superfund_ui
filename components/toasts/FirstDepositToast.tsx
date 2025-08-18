@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { X, Sparkles } from 'lucide-react'
 import { HeadingText, BodyText } from '@/components/ui/typography'
 import { Button } from '@/components/ui/button'

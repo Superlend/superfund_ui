@@ -5,7 +5,7 @@ import ConnectWalletButton from '@/components/ConnectWalletButton'
 import MainContainer from '@/components/MainContainer'
 import { Card, CardContent } from '@/components/ui/card'
 import { HeadingText, BodyText } from '@/components/ui/typography'
-import { motion } from 'framer-motion'
+import { motion, Variants } from 'motion/react'
 import { Button } from '@/components/ui/button'
 import AccessDialog from '@/components/AccessDialog'
 import Image from 'next/image'
@@ -22,44 +22,44 @@ export default function HomePage() {
         }, 3000)
     }
 
-    const containerVariants = {
+    const containerVariants: Variants = {
         hidden: { opacity: 0, y: 20 },
         visible: {
             opacity: 1,
             y: 0,
             transition: {
                 duration: 0.6,
-                ease: "easeOut",
-                staggerChildren: 0.2
-            }
-        }
+                ease: 'easeOut',
+                staggerChildren: 0.2,
+            },
+        },
     }
 
-    const childVariants = {
+    const childVariants: Variants = {
         hidden: { opacity: 0, y: 20 },
         visible: {
             opacity: 1,
             y: 0,
-            transition: { duration: 0.5 }
-        }
+            transition: { duration: 0.5 },
+        },
     }
 
-    const imageVariants = {
+    const imageVariants: Variants = {
         hidden: { opacity: 0, scale: 0.8 },
         visible: {
             opacity: 0.25,
             scale: 1,
-            transition: { duration: 0.8, ease: "easeOut" }
-        }
+            transition: { duration: 0.8, ease: 'easeOut' },
+        },
     }
 
-    const smallImageVariants = {
+    const smallImageVariants: Variants = {
         hidden: { opacity: 0, y: 20 },
         visible: {
             opacity: 0.15,
             y: 0,
-            transition: { duration: 0.5, ease: "easeOut" }
-        }
+            transition: { duration: 0.5, ease: 'easeOut' },
+        },
     }
 
     return (
@@ -67,7 +67,7 @@ export default function HomePage() {
             <motion.div
                 initial="hidden"
                 animate="visible"
-                // variants={containerVariants}
+                variants={containerVariants}
                 className="w-full"
             >
                 <Card className="max-w-3xl w-full mx-auto bg-white/75 backdrop-blur-sm hover:shadow-lg transition-shadow duration-300 relative overflow-hidden">
@@ -149,24 +149,45 @@ export default function HomePage() {
 
                     <CardContent className="p-8 space-y-8 relative z-10">
                         <motion.div variants={childVariants}>
-                            <HeadingText level="h1" weight="bold" className="text-center capitalize">
+                            <HeadingText
+                                level="h1"
+                                weight="bold"
+                                className="text-center capitalize"
+                            >
                                 SuperFund exclusive beta access
                             </HeadingText>
                         </motion.div>
 
-                        <motion.div className="space-y-4 max-w-lg mx-auto" variants={childVariants}>
+                        <motion.div
+                            className="space-y-4 max-w-lg mx-auto"
+                            variants={childVariants}
+                        >
                             <div className="flex items-start justify-start">
                                 <Asterisk className="w-12 h-6 text-primary" />
-                                <BodyText level="body1" weight="medium" className="text-gray-800 text-center">
-                                    SuperFund optimally allocates your USDC across trusted lending protocols such as Aave, Morpho, Euler, & Fluid to generate consistent and competitive returns.
+                                <BodyText
+                                    level="body1"
+                                    weight="medium"
+                                    className="text-gray-800 text-center"
+                                >
+                                    SuperFund optimally allocates your USDC
+                                    across trusted lending protocols such as
+                                    Aave, Morpho, Euler, & Fluid to generate
+                                    consistent and competitive returns.
                                 </BodyText>
                             </div>
                         </motion.div>
 
-                        <motion.div className="w-full flex max-sm:flex-col items-center justify-center sm:gap-8 max-w-2xl mx-auto" variants={childVariants}>
+                        <motion.div
+                            className="w-full flex max-sm:flex-col items-center justify-center sm:gap-8 max-w-2xl mx-auto"
+                            variants={childVariants}
+                        >
                             {/* New Wallet Section */}
                             <div className="flex-1 space-y-2">
-                                <BodyText level="body1" weight="medium" className="text-gray-600 text-center">
+                                <BodyText
+                                    level="body1"
+                                    weight="medium"
+                                    className="text-gray-600 text-center"
+                                >
                                     New wallet?
                                 </BodyText>
                                 <div className="w-[200px] mx-auto">
@@ -185,7 +206,11 @@ export default function HomePage() {
 
                             {/* Already Registered Section */}
                             <div className="flex-1 space-y-2">
-                                <BodyText level="body1" weight="medium" className="text-gray-600 text-center">
+                                <BodyText
+                                    level="body1"
+                                    weight="medium"
+                                    className="text-gray-600 text-center"
+                                >
                                     Already registered?
                                 </BodyText>
                                 <div className="w-[200px] mx-auto">

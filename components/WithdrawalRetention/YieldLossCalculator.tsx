@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { BodyText, HeadingText } from '@/components/ui/typography'
 import { Badge } from '@/components/ui/badge'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { TrendingUp, DollarSign, Calendar } from 'lucide-react'
 import { abbreviateNumber, getLowestDisplayValue, hasLowestDisplayValuePrefix } from '@/lib/utils'
 

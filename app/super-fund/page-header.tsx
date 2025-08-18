@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { motion } from 'motion/react'
+import { motion, Variants } from 'motion/react'
 import { HeadingText, BodyText } from '@/components/ui/typography'
 import ImageWithDefault from '@/components/ImageWithDefault'
 import ChainSelector from '@/components/ChainSelector'

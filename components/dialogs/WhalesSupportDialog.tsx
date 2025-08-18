@@ -22,7 +22,7 @@ import { Card } from '../ui/card'
 import { getFormattedPortfolioValue } from '@/lib/portfolio-utils'
 import { useWalletConnection } from '@/hooks/useWalletConnection'
 import InfoTooltip from '@/components/tooltips/InfoTooltip'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, Variants } from 'motion/react'
 import { Send, MessageCircle, Mail } from "lucide-react";
 import Link from 'next/link'
 import ImageWithDefault from '../ImageWithDefault'
@@ -33,7 +33,7 @@ const backdropVariants = {
     visible: { opacity: 1, transition: { duration: 0.5 } }
 };
 
-const dialogVariants = {
+const dialogVariants: Variants = {
     hidden: { opacity: 0, y: 500 },
     visible: {
         opacity: 1,
@@ -55,7 +55,7 @@ const dialogVariants = {
 };
 
 // Animation variants for drawer
-const drawerVariants = {
+const drawerVariants: Variants = {
     hidden: { y: "100%" },
     visible: {
         y: 0,

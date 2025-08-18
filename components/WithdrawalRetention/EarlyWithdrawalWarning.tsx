@@ -3,7 +3,7 @@
 import { AlertTriangle, Clock, Lightbulb, TrendingDown } from 'lucide-react'
 import { BodyText, HeadingText } from '@/components/ui/typography'
 import { Badge } from '@/components/ui/badge'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { useMemo } from 'react'
 import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'

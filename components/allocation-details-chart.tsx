@@ -1,7 +1,7 @@
 'use client'
 
 import { Card } from "./ui/card";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Label, Sector } from "recharts";
 import { BodyText, HeadingText } from "./ui/typography";
 import { PieSectorDataItem } from "recharts/types/polar/Pie";

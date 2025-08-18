@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { BodyText } from '@/components/ui/typography'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { CheckCircle2, AlertCircle } from 'lucide-react'
 
 interface ConsentCheckboxProps {
