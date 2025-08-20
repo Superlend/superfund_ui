@@ -2,8 +2,10 @@
 
 import CustomAlert from '@/components/alerts/CustomAlert'
 import { AnimatedNumber } from '@/components/animations/animated_number'
+import { ContinuouslyAnimatedNumber } from '@/components/animations/continuously-animated-number'
 import ConnectWalletButton from '@/components/ConnectWalletButton'
 import ImageWithDefault from '@/components/ImageWithDefault'
+import { NumberTicker } from '@/components/magicui/number-ticker'
 import InfoTooltip from '@/components/tooltips/InfoTooltip'
 import TooltipText from '@/components/tooltips/TooltipText'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -26,13 +28,18 @@ import { useRewardsHook } from '@/hooks/vault_hooks/vaultHook'
 import { starVariants } from '@/lib/animations'
 import { VAULT_ADDRESS, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { getRewardsTooltipContent } from '@/lib/ui/getRewardsTooltipContent'
-import { abbreviateNumberWithoutRounding, convertNegativeToZero, getBoostApy, hasNoDecimals } from '@/lib/utils'
+import {
+    abbreviateNumberWithoutRounding,
+    convertNegativeToZero,
+    getBoostApy,
+    hasNoDecimals,
+} from '@/lib/utils'
 import { Period } from '@/types/periodButtons'
 import { Expand, Lock, Maximize2, Minimize2, Percent } from 'lucide-react'
 import { motion } from 'motion/react'
 import Link from 'next/link'
 import { useEffect, useMemo } from 'react'
-import { useActiveAccount } from "thirdweb/react"
+import { useActiveAccount } from 'thirdweb/react'
 
 type VaultStatsProps = {
     days_7_avg_total_apy: number
@@ -42,42 +49,76 @@ type VaultStatsProps = {
 
 export default function VaultStats() {
     // const { walletAddress, isWalletConnectedForUI } = useWalletConnection()
-    const account = useActiveAccount();
+    const account = useActiveAccount()
     const walletAddress = account?.address as `0x${string}`
     const isWalletConnectedForUI = !!account
     const { selectedChain, chainDetails } = useChain()
-    const { data: boostRewardsData, isLoading: isLoadingBoostRewards, error: errorBoostRewards } = useGetBoostRewards({
-        vaultAddress: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+    const {
+        data: boostRewardsData,
+        isLoading: isLoadingBoostRewards,
+        error: errorBoostRewards,
+    } = useGetBoostRewards({
+        vaultAddress: VAULT_ADDRESS_MAP[
+            selectedChain as keyof typeof VAULT_ADDRESS_MAP
+        ] as `0x${string}`,
         chainId: selectedChain,
-        userAddress: walletAddress
+        userAddress: walletAddress,
     })
-    // const { totalAssets, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
+    const {
+        totalAssets,
+        isLoading: isLoadingVault,
+        error: errorVault,
+    } = useVaultHook()
     // const { boostApy: GLOBAL_BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
     const GLOBAL_BOOST_APY =
-        boostRewardsData?.filter((item) => item.description?.includes('A global boost for all users') ?? false)
-            .reduce((acc, curr) => acc + (curr.boost_apy / 100), 0) ?? 0
+        boostRewardsData
+            ?.filter(
+                (item) =>
+                    item.description?.includes(
+                        'A global boost for all users'
+                    ) ?? false
+            )
+            .reduce((acc, curr) => acc + curr.boost_apy / 100, 0) ?? 0
     const Farcaster_BOOST_APY =
-        boostRewardsData?.filter((item) => !item.description?.includes('A global boost for all users'))
-            .reduce((acc, curr) => acc + (curr.boost_apy / 100), 0) ?? 0
+        boostRewardsData
+            ?.filter(
+                (item) =>
+                    !item.description?.includes('A global boost for all users')
+            )
+            .reduce((acc, curr) => acc + curr.boost_apy / 100, 0) ?? 0
     const hasFarcasterBoost = Farcaster_BOOST_APY > 0
-    const { userMaxWithdrawAmount, isLoading: isLoadingUserMaxWithdrawAmount, error: errorUserMaxWithdrawAmount } = useUserBalance(
-        walletAddress as `0x${string}`
-    )
-    const { data: effectiveApyData, isLoading: isLoadingEffectiveApy, isError: isErrorEffectiveApy } = useGetEffectiveApy({
-        vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
-        chain_id: selectedChain
+    const {
+        userMaxWithdrawAmount,
+        isLoading: isLoadingUserMaxWithdrawAmount,
+        error: errorUserMaxWithdrawAmount,
+    } = useUserBalance(walletAddress as `0x${string}`)
+    const {
+        data: effectiveApyData,
+        isLoading: isLoadingEffectiveApy,
+        isError: isErrorEffectiveApy,
+    } = useGetEffectiveApy({
+        vault_address: VAULT_ADDRESS_MAP[
+            selectedChain as keyof typeof VAULT_ADDRESS_MAP
+        ] as `0x${string}`,
+        chain_id: selectedChain,
     })
 
     // Liquidity Land boost logic
-    const { data: liquidityLandUsers, isLoading: isLoadingLiquidityLandUsers } = useGetLiquidityLandUsers()
+    const { data: liquidityLandUsers, isLoading: isLoadingLiquidityLandUsers } =
+        useGetLiquidityLandUsers()
     const isLiquidityLandUser = useMemo(() => {
         if (!walletAddress || !liquidityLandUsers) return false
-        return liquidityLandUsers.some(user =>
-            user.walletAddress.toLowerCase() === walletAddress.toLowerCase()
+        return liquidityLandUsers.some(
+            (user) =>
+                user.walletAddress.toLowerCase() === walletAddress.toLowerCase()
         )
     }, [walletAddress, liquidityLandUsers])
 
-    const baseAPY = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(effectiveApyData?.base_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0)
+    const baseAPY =
+        Number(effectiveApyData?.rewards_apy ?? 0) +
+        Number(effectiveApyData?.base_apy ?? 0) +
+        Number(GLOBAL_BOOST_APY ?? 0) +
+        Number(Farcaster_BOOST_APY ?? 0)
     const LIQUIDITY_LAND_BOOST_APY = useMemo(() => {
         if (!isLiquidityLandUser) return 0
         const targetAPY = LIQUIDITY_LAND_TARGET_APY
@@ -89,39 +130,57 @@ export default function VaultStats() {
     const { isClient } = useIsClient()
     const getProtocolIdentifier = () => {
         if (!selectedChain) return ''
-        return chainDetails[selectedChain as keyof typeof chainDetails]?.contractAddress || ''
+        return (
+            chainDetails[selectedChain as keyof typeof chainDetails]
+                ?.contractAddress || ''
+        )
     }
     const protocolId = getProtocolIdentifier()
     const {
         // data: { capital, interest_earned },
-        isLoading: isLoadingPositionDetails
+        isLoading: isLoadingPositionDetails,
     } = useTransactionHistory({
         protocolIdentifier: protocolId,
         chainId: selectedChain || 0,
         walletAddress: walletAddress || '',
-        refetchOnTransaction: true
+        refetchOnTransaction: true,
     })
     const {
         data: dailyEarningsHistoryData,
         isLoading: isLoadingDailyEarningsHistory,
-        isError: isErrorDailyEarningsHistory
+        isError: isErrorDailyEarningsHistory,
     } = useGetDailyEarningsHistory({
-        vault_address: VAULT_ADDRESS_MAP[selectedChain as keyof typeof VAULT_ADDRESS_MAP] as `0x${string}`,
+        vault_address: VAULT_ADDRESS_MAP[
+            selectedChain as keyof typeof VAULT_ADDRESS_MAP
+        ] as `0x${string}`,
         user_address: walletAddress?.toLowerCase() as `0x${string}`,
     })
     const totalInterestEarned = useMemo(() => {
-        return dailyEarningsHistoryData?.reduce((acc: number, item: any) => acc + item.earnings, 0) ?? 0
+        return (
+            dailyEarningsHistoryData?.reduce(
+                (acc: number, item: any) => acc + item.earnings,
+                0
+            ) ?? 0
+        )
     }, [dailyEarningsHistoryData])
 
     const capital = useMemo(() => {
-        return Number(userMaxWithdrawAmount ?? 0) - Number(totalInterestEarned ?? 0)
+        return (
+            Number(userMaxWithdrawAmount ?? 0) -
+            Number(totalInterestEarned ?? 0)
+        )
     }, [userMaxWithdrawAmount, totalInterestEarned])
     // const { rewards, totalRewardApy, isLoading: isLoadingRewards, error: errorRewards } = useRewardsHook()
     // const { days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading: isLoading7DayAvg, error: error7DayAvg } = useHistoricalData({
     //     chain_id: selectedChain
     // })
-    const isLoadingSection = !isClient;
-    const TOTAL_APY = Number((effectiveApyData?.rewards_apy ?? 0)) + Number(effectiveApyData?.base_apy ?? 0) + Number(GLOBAL_BOOST_APY ?? 0) + Number(Farcaster_BOOST_APY ?? 0) + Number(LIQUIDITY_LAND_BOOST_APY ?? 0)
+    const isLoadingSection = !isClient
+    const TOTAL_APY =
+        Number(effectiveApyData?.rewards_apy ?? 0) +
+        Number(effectiveApyData?.base_apy ?? 0) +
+        Number(GLOBAL_BOOST_APY ?? 0) +
+        Number(Farcaster_BOOST_APY ?? 0) +
+        Number(LIQUIDITY_LAND_BOOST_APY ?? 0)
     // const totalPositionAmountInDollars = useMemo(() => {
     //     return Number(capital ?? 0) + Number(totalInterestEarned ?? 0)
     // }, [capital, totalInterestEarned])
@@ -130,28 +189,195 @@ export default function VaultStats() {
         {
             id: 'capital',
             label: 'Capital',
-            value: abbreviateNumberWithoutRounding(convertNegativeToZero(Number(capital ?? 0)), 4)
+            value: abbreviateNumberWithoutRounding(
+                convertNegativeToZero(Number(capital ?? 0)),
+                4
+            ),
         },
         {
             id: 'interest-earned',
             label: 'Interest earned',
-            value: abbreviateNumberWithoutRounding(convertNegativeToZero(Number(totalInterestEarned ?? 0)), 4),
+            value: abbreviateNumberWithoutRounding(
+                convertNegativeToZero(Number(totalInterestEarned ?? 0)),
+                4
+            ),
             description: 'Total interest earned since your first deposit.',
             tooltipContent: () => {
                 return (
-                    <BodyText level="body2" weight="normal" className="text-gray-600">
+                    <BodyText
+                        level="body2"
+                        weight="normal"
+                        className="text-gray-600"
+                    >
                         Total interest earned since your first deposit.
                     </BodyText>
                 )
-            }
-        }
+            },
+        },
     ]
 
     const vaultStats = [
         {
+            id: 'tvl',
+            title: 'TVL',
+            value: totalAssets,
+            formatOptions: {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+                prefix: '$',
+            },
+            show: true,
+            error: !!errorVault,
+            isLoading: isLoadingVault,
+        },
+        {
+            id: 'effective-apy',
+            title: 'APY',
+            titleTooltipContent: () => {
+                return (
+                    <>
+                        <BodyText
+                            level="body2"
+                            weight="normal"
+                            className="text-gray-600 mb-2"
+                        >
+                            The Vault APY is calculated as the weighted average
+                            of the spot APYs from the underlying protocols where
+                            liquidity is deployed.
+                        </BodyText>
+                        <BodyText
+                            level="body2"
+                            weight="normal"
+                            className="text-gray-600"
+                        >
+                            The displayed APY is an estimate and may fluctuate
+                            based on the performance of these protocols. It is
+                            not fixed or guaranteed.
+                        </BodyText>
+                    </>
+                )
+            },
+            value: TOTAL_APY,
+            formatOptions: {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+                suffix: '%',
+            },
+            show: true,
+            hasRewards: true,
+            rewardsTooltipContent: getRewardsTooltipContent({
+                baseRateFormatted: abbreviateNumberWithoutRounding(
+                    effectiveApyData?.base_apy
+                ),
+                rewardsCustomList: [
+                    {
+                        key: 'rewards_apy',
+                        key_name: 'Rewards APY',
+                        value: abbreviateNumberWithoutRounding(
+                            effectiveApyData?.rewards_apy
+                        ),
+                        show: Number(effectiveApyData?.rewards_apy ?? 0) > 0,
+                    },
+                    {
+                        key: 'superlend_rewards_apy',
+                        key_name: 'Superlend USDC Reward',
+                        value: abbreviateNumberWithoutRounding(
+                            GLOBAL_BOOST_APY ?? 0,
+                            0
+                        ),
+                        logo: '/images/tokens/usdc.webp',
+                    },
+                    {
+                        key: 'farcaster_rewards_apy',
+                        key_name: 'Farcaster Yieldrop',
+                        value: abbreviateNumberWithoutRounding(
+                            Farcaster_BOOST_APY ?? 0,
+                            0
+                        ),
+                        logo: '/icons/sparkles.svg',
+                        show: hasFarcasterBoost,
+                    },
+                    {
+                        key: 'liquidity_land_boost_apy',
+                        key_name: 'Liquidity Land',
+                        value: abbreviateNumberWithoutRounding(
+                            LIQUIDITY_LAND_BOOST_APY ?? 0
+                        ),
+                        logo: '/icons/liquidity-land.svg',
+                        show: hasLiquidityLandBoost,
+                    },
+                ],
+                apyCurrent: TOTAL_APY,
+                positionTypeParam: 'lend',
+                note: () => {
+                    return (
+                        <div className="pt-2">
+                            <CustomAlert
+                                variant="info"
+                                size="xs"
+                                description={
+                                    <BodyText
+                                        level="body3"
+                                        weight="normal"
+                                        className="text-gray-800"
+                                    >
+                                        Note: Superlend Rewards are for a
+                                        limited period. Please join our{' '}
+                                        <Link
+                                            href="https://discord.com/invite/superlend"
+                                            target="_blank"
+                                            className="text-secondary-500"
+                                        >
+                                            Discord
+                                        </Link>{' '}
+                                        to get more info.
+                                    </BodyText>
+                                }
+                            />
+                        </div>
+                    )
+                },
+            }),
+            boostRewardsTooltipContent: () => {
+                return (
+                    <div>
+                        <BodyText
+                            level="body1"
+                            weight="medium"
+                            className="text-gray-800 flex items-center gap-1 mb-2"
+                        >
+                            <ImageWithDefault
+                                src={'/images/logos/superlend-rounded.svg'}
+                                alt="SuperFund logo"
+                                width={24}
+                                height={24}
+                                className="hover:-translate-y-1 transition-all duration-200"
+                            />
+                            Boosted USDC APY
+                        </BodyText>
+                        <BodyText
+                            level="body2"
+                            weight="normal"
+                            className="text-gray-600"
+                        >
+                            Boosted USDC APY are additional rewards added to the
+                            APY by SuperFund.
+                        </BodyText>
+                    </div>
+                )
+            },
+            isLoading: isLoadingEffectiveApy,
+            error: isErrorEffectiveApy,
+        },
+        {
             id: 'my-position',
             title: 'My Position',
-            value: isWalletConnectedForUI ? `$${abbreviateNumberWithoutRounding(Number(userMaxWithdrawAmount))}` : '',
+            formatOptions: {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+                prefix: '$',
+            },
+            value: isWalletConnectedForUI ? userMaxWithdrawAmount : '',
             show: true,
             isLoading: isWalletConnectedForUI && isLoadingUserMaxWithdrawAmount,
             error: errorUserMaxWithdrawAmount,
@@ -171,126 +397,54 @@ export default function VaultStats() {
                                 className="flex items-center justify-between gap-[100px] py-2"
                             >
                                 <div className="flex items-center gap-1">
-                                    <Label weight="medium" className="text-gray-800 shrink-0">
+                                    <Label
+                                        weight="medium"
+                                        className="text-gray-800 shrink-0"
+                                    >
                                         {item.label}
                                     </Label>
-                                    {item.tooltipContent &&
+                                    {item.tooltipContent && (
                                         <InfoTooltip
-                                            content={item.tooltipContent && item.tooltipContent()}
-                                        />}
+                                            content={
+                                                item.tooltipContent &&
+                                                item.tooltipContent()
+                                            }
+                                        />
+                                    )}
                                 </div>
-                                <BodyText level="body3" weight="medium" className="text-gray-800 shrink-0">
-                                    {index > 0 ? '+' : ''}{' '}${item.value}
+                                <BodyText
+                                    level="body3"
+                                    weight="medium"
+                                    className="text-gray-800 shrink-0"
+                                >
+                                    {index > 0 ? '+' : ''} ${item.value}
                                 </BodyText>
                             </div>
                         ))}
-                        <div
-                            className="flex items-center justify-between gap-[100px] py-2"
-                        >
+                        <div className="flex items-center justify-between gap-[100px] py-2">
                             <div className="flex items-center gap-1">
-                                <Label weight="medium" className="text-gray-800">
+                                <Label
+                                    weight="medium"
+                                    className="text-gray-800"
+                                >
                                     Position
                                 </Label>
                             </div>
-                            <BodyText level="body3" weight="medium" className="text-gray-800">
-                                ={' '}${abbreviateNumberWithoutRounding(Number(userMaxWithdrawAmount), 4)}
+                            <BodyText
+                                level="body3"
+                                weight="medium"
+                                className="text-gray-800"
+                            >
+                                = $
+                                {abbreviateNumberWithoutRounding(
+                                    Number(userMaxWithdrawAmount),
+                                    4
+                                )}
                             </BodyText>
                         </div>
                     </div>
                 )
             },
-        },
-        {
-            id: 'effective-apy',
-            title: 'APY',
-            titleTooltipContent: () => {
-                return (
-                    <>
-                        <BodyText level="body2" weight="normal" className="text-gray-600 mb-2">
-                            The Vault APY is calculated as the weighted average of the spot APYs from the underlying protocols where liquidity is deployed.
-                        </BodyText>
-                        <BodyText level="body2" weight="normal" className="text-gray-600">
-                            The displayed APY is an estimate and may fluctuate based on the performance of these protocols. It is not fixed or guaranteed.
-                        </BodyText>
-                    </>
-                )
-            },
-            value: `${abbreviateNumberWithoutRounding(TOTAL_APY)}%`,
-            show: true,
-            hasRewards: true,
-            rewardsTooltipContent: getRewardsTooltipContent({
-                baseRateFormatted: abbreviateNumberWithoutRounding(effectiveApyData?.base_apy),
-                rewardsCustomList: [
-                    {
-                        key: 'rewards_apy',
-                        key_name: 'Rewards APY',
-                        value: abbreviateNumberWithoutRounding(effectiveApyData?.rewards_apy),
-                        show: Number(effectiveApyData?.rewards_apy ?? 0) > 0,
-                    },
-                    {
-                        key: 'superlend_rewards_apy',
-                        key_name: 'Superlend USDC Reward',
-                        value: abbreviateNumberWithoutRounding(GLOBAL_BOOST_APY ?? 0, 0),
-                        logo: "/images/tokens/usdc.webp"
-                    },
-                    {
-                        key: 'farcaster_rewards_apy',
-                        key_name: 'Farcaster Yieldrop',
-                        value: abbreviateNumberWithoutRounding(Farcaster_BOOST_APY ?? 0, 0),
-                        logo: "/icons/sparkles.svg",
-                        show: hasFarcasterBoost,
-                    },
-                    {
-                        key: 'liquidity_land_boost_apy',
-                        key_name: 'Liquidity Land',
-                        value: abbreviateNumberWithoutRounding(LIQUIDITY_LAND_BOOST_APY ?? 0),
-                        logo: "/icons/liquidity-land.svg",
-                        show: hasLiquidityLandBoost,
-                    },
-                ],
-                apyCurrent: TOTAL_APY,
-                positionTypeParam: 'lend',
-                note: () => {
-                    return (
-                        <div className="pt-2">
-                            <CustomAlert
-                                variant="info"
-                                size="xs"
-                                description={
-                                    <BodyText level="body3" weight="normal" className="text-gray-800">
-                                        Note: Superlend Rewards are for a limited period. Please join our <Link href="https://discord.com/invite/superlend" target="_blank" className="text-secondary-500">Discord</Link> to get more info.
-                                    </BodyText>
-                                }
-                            />
-                        </div>
-                    )
-                }
-            }),
-            boostRewardsTooltipContent: () => {
-                return (
-                    <div>
-                        <BodyText
-                            level="body1"
-                            weight="medium"
-                            className="text-gray-800 flex items-center gap-1 mb-2"
-                        >
-                            <ImageWithDefault
-                                src={'/images/logos/superlend-rounded.svg'}
-                                alt="SuperFund logo"
-                                width={24}
-                                height={24}
-                                className="hover:-translate-y-1 transition-all duration-200"
-                            />
-                            Boosted USDC APY
-                        </BodyText>
-                        <BodyText level="body2" weight="normal" className="text-gray-600">
-                            Boosted USDC APY are additional rewards added to the APY by SuperFund.
-                        </BodyText>
-                    </div>
-                )
-            },
-            isLoading: isLoadingEffectiveApy,
-            error: isErrorEffectiveApy,
         },
         // {
         //     id: 'spot-apy',
@@ -338,13 +492,6 @@ export default function VaultStats() {
         //     isLoading: isLoading7DayAvg,
         //     error: error7DayAvg,
         // },
-        // {
-        //     id: 'tvl',
-        //     title: 'TVL',
-        //     value: '$' + Number(totalAssets).toFixed(4),
-        //     show: true,
-        //     error: !!errorVault,
-        // },
     ]
 
     if (isLoadingSection) {
@@ -380,14 +527,25 @@ export default function VaultStats() {
                         }}
                     >
                         {/* For My Position when wallet is not connected, show compact layout */}
-                        {(item.id === 'my-position' && !isWalletConnectedForUI) ? (
-                            <div className="flex flex-col gap-2 h-full justify-between">
-                                <BodyText level="body1" weight="normal" className="text-gray-600">
+                        {item.id === 'my-position' &&
+                        !isWalletConnectedForUI ? (
+                            <div className="flex flex-col gap-2 justify-between">
+                                <BodyText
+                                    level="body1"
+                                    weight="normal"
+                                    className="text-gray-600"
+                                >
                                     {item.title}
                                 </BodyText>
                                 <div className="flex items-center gap-2 mt-1">
                                     <div className="flex items-center gap-1">
-                                        <HeadingText level="h3" weight="medium" className="text-gray-600/40">$</HeadingText>
+                                        <HeadingText
+                                            level="h3"
+                                            weight="medium"
+                                            className="text-gray-600/40"
+                                        >
+                                            $
+                                        </HeadingText>
                                         <Lock className="h-5 w-5 text-gray-600/40" />
                                     </div>
                                     <div className="transform transition-all duration-200 hover:translate-y-[-2px]">
@@ -396,9 +554,9 @@ export default function VaultStats() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex flex-col gap-2 h-full justify-between">
+                            <div className="flex flex-col gap-2 justify-between">
                                 {/* Standard title section for all other cases */}
-                                {item.titleTooltipContent &&
+                                {item.titleTooltipContent && (
                                     <InfoTooltip
                                         label={
                                             <BodyText
@@ -413,8 +571,8 @@ export default function VaultStats() {
                                         }
                                         content={item.titleTooltipContent()}
                                     />
-                                }
-                                {!item.titleTooltipContent &&
+                                )}
+                                {!item.titleTooltipContent && (
                                     <BodyText
                                         level="body1"
                                         weight="normal"
@@ -422,47 +580,116 @@ export default function VaultStats() {
                                     >
                                         {item.title}
                                     </BodyText>
-                                }
-
-                                {/* My Position with wallet connected */}
-                                {(item.id === 'my-position' && isWalletConnectedForUI) && (
-                                    <HeadingText level="h3" weight="medium">
-                                        {!item.isLoading ? (
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex items-center">
-                                                    <AnimatedNumber value={item.value} />
-                                                </div>
-                                                <InfoTooltip
-                                                    label={
-                                                        <div className="group bg-secondary-100/20 rounded-2 h-6 w-6 p-1">
-                                                            <Maximize2 className="h-4 w-4 text-secondary-300" />
-                                                        </div>
-                                                    }
-                                                    content={item.positionDetailsTooltipContent && item.positionDetailsTooltipContent()}
-                                                />
-                                            </div>
-                                        ) : (
-                                            <Skeleton className="h-10 w-full rounded-4" />
-                                        )}
-                                    </HeadingText>
                                 )}
 
+                                {/* My Position with wallet connected */}
+                                {item.id === 'my-position' &&
+                                    isWalletConnectedForUI && (
+                                        <HeadingText level="h3" weight="medium">
+                                            {!item.isLoading ? (
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex items-center">
+                                                        {item.formatOptions
+                                                            ?.prefix && (
+                                                            <span className="font-medium text-gray-800 dark:text-gray-200">
+                                                                {
+                                                                    item
+                                                                        .formatOptions
+                                                                        ?.prefix
+                                                                }
+                                                            </span>
+                                                        )}
+                                                        <NumberTicker
+                                                            value={Number(
+                                                                item.value
+                                                            )}
+                                                            decimalPlaces={
+                                                                item
+                                                                    .formatOptions
+                                                                    ?.minimumFractionDigits
+                                                            }
+                                                            className="whitespace-pre-wrap font-medium text-gray-800 dark:text-gray-200"
+                                                        />
+                                                        {item.formatOptions
+                                                            ?.suffix && (
+                                                            <span className="font-medium text-gray-800 dark:text-gray-200">
+                                                                {
+                                                                    item
+                                                                        .formatOptions
+                                                                        ?.suffix
+                                                                }
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <InfoTooltip
+                                                        label={
+                                                            <div className="group bg-secondary-100/20 rounded-2 h-6 w-6 p-1">
+                                                                <Maximize2 className="h-4 w-4 text-secondary-300" />
+                                                            </div>
+                                                        }
+                                                        content={
+                                                            item.positionDetailsTooltipContent &&
+                                                            item.positionDetailsTooltipContent()
+                                                        }
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <Skeleton className="h-10 w-full rounded-4" />
+                                            )}
+                                        </HeadingText>
+                                    )}
+
                                 {/* APY with rewards */}
-                                {item.hasRewards &&
+                                {item.hasRewards && (
                                     <div className="flex items-center gap-2">
                                         <HeadingText level="h3" weight="medium">
-                                            {!item.isLoading &&
+                                            {!item.isLoading && (
                                                 <div className="flex items-center">
-                                                    <AnimatedNumber value={item.value} />
+                                                    {item.formatOptions
+                                                        ?.prefix && (
+                                                        <span className="font-medium text-gray-800 dark:text-gray-200">
+                                                            {
+                                                                item
+                                                                    .formatOptions
+                                                                    ?.prefix
+                                                            }
+                                                        </span>
+                                                    )}
+                                                    <NumberTicker
+                                                        value={Number(
+                                                            item.value
+                                                        )}
+                                                        decimalPlaces={
+                                                            item.formatOptions
+                                                                ?.minimumFractionDigits
+                                                        }
+                                                        className="whitespace-pre-wrap font-medium text-gray-800 dark:text-gray-200"
+                                                    />
+                                                    {item.formatOptions
+                                                        ?.suffix && (
+                                                        <span className="font-medium text-gray-800 dark:text-gray-200">
+                                                            {
+                                                                item
+                                                                    .formatOptions
+                                                                    ?.suffix
+                                                            }
+                                                        </span>
+                                                    )}
                                                 </div>
-                                            }
-                                            {item.isLoading &&
+                                            )}
+                                            {item.isLoading && (
                                                 <Skeleton className="h-7 w-full min-w-[60px] rounded-4 mt-1" />
-                                            }
+                                            )}
                                         </HeadingText>
                                         <InfoTooltip
                                             label={
-                                                <motion.svg width="22" height="22" viewBox="0 0 7 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <motion.svg
+                                                    width="22"
+                                                    height="22"
+                                                    viewBox="0 0 7 7"
+                                                    fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                >
                                                     <motion.path
                                                         variants={starVariants}
                                                         animate="first"
@@ -510,91 +737,94 @@ export default function VaultStats() {
                                             </>
                                         )} */}
                                     </div>
-                                }
+                                )}
+
+                                {/* TVL */}
+                                {item.id === 'tvl' && (
+                                    <HeadingText level="h3" weight="medium">
+                                        {item.isLoading && (
+                                            <Skeleton className="h-7 w-8 min-w-[60px] rounded-4 mt-1" />
+                                        )}
+                                        {!item.isLoading && (
+                                            <div className="flex items-center">
+                                                {item.formatOptions?.prefix && (
+                                                    <span className="font-medium text-gray-800 dark:text-gray-200">
+                                                        {
+                                                            item.formatOptions
+                                                                ?.prefix
+                                                        }
+                                                    </span>
+                                                )}
+                                                <NumberTicker
+                                                    value={Number(totalAssets)}
+                                                    decimalPlaces={
+                                                        item.formatOptions
+                                                            ?.minimumFractionDigits
+                                                    }
+                                                    className="whitespace-pre-wrap font-medium text-gray-800 dark:text-gray-200"
+                                                />
+                                                {item.formatOptions?.suffix && (
+                                                    <span className="font-medium text-gray-800 dark:text-gray-200">
+                                                        {
+                                                            item.formatOptions
+                                                                ?.suffix
+                                                        }
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </HeadingText>
+                                )}
 
                                 {/* Standard value display for non-special cases */}
-                                {!item.hasRewards && item.id !== 'my-position' &&
-                                    <HeadingText level="h3" weight="medium">
-                                        {!item.isLoading &&
-                                            <AnimatedNumber value={item.value} />
-                                        }
-                                        {item.isLoading &&
-                                            <Skeleton className="h-7 w-full min-w-[60px] rounded-4 mt-1" />
-                                        }
-                                    </HeadingText>
-                                }
+                                {!item.hasRewards &&
+                                    item.id !== 'my-position' &&
+                                    item.id !== 'tvl' && (
+                                        <HeadingText level="h3" weight="medium">
+                                            {!item.isLoading && (
+                                                <>
+                                                    {item.formatOptions
+                                                        ?.prefix && (
+                                                        <span className="font-medium text-gray-800 dark:text-gray-200">
+                                                            {
+                                                                item
+                                                                    .formatOptions
+                                                                    ?.prefix
+                                                            }
+                                                        </span>
+                                                    )}
+                                                    <NumberTicker
+                                                        value={Number(
+                                                            item.value
+                                                        )}
+                                                        decimalPlaces={
+                                                            item.formatOptions
+                                                                ?.minimumFractionDigits
+                                                        }
+                                                        className="whitespace-pre-wrap font-medium text-gray-800 dark:text-gray-200"
+                                                    />
+                                                    {item.formatOptions
+                                                        ?.suffix && (
+                                                        <span className="font-medium text-gray-800 dark:text-gray-200">
+                                                            {
+                                                                item
+                                                                    .formatOptions
+                                                                    ?.suffix
+                                                            }
+                                                        </span>
+                                                    )}
+                                                </>
+                                            )}
+                                            {item.isLoading && (
+                                                <Skeleton className="h-7 w-full min-w-[60px] rounded-4 mt-1" />
+                                            )}
+                                        </HeadingText>
+                                    )}
                             </div>
                         )}
                     </motion.div>
                 ))}
             </div>
-
-            {/* First row - only first item with larger font size */}
-            {/* <div className="flex justify-start ml-4">
-                {vaultStats.slice(0, 1).map((item, index) => (
-                    <motion.div
-                        key={index}
-                        className="block w-full"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{
-                            duration: 0.3,
-                            delay: index * 0.2,
-                            ease: 'easeOut',
-                        }}
-                    >
-                        {item.titleTooltipContent &&
-                            <InfoTooltip
-                                label={
-                                    <BodyText
-                                        level="body1"
-                                        weight="normal"
-                                        className="text-gray-600"
-                                    >
-                                        <TooltipText>
-                                            {item.title}
-                                        </TooltipText>
-                                    </BodyText>
-                                }
-                                content={item.titleTooltipContent}
-                            />
-                        }
-                        {!item.titleTooltipContent &&
-                            <BodyText
-                                level="body1"
-                                weight="normal"
-                                className="text-gray-600"
-                            >
-                                {item.title}
-                            </BodyText>
-                        }
-                        {isWalletConnected ? (
-                            <HeadingText level="h1" weight="medium">
-                                {!item.isLoading ? (
-                                    <AnimatedNumber value={item.value} />
-                                ) : (
-                                    <Skeleton className="h-10 w-full rounded-4" />
-                                )}
-                            </HeadingText>
-                        ) : (
-                            <div className="flex items-center gap-4">
-                                <InfoTooltip
-                                    label={
-                                        <div className="flex items-center gap-1">
-                                            <HeadingText level="h1" weight="medium" className="text-gray-600/40">$</HeadingText>
-                                            <Lock className="h-6 w-6 text-gray-600/40" />
-                                        </div>
-                                    }
-                                    content="Connect your wallet to view your position."
-                                />
-                                <div className="mt-1 transform transition-all duration-200 hover:translate-y-[-2px]">
-                                    <ConnectWalletButton />
-                                </div>
-                            </div>
-                        )}
-                    </motion.div>
-                ))}
-            </div> */}
         </section>
     )
 }
