@@ -2,6 +2,7 @@
 
 import CustomAlert from '@/components/alerts/CustomAlert'
 import { AnimatedNumber } from '@/components/animations/animated_number'
+import { ContinuouslyAnimatedNumber } from '@/components/animations/continuously-animated-number'
 import ConnectWalletButton from '@/components/ConnectWalletButton'
 import ImageWithDefault from '@/components/ImageWithDefault'
 import InfoTooltip from '@/components/tooltips/InfoTooltip'
@@ -151,7 +152,7 @@ export default function VaultStats() {
         {
             id: 'tvl',
             title: 'TVL',
-            value: '$' + Number(totalAssets).toFixed(4),
+            value: '$' + Number(totalAssets).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
             show: true,
             error: !!errorVault,
         },
@@ -380,14 +381,25 @@ export default function VaultStats() {
                         }}
                     >
                         {/* For My Position when wallet is not connected, show compact layout */}
-                        {(item.id === 'my-position' && !isWalletConnectedForUI) ? (
+                        {item.id === 'my-position' &&
+                        !isWalletConnectedForUI ? (
                             <div className="flex flex-col gap-2 justify-between">
-                                <BodyText level="body1" weight="normal" className="text-gray-600">
+                                <BodyText
+                                    level="body1"
+                                    weight="normal"
+                                    className="text-gray-600"
+                                >
                                     {item.title}
                                 </BodyText>
                                 <div className="flex items-center gap-2 mt-1">
                                     <div className="flex items-center gap-1">
-                                        <HeadingText level="h3" weight="medium" className="text-gray-600/40">$</HeadingText>
+                                        <HeadingText
+                                            level="h3"
+                                            weight="medium"
+                                            className="text-gray-600/40"
+                                        >
+                                            $
+                                        </HeadingText>
                                         <Lock className="h-5 w-5 text-gray-600/40" />
                                     </div>
                                     <div className="transform transition-all duration-200 hover:translate-y-[-2px]">
@@ -398,7 +410,7 @@ export default function VaultStats() {
                         ) : (
                             <div className="flex flex-col gap-2 justify-between">
                                 {/* Standard title section for all other cases */}
-                                {item.titleTooltipContent &&
+                                {item.titleTooltipContent && (
                                     <InfoTooltip
                                         label={
                                             <BodyText
@@ -413,8 +425,8 @@ export default function VaultStats() {
                                         }
                                         content={item.titleTooltipContent()}
                                     />
-                                }
-                                {!item.titleTooltipContent &&
+                                )}
+                                {!item.titleTooltipContent && (
                                     <BodyText
                                         level="body1"
                                         weight="normal"
@@ -422,47 +434,61 @@ export default function VaultStats() {
                                     >
                                         {item.title}
                                     </BodyText>
-                                }
-
-                                {/* My Position with wallet connected */}
-                                {(item.id === 'my-position' && isWalletConnectedForUI) && (
-                                    <HeadingText level="h3" weight="medium">
-                                        {!item.isLoading ? (
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex items-center">
-                                                    <AnimatedNumber value={item.value} />
-                                                </div>
-                                                <InfoTooltip
-                                                    label={
-                                                        <div className="group bg-secondary-100/20 rounded-2 h-6 w-6 p-1">
-                                                            <Maximize2 className="h-4 w-4 text-secondary-300" />
-                                                        </div>
-                                                    }
-                                                    content={item.positionDetailsTooltipContent && item.positionDetailsTooltipContent()}
-                                                />
-                                            </div>
-                                        ) : (
-                                            <Skeleton className="h-10 w-full rounded-4" />
-                                        )}
-                                    </HeadingText>
                                 )}
 
+                                {/* My Position with wallet connected */}
+                                {item.id === 'my-position' &&
+                                    isWalletConnectedForUI && (
+                                        <HeadingText level="h3" weight="medium">
+                                            {!item.isLoading ? (
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex items-center">
+                                                        <AnimatedNumber
+                                                            value={item.value}
+                                                        />
+                                                    </div>
+                                                    <InfoTooltip
+                                                        label={
+                                                            <div className="group bg-secondary-100/20 rounded-2 h-6 w-6 p-1">
+                                                                <Maximize2 className="h-4 w-4 text-secondary-300" />
+                                                            </div>
+                                                        }
+                                                        content={
+                                                            item.positionDetailsTooltipContent &&
+                                                            item.positionDetailsTooltipContent()
+                                                        }
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <Skeleton className="h-10 w-full rounded-4" />
+                                            )}
+                                        </HeadingText>
+                                    )}
+
                                 {/* APY with rewards */}
-                                {item.hasRewards &&
+                                {item.hasRewards && (
                                     <div className="flex items-center gap-2">
                                         <HeadingText level="h3" weight="medium">
-                                            {!item.isLoading &&
+                                            {!item.isLoading && (
                                                 <div className="flex items-center">
-                                                    <AnimatedNumber value={item.value} />
+                                                    <AnimatedNumber
+                                                        value={item.value}
+                                                    />
                                                 </div>
-                                            }
-                                            {item.isLoading &&
+                                            )}
+                                            {item.isLoading && (
                                                 <Skeleton className="h-7 w-full min-w-[60px] rounded-4 mt-1" />
-                                            }
+                                            )}
                                         </HeadingText>
                                         <InfoTooltip
                                             label={
-                                                <motion.svg width="22" height="22" viewBox="0 0 7 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <motion.svg
+                                                    width="22"
+                                                    height="22"
+                                                    viewBox="0 0 7 7"
+                                                    fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                >
                                                     <motion.path
                                                         variants={starVariants}
                                                         animate="first"
@@ -510,19 +536,40 @@ export default function VaultStats() {
                                             </>
                                         )} */}
                                     </div>
-                                }
+                                )}
+
+                                {/* TVL with continuous animation */}
+                                {item.id === 'tvl' && (
+                                    <HeadingText level="h3" weight="medium">
+                                        <ContinuouslyAnimatedNumber
+                                            targetValue={
+                                                Number(item.value) || 0
+                                            }
+                                            isLoading={item.isLoading}
+                                            prefix="$"
+                                            initialAnimationDuration={12000}
+                                            interimUpdateInterval={1000}
+                                            incrementAmount={1.0}
+                                            maxDeviationPercent={1.5}
+                                        />
+                                    </HeadingText>
+                                )}
 
                                 {/* Standard value display for non-special cases */}
-                                {!item.hasRewards && item.id !== 'my-position' &&
-                                    <HeadingText level="h3" weight="medium">
-                                        {!item.isLoading &&
-                                            <AnimatedNumber value={item.value} />
-                                        }
-                                        {item.isLoading &&
-                                            <Skeleton className="h-7 w-full min-w-[60px] rounded-4 mt-1" />
-                                        }
-                                    </HeadingText>
-                                }
+                                {!item.hasRewards &&
+                                    item.id !== 'my-position' &&
+                                    item.id !== 'tvl' && (
+                                        <HeadingText level="h3" weight="medium">
+                                            {!item.isLoading && (
+                                                <AnimatedNumber
+                                                    value={item.value}
+                                                />
+                                            )}
+                                            {item.isLoading && (
+                                                <Skeleton className="h-7 w-full min-w-[60px] rounded-4 mt-1" />
+                                            )}
+                                        </HeadingText>
+                                    )}
                             </div>
                         )}
                     </motion.div>
