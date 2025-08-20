@@ -51,7 +51,7 @@ export default function VaultStats() {
         chainId: selectedChain,
         userAddress: walletAddress
     })
-    // const { totalAssets, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
+    const { totalAssets, isLoading: isLoadingVault, error: errorVault } = useVaultHook()
     // const { boostApy: GLOBAL_BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
     const GLOBAL_BOOST_APY =
         boostRewardsData?.filter((item) => item.description?.includes('A global boost for all users') ?? false)
@@ -149,56 +149,11 @@ export default function VaultStats() {
 
     const vaultStats = [
         {
-            id: 'my-position',
-            title: 'My Position',
-            value: isWalletConnectedForUI ? `$${abbreviateNumberWithoutRounding(Number(userMaxWithdrawAmount))}` : '',
+            id: 'tvl',
+            title: 'TVL',
+            value: '$' + Number(totalAssets).toFixed(4),
             show: true,
-            isLoading: isWalletConnectedForUI && isLoadingUserMaxWithdrawAmount,
-            error: errorUserMaxWithdrawAmount,
-            positionDetailsTooltipContent: () => {
-                return (
-                    <div className="flex flex-col divide-y divide-gray-400">
-                        <BodyText
-                            level="body1"
-                            weight="medium"
-                            className="py-2 text-gray-800"
-                        >
-                            Position details
-                        </BodyText>
-                        {positionBreakdownList.map((item, index) => (
-                            <div
-                                key={item.id}
-                                className="flex items-center justify-between gap-[100px] py-2"
-                            >
-                                <div className="flex items-center gap-1">
-                                    <Label weight="medium" className="text-gray-800 shrink-0">
-                                        {item.label}
-                                    </Label>
-                                    {item.tooltipContent &&
-                                        <InfoTooltip
-                                            content={item.tooltipContent && item.tooltipContent()}
-                                        />}
-                                </div>
-                                <BodyText level="body3" weight="medium" className="text-gray-800 shrink-0">
-                                    {index > 0 ? '+' : ''}{' '}${item.value}
-                                </BodyText>
-                            </div>
-                        ))}
-                        <div
-                            className="flex items-center justify-between gap-[100px] py-2"
-                        >
-                            <div className="flex items-center gap-1">
-                                <Label weight="medium" className="text-gray-800">
-                                    Position
-                                </Label>
-                            </div>
-                            <BodyText level="body3" weight="medium" className="text-gray-800">
-                                ={' '}${abbreviateNumberWithoutRounding(Number(userMaxWithdrawAmount), 4)}
-                            </BodyText>
-                        </div>
-                    </div>
-                )
-            },
+            error: !!errorVault,
         },
         {
             id: 'effective-apy',
@@ -292,6 +247,58 @@ export default function VaultStats() {
             isLoading: isLoadingEffectiveApy,
             error: isErrorEffectiveApy,
         },
+        {
+            id: 'my-position',
+            title: 'My Position',
+            value: isWalletConnectedForUI ? `$${abbreviateNumberWithoutRounding(Number(userMaxWithdrawAmount))}` : '',
+            show: true,
+            isLoading: isWalletConnectedForUI && isLoadingUserMaxWithdrawAmount,
+            error: errorUserMaxWithdrawAmount,
+            positionDetailsTooltipContent: () => {
+                return (
+                    <div className="flex flex-col divide-y divide-gray-400">
+                        <BodyText
+                            level="body1"
+                            weight="medium"
+                            className="py-2 text-gray-800"
+                        >
+                            Position details
+                        </BodyText>
+                        {positionBreakdownList.map((item, index) => (
+                            <div
+                                key={item.id}
+                                className="flex items-center justify-between gap-[100px] py-2"
+                            >
+                                <div className="flex items-center gap-1">
+                                    <Label weight="medium" className="text-gray-800 shrink-0">
+                                        {item.label}
+                                    </Label>
+                                    {item.tooltipContent &&
+                                        <InfoTooltip
+                                            content={item.tooltipContent && item.tooltipContent()}
+                                        />}
+                                </div>
+                                <BodyText level="body3" weight="medium" className="text-gray-800 shrink-0">
+                                    {index > 0 ? '+' : ''}{' '}${item.value}
+                                </BodyText>
+                            </div>
+                        ))}
+                        <div
+                            className="flex items-center justify-between gap-[100px] py-2"
+                        >
+                            <div className="flex items-center gap-1">
+                                <Label weight="medium" className="text-gray-800">
+                                    Position
+                                </Label>
+                            </div>
+                            <BodyText level="body3" weight="medium" className="text-gray-800">
+                                ={' '}${abbreviateNumberWithoutRounding(Number(userMaxWithdrawAmount), 4)}
+                            </BodyText>
+                        </div>
+                    </div>
+                )
+            },
+        },
         // {
         //     id: 'spot-apy',
         //     title: 'Spot APY',
@@ -338,13 +345,6 @@ export default function VaultStats() {
         //     isLoading: isLoading7DayAvg,
         //     error: error7DayAvg,
         // },
-        // {
-        //     id: 'tvl',
-        //     title: 'TVL',
-        //     value: '$' + Number(totalAssets).toFixed(4),
-        //     show: true,
-        //     error: !!errorVault,
-        // },
     ]
 
     if (isLoadingSection) {
@@ -381,7 +381,7 @@ export default function VaultStats() {
                     >
                         {/* For My Position when wallet is not connected, show compact layout */}
                         {(item.id === 'my-position' && !isWalletConnectedForUI) ? (
-                            <div className="flex flex-col gap-2 h-full justify-between">
+                            <div className="flex flex-col gap-2 justify-between">
                                 <BodyText level="body1" weight="normal" className="text-gray-600">
                                     {item.title}
                                 </BodyText>
@@ -396,7 +396,7 @@ export default function VaultStats() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex flex-col gap-2 h-full justify-between">
+                            <div className="flex flex-col gap-2 justify-between">
                                 {/* Standard title section for all other cases */}
                                 {item.titleTooltipContent &&
                                     <InfoTooltip
