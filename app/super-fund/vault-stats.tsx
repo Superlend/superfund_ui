@@ -155,6 +155,7 @@ export default function VaultStats() {
             value: '$' + Number(totalAssets).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
             show: true,
             error: !!errorVault,
+            isLoading: isLoadingVault,
         },
         {
             id: 'effective-apy',
@@ -541,17 +542,22 @@ export default function VaultStats() {
                                 {/* TVL with continuous animation */}
                                 {item.id === 'tvl' && (
                                     <HeadingText level="h3" weight="medium">
-                                        <ContinuouslyAnimatedNumber
-                                            targetValue={
-                                                Number(item.value) || 0
-                                            }
-                                            isLoading={item.isLoading}
-                                            prefix="$"
-                                            initialAnimationDuration={12000}
-                                            interimUpdateInterval={1000}
-                                            incrementAmount={1.0}
-                                            maxDeviationPercent={1.5}
-                                        />
+                                        {item.isLoading && (
+                                            <Skeleton className="h-7 w-8 min-w-[60px] rounded-4 mt-1" />
+                                        )}
+                                        {!item.isLoading && (
+                                            <ContinuouslyAnimatedNumber
+                                                targetValue={
+                                                    Number(totalAssets)
+                                                }
+                                                isLoading={item.isLoading}
+                                                prefix="$"
+                                                initialAnimationDuration={12000}
+                                                interimUpdateInterval={1000}
+                                                incrementAmount={1.0}
+                                                maxDeviationPercent={1.5}
+                                            />
+                                        )}
                                     </HeadingText>
                                 )}
 
