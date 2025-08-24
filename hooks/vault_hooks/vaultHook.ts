@@ -40,7 +40,7 @@ const VAULT_ABI = parseAbi([
 const CHAIN_CONFIGS = {
     [ChainId.Base]: {
         chain: base,
-        rpcUrl: 'https://base.llamarpc.com',
+        rpcUrl: '/api/rpc/base',
         vaultAddress: VAULT_ADDRESS,
         fluidLendingResolverAddress: BASE_FLUID_LENDING_RESOLVER_ADDRESS,
     },
@@ -56,7 +56,7 @@ const CHAIN_CONFIGS = {
 const publicClients = {
     [ChainId.Base]: createPublicClient({
         chain: base,
-        transport: http('https://base.llamarpc.com'),
+        transport: http('/api/rpc/base'),
         batch: { multicall: true },
     }),
     [ChainId.Sonic]: createPublicClient({

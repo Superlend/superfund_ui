@@ -22,7 +22,7 @@ const USDC_ABI = parseAbi([
 const CHAIN_CONFIGS = {
     [ChainId.Base]: {
         chain: base,
-        rpcUrl: process.env.NEXT_PUBLIC_BASE_RPC_URL || '',
+        rpcUrl: '/api/rpc/base',
         vaultAddress: VAULT_ADDRESS,
         usdcAddress: USDC_ADDRESS,
     },
@@ -40,7 +40,7 @@ const CHAIN_CONFIGS = {
 const publicClients = {
     [ChainId.Base]: createPublicClient({
         chain: base,
-        transport: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || ''),
+        transport: http('/api/rpc/base'),
         batch: { multicall: true },
     }),
     [ChainId.Sonic]: createPublicClient({
@@ -95,12 +95,12 @@ export function useUserBalance(walletAddress: `0x${string}`) {
     const [shareTokenBalance, setShareTokenBalance] = useState<string>('0')
     const timeoutRef = useRef<NodeJS.Timeout | null>(null)
     const isMountedRef = useRef(true)
+    const { selectedChain: chainFromContext } = useChain()
 
     // Use a try-catch to handle the case when we're not in a ChainProvider
     let selectedChain: ChainId
     try {
         // Try to use the chain context
-        const { selectedChain: chainFromContext } = useChain()
         selectedChain = chainFromContext
     } catch (error) {
         // Default to Base chain if ChainProvider is not available
