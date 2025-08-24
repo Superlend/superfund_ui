@@ -11,7 +11,7 @@ import { useActiveAccount } from 'thirdweb/react'
 
 const publicClient = createPublicClient({
     chain: base,
-    transport: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || ''),
+    transport: http('/api/rpc/base'),
     batch: { multicall: true },
 })
 
