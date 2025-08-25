@@ -610,7 +610,35 @@ function PositionDetailsTabContentUI({
                                 }
                                 content={
                                     <div className="flex flex-col divide-y divide-gray-400">
-                                        <div className="flex items-center justify-between gap-2 pt-1 pb-3">
+                                        <div className="py-2">
+                                            <BodyText
+                                                level="body2"
+                                                weight="medium"
+                                                className="text-gray-800 mb-2"
+                                            >
+                                                Understanding Your Interest
+                                            </BodyText>
+                                            <ul className="list-none text-gray-600 gap-2 space-y-2">
+                                                <li className="text-sm text-gray-600">
+                                                    <span className="font-medium pr-1">
+                                                        Unrealized Interest
+                                                    </span>
+                                                    → Your share of vault&apos;s
+                                                    accrued interest that will
+                                                    be realized over the next 7
+                                                    days.
+                                                </li>
+                                                <li className="text-sm text-gray-600">
+                                                    <span className="font-medium pr-1">
+                                                        Realized Interest
+                                                    </span>
+                                                    → Interest that has already
+                                                    been released and is fully
+                                                    yours.
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-2 py-3">
                                             <BodyText
                                                 level="body2"
                                                 weight="normal"
@@ -654,30 +682,6 @@ function PositionDetailsTabContentUI({
                                                     )
                                                 )}
                                             </BodyText>
-                                        </div>
-                                        <div className="pb-2 pt-3">
-                                            <BodyText
-                                                level="body2"
-                                                weight="medium"
-                                                className="text-gray-800 mb-2 flex items-center gap-1"
-                                            >
-                                                <InfoIcon className="h-4 w-4 text-gray-600" />
-                                                Understanding Your Interest
-                                            </BodyText>
-                                            <ul className="list-disc list-inside text-gray-600 gap-2 space-y-2">
-                                                <li className="text-sm text-gray-600">
-                                                    Unrealized Interest → Your
-                                                    share of vault&apos;s
-                                                    accrued interest that will
-                                                    be realized over the next 7
-                                                    days.
-                                                </li>
-                                                <li className="text-sm text-gray-600">
-                                                    Realized Interest → Interest
-                                                    that has already been
-                                                    released and is fully yours.
-                                                </li>
-                                            </ul>
                                         </div>
                                         <div className="pb-2 pt-3">
                                             <CustomAlert
