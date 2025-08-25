@@ -281,10 +281,7 @@ export default function VaultStats() {
                     {
                         key: 'superlend_rewards_apy',
                         key_name: 'Superlend USDC Reward',
-                        value: abbreviateNumberWithoutRounding(
-                            GLOBAL_BOOST_APY ?? 0,
-                            0
-                        ),
+                        value: abbreviateNumberWithoutRounding(GLOBAL_BOOST_APY ?? 0),
                         logo: '/images/tokens/usdc.webp',
                     },
                     {
