@@ -207,7 +207,7 @@ export function BenchmarkYieldTable() {
                     value: apy,
                     protocolName: CHART_CONFIG[key as keyof typeof CHART_CONFIG].label,
                     color: CHART_CONFIG[key as keyof typeof CHART_CONFIG].color,
-                    logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/morpho-logo.svg'
+                    logo: 'https://superlend-public-assets.s3.ap-south-1.amazonaws.com/morpho-logo.svg'
                 };
             }
         });
@@ -289,7 +289,7 @@ export function BenchmarkYieldTable() {
             apy: aaveApy,
             totalEarned: calculateEarningsForCurrentPeriod(aaveApy),
             color: CHART_CONFIG.aave.color,
-            logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/aave.svg'
+            logo: 'https://superlend-public-assets.s3.ap-south-1.amazonaws.com/aave.svg'
         });
 
         // Base chain specific protocols
@@ -301,7 +301,7 @@ export function BenchmarkYieldTable() {
                 apy: fluidApy,
                 totalEarned: calculateEarningsForCurrentPeriod(fluidApy),
                 color: "#00C853", // Fluid color
-                logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/fluid_logo.png'
+                logo: 'https://superlend-public-assets.s3.ap-south-1.amazonaws.com/fluid_logo.png'
             });
 
             // Add Euler

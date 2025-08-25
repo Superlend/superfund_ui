@@ -322,7 +322,7 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
         // USDC logo for amount display
         const USDCIcon = (
             <Image
-                src="https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg"
+                src="https://superlend-public-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg"
                 alt="USDC"
                 width={14}
                 height={14}

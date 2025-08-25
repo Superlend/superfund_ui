@@ -10,13 +10,13 @@ import { base } from 'thirdweb/chains'
 export const CHAIN_DETAILS = {
     [ChainId.Base]: {
         name: 'Base',
-        logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/base.svg',
+        logo: 'https://superlend-public-assets.s3.ap-south-1.amazonaws.com/base.svg',
         contractAddress: '0x10076ed296571cE4Fde5b1FDF0eB9014a880e47B',
         explorerUrl: 'https://basescan.org/address/'
     },
     [ChainId.Sonic]: {
         name: 'Sonic',
-        logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/sonic.svg',
+        logo: 'https://superlend-public-assets.s3.ap-south-1.amazonaws.com/sonic.svg',
         contractAddress: '0x96328cd6fBCc3adC8bee58523Bbc67aBF38f8124',
         explorerUrl: 'https://sonicscan.org/address/'
     }

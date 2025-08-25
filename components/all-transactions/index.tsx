@@ -1018,7 +1018,7 @@ function TransactionItem({
   // USDC logo for amount display
   const USDCIcon = (
     <Image
-      src="https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg"
+      src="https://superlend-public-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg"
       alt="USDC"
       width={16}
       height={16}
@@ -1261,7 +1261,7 @@ function EmptyTransactionsState() {
       <div className="mb-8 text-muted-foreground">
         <div className="relative mx-auto mb-6 w-20 h-20 rounded-full bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center">
           <Image
-            src="https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg"
+            src="https://superlend-public-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg"
             alt="USDC"
             width={40}
             height={40}
