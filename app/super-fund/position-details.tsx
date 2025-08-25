@@ -54,6 +54,7 @@ import { TTxContext, useTxContext } from '@/context/super-vault-tx-provider'
 import { BigNumber } from 'ethers'
 import { formatUnits } from 'ethers/lib/utils'
 import { Button } from '@/components/ui/button'
+import CustomAlert from '@/components/alerts/CustomAlert'
 
 const variants = {
     hidden: { opacity: 0, y: 30 },
@@ -609,57 +610,54 @@ function PositionDetailsTabContentUI({
                                 }
                                 content={
                                     <div className="flex flex-col divide-y divide-gray-400">
-                                        <div className="flex flex-col gap-2 pt-2 pb-3">
-                                            <div className="flex items-center justify-between gap-2">
-                                                <BodyText
-                                                    level="body2"
-                                                    weight="normal"
-                                                    className="text-gray-700"
-                                                >
-                                                    Your Unrealized Interest:
-                                                </BodyText>
-                                                <BodyText
-                                                    level="body2"
-                                                    weight="medium"
-                                                    className="text-gray-800"
-                                                >
-                                                    $
-                                                    {abbreviateNumberWithoutRounding(
-                                                        convertNegativeToZero(
-                                                            Number(
-                                                                accruedInterest ??
-                                                                    0
-                                                            )
+                                        <div className="flex items-center justify-between gap-2 pt-1 pb-3">
+                                            <BodyText
+                                                level="body2"
+                                                weight="normal"
+                                                className="text-gray-700"
+                                            >
+                                                Your Unrealized Interest:
+                                            </BodyText>
+                                            <BodyText
+                                                level="body2"
+                                                weight="medium"
+                                                className="text-gray-800"
+                                            >
+                                                $
+                                                {abbreviateNumberWithoutRounding(
+                                                    convertNegativeToZero(
+                                                        Number(
+                                                            accruedInterest ?? 0
                                                         )
-                                                    )}
-                                                </BodyText>
-                                            </div>
-                                            <div className="flex items-center justify-between gap-2">
-                                                <BodyText
-                                                    level="body2"
-                                                    weight="normal"
-                                                    className="text-gray-700"
-                                                >
-                                                    Vault&apos;s Unrealized
-                                                    Interest:
-                                                </BodyText>
-                                                <BodyText
-                                                    level="body2"
-                                                    weight="medium"
-                                                    className="text-gray-800"
-                                                >
-                                                    $
-                                                    {abbreviateNumberWithoutRounding(
-                                                        convertNegativeToZero(
-                                                            unrealizedVaultInterest
-                                                        )
-                                                    )}
-                                                </BodyText>
-                                            </div>
+                                                    )
+                                                )}
+                                            </BodyText>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-2 py-3">
+                                            <BodyText
+                                                level="body2"
+                                                weight="normal"
+                                                className="text-gray-700"
+                                            >
+                                                Vault&apos;s Unrealized
+                                                Interest:
+                                            </BodyText>
+                                            <BodyText
+                                                level="body2"
+                                                weight="medium"
+                                                className="text-gray-800"
+                                            >
+                                                $
+                                                {abbreviateNumberWithoutRounding(
+                                                    convertNegativeToZero(
+                                                        unrealizedVaultInterest
+                                                    )
+                                                )}
+                                            </BodyText>
                                         </div>
                                         <div className="pb-2 pt-3">
                                             <BodyText
-                                                level="body1"
+                                                level="body2"
                                                 weight="medium"
                                                 className="text-gray-800 mb-2 flex items-center gap-1"
                                             >
@@ -680,6 +678,29 @@ function PositionDetailsTabContentUI({
                                                     released and is fully yours.
                                                 </li>
                                             </ul>
+                                        </div>
+                                        <div className="pb-2 pt-3">
+                                            <CustomAlert
+                                                variant="info"
+                                                size="xs"
+                                                hasPrefixIcon={false}
+                                                description={
+                                                    <BodyText
+                                                        level="body3"
+                                                        weight="normal"
+                                                        className="text-gray-800"
+                                                    >
+                                                        <span className="font-medium pr-1">
+                                                            Pro tip:
+                                                        </span>
+                                                        The longer you stay and
+                                                        the bigger your share,
+                                                        the more of the
+                                                        vault&apos;s unrealized
+                                                        interest you capture.
+                                                    </BodyText>
+                                                }
+                                            />
                                         </div>
                                     </div>
                                 }
