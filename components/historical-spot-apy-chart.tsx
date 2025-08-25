@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { AlignEndHorizontal, ChartLine } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Period } from '@/types/periodButtons'
-import { abbreviateNumber, extractTimeFromDate } from '@/lib/utils'
+import { abbreviateNumber, abbreviateNumberWithoutRounding, extractTimeFromDate } from '@/lib/utils'
 import { TimelineFilterTabs } from '@/components/tabs/timeline-filter-tabs'
 import { useApyData } from '@/context/apy-data-provider'
 import { getRewardsTooltipContent, getRewardsTooltipMobileContent } from '@/lib/ui/getRewardsTooltipContent'
@@ -56,18 +56,18 @@ function CustomTooltip({ active, payload, label }: any) {
                                 </BodyText>
                             </div>
                         ),
-                        baseRateFormatted: abbreviateNumber(Number(data?.spotApy)),
+                        baseRateFormatted: abbreviateNumberWithoutRounding(Number(data?.spotApy)),
                         baseRateLabel: "Base Rate (Day avg.)",
                         rewardsCustomList: [
                             {
                                 key: 'rewards_apy',
                                 key_name: 'Rewards APY',
-                                value: abbreviateNumber(Number(data?.rewardsApy)),
+                                value: abbreviateNumberWithoutRounding(Number(data?.rewardsApy)),
                             },
                             {
                                 key: 'superlend_rewards_apy',
                                 key_name: 'Superlend USDC Reward',
-                                value: abbreviateNumber(Number(data?.boostApy)),
+                                value: abbreviateNumberWithoutRounding(Number(data?.boostApy)),
                                 logo: "/images/tokens/usdc.webp"
                             },
                         ],
@@ -89,18 +89,18 @@ function CustomTooltip({ active, payload, label }: any) {
                                 </BodyText>
                             </div>
                         ),
-                        baseRateFormatted: abbreviateNumber(Number(data?.spotApy)),
+                        baseRateFormatted: abbreviateNumberWithoutRounding(Number(data?.spotApy)),
                         baseRateLabel: "Base Rate (Day avg.)",
                         rewardsCustomList: [
                             {
                                 key: 'rewards_apy',
                                 key_name: 'Rewards APY',
-                                value: abbreviateNumber(Number(data?.rewardsApy)),
+                                value: abbreviateNumberWithoutRounding(Number(data?.rewardsApy)),
                             },
                             {
                                 key: 'superlend_rewards_apy',
                                 key_name: 'Superlend USDC Reward',
-                                value: abbreviateNumber(Number(data?.boostApy)),
+                                value: abbreviateNumberWithoutRounding(Number(data?.boostApy)),
                                 logo: "/images/tokens/usdc.webp"
                             },
                         ],
