@@ -10,7 +10,7 @@ import { BodyText, HeadingText } from "@/components/ui/typography"
 import ConnectWalletButton from "@/components/ConnectWalletButton"
 import useGetDailyEarningsHistory from "@/hooks/useGetDailyEarningsHistory"
 import { VAULT_ADDRESS_MAP } from "@/lib/constants"
-import { abbreviateNumber, abbreviateNumberWithoutRounding, convertNegativeToZero, getStartTimestamp } from "@/lib/utils"
+import { abbreviateNumberWithoutRounding, convertNegativeToZero, getStartTimestamp } from "@/lib/utils"
 import { TAddress } from "@/types"
 import { useChain } from "@/context/chain-context"
 import { ChainId } from "@/types/chain"
@@ -445,13 +445,13 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                                     {
                                                         key: 'superlend_rewards_apy',
                                                         key_name: 'Superlend USDC Reward',
-                                                        value: abbreviateNumberWithoutRounding(GLOBAL_BOOST_APY ?? 0, 0),
+                                                        value: abbreviateNumberWithoutRounding(GLOBAL_BOOST_APY ?? 0),
                                                         logo: "/images/tokens/usdc.webp"
                                                     },
                                                     {
                                                         key: 'farcaster_rewards_apy',
                                                         key_name: 'Farcaster Yieldrop',
-                                                        value: abbreviateNumberWithoutRounding(Farcaster_BOOST_APY ?? 0, 0),
+                                                        value: abbreviateNumberWithoutRounding(Farcaster_BOOST_APY ?? 0),
                                                         logo: "/icons/sparkles.svg",
                                                         show: hasFarcasterBoost,
                                                     },
@@ -534,24 +534,24 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                         }
                                         content={
                                             getRewardsTooltipContent({
-                                                baseRateFormatted: abbreviateNumber(Number(effectiveApyData?.base_apy)),
+                                                baseRateFormatted: abbreviateNumberWithoutRounding(Number(effectiveApyData?.base_apy)),
                                                 rewardsCustomList: [
                                                     {
                                                         key: 'rewards_apy',
                                                         key_name: 'Rewards APY',
-                                                        value: abbreviateNumber(effectiveApyData?.rewards_apy),
+                                                        value: abbreviateNumberWithoutRounding(effectiveApyData?.rewards_apy),
                                                         show: Number(effectiveApyData?.rewards_apy ?? 0) > 0,
                                                     },
                                                     {
                                                         key: 'superlend_rewards_apy',
                                                         key_name: 'Superlend USDC Reward',
-                                                        value: abbreviateNumber(GLOBAL_BOOST_APY ?? 0, 0),
+                                                        value: abbreviateNumberWithoutRounding(GLOBAL_BOOST_APY ?? 0),
                                                         logo: "/images/tokens/usdc.webp"
                                                     },
                                                     {
                                                         key: 'farcaster_rewards_apy',
                                                         key_name: 'Farcaster Yieldrop',
-                                                        value: abbreviateNumber(Farcaster_BOOST_APY ?? 0, 0),
+                                                        value: abbreviateNumberWithoutRounding(Farcaster_BOOST_APY ?? 0),
                                                         logo: "/icons/sparkles.svg",
                                                         show: hasFarcasterBoost,
                                                     },
@@ -626,25 +626,25 @@ function PositionDetailsTabContentUI({ walletAddress, isConnecting }: { walletAd
                                         }
                                         content={
                                             getRewardsTooltipContent({
-                                                baseRateFormatted: abbreviateNumber(Number(days_7_avg_base_apy)),
+                                                baseRateFormatted: abbreviateNumberWithoutRounding(Number(days_7_avg_base_apy)),
                                                 baseRateLabel: 'Base APY Avg.',
                                                 rewardsCustomList: [
                                                     {
                                                         key: 'rewards_apy',
                                                         key_name: 'Rewards APY Avg.',
-                                                        value: abbreviateNumber(days_7_avg_rewards_apy),
+                                                        value: abbreviateNumberWithoutRounding(days_7_avg_rewards_apy),
                                                         show: Number(days_7_avg_rewards_apy ?? 0) > 0,
                                                     },
                                                     {
                                                         key: 'superlend_rewards_apy',
                                                         key_name: 'Superlend USDC Reward',
-                                                        value: abbreviateNumber(GLOBAL_BOOST_APY ?? 0, 0),
+                                                        value: abbreviateNumberWithoutRounding(GLOBAL_BOOST_APY ?? 0),
                                                         logo: "/images/tokens/usdc.webp"
                                                     },
                                                     {
                                                         key: 'farcaster_rewards_apy',
                                                         key_name: 'Farcaster Yieldrop',
-                                                        value: abbreviateNumber(Farcaster_BOOST_APY ?? 0, 0),
+                                                        value: abbreviateNumberWithoutRounding(Farcaster_BOOST_APY ?? 0),
                                                         logo: "/icons/sparkles.svg",
                                                         show: hasFarcasterBoost,
                                                     },
