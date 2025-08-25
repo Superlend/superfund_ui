@@ -1385,7 +1385,7 @@ function PositionDetailsTabContentUI({
                             <Card className="border border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100 hover:shadow-xl hover:scale-105 transition-all duration-300 hover:border-orange-300">
                                 <CardContent className="p-4">
                                     <motion.div
-                                        className="flex items-center gap-1 mb-2"
+                                        className="flex items-center gap-2 mb-2"
                                         initial={{ opacity: 0, x: -20 }}
                                         whileInView={{ opacity: 1, x: 0 }}
                                         viewport={{ once: true }}
@@ -1473,7 +1473,7 @@ function PositionDetailsTabContentUI({
                             <Card className="border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 hover:shadow-xl hover:scale-105 transition-all duration-300 hover:border-purple-300">
                                 <CardContent className="p-4">
                                     <motion.div
-                                        className="flex items-center gap-1 mb-2"
+                                        className="flex items-center gap-2 mb-2"
                                         initial={{ opacity: 0, x: -20 }}
                                         whileInView={{ opacity: 1, x: 0 }}
                                         viewport={{ once: true }}
@@ -1577,7 +1577,7 @@ function PositionDetailsTabContentUI({
                             <Card className="border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 hover:shadow-xl hover:scale-105 transition-all duration-300 hover:border-blue-300">
                                 <CardContent className="p-4">
                                     <motion.div
-                                        className="flex items-center gap-1 mb-2"
+                                        className="flex items-center gap-2 mb-2"
                                         initial={{ opacity: 0, x: -20 }}
                                         whileInView={{ opacity: 1, x: 0 }}
                                         viewport={{ once: true }}
