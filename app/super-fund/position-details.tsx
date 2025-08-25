@@ -33,6 +33,10 @@ import {
     Trophy,
     Activity,
     CircleHelp,
+    Percent,
+    Dot,
+    ArrowDownToLine,
+    InfoIcon,
 } from 'lucide-react'
 import HistoricalSpotApyChart from '@/components/historical-spot-apy-chart'
 import TooltipText from '@/components/tooltips/TooltipText'
@@ -49,6 +53,7 @@ import { useGetLiquidityLandUsers } from '@/hooks/useGetLiquidityLandUsers'
 import { TTxContext, useTxContext } from '@/context/super-vault-tx-provider'
 import { BigNumber } from 'ethers'
 import { formatUnits } from 'ethers/lib/utils'
+import { Button } from '@/components/ui/button'
 
 const variants = {
     hidden: { opacity: 0, y: 30 },
@@ -315,7 +320,7 @@ function PositionDetailsTabContentUI({
         return Number(formatUnits(result, USDC_DECIMALS))
     }, [rewards, totalSupply, shareTokenBalanceRaw])
 
-    console.log('accruedInterest', accruedInterest) // TODO: shreyash, add to the UI
+    const unrealizedVaultInterest = Number(formatUnits(rewards, USDC_DECIMALS))
 
     useEffect(() => {
         if (depositTxCompleted || withdrawTxCompleted) {
@@ -450,7 +455,18 @@ function PositionDetailsTabContentUI({
                                 weight="medium"
                                 className="text-gray-600"
                             >
-                                Interest Earned
+                                Realized Interest
+                            </BodyText>
+                            <Skeleton className="h-10 w-16 rounded-4" />
+                        </div>
+                        <div className="w-[1.5px] h-4 bg-secondary-100/50 rounded-full m-auto"></div>
+                        <div className="flex flex-col items-start w-fit gap-1 m-auto">
+                            <BodyText
+                                level="body2"
+                                weight="medium"
+                                className="text-gray-600"
+                            >
+                                Unrealized Interest
                             </BodyText>
                             <Skeleton className="h-10 w-16 rounded-4" />
                         </div>
@@ -496,81 +512,199 @@ function PositionDetailsTabContentUI({
             className="flex flex-col gap-[40px]"
         >
             <Card>
-                <CardContent className="p-4 max-md:px-2 grid grid-cols-3 place-content-center gap-4">
-                    <div className="flex flex-col items-start w-fit gap-1 m-auto">
-                        <BodyText
-                            level="body2"
+                <CardContent className="p-6">
+                    <div className="flex items-center gap-2 mb-6">
+                        <div className="relative p-2 bg-gradient-to-br from-green-100 to-green-200 rounded-3 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110">
+                            <Percent className="h-5 w-5 text-green-600 drop-shadow-sm" />
+                        </div>
+                        <HeadingText
+                            level="h4"
                             weight="medium"
-                            className="text-gray-600"
+                            className="text-gray-800"
                         >
-                            Capital
-                        </BodyText>
-                        {!isLoadingPositionDetails && (
-                            <HeadingText
-                                level="h3"
-                                weight="medium"
-                                className="text-gray-800"
-                            >
-                                $
-                                {abbreviateNumberWithoutRounding(
-                                    convertNegativeToZero(Number(capital ?? 0))
-                                )}
-                            </HeadingText>
-                        )}
-                        {isLoadingPositionDetails && (
-                            <Skeleton className="h-10 w-16 rounded-4" />
-                        )}
+                            Your Position
+                        </HeadingText>
                     </div>
-                    <div className="w-[1.5px] h-4 bg-secondary-100/50 rounded-full m-auto"></div>
-                    <div className="flex flex-col items-start w-fit gap-1 m-auto">
-                        <BodyText
-                            level="body2"
-                            weight="medium"
-                            className="text-gray-600"
-                        >
-                            Interest Earned
-                        </BodyText>
-                        {!isLoadingPositionDetails && (
-                            <HeadingText
-                                level="h3"
+                    <div className="grid sm:grid-cols-3 max-md:gap-4">
+                        <div className="flex flex-col items-start w-fit gap-1">
+                            <BodyText
+                                level="body2"
                                 weight="medium"
-                                className="text-gray-800 flex items-center gap-1"
+                                className="text-gray-600"
                             >
-                                $
-                                {abbreviateNumberWithoutRounding(
-                                    convertNegativeToZero(
-                                        Number(totalInterestEarned ?? 0)
-                                    )
-                                )}
-                                <InfoTooltip
-                                    content={
-                                        <BodyText
-                                            level="body2"
-                                            weight="normal"
-                                            className="text-gray-600"
-                                        >
-                                            Total interest earned since your
-                                            first deposit.
-                                        </BodyText>
-                                    }
-                                />
-                            </HeadingText>
-                        )}
-                        {isLoadingPositionDetails && (
-                            <Skeleton className="h-10 w-16 rounded-4" />
-                        )}
+                                Capital
+                            </BodyText>
+                            {!isLoadingPositionDetails && (
+                                <HeadingText
+                                    level="h3"
+                                    weight="medium"
+                                    className="text-gray-800"
+                                >
+                                    $
+                                    {abbreviateNumberWithoutRounding(
+                                        convertNegativeToZero(
+                                            Number(capital ?? 0)
+                                        )
+                                    )}
+                                </HeadingText>
+                            )}
+                            {isLoadingPositionDetails && (
+                                <Skeleton className="h-10 w-16 rounded-4" />
+                            )}
+                        </div>
+                        <div className="flex flex-col items-start w-fit gap-1">
+                            <InfoTooltip
+                                label={
+                                    <BodyText
+                                        level="body2"
+                                        weight="medium"
+                                        className="text-gray-600"
+                                    >
+                                        <TooltipText>
+                                            Realized Interest
+                                        </TooltipText>
+                                    </BodyText>
+                                }
+                                content={
+                                    <BodyText
+                                        level="body2"
+                                        weight="normal"
+                                        className="text-gray-600"
+                                    >
+                                        Total interest earned since your first
+                                        deposit.
+                                    </BodyText>
+                                }
+                            />
+                            {!isLoadingPositionDetails && (
+                                <HeadingText
+                                    level="h3"
+                                    weight="medium"
+                                    className="text-gray-800 flex items-center gap-1"
+                                >
+                                    $
+                                    {abbreviateNumberWithoutRounding(
+                                        convertNegativeToZero(
+                                            Number(totalInterestEarned ?? 0)
+                                        )
+                                    )}
+                                </HeadingText>
+                            )}
+                            {isLoadingPositionDetails && (
+                                <Skeleton className="h-10 w-16 rounded-4" />
+                            )}
+                        </div>
+                        <div className="flex flex-col items-start w-fit gap-1">
+                            <InfoTooltip
+                                label={
+                                    <BodyText
+                                        level="body2"
+                                        weight="medium"
+                                        className="text-gray-600"
+                                    >
+                                        <TooltipText>
+                                            Unrealized Interest
+                                        </TooltipText>
+                                    </BodyText>
+                                }
+                                content={
+                                    <div className="flex flex-col divide-y divide-gray-400">
+                                        <div className="flex flex-col gap-2 pt-2 pb-3">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <BodyText
+                                                    level="body2"
+                                                    weight="normal"
+                                                    className="text-gray-700"
+                                                >
+                                                    Your Unrealized Interest:
+                                                </BodyText>
+                                                <BodyText
+                                                    level="body2"
+                                                    weight="medium"
+                                                    className="text-gray-800"
+                                                >
+                                                    $
+                                                    {abbreviateNumberWithoutRounding(
+                                                        convertNegativeToZero(
+                                                            Number(
+                                                                accruedInterest ??
+                                                                    0
+                                                            )
+                                                        )
+                                                    )}
+                                                </BodyText>
+                                            </div>
+                                            <div className="flex items-center justify-between gap-2">
+                                                <BodyText
+                                                    level="body2"
+                                                    weight="normal"
+                                                    className="text-gray-700"
+                                                >
+                                                    Vault&apos;s Unrealized
+                                                    Interest:
+                                                </BodyText>
+                                                <BodyText
+                                                    level="body2"
+                                                    weight="medium"
+                                                    className="text-gray-800"
+                                                >
+                                                    $
+                                                    {abbreviateNumberWithoutRounding(
+                                                        convertNegativeToZero(
+                                                            unrealizedVaultInterest
+                                                        )
+                                                    )}
+                                                </BodyText>
+                                            </div>
+                                        </div>
+                                        <div className="pb-2 pt-3">
+                                            <BodyText
+                                                level="body1"
+                                                weight="medium"
+                                                className="text-gray-800 mb-2 flex items-center gap-1"
+                                            >
+                                                <InfoIcon className="h-4 w-4 text-gray-600" />
+                                                Understanding Your Interest
+                                            </BodyText>
+                                            <ul className="list-disc list-inside text-gray-600 gap-2 space-y-2">
+                                                <li className="text-sm text-gray-600">
+                                                    Unrealized Interest → Your
+                                                    share of vault&apos;s
+                                                    accrued interest that will
+                                                    be realized over the next 7
+                                                    days.
+                                                </li>
+                                                <li className="text-sm text-gray-600">
+                                                    Realized Interest → Interest
+                                                    that has already been
+                                                    released and is fully yours.
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                }
+                            />
+                            {!isLoadingPositionDetails && (
+                                <HeadingText
+                                    level="h3"
+                                    weight="medium"
+                                    className="text-gray-800 flex items-center gap-1"
+                                >
+                                    $
+                                    {abbreviateNumberWithoutRounding(
+                                        convertNegativeToZero(
+                                            Number(accruedInterest ?? 0)
+                                        )
+                                    )}
+                                </HeadingText>
+                            )}
+                            {isLoadingPositionDetails && (
+                                <Skeleton className="h-10 w-16 rounded-4" />
+                            )}
+                        </div>
                     </div>
                 </CardContent>
             </Card>
-            {selectedChain !== ChainId.Sonic && (
-                <ClaimRewards
-                    noDataUI={
-                        <NoActivePositionUI
-                            description={`You have no rewards to claim`}
-                        />
-                    }
-                />
-            )}
 
             {/* Section 1: Vault Specific Fields */}
             <Card>
@@ -584,12 +718,12 @@ function PositionDetailsTabContentUI({
                             weight="medium"
                             className="text-gray-800"
                         >
-                            Vault Performance Metrics
+                            Vault Performance
                         </HeadingText>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Spot APY */}
-                        <motion.div
+                        {/* <motion.div
                             className="flex flex-col gap-2 p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 shadow-md hover:shadow-lg transition-all duration-300"
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
@@ -726,16 +860,15 @@ function PositionDetailsTabContentUI({
                             {(isLoadingSpotApy || errorSpotApy) && (
                                 <Skeleton className="h-10 w-20 rounded-4" />
                             )}
-                        </motion.div>
+                        </motion.div> */}
 
                         {/* Vault APY */}
                         <motion.div
-                            className="flex flex-col gap-2 p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 shadow-md hover:shadow-lg transition-all duration-300"
+                            className="flex flex-col gap-2"
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true, margin: '-50px' }}
                             transition={{ duration: 0.5, delay: 0.2 }}
-                            whileHover={{ scale: 1.02, translateY: -2 }}
                         >
                             <InfoTooltip
                                 label={
@@ -865,12 +998,11 @@ function PositionDetailsTabContentUI({
 
                         {/* 7-Day Avg Spot APY */}
                         <motion.div
-                            className="flex flex-col gap-2 p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 shadow-md hover:shadow-lg transition-all duration-300"
+                            className="flex flex-col gap-2"
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true, margin: '-50px' }}
                             transition={{ duration: 0.5, delay: 0.3 }}
-                            whileHover={{ scale: 1.02, translateY: -2 }}
                         >
                             <InfoTooltip
                                 label={
@@ -1009,8 +1141,18 @@ function PositionDetailsTabContentUI({
                 </CardContent>
             </Card>
 
+            {selectedChain !== ChainId.Sonic && (
+                <ClaimRewards
+                    noDataUI={
+                        <NoActivePositionUI
+                            description={`You have no rewards to claim`}
+                        />
+                    }
+                />
+            )}
+
             {/* Section 3: Historical Spot APY Chart */}
-            <HistoricalSpotApyChart
+            {/* <HistoricalSpotApyChart
                 selectedRange={selectedRangeForHistoricalSpotApy}
                 setSelectedRange={setSelectedRangeForHistoricalSpotApy}
                 historicalData={historicalSpotApyData || []}
@@ -1021,7 +1163,7 @@ function PositionDetailsTabContentUI({
                         description={`No historical APY data available for the selected period`}
                     />
                 }
-            />
+            /> */}
 
             {/* Section 4: APY Journey Timeline */}
             {/* 
@@ -1157,7 +1299,29 @@ function PositionDetailsTabContentUI({
                 </CardContent>
             </Card> */}
 
-            {/* Section 5: Information Cards */}
+            <DailyEarningsHistoryChart
+                selectedRange={selectedRangeForDailyEarningsHistory}
+                setSelectedRange={setSelectedRangeForDailyEarningsHistory}
+                dailyEarningsHistoryData={dailyEarningsHistoryData || []}
+                isLoadingDailyEarningsHistory={isLoadingDailyEarningsHistory}
+                isErrorDailyEarningsHistory={isErrorDailyEarningsHistory}
+                earningsSuffixText={earningsSuffixText}
+                noDataUI={
+                    <NoActivePositionUI
+                        description={`You have no interest earnings ${earningsSuffixText[selectedRangeForDailyEarningsHistory]}`}
+                    />
+                }
+            />
+            {/* <DepositHistoryChart
+                selectedRange={Period.oneMonth}
+                handleRangeChange={() => { }}
+                selectedFilter={Period.oneMonth}
+                handleFilterChange={() => { }}
+                chartData={[]}
+                disableCategoryFilters={[]}
+            /> */}
+
+            {/* Earn more info cards section */}
             <Card>
                 <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-6">
@@ -1171,7 +1335,7 @@ function PositionDetailsTabContentUI({
                                     weight="medium"
                                     className="text-gray-800"
                                 >
-                                    Long-term Investment Benefits
+                                    Here&apos;s How To Earn More
                                 </HeadingText>
                                 <InfoTooltip
                                     isResponsive={false}
@@ -1187,7 +1351,6 @@ function PositionDetailsTabContentUI({
                     <div
                         className={`${infoCardsLayout === 'grid' ? 'grid grid-cols-1 gap-4' : 'space-y-4'}`}
                     >
-                        {/* Fair Share Adjustment Card */}
                         <motion.div
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
@@ -1214,17 +1377,32 @@ function PositionDetailsTabContentUI({
                                             weight="medium"
                                             className="text-gray-800"
                                         >
-                                            Fair Share Adjustment
+                                            Fair Share
                                         </HeadingText>
                                         {/* <InfoTooltip
                                             content={
                                                 <div className="space-y-2">
-                                                    <BodyText level="body2" weight="normal" className="text-gray-600">
-                                                        Yield is shared fairly as users enter the vault. This can briefly lower your returns — but staying longer helps balance things out.
+                                                    <BodyText
+                                                        level="body2"
+                                                        weight="normal"
+                                                        className="text-gray-600"
+                                                    >
+                                                        Yield is shared fairly
+                                                        as users enter the
+                                                        vault. This can briefly
+                                                        lower your returns — but
+                                                        staying longer helps
+                                                        balance things out.
                                                     </BodyText>
-                                                    <BodyText level="body3" weight="normal" className="text-gray-500">
+                                                    <BodyText
+                                                        level="body3"
+                                                        weight="normal"
+                                                        className="text-gray-500"
+                                                    >
                                                         <a
-                                                            href={UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL}
+                                                            href={
+                                                                UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL
+                                                            }
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="text-blue-600 hover:underline"
@@ -1250,17 +1428,17 @@ function PositionDetailsTabContentUI({
                                             weight="normal"
                                             className="text-gray-600"
                                         >
-                                            Yield is shared fairly as users
-                                            enter the vault. This can briefly
-                                            lower your returns but staying
-                                            longer helps balance things out.
+                                            Earnings are released gradually to
+                                            keep things fair. When new users
+                                            enter, your unrealized interest
+                                            might dip slightly but balances out
+                                            over time.
                                         </BodyText>
                                     </motion.div>
                                 </CardContent>
                             </Card>
                         </motion.div>
 
-                        {/* Sweet Spot Card */}
                         <motion.div
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
@@ -1287,7 +1465,7 @@ function PositionDetailsTabContentUI({
                                             weight="medium"
                                             className="text-gray-800"
                                         >
-                                            Sweet Spot
+                                            Stay longer
                                         </HeadingText>
                                     </motion.div>
                                     <motion.div
@@ -1304,15 +1482,67 @@ function PositionDetailsTabContentUI({
                                             weight="normal"
                                             className="text-gray-600"
                                         >
-                                            3+ months with minimal withdrawals
-                                            maximizes your returns.
+                                            The longer you stay, the more of
+                                            your unrealized interest is released
+                                            as realized interest.
                                         </BodyText>
                                     </motion.div>
                                 </CardContent>
                             </Card>
                         </motion.div>
 
-                        {/* Loyalty Advantage Card */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: '-50px' }}
+                            transition={{ duration: 0.5, delay: 0.3 }}
+                        >
+                            <Card className="border border-green-200 bg-gradient-to-br from-green-50 to-green-100 hover:shadow-xl hover:scale-105 transition-all duration-300 hover:border-green-300">
+                                <CardContent className="p-4">
+                                    <motion.div
+                                        className="flex items-center gap-2 mb-2"
+                                        initial={{ opacity: 0, x: -20 }}
+                                        whileInView={{ opacity: 1, x: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{
+                                            duration: 0.4,
+                                            delay: 0.5,
+                                        }}
+                                    >
+                                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-green-200 to-green-300 rounded-3 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 hover:-translate-y-1">
+                                            <ArrowDownToLine className="h-5 w-5 text-green-700 drop-shadow-sm" />
+                                        </div>
+                                        <HeadingText
+                                            level="h5"
+                                            weight="medium"
+                                            className="text-gray-800"
+                                        >
+                                            Deposit more
+                                        </HeadingText>
+                                    </motion.div>
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        whileInView={{ opacity: 1 }}
+                                        viewport={{ once: true }}
+                                        transition={{
+                                            duration: 0.5,
+                                            delay: 0.7,
+                                        }}
+                                    >
+                                        <BodyText
+                                            level="body2"
+                                            weight="normal"
+                                            className="text-gray-600"
+                                        >
+                                            Increasing your share of the vault
+                                            can give your unrealized interest a
+                                            quick boost.
+                                        </BodyText>
+                                    </motion.div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+
                         <motion.div
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
@@ -1339,7 +1569,7 @@ function PositionDetailsTabContentUI({
                                             weight="medium"
                                             className="text-gray-800"
                                         >
-                                            Loyalty Advantage
+                                            Loyalty pays
                                         </HeadingText>
                                     </motion.div>
                                     <motion.div
@@ -1356,8 +1586,9 @@ function PositionDetailsTabContentUI({
                                             weight="normal"
                                             className="text-gray-600"
                                         >
-                                            When others early-exit, you earn
-                                            their yield via redistribution.
+                                            When others exit early, their
+                                            unrealized interest is
+                                            redistributed, giving you a bonus!
                                         </BodyText>
                                     </motion.div>
                                 </CardContent>
@@ -1366,28 +1597,6 @@ function PositionDetailsTabContentUI({
                     </div>
                 </CardContent>
             </Card>
-
-            <DailyEarningsHistoryChart
-                selectedRange={selectedRangeForDailyEarningsHistory}
-                setSelectedRange={setSelectedRangeForDailyEarningsHistory}
-                dailyEarningsHistoryData={dailyEarningsHistoryData || []}
-                isLoadingDailyEarningsHistory={isLoadingDailyEarningsHistory}
-                isErrorDailyEarningsHistory={isErrorDailyEarningsHistory}
-                earningsSuffixText={earningsSuffixText}
-                noDataUI={
-                    <NoActivePositionUI
-                        description={`You have no interest earnings ${earningsSuffixText[selectedRangeForDailyEarningsHistory]}`}
-                    />
-                }
-            />
-            {/* <DepositHistoryChart
-                selectedRange={Period.oneMonth}
-                handleRangeChange={() => { }}
-                selectedFilter={Period.oneMonth}
-                handleFilterChange={() => { }}
-                chartData={[]}
-                disableCategoryFilters={[]}
-            /> */}
         </motion.div>
     )
 }

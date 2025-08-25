@@ -484,7 +484,7 @@ const FLUID_ASSET = {
     name: 'Fluid',
     address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
     decimals: 6,
-    logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/fluid_logo.png',
+    logo: 'https://superlend-public-assets.s3.ap-south-1.amazonaws.com/fluid_logo.png',
 }
 
 const MORPHO_ASSET = {

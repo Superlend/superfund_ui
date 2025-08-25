@@ -245,7 +245,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                     {!isDesktop &&
                         <div className="flex flex-col gap-4">
                             <DepositAndWithdrawAssets />
-                            {(isWalletConnected && !!Number(userMaxWithdrawAmount)) && <YourApiJourney />}
+                            {/* {(isWalletConnected && !!Number(userMaxWithdrawAmount)) && <YourApiJourney />} */}
                             {isWalletConnected && (
                                 <TransactionHistory
                                     protocolIdentifier={getProtocolIdentifier(
@@ -280,7 +280,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                             <ScrollArea className="h-full" ref={scrollAreaRef}>
                                 <div className="flex flex-col gap-2 pr-4">
                                     <DepositAndWithdrawAssets />
-                                    {(isWalletConnected && !!Number(userMaxWithdrawAmount)) && <YourApiJourney />}
+                                    {/* {(isWalletConnected && !!Number(userMaxWithdrawAmount)) && <YourApiJourney />} */}
                                     {isWalletConnected && (
                                         <TransactionHistory
                                             protocolIdentifier={getProtocolIdentifier(
