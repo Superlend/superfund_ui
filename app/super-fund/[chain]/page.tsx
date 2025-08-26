@@ -49,13 +49,13 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
         canScrollDown: false,
     })
     const { width } = useDimensions()
-    const isDesktop = width > 1024
+    const isDesktop = width >= 1024
     const { logEvent } = useAnalytics()
     // const { initLoginToFrame, loginToFrame } = useLoginToFrame()
     // const { ready, authenticated } = usePrivy()
-    const { userMaxWithdrawAmount, isLoading: isLoadingUserMaxWithdrawAmount, error: errorUserMaxWithdrawAmount } = useUserBalance(
-        walletAddress as `0x${string}`
-    )
+    // const { userMaxWithdrawAmount, isLoading: isLoadingUserMaxWithdrawAmount, error: errorUserMaxWithdrawAmount } = useUserBalance(
+    //     walletAddress as `0x${string}`
+    // )
 
     // Log user in to Farcaster Frame
     // useEffect(() => {

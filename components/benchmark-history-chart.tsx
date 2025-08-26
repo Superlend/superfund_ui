@@ -65,9 +65,17 @@ export function BenchmarkHistoryChart() {
     const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy, boostApyStartDate } = useApyData()
 
     // Get Superfund data
-    const { historicalData: superfundData, isLoading: superfundLoading } = useHistoricalData({
+    // const { historicalData: superfundData, isLoading: superfundLoading } = useHistoricalData({
+    //     period: apiPeriod === 'YEAR' ? Period.oneYear : apiPeriod as Period,
+    //     chain_id: selectedChain
+    // })
+    const {
+        historicalData: superfundData,
+        isLoading: superfundLoading,
+        error: superfundError,
+    } = useHistoricalData({
         period: apiPeriod === 'YEAR' ? Period.oneYear : apiPeriod as Period,
-        chain_id: selectedChain
+        chain_id: selectedChain,
     })
 
     // Get Aave reward APY
@@ -160,8 +168,8 @@ export function BenchmarkHistoryChart() {
         const superfundMap = new Map<number, number>();
         if (superfundData && Array.isArray(superfundData)) {
             superfundData.forEach((item: any) => {
-                if (item && item.timestamp && item.totalApy) {
-                    superfundMap.set(item.timestamp, item.totalApy);
+                if (item && item.timestamp && item.totalApy && item.rewardsApy) {
+                    superfundMap.set(item.timestamp, Number(item.spotApy ?? 0) + Number(item.rewardsApy ?? 0));
                 }
             });
         }
@@ -525,8 +533,7 @@ export function BenchmarkHistoryChart() {
             // Check if the date is on or after boost APY start date
             const shouldAddBoost = date.getTime() >= boostApyStartDate;
 
-            const superfundValue = item.superfund
-            const superfundRewardValue = (shouldAddBoost && (item.superfund != null)) ? (item.superfund + (BOOST_APY ?? 0)) : item.superfund;
+            const superfundValue = Number(item.superfund) + (shouldAddBoost ? Number(BOOST_APY ?? 0) : 0);
 
             const formattedItem: TFormattedBenchmarkDataPoint = {
                 rawTimestamp: item.timestamp,
@@ -536,11 +543,9 @@ export function BenchmarkHistoryChart() {
                 timestamp: `${formattedDate} ${time}`,
                 timeValue: time,
                 superfund: superfundValue ?? null,
-                superfundReward: superfundRewardValue ?? null,
                 aave: selectedChain === ChainId.Sonic ? ((item.aave ?? 0) + aaveRewardApy) : (item.aave ?? null),
                 isAaveApproximated: item.isAaveApproximated || false,
                 superfundDisplay: abbreviateNumber(superfundValue ?? 0),
-                superfundRewardDisplay: abbreviateNumber(superfundRewardValue ?? 0),
                 aaveDisplay: abbreviateNumber(selectedChain === ChainId.Sonic ? ((item.aave ?? 0) + aaveRewardApy) : (item.aave ?? 0)),
                 fluid: item.fluid ?? null,
                 isFluidApproximated: item.isFluidApproximated || false,
@@ -601,7 +606,7 @@ export function BenchmarkHistoryChart() {
 
             return formattedItem;
         }).sort((a: TFormattedBenchmarkDataPoint, b: TFormattedBenchmarkDataPoint) => a.rawTimestamp - b.rawTimestamp);
-    }, [historicalData, aaveRewardApy, selectedChain, boostApyStartDate, BOOST_APY]);
+    }, [historicalData, aaveRewardApy, selectedChain]);
 
     const { minValue, maxValue, valueRange } = useMemo(() => {
         if (!chartData || chartData.length === 0) {
@@ -613,7 +618,7 @@ export function BenchmarkHistoryChart() {
         }
 
         const allValues = chartData.flatMap((d: TFormattedBenchmarkDataPoint) => {
-            const values = [Number(d.superfund), Number(d.superfundReward), Number(d.aave)];
+            const values = [Number(d.superfund), Number(d.aave)];
             if (selectedChain === ChainId.Base) {
                 values.push(
                     Number(d.morphoGauntletPrime),
@@ -744,7 +749,6 @@ export function BenchmarkHistoryChart() {
     // Legend toggle state
     const [visibleLines, setVisibleLines] = useState<Record<string, boolean>>({
         superfund: true,
-        superfundReward: true,
         aave: true,
         fluid: true,
         euler: true,
@@ -869,7 +873,7 @@ export function BenchmarkHistoryChart() {
     // Custom legend component
     const CustomLegend = () => {
         // Determine which protocols to show based on selectedChain
-        const protocolsToShow = ['superfund', 'superfundReward', 'aave'];
+        const protocolsToShow = ['superfund', 'aave'];
 
         if (selectedChain === ChainId.Base) {
             protocolsToShow.push('fluid');
@@ -1029,18 +1033,6 @@ export function BenchmarkHistoryChart() {
                                             dataKey="superfund"
                                             type="monotone"
                                             stroke="var(--color-superfund)"
-                                            strokeWidth={2}
-                                            dot={false}
-                                            activeDot={{ r: 5, strokeWidth: 1 }}
-                                            connectNulls={true}
-                                            isAnimationActive={false}
-                                        />
-                                    )}
-                                    {visibleLines.superfundReward && (
-                                        <Line
-                                            dataKey="superfundReward"
-                                            type="monotone"
-                                            stroke="var(--color-superfundReward)"
                                             strokeWidth={2}
                                             dot={false}
                                             activeDot={{ r: 5, strokeWidth: 1 }}
