@@ -223,7 +223,7 @@ export default function VaultStats() {
                 return acc + TOTAL_SPOT_APY
             }, 0) / historicalSpotApyData.length
         )
-    }, [historicalSpotApyData])
+    }, [historicalSpotApyData, BOOST_APY, boostApyStartDate])
 
     const positionBreakdownList = [
         {
