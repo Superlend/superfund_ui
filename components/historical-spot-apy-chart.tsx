@@ -418,7 +418,7 @@ export default function HistoricalSpotApyChart({
                                             axisLine={true}
                                             tickCount={getOptimalTickCount}
                                             tickFormatter={formatYAxisTick}
-                                            padding={{ top: 20, bottom: 20 }}
+                                            padding={{ top: 20, bottom: 0 }}
                                             allowDataOverflow={false}
                                             domain={yAxisDomain}
                                             type="number"
