@@ -237,7 +237,7 @@ export default function ClaimRewardsTxDialog({
                         <div className="flex items-center gap-4 px-6 py-2 bg-gray-200 lg:bg-white rounded-5 w-full">
                             <ImageWithBadge
                                 mainImg={assetDetails?.reward?.token?.logo || ''}
-                                badgeImg={'https://superlend-assets.s3.ap-south-1.amazonaws.com/base.svg'}
+                                badgeImg={'https://superlend-public-assets.s3.ap-south-1.amazonaws.com/base.svg'}
                                 mainImgAlt={assetDetails?.reward?.token?.symbol}
                                 badgeImgAlt={'Base'}
                                 mainImgWidth={'32'}

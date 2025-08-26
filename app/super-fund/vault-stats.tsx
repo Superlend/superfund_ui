@@ -102,6 +102,13 @@ export default function VaultStats() {
         ] as `0x${string}`,
         chain_id: selectedChain,
     })
+    const {
+        spotApy,
+        isLoading: isLoadingSpotApy,
+        error: errorSpotApy,
+        totalSupply,
+        rewards,
+    } = useVaultHook()
 
     // Liquidity Land boost logic
     const { data: liquidityLandUsers, isLoading: isLoadingLiquidityLandUsers } =
@@ -115,8 +122,8 @@ export default function VaultStats() {
     }, [walletAddress, liquidityLandUsers])
 
     const baseAPY =
+        Number(spotApy ?? 0) +
         Number(effectiveApyData?.rewards_apy ?? 0) +
-        Number(effectiveApyData?.base_apy ?? 0) +
         Number(GLOBAL_BOOST_APY ?? 0) +
         Number(Farcaster_BOOST_APY ?? 0)
     const LIQUIDITY_LAND_BOOST_APY = useMemo(() => {
@@ -155,6 +162,20 @@ export default function VaultStats() {
         ] as `0x${string}`,
         user_address: walletAddress?.toLowerCase() as `0x${string}`,
     })
+    const {
+        historicalData: historicalSpotApyData,
+        isLoading: isLoadingHistoricalSpotApyData,
+        error: isErrorHistoricalSpotApyData,
+    } = useHistoricalData({
+        period: Period.oneMonth,
+        chain_id: selectedChain,
+    })
+    const {
+        boostApy: BOOST_APY,
+        isLoading: isLoadingBoostApy,
+        boostApyStartDate,
+    } = useApyData()
+
     const totalInterestEarned = useMemo(() => {
         return (
             dailyEarningsHistoryData?.reduce(
@@ -177,13 +198,32 @@ export default function VaultStats() {
     const isLoadingSection = !isClient
     const TOTAL_APY =
         Number(effectiveApyData?.rewards_apy ?? 0) +
-        Number(effectiveApyData?.base_apy ?? 0) +
+        Number(spotApy ?? 0) +
         Number(GLOBAL_BOOST_APY ?? 0) +
         Number(Farcaster_BOOST_APY ?? 0) +
         Number(LIQUIDITY_LAND_BOOST_APY ?? 0)
-    // const totalPositionAmountInDollars = useMemo(() => {
-    //     return Number(capital ?? 0) + Number(totalInterestEarned ?? 0)
-    // }, [capital, totalInterestEarned])
+
+    const TOTAL_SPOT_APY = useMemo(() => {
+        return baseAPY + Number(LIQUIDITY_LAND_BOOST_APY ?? 0)
+    }, [baseAPY, LIQUIDITY_LAND_BOOST_APY])
+
+    // 30 day average spot apy includes rewards apy and boosted apy
+    const thirtyDayAverageSpotApy = useMemo(() => {
+        if (!historicalSpotApyData || historicalSpotApyData.length === 0)
+            return 0
+        return (
+            historicalSpotApyData.reduce((acc: number, item: any) => {
+                const date = new Date(item.timestamp * 1000)
+                // Only add BOOST_APY if the date is on or after May 12, 2025
+                const shouldAddBoost = date.getTime() >= boostApyStartDate
+                const TOTAL_SPOT_APY =
+                    Number(item.spotApy) +
+                    Number(item.rewardsApy) +
+                    (shouldAddBoost ? Number(BOOST_APY ?? 0) : 0)
+                return acc + TOTAL_SPOT_APY
+            }, 0) / historicalSpotApyData.length
+        )
+    }, [historicalSpotApyData, BOOST_APY, boostApyStartDate])
 
     const positionBreakdownList = [
         {
@@ -231,8 +271,8 @@ export default function VaultStats() {
             isLoading: isLoadingVault,
         },
         {
-            id: 'effective-apy',
-            title: 'APY',
+            id: 'spot-apy',
+            title: 'Vault APY',
             titleTooltipContent: () => {
                 return (
                     <>
@@ -257,7 +297,7 @@ export default function VaultStats() {
                     </>
                 )
             },
-            value: TOTAL_APY,
+            value: TOTAL_SPOT_APY,
             formatOptions: {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
@@ -267,7 +307,7 @@ export default function VaultStats() {
             hasRewards: true,
             rewardsTooltipContent: getRewardsTooltipContent({
                 baseRateFormatted: abbreviateNumberWithoutRounding(
-                    effectiveApyData?.base_apy
+                    Number(spotApy ?? 0)
                 ),
                 rewardsCustomList: [
                     {
@@ -281,7 +321,9 @@ export default function VaultStats() {
                     {
                         key: 'superlend_rewards_apy',
                         key_name: 'Superlend USDC Reward',
-                        value: abbreviateNumberWithoutRounding(GLOBAL_BOOST_APY ?? 0),
+                        value: abbreviateNumberWithoutRounding(
+                            GLOBAL_BOOST_APY ?? 0
+                        ),
                         logo: '/images/tokens/usdc.webp',
                     },
                     {
@@ -363,8 +405,34 @@ export default function VaultStats() {
                     </div>
                 )
             },
-            isLoading: isLoadingEffectiveApy,
+            isLoading:
+                isLoadingEffectiveApy || isLoadingSpotApy || isLoadingBoostApy,
             error: isErrorEffectiveApy,
+        },
+        {
+            id: '30d-avg-apy',
+            title: '30D APY',
+            titleTooltipContent: () => {
+                return (
+                    <BodyText
+                        level="body2"
+                        weight="normal"
+                        className="text-gray-600"
+                    >
+                        The average APY earned by vault users over the past 30
+                        days.
+                    </BodyText>
+                )
+            },
+            value: thirtyDayAverageSpotApy,
+            formatOptions: {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+                suffix: '%',
+            },
+            show: true,
+            isLoading: isLoadingHistoricalSpotApyData,
+            error: isErrorHistoricalSpotApyData,
         },
         {
             id: 'my-position',
@@ -443,52 +511,6 @@ export default function VaultStats() {
                 )
             },
         },
-        // {
-        //     id: 'spot-apy',
-        //     title: 'Spot APY',
-        //     titleTooltipContent: 'The current interest rate earned by users.',
-        //     value: `${(Number(spotApy) + Number(totalRewardApy)).toFixed(2)}%`,
-        //     show: true,
-        //     hasRewards: true,
-        //     rewardsTooltipContent: getRewardsTooltipContent({
-        //         baseRateFormatted: spotApy,
-        //         rewards: rewards,
-        //         apyCurrent: Number(spotApy) + Number(totalRewardApy),
-        //         positionTypeParam: 'lend',
-        //     }),
-        //     // isLoading: isLoadingVault || isLoadingRewards,
-        //     error: !!errorVault || !!errorRewards,
-        // },
-        // {
-        //     id: '7d-apy',
-        //     title: 'APY',
-        //     titleTooltipContent: () => {
-        //         return (
-        //             <>
-        //                 <BodyText level="body2" weight="normal" className="text-gray-600 mb-2">
-        //                     The APY is calculated using the trailing one-week average of daily protocol returns, including the rewards from underlying protocols.
-        //                 </BodyText>
-        //                 <BodyText level="body2" weight="normal" className="text-gray-600">
-        //                     The displayed APY is an estimate and may fluctuate based on protocol performance. It is not a fixed or guaranteed rate.
-        //                 </BodyText>
-        //             </>
-        //         )
-        //     },
-        //     value: `${abbreviateNumberWithoutRounding(days_7_avg_total_apy)}%`,
-        //     show: true,
-        //     hasRewards: true,
-        //     rewardsTooltipContent: getRewardsTooltipContent({
-        //         baseRateFormatted: days_7_avg_base_apy.toFixed(2),
-        //         rewardsCustomList: [{
-        //             key: 'rewards_apy',
-        //             key_name: 'Rewards APY',
-        //             value: days_7_avg_rewards_apy.toFixed(2),
-        //         }],
-        //         apyCurrent: days_7_avg_total_apy,
-        //     }),
-        //     isLoading: isLoading7DayAvg,
-        //     error: error7DayAvg,
-        // },
     ]
 
     if (isLoadingSection) {
@@ -510,11 +532,10 @@ export default function VaultStats() {
     return (
         <section>
             {/* Second row - remaining items with balanced layout */}
-            <div className="flex flex-wrap gap-8">
+            <div className="grid grid-cols-2 xl:grid-cols-4 gap-8">
                 {vaultStats.map((item, index) => (
                     <motion.div
                         key={index}
-                        className="flex-1"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{
@@ -551,7 +572,7 @@ export default function VaultStats() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex flex-col gap-2 justify-between">
+                            <div className="flex flex-col gap-2 justify-between xl:w-fit xl:mx-auto">
                                 {/* Standard title section for all other cases */}
                                 {item.titleTooltipContent && (
                                     <InfoTooltip
@@ -631,7 +652,7 @@ export default function VaultStats() {
                                                     />
                                                 </div>
                                             ) : (
-                                                <Skeleton className="h-10 w-full rounded-4" />
+                                                <Skeleton className="h-10 w-24 rounded-4" />
                                             )}
                                         </HeadingText>
                                     )}
@@ -675,7 +696,7 @@ export default function VaultStats() {
                                                 </div>
                                             )}
                                             {item.isLoading && (
-                                                <Skeleton className="h-7 w-full min-w-[60px] rounded-4 mt-1" />
+                                                <Skeleton className="h-10 w-24 rounded-4 mt-1" />
                                             )}
                                         </HeadingText>
                                         <InfoTooltip
@@ -709,7 +730,7 @@ export default function VaultStats() {
                                             }
                                             content={item.rewardsTooltipContent}
                                         />
-                                        {/* {(!item.isLoading && (item.id === 'effective-apy') && (GLOBAL_BOOST_APY > 0)) && (
+                                        {/* {(!item.isLoading && (item.id === 'spot-apy') && (GLOBAL_BOOST_APY > 0)) && (
                                             <>
                                                 <HeadingText level="h3" weight="medium">+</HeadingText>
                                                 <div className="flex items-center gap-2">
@@ -740,7 +761,7 @@ export default function VaultStats() {
                                 {item.id === 'tvl' && (
                                     <HeadingText level="h3" weight="medium">
                                         {item.isLoading && (
-                                            <Skeleton className="h-7 w-8 min-w-[60px] rounded-4 mt-1" />
+                                            <Skeleton className="h-10 w-24 rounded-4 mt-1" />
                                         )}
                                         {!item.isLoading && (
                                             <div className="flex items-center">
@@ -813,7 +834,7 @@ export default function VaultStats() {
                                                 </>
                                             )}
                                             {item.isLoading && (
-                                                <Skeleton className="h-7 w-full min-w-[60px] rounded-4 mt-1" />
+                                                <Skeleton className="h-10 w-24 rounded-4 mt-1" />
                                             )}
                                         </HeadingText>
                                     )}

@@ -367,7 +367,7 @@ export default function DepositAndWithdrawAssets() {
                         {/* Single token */}
                         <ImageWithDefault
                             src={
-                                'https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg'
+                                'https://superlend-public-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg'
                             }
                             alt={''}
                             className="shrink-0 w-[24px] h-[24px] rounded-full"
@@ -436,7 +436,7 @@ export default function DepositAndWithdrawAssets() {
                                         selectedChain as keyof typeof USDC_ADDRESS_MAP
                                     ] as `0x${string}`,
                                     token: {
-                                        logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg',
+                                        logo: 'https://superlend-public-assets.s3.ap-south-1.amazonaws.com/100-usdc.svg',
                                         symbol: 'USDC',
                                     },
                                     effective_apy: TOTAL_APY,

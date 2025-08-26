@@ -88,6 +88,8 @@ export async function checkAllowance(
 
 export function useUserBalance(walletAddress: `0x${string}`) {
     const [balance, setBalance] = useState<string>('0')
+    const [shareTokenBalanceRaw, setShareTokenBalanceRaw] =
+        useState<string>('0')
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [userMaxWithdrawAmount, setUserMaxWithdrawAmount] =
@@ -186,6 +188,7 @@ export function useUserBalance(walletAddress: `0x${string}`) {
                 setUserMaxWithdrawAmount(formattedMaxWithdraw)
                 setShareTokenBalance(formattedShareTokenBalance)
                 setBalance(formattedBalance)
+                setShareTokenBalanceRaw(shareTokenBalance?.toString() ?? '0')
                 setError(null)
             }
         } catch (error) {
@@ -272,6 +275,7 @@ export function useUserBalance(walletAddress: `0x${string}`) {
 
     return {
         balance,
+        shareTokenBalanceRaw,
         userMaxWithdrawAmount,
         shareTokenBalance,
         isLoading,

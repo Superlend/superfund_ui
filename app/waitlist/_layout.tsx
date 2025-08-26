@@ -7,7 +7,7 @@ import { headers } from 'next/headers'
 const frame = {
     version: 'next',
     imageUrl:
-        'https://superlend-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png',
+        'https://superlend-public-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png',
     button: {
         title: 'Check This Out',
         action: {
@@ -53,13 +53,13 @@ export const metadata: Metadata = {
         description:
             'Earn smarter with SuperFund — an automated DeFi fund that allocates USDC across Aave, Morpho, Euler & more for optimized returns.',
         siteName: 'Superfund',
-        images: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png',
+        images: 'https://superlend-public-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png',
     },
     twitter: {
         title: 'Join SuperFund Waitlist - Earn Maximum Yield on USDC',
         description:
             'Earn smarter with SuperFund — an automated DeFi fund that allocates USDC across Aave, Morpho, Euler & more for optimized returns.',
-        images: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png',
+        images: 'https://superlend-public-assets.s3.ap-south-1.amazonaws.com/superlend_banner.png',
     },
     other: {
         'fc:frame': JSON.stringify(frame),

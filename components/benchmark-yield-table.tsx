@@ -64,9 +64,17 @@ export function BenchmarkYieldTable() {
     const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy, boostApyStartDate } = useApyData()
 
     // Get Superfund data
-    const { historicalData: superfundData, isLoading: superfundLoading } = useHistoricalData({
+    // const { historicalData: superfundData, isLoading: superfundLoading } = useHistoricalData({
+    //     period: apiPeriod === 'YEAR' ? Period.oneYear : apiPeriod as Period,
+    //     chain_id: selectedChain
+    // })
+    const {
+        historicalData: superfundData,
+        isLoading: superfundLoading,
+        error: superfundError,
+    } = useHistoricalData({
         period: apiPeriod === 'YEAR' ? Period.oneYear : apiPeriod as Period,
-        chain_id: selectedChain
+        chain_id: selectedChain,
     })
 
     // Get Aave reward APY
@@ -174,7 +182,7 @@ export function BenchmarkYieldTable() {
             const currentDate = new Date(item.timestamp * 1000).getTime();
             // Only add BOOST_APY if the date is on or after May 12, 2025
             const shouldAddBoost = currentDate >= boostApyStartDate;
-            const itemValue = shouldAddBoost ? (item.totalApy + BOOST_APY) : item.totalApy;
+            const itemValue = (Number(item.spotApy ?? 0) + Number(item.rewardsApy ?? 0)) + (shouldAddBoost ? Number(BOOST_APY ?? 0) : 0);
             return sum + (itemValue || 0);
         }, 0);
 
@@ -207,7 +215,7 @@ export function BenchmarkYieldTable() {
                     value: apy,
                     protocolName: CHART_CONFIG[key as keyof typeof CHART_CONFIG].label,
                     color: CHART_CONFIG[key as keyof typeof CHART_CONFIG].color,
-                    logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/morpho-logo.svg'
+                    logo: 'https://superlend-public-assets.s3.ap-south-1.amazonaws.com/morpho-logo.svg'
                 };
             }
         });
@@ -289,7 +297,7 @@ export function BenchmarkYieldTable() {
             apy: aaveApy,
             totalEarned: calculateEarningsForCurrentPeriod(aaveApy),
             color: CHART_CONFIG.aave.color,
-            logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/aave.svg'
+            logo: 'https://superlend-public-assets.s3.ap-south-1.amazonaws.com/aave.svg'
         });
 
         // Base chain specific protocols
@@ -301,7 +309,7 @@ export function BenchmarkYieldTable() {
                 apy: fluidApy,
                 totalEarned: calculateEarningsForCurrentPeriod(fluidApy),
                 color: "#00C853", // Fluid color
-                logo: 'https://superlend-assets.s3.ap-south-1.amazonaws.com/fluid_logo.png'
+                logo: 'https://superlend-public-assets.s3.ap-south-1.amazonaws.com/fluid_logo.png'
             });
 
             // Add Euler

@@ -267,7 +267,7 @@ export default function HistoricalSpotApyChart({
             <div className="flex items-start sm:items-center justify-between max-sm:px-4 p-6 pb-4">
                 <div className="flex flex-wrap items-center gap-4">
                     <HeadingText level="h4" weight="medium" className="text-gray-800">
-                        Historical Spot APY
+                        Performance History
                     </HeadingText>
                     <div className="flex gap-1 items-center w-auto p-1 tracking-normal leading-tight uppercase whitespace-nowrap rounded-4 text-stone-800 bg-white bg-opacity-40 shadow-[0px_2px_2px_rgba(0,0,0,0.02)]">
                         <Button
@@ -418,7 +418,7 @@ export default function HistoricalSpotApyChart({
                                             axisLine={true}
                                             tickCount={getOptimalTickCount}
                                             tickFormatter={formatYAxisTick}
-                                            padding={{ top: 20, bottom: 20 }}
+                                            padding={{ top: 20, bottom: 0 }}
                                             allowDataOverflow={false}
                                             domain={yAxisDomain}
                                             type="number"
