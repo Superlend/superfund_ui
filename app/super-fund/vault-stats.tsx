@@ -272,7 +272,7 @@ export default function VaultStats() {
         },
         {
             id: 'spot-apy',
-            title: 'Current APY',
+            title: 'Vault APY',
             titleTooltipContent: () => {
                 return (
                     <>
@@ -405,34 +405,23 @@ export default function VaultStats() {
                     </div>
                 )
             },
-            isLoading: isLoadingEffectiveApy || isLoadingSpotApy || isLoadingBoostApy,
+            isLoading:
+                isLoadingEffectiveApy || isLoadingSpotApy || isLoadingBoostApy,
             error: isErrorEffectiveApy,
         },
         {
             id: '30d-avg-apy',
-            title: '30D Avg APY',
+            title: '30D APY',
             titleTooltipContent: () => {
                 return (
-                    <>
-                        <BodyText
-                            level="body2"
-                            weight="normal"
-                            className="text-gray-600 mb-2"
-                        >
-                            The Vault APY is calculated as the weighted average
-                            of the spot APYs from the underlying protocols where
-                            liquidity is deployed.
-                        </BodyText>
-                        <BodyText
-                            level="body2"
-                            weight="normal"
-                            className="text-gray-600"
-                        >
-                            The displayed APY is an estimate and may fluctuate
-                            based on the performance of these protocols. It is
-                            not fixed or guaranteed.
-                        </BodyText>
-                    </>
+                    <BodyText
+                        level="body2"
+                        weight="normal"
+                        className="text-gray-600"
+                    >
+                        The average APY earned by vault users over the past 30
+                        days.
+                    </BodyText>
                 )
             },
             value: thirtyDayAverageSpotApy,
@@ -522,52 +511,6 @@ export default function VaultStats() {
                 )
             },
         },
-        // {
-        //     id: 'spot-apy',
-        //     title: 'Spot APY',
-        //     titleTooltipContent: 'The current interest rate earned by users.',
-        //     value: `${(Number(spotApy) + Number(totalRewardApy)).toFixed(2)}%`,
-        //     show: true,
-        //     hasRewards: true,
-        //     rewardsTooltipContent: getRewardsTooltipContent({
-        //         baseRateFormatted: spotApy,
-        //         rewards: rewards,
-        //         apyCurrent: Number(spotApy) + Number(totalRewardApy),
-        //         positionTypeParam: 'lend',
-        //     }),
-        //     // isLoading: isLoadingVault || isLoadingRewards,
-        //     error: !!errorVault || !!errorRewards,
-        // },
-        // {
-        //     id: '7d-apy',
-        //     title: 'APY',
-        //     titleTooltipContent: () => {
-        //         return (
-        //             <>
-        //                 <BodyText level="body2" weight="normal" className="text-gray-600 mb-2">
-        //                     The APY is calculated using the trailing one-week average of daily protocol returns, including the rewards from underlying protocols.
-        //                 </BodyText>
-        //                 <BodyText level="body2" weight="normal" className="text-gray-600">
-        //                     The displayed APY is an estimate and may fluctuate based on protocol performance. It is not a fixed or guaranteed rate.
-        //                 </BodyText>
-        //             </>
-        //         )
-        //     },
-        //     value: `${abbreviateNumberWithoutRounding(days_7_avg_total_apy)}%`,
-        //     show: true,
-        //     hasRewards: true,
-        //     rewardsTooltipContent: getRewardsTooltipContent({
-        //         baseRateFormatted: days_7_avg_base_apy.toFixed(2),
-        //         rewardsCustomList: [{
-        //             key: 'rewards_apy',
-        //             key_name: 'Rewards APY',
-        //             value: days_7_avg_rewards_apy.toFixed(2),
-        //         }],
-        //         apyCurrent: days_7_avg_total_apy,
-        //     }),
-        //     isLoading: isLoading7DayAvg,
-        //     error: error7DayAvg,
-        // },
     ]
 
     if (isLoadingSection) {
