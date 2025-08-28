@@ -159,7 +159,7 @@ export default function HistoricalSpotApyChart({
             const TOTAL_SPOT_APY = Number(item.spotApy) + Number(item.rewardsApy) + (shouldAddBoost ? Number(BOOST_APY ?? 0) : 0);
             return acc + TOTAL_SPOT_APY
         }, 0) / historicalData.length
-    }, [historicalData])
+    }, [historicalData, BOOST_APY, boostApyStartDate])
 
     const chartData = useMemo(() => {
         return historicalData?.map((item: any) => {
@@ -190,7 +190,7 @@ export default function HistoricalSpotApyChart({
                 totalApy: Number(TOTAL_SPOT_APY).toFixed(2),
             }
         }).sort((a, b) => new Date(a.rawTimestamp).getTime() - new Date(b.rawTimestamp).getTime())
-    }, [historicalData])
+    }, [historicalData, BOOST_APY, boostApyStartDate])
 
     const yAxisDomain = useMemo(() => {
         if (!chartData || chartData.length === 0) return [0, 100]
