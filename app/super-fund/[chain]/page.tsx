@@ -22,9 +22,8 @@ import { useAnalytics } from '@/context/amplitude-analytics-provider'
 import sdk from '@farcaster/frame-sdk'
 import YourApiJourney from '@/components/your-api-journey'
 import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
-import { useActiveAccount, useConnect } from "thirdweb/react"
+import { useActiveAccount, useConnect } from 'thirdweb/react'
 import useDimensions from '@/hooks/useDimensions'
-import LiquidityLandBanner from '@/components/LiquidityLandBanner'
 
 interface ChainPageProps {
     params: {
@@ -36,8 +35,8 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
     const { isClient } = useIsClient()
     // const { isWalletConnected, isConnectingWallet, walletAddress } =
     //     useWalletConnection()
-    const { connect, isConnecting, error } = useConnect();
-    const account = useActiveAccount();
+    const { connect, isConnecting, error } = useConnect()
+    const account = useActiveAccount()
     const walletAddress = account?.address as `0x${string}`
     const isWalletConnected = !!account
     const router = useRouter()
@@ -99,7 +98,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
     //         viewport.addEventListener('scroll', handleScroll)
     //         return () => viewport.removeEventListener('scroll', handleScroll)
     //     }
-    // }, [isWalletConnected]) 
+    // }, [isWalletConnected])
     // Re-run when wallet connection changes
 
     // Validate chain parameter only once
@@ -128,7 +127,9 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
     const getInitialTab = () => {
         const tabParam = searchParams.get('tab')
         const validTabs = ['fund-overview', 'position-details']
-        return validTabs.includes(tabParam || '') ? (tabParam as string) : 'fund-overview'
+        return validTabs.includes(tabParam || '')
+            ? (tabParam as string)
+            : 'fund-overview'
     }
 
     const [selectedTab, setSelectedTab] = useState(getInitialTab)
@@ -169,7 +170,9 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
         // Update selectedTab if URL param changes
         const tabParam = searchParams.get('tab')
         const validTabs = ['fund-overview', 'position-details']
-        const newTab = validTabs.includes(tabParam || '') ? (tabParam as string) : 'fund-overview'
+        const newTab = validTabs.includes(tabParam || '')
+            ? (tabParam as string)
+            : 'fund-overview'
 
         if (newTab !== selectedTab) {
             setSelectedTab(newTab)
@@ -187,8 +190,11 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                 requestAnimationFrame(() => {
                     setTimeout(() => {
                         // Find the tabs section element
-                        const tabsSection = document.getElementById('tabs-section')
-                        const tabsContent = document.querySelector('[data-radix-tabs-content]')
+                        const tabsSection =
+                            document.getElementById('tabs-section')
+                        const tabsContent = document.querySelector(
+                            '[data-radix-tabs-content]'
+                        )
 
                         // Use the actual tabs content if available, otherwise fall back to tabs section
                         const targetElement = tabsContent || tabsSection
@@ -197,18 +203,26 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                             const isMobile = window.innerWidth <= 768
                             const headerOffset = isMobile ? 120 : 100 // Account for headers and spacing
 
-                            const elementTop = targetElement.getBoundingClientRect().top + window.pageYOffset
-                            const targetScrollPosition = elementTop - headerOffset
+                            const elementTop =
+                                targetElement.getBoundingClientRect().top +
+                                window.pageYOffset
+                            const targetScrollPosition =
+                                elementTop - headerOffset
 
                             // Use smooth scroll to calculated position
                             window.scrollTo({
                                 top: Math.max(0, targetScrollPosition),
-                                behavior: 'smooth'
+                                behavior: 'smooth',
                             })
 
                             // Clear the hash after scrolling
                             setTimeout(() => {
-                                window.history.replaceState(null, '', window.location.pathname + window.location.search)
+                                window.history.replaceState(
+                                    null,
+                                    '',
+                                    window.location.pathname +
+                                        window.location.search
+                                )
                             }, 1000) // Longer delay to ensure scroll completes
                         }
                     }, 100) // Small delay for rendering
@@ -236,13 +250,12 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
 
     // Wrap content in a chain provider with forced chain ID from URL
     return (
-        <MainContainer className="flex flex-col flex-wrap gap-[40px] w-full mx-auto md:my-14">
+        <MainContainer className="flex flex-col flex-wrap gap-5 w-full mx-auto md:my-14">
             <PageHeader />
-            <LiquidityLandBanner />
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-[16px]">
                 <div className="flex flex-col gap-10">
                     <VaultStats />
-                    {!isDesktop &&
+                    {!isDesktop && (
                         <div className="flex flex-col gap-4">
                             <DepositAndWithdrawAssets />
                             {/* {(isWalletConnected && !!Number(userMaxWithdrawAmount)) && <YourApiJourney />} */}
@@ -254,7 +267,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                                 />
                             )}
                         </div>
-                    }
+                    )}
                     {isConnecting && <LoadingTabs />}
                     {!isConnecting && (
                         <div id="tabs-section">
@@ -268,19 +281,22 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                 </div>
                 {isDesktop && (
                     <div className="">
-                        <div className="sticky top-20 h-[calc(100vh-5rem)] relative">
+                        <div className="sticky top-24 h-[calc(100vh-5rem)]">
                             <div
-                                className={`absolute top-0 left-0 right-0 h-12 z-10 pointer-events-none transition-opacity duration-300 ${scrollState.canScrollUp ? 'opacity-100' : 'opacity-0'
-                                    }`}
+                                className={`absolute top-0 left-0 right-0 h-12 z-10 pointer-events-none transition-opacity duration-300 ${
+                                    scrollState.canScrollUp
+                                        ? 'opacity-100'
+                                        : 'opacity-0'
+                                }`}
                                 style={{
-                                    background: 'linear-gradient(to bottom, hsl(var(--background-light-blue)) 0%, hsl(var(--background-light-blue) / 0.95) 25%, hsl(var(--background-light-blue) / 0.8) 50%, hsl(var(--background-light-blue) / 0.4) 75%, transparent 100%)'
+                                    background:
+                                        'linear-gradient(to bottom, hsl(var(--background-light-blue)) 0%, hsl(var(--background-light-blue) / 0.95) 25%, hsl(var(--background-light-blue) / 0.8) 50%, hsl(var(--background-light-blue) / 0.4) 75%, transparent 100%)',
                                 }}
                             />
 
                             <ScrollArea className="h-full" ref={scrollAreaRef}>
                                 <div className="flex flex-col gap-2 pr-4">
                                     <DepositAndWithdrawAssets />
-                                    {/* {(isWalletConnected && !!Number(userMaxWithdrawAmount)) && <YourApiJourney />} */}
                                     {isWalletConnected && (
                                         <TransactionHistory
                                             protocolIdentifier={getProtocolIdentifier(
@@ -292,10 +308,14 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
                             </ScrollArea>
 
                             <div
-                                className={`absolute bottom-0 left-0 right-0 h-12 z-10 pointer-events-none transition-opacity duration-300 ${scrollState.canScrollDown ? 'opacity-100' : 'opacity-0'
-                                    }`}
+                                className={`absolute bottom-0 left-0 right-0 h-12 z-10 pointer-events-none transition-opacity duration-300 ${
+                                    scrollState.canScrollDown
+                                        ? 'opacity-100'
+                                        : 'opacity-0'
+                                }`}
                                 style={{
-                                    background: 'linear-gradient(to top, hsl(var(--background-light-blue)) 0%, hsl(var(--background-light-blue) / 0.95) 25%, hsl(var(--background-light-blue) / 0.8) 50%, hsl(var(--background-light-blue) / 0.4) 75%, transparent 100%)'
+                                    background:
+                                        'linear-gradient(to top, hsl(var(--background-light-blue)) 0%, hsl(var(--background-light-blue) / 0.95) 25%, hsl(var(--background-light-blue) / 0.8) 50%, hsl(var(--background-light-blue) / 0.4) 75%, transparent 100%)',
                                 }}
                             />
                         </div>

@@ -1,8 +1,6 @@
 'use client'
 
 import CustomAlert from '@/components/alerts/CustomAlert'
-import { AnimatedNumber } from '@/components/animations/animated_number'
-import { ContinuouslyAnimatedNumber } from '@/components/animations/continuously-animated-number'
 import ConnectWalletButton from '@/components/ConnectWalletButton'
 import ImageWithDefault from '@/components/ImageWithDefault'
 import { NumberTicker } from '@/components/magicui/number-ticker'
@@ -10,45 +8,30 @@ import InfoTooltip from '@/components/tooltips/InfoTooltip'
 import TooltipText from '@/components/tooltips/TooltipText'
 import { Skeleton } from '@/components/ui/skeleton'
 import { BodyText, HeadingText, Label } from '@/components/ui/typography'
-import { LIQUIDITY_LAND_TARGET_APY } from '@/constants'
 import { useApyData } from '@/context/apy-data-provider'
 import { useChain } from '@/context/chain-context'
 import useGetBoostRewards from '@/hooks/useGetBoostRewards'
 import useGetDailyEarningsHistory from '@/hooks/useGetDailyEarningsHistory'
-import { useGetLiquidityLandUsers } from '@/hooks/useGetLiquidityLandUsers'
 import useIsClient from '@/hooks/useIsClient'
-import useTransactionHistory from '@/hooks/useTransactionHistory'
-import { useWalletConnection } from '@/hooks/useWalletConnection'
 import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
 import { useHistoricalData } from '@/hooks/vault_hooks/useHistoricalDataHook'
 import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
-import { useHistoricalDataCompat } from '@/hooks/vault_hooks/useVaultCompat'
 import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
-import { useRewardsHook } from '@/hooks/vault_hooks/vaultHook'
 import { starVariants } from '@/lib/animations'
-import { VAULT_ADDRESS, VAULT_ADDRESS_MAP } from '@/lib/constants'
+import { VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { getRewardsTooltipContent } from '@/lib/ui/getRewardsTooltipContent'
 import {
     abbreviateNumberWithoutRounding,
     convertNegativeToZero,
-    getBoostApy,
-    hasNoDecimals,
 } from '@/lib/utils'
 import { Period } from '@/types/periodButtons'
-import { Expand, Lock, Maximize2, Minimize2, Percent } from 'lucide-react'
+import { Lock, Maximize2 } from 'lucide-react'
 import { motion } from 'motion/react'
 import Link from 'next/link'
 import { useEffect, useMemo } from 'react'
 import { useActiveAccount } from 'thirdweb/react'
 
-type VaultStatsProps = {
-    days_7_avg_total_apy: number
-    days_7_avg_base_apy: number
-    days_7_avg_rewards_apy: number
-}
-
 export default function VaultStats() {
-    // const { walletAddress, isWalletConnectedForUI } = useWalletConnection()
     const account = useActiveAccount()
     const walletAddress = account?.address as `0x${string}`
     const isWalletConnectedForUI = !!account
@@ -69,29 +52,33 @@ export default function VaultStats() {
         isLoading: isLoadingVault,
         error: errorVault,
     } = useVaultHook()
-    // const { boostApy: GLOBAL_BOOST_APY, isLoading: isLoadingBoostApy } = useApyData()
+
     const GLOBAL_BOOST_APY =
         boostRewardsData
             ?.filter(
-                (item) =>
+                (item: any) =>
                     item.description?.includes(
                         'A global boost for all users'
                     ) ?? false
             )
-            .reduce((acc, curr) => acc + curr.boost_apy / 100, 0) ?? 0
+            .reduce((acc: any, curr: any) => acc + curr.boost_apy / 100, 0) ?? 0
+
     const Farcaster_BOOST_APY =
         boostRewardsData
             ?.filter(
-                (item) =>
+                (item: any) =>
                     !item.description?.includes('A global boost for all users')
             )
-            .reduce((acc, curr) => acc + curr.boost_apy / 100, 0) ?? 0
+            .reduce((acc: any, curr: any) => acc + curr.boost_apy / 100, 0) ?? 0
+
     const hasFarcasterBoost = Farcaster_BOOST_APY > 0
+
     const {
         userMaxWithdrawAmount,
         isLoading: isLoadingUserMaxWithdrawAmount,
         error: errorUserMaxWithdrawAmount,
     } = useUserBalance(walletAddress as `0x${string}`)
+
     const {
         data: effectiveApyData,
         isLoading: isLoadingEffectiveApy,
@@ -102,6 +89,7 @@ export default function VaultStats() {
         ] as `0x${string}`,
         chain_id: selectedChain,
     })
+
     const {
         spotApy,
         isLoading: isLoadingSpotApy,
@@ -110,31 +98,8 @@ export default function VaultStats() {
         rewards,
     } = useVaultHook()
 
-    // Liquidity Land boost logic
-    const { data: liquidityLandUsers, isLoading: isLoadingLiquidityLandUsers } =
-        useGetLiquidityLandUsers()
-    const isLiquidityLandUser = useMemo(() => {
-        if (!walletAddress || !liquidityLandUsers) return false
-        return liquidityLandUsers.some(
-            (user) =>
-                user.walletAddress.toLowerCase() === walletAddress.toLowerCase()
-        )
-    }, [walletAddress, liquidityLandUsers])
-
-    const baseAPY =
-        Number(spotApy ?? 0) +
-        Number(effectiveApyData?.rewards_apy ?? 0) +
-        Number(GLOBAL_BOOST_APY ?? 0) +
-        Number(Farcaster_BOOST_APY ?? 0)
-    const LIQUIDITY_LAND_BOOST_APY = useMemo(() => {
-        if (!isLiquidityLandUser) return 0
-        const targetAPY = LIQUIDITY_LAND_TARGET_APY
-        const boost = Math.max(0, targetAPY - baseAPY)
-        return boost
-    }, [isLiquidityLandUser, baseAPY])
-    const hasLiquidityLandBoost = LIQUIDITY_LAND_BOOST_APY > 0
-
     const { isClient } = useIsClient()
+
     const getProtocolIdentifier = () => {
         if (!selectedChain) return ''
         return (
@@ -142,16 +107,9 @@ export default function VaultStats() {
                 ?.contractAddress || ''
         )
     }
+
     const protocolId = getProtocolIdentifier()
-    const {
-        // data: { capital, interest_earned },
-        isLoading: isLoadingPositionDetails,
-    } = useTransactionHistory({
-        protocolIdentifier: protocolId,
-        chainId: selectedChain || 0,
-        walletAddress: walletAddress || '',
-        refetchOnTransaction: true,
-    })
+
     const {
         data: dailyEarningsHistoryData,
         isLoading: isLoadingDailyEarningsHistory,
@@ -162,6 +120,7 @@ export default function VaultStats() {
         ] as `0x${string}`,
         user_address: walletAddress?.toLowerCase() as `0x${string}`,
     })
+
     const {
         historicalData: historicalSpotApyData,
         isLoading: isLoadingHistoricalSpotApyData,
@@ -170,6 +129,7 @@ export default function VaultStats() {
         period: Period.oneMonth,
         chain_id: selectedChain,
     })
+
     const {
         boostApy: BOOST_APY,
         isLoading: isLoadingBoostApy,
@@ -191,21 +151,25 @@ export default function VaultStats() {
             Number(totalInterestEarned ?? 0)
         )
     }, [userMaxWithdrawAmount, totalInterestEarned])
+
     // const { rewards, totalRewardApy, isLoading: isLoadingRewards, error: errorRewards } = useRewardsHook()
     // const { days_7_avg_base_apy, days_7_avg_rewards_apy, days_7_avg_total_apy, isLoading: isLoading7DayAvg, error: error7DayAvg } = useHistoricalData({
     //     chain_id: selectedChain
     // })
+
     const isLoadingSection = !isClient
-    const TOTAL_APY =
-        Number(effectiveApyData?.rewards_apy ?? 0) +
+
+    const baseAPY =
         Number(spotApy ?? 0) +
+        Number(effectiveApyData?.rewards_apy ?? 0) +
         Number(GLOBAL_BOOST_APY ?? 0) +
-        Number(Farcaster_BOOST_APY ?? 0) +
-        Number(LIQUIDITY_LAND_BOOST_APY ?? 0)
+        Number(Farcaster_BOOST_APY ?? 0)
+
+    const TOTAL_APY = baseAPY
 
     const TOTAL_SPOT_APY = useMemo(() => {
-        return baseAPY + Number(LIQUIDITY_LAND_BOOST_APY ?? 0)
-    }, [baseAPY, LIQUIDITY_LAND_BOOST_APY])
+        return baseAPY
+    }, [baseAPY])
 
     // 30 day average spot apy includes rewards apy and boosted apy
     const thirtyDayAverageSpotApy = useMemo(() => {
@@ -336,46 +300,9 @@ export default function VaultStats() {
                         logo: '/icons/sparkles.svg',
                         show: hasFarcasterBoost,
                     },
-                    {
-                        key: 'liquidity_land_boost_apy',
-                        key_name: 'Liquidity Land',
-                        value: abbreviateNumberWithoutRounding(
-                            LIQUIDITY_LAND_BOOST_APY ?? 0
-                        ),
-                        logo: '/icons/liquidity-land.svg',
-                        show: hasLiquidityLandBoost,
-                    },
                 ],
                 apyCurrent: TOTAL_APY,
                 positionTypeParam: 'lend',
-                note: () => {
-                    return (
-                        <div className="pt-2">
-                            <CustomAlert
-                                variant="info"
-                                size="xs"
-                                description={
-                                    <BodyText
-                                        level="body3"
-                                        weight="normal"
-                                        className="text-gray-800"
-                                    >
-                                        Note: Superlend Rewards are for a
-                                        limited period. Please join our{' '}
-                                        <Link
-                                            href="https://discord.com/invite/superlend"
-                                            target="_blank"
-                                            className="text-secondary-500"
-                                        >
-                                            Discord
-                                        </Link>{' '}
-                                        to get more info.
-                                    </BodyText>
-                                }
-                            />
-                        </div>
-                    )
-                },
             }),
             boostRewardsTooltipContent: () => {
                 return (
