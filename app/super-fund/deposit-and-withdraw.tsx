@@ -4,15 +4,10 @@ import ImageWithDefault from '@/components/ImageWithDefault'
 import ToggleTab, { TTypeToMatch } from '@/components/ToggleTab'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
-import { TActionType, TPositionType } from '@/types'
-import { CircleArrowRight, LoaderCircle, SendHorizontal, Wallet } from 'lucide-react'
+import { TActionType } from '@/types'
+import { LoaderCircle } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
-import {
-    abbreviateNumberWithoutRounding,
-    getBoostApy,
-    getLowestDisplayValue,
-    getTruncatedTxHash,
-} from '@/lib/utils'
+import { abbreviateNumberWithoutRounding } from '@/lib/utils'
 import { BodyText } from '@/components/ui/typography'
 import { cn } from '@/lib/utils'
 import CustomNumberInput from '@/components/inputs/CustomNumberInput'
@@ -26,26 +21,15 @@ import {
     useUserBalance,
 } from '@/hooks/vault_hooks/useUserBalanceHook'
 import ConnectWalletButton from '@/components/ConnectWalletButton'
-import { useWalletConnection } from '@/hooks/useWalletConnection'
 import SuperVaultTxDialog from '@/components/dialogs/SuperVaultTx'
 import { useChain } from '@/context/chain-context'
-import {
-    USDC_ADDRESS_MAP,
-    USDC_DECIMALS,
-    VAULT_ADDRESS_MAP,
-} from '@/lib/constants'
+import { USDC_ADDRESS_MAP, VAULT_ADDRESS_MAP } from '@/lib/constants'
 import { useGetEffectiveApy } from '@/hooks/vault_hooks/useGetEffectiveApy'
 import useGetBoostRewards from '@/hooks/useGetBoostRewards'
-import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import { useActiveAccount, useSwitchActiveWalletChain } from 'thirdweb/react'
-import { base } from 'thirdweb/chains'
 import WhalesSupportDialog from '@/components/dialogs/WhalesSupportDialog'
 import { useWhalesSupportDialog } from '@/hooks/useWhalesSupportDialog'
-import { LIQUIDITY_LAND_TARGET_APY } from '@/constants'
-import { useGetLiquidityLandUsers } from '@/hooks/useGetLiquidityLandUsers'
-import { Input } from '@/components/ui/input'
-import { parseUnits } from 'ethers/lib/utils'
-import WalletIcon from '@/components/icons/wallet-icon'
+import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 
 export type THelperText = Record<
     string,
@@ -116,10 +100,10 @@ export default function DepositAndWithdrawAssets() {
         chain_id: selectedChain,
     })
     const {
-        totalAssets,
         spotApy,
-        isLoading: isLoadingVault,
-        error: errorVault,
+        // totalAssets,
+        // isLoading: isLoadingVault,
+        // error: errorVault,
     } = useVaultHook()
     const {
         data: boostRewardsData,
@@ -148,34 +132,14 @@ export default function DepositAndWithdrawAssets() {
                     !item.description?.includes('A global boost for all users')
             )
             .reduce((acc, curr) => acc + curr.boost_apy / 100, 0) ?? 0
-    // Liquidity Land boost logic
-    const { data: liquidityLandUsers, isLoading: isLoadingLiquidityLandUsers } =
-        useGetLiquidityLandUsers()
-    const isLiquidityLandUser = useMemo(() => {
-        if (!walletAddress || !liquidityLandUsers) return false
-        return liquidityLandUsers.some(
-            (user) =>
-                user.walletAddress.toLowerCase() === walletAddress.toLowerCase()
-        )
-    }, [walletAddress, liquidityLandUsers])
 
     const baseAPY =
+        Number(spotApy ?? 0) +
         Number(effectiveApyData?.rewards_apy ?? 0) +
-        Number(effectiveApyData?.base_apy ?? 0) +
         Number(GLOBAL_BOOST_APY ?? 0) +
         Number(Farcaster_BOOST_APY ?? 0)
-    const LIQUIDITY_LAND_BOOST_APY = useMemo(() => {
-        if (!isLiquidityLandUser) return 0
-        const targetAPY = LIQUIDITY_LAND_TARGET_APY
-        const boost = Math.max(0, targetAPY - baseAPY)
-        return boost
-    }, [isLiquidityLandUser, baseAPY])
-    const TOTAL_APY =
-        Number(effectiveApyData?.rewards_apy ?? 0) +
-        Number(GLOBAL_BOOST_APY ?? 0) +
-        Number(Farcaster_BOOST_APY ?? 0) +
-        Number(effectiveApyData?.base_apy ?? 0) +
-        Number(LIQUIDITY_LAND_BOOST_APY ?? 0)
+
+    const TOTAL_APY = baseAPY
 
     useEffect(() => {
         // Only run this effect when the transaction dialog is open to prevent unwanted state changes during resets
@@ -282,7 +246,7 @@ export default function DepositAndWithdrawAssets() {
         } else {
             return (
                 Number(userEnteredWithdrawAmount) >
-                Number(userMaxWithdrawAmount) ||
+                    Number(userMaxWithdrawAmount) ||
                 Number(userEnteredWithdrawAmount) === 0
             )
         }
@@ -306,11 +270,7 @@ export default function DepositAndWithdrawAssets() {
     return (
         <section className="tx-widget-section-wrapper flex flex-col gap-[12px]">
             <ToggleTab
-                type={
-                    positionType === 'deposit'
-                        ? 'tab1'
-                        : 'tab2'
-                }
+                type={positionType === 'deposit' ? 'tab1' : 'tab2'}
                 handleToggle={(positionType: TTypeToMatch) => {
                     if (positionType === 'tab1') {
                         setPositionType('deposit')
@@ -328,9 +288,7 @@ export default function DepositAndWithdrawAssets() {
                         weight="normal"
                         className="capitalize text-gray-600"
                     >
-                        {isDepositPositionType
-                            ? 'Deposit'
-                            : 'Withdraw'}
+                        {isDepositPositionType ? 'Deposit' : 'Withdraw'}
                     </BodyText>
                     {isWalletConnectedForUI && (
                         <BodyText
@@ -403,8 +361,8 @@ export default function DepositAndWithdrawAssets() {
                                     isDepositPositionType
                                         ? setUserEnteredDepositAmount(balance)
                                         : setUserEnteredWithdrawAmount(
-                                            userMaxWithdrawAmount
-                                        )
+                                              userMaxWithdrawAmount
+                                          )
                                 }
                                 className="uppercase text-[14px] font-medium w-fit"
                             >
