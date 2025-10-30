@@ -49,7 +49,7 @@ export function useHistoricalData({
                 timestamp: item.T,
                 baseApy: item.BA,
                 rewardsApy: item.RA,
-                totalApy: item.BA + item.RA,
+                totalApy: item.SA + item.RA,
                 totalAssets: item.TA,
                 spotApy: item.SA
             }));

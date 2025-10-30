@@ -239,7 +239,7 @@ export function getLowestDisplayValue(
         ? maxDecimalsToDisplay === 2
             ? '0.01'
             : '0.0001'
-        : abbreviateNumber(value, maxDecimalsToDisplay)
+        : abbreviateNumberWithoutRounding(value, maxDecimalsToDisplay, false)
 }
 
 export function getTokenLogo(tokenSymbol: string): string {
@@ -627,7 +627,7 @@ export function formatAmountToDisplay(amount: string) {
     if (isLowestValue(Number(amount ?? 0))) {
         return getLowestDisplayValue(Number(amount ?? 0))
     } else {
-        return abbreviateNumber(Number(amount ?? 0))
+        return abbreviateNumberWithoutRounding(Number(amount ?? 0))
     }
 }
 
@@ -642,27 +642,24 @@ export function convertNegativeToZero(value: number) {
     return value < 0 ? 0 : value
 }
 
-export const abbreviateNumberWithoutRounding = (value: number = 0, decimals: number = 2): string => {
+export const abbreviateNumberWithoutRounding = (value: number = 0, decimals: number = 2, handleSmallValue: boolean = true): string => {
     const truncateToDecimals = (num: number, decimals: number): number => {
         const multiplier = Math.pow(10, decimals);
         return Math.floor(num * multiplier) / multiplier;
     };
 
-    if (value >= 1000000000) {
-        return truncateToDecimals(value / 1000000000, decimals) + 'B'
-    } else if (value >= 1000000) {
-        return truncateToDecimals(value / 1000000, decimals) + 'M'
-    } else if (value >= 1000) {
-        return truncateToDecimals(value / 1000, decimals) + 'K'
-    } else if (value <= -1000000000) {
-        return truncateToDecimals(value / 1000000000, decimals) + 'B'
-    } else if (value <= -1000000) {
-        return truncateToDecimals(value / 1000000, decimals) + 'M'
-    } else if (value <= -1000) {
-        return truncateToDecimals(value / 1000, decimals) + 'K'
-    } else if (value > 0 && value < (decimals === 2 ? 0.01 : 0.0001)) {
+    // Handle very small positive values
+    if (value > 0 && value < (decimals === 2 ? 0.01 : 0.0001) && handleSmallValue) {
         return '<' + (decimals === 2 ? '0.01' : '0.0001')
-    } else {
-        return truncateToDecimals(value, decimals).toString()
     }
+
+    // Truncate the value to the specified decimal places
+    const truncatedValue = truncateToDecimals(value, decimals);
+
+    // Format with thousands separators and minimum decimals
+    return truncatedValue.toLocaleString('en-US', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+        useGrouping: true
+    });
 }

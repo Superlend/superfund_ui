@@ -526,8 +526,8 @@ function PositionDetailsTabContentUI({
                             Your Position
                         </HeadingText>
                     </div>
-                    <div className="grid sm:grid-cols-3 max-md:gap-4">
-                        <div className="flex flex-col items-start w-fit gap-1">
+                    <div className="grid sm:grid-cols-2">
+                        <div className="flex flex-col items-start w-full gap-1">
                             <BodyText
                                 level="body2"
                                 weight="medium"
@@ -553,7 +553,7 @@ function PositionDetailsTabContentUI({
                                 <Skeleton className="h-10 w-16 rounded-4" />
                             )}
                         </div>
-                        <div className="flex flex-col items-start w-fit gap-1">
+                        <div className="flex flex-col items-start w-full gap-1">
                             <InfoTooltip
                                 label={
                                     <BodyText
@@ -595,7 +595,7 @@ function PositionDetailsTabContentUI({
                                 <Skeleton className="h-10 w-16 rounded-4" />
                             )}
                         </div>
-                        <div className="flex flex-col items-start w-fit gap-1">
+                        {/* <div className="flex flex-col items-start w-fit gap-1">
                             <InfoTooltip
                                 label={
                                     <BodyText
@@ -726,7 +726,7 @@ function PositionDetailsTabContentUI({
                             {isLoadingPositionDetails && (
                                 <Skeleton className="h-10 w-16 rounded-4" />
                             )}
-                        </div>
+                        </div> */}
                     </div>
                 </CardContent>
             </Card>
@@ -912,7 +912,7 @@ function PositionDetailsTabContentUI({
             /> */}
 
             {/* Earn more info cards section */}
-            <Card>
+            {/* <Card>
                 <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-2">
@@ -969,40 +969,6 @@ function PositionDetailsTabContentUI({
                                         >
                                             Fair Share
                                         </HeadingText>
-                                        {/* <InfoTooltip
-                                            content={
-                                                <div className="space-y-2">
-                                                    <BodyText
-                                                        level="body2"
-                                                        weight="normal"
-                                                        className="text-gray-600"
-                                                    >
-                                                        Yield is shared fairly
-                                                        as users enter the
-                                                        vault. This can briefly
-                                                        lower your returns — but
-                                                        staying longer helps
-                                                        balance things out.
-                                                    </BodyText>
-                                                    <BodyText
-                                                        level="body3"
-                                                        weight="normal"
-                                                        className="text-gray-500"
-                                                    >
-                                                        <a
-                                                            href={
-                                                                UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL
-                                                            }
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-blue-600 hover:underline"
-                                                        >
-                                                            Learn more →
-                                                        </a>
-                                                    </BodyText>
-                                                </div>
-                                            }
-                                        /> */}
                                     </motion.div>
                                     <motion.div
                                         initial={{ opacity: 0 }}
@@ -1186,7 +1152,7 @@ function PositionDetailsTabContentUI({
                         </motion.div>
                     </div>
                 </CardContent>
-            </Card>
+            </Card> */}
         </motion.div>
     )
 }

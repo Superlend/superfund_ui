@@ -300,14 +300,16 @@ export default function DepositAndWithdrawAssets() {
                             {isLoadingBalance ? (
                                 <LoaderCircle className="text-primary w-4 h-4 animate-spin" />
                             ) : (
-                                abbreviateNumberWithoutRounding(
-                                    Number(
-                                        isDepositPositionType
-                                            ? (balance ?? 0)
-                                            : (userMaxWithdrawAmount ?? 0)
-                                    ),
-                                    2
-                                )
+                                <span className="inline-block truncate max-w-[12ch]">
+                                    {abbreviateNumberWithoutRounding(
+                                        Number(
+                                            isDepositPositionType
+                                                ? (balance ?? 0)
+                                                : (userMaxWithdrawAmount ?? 0)
+                                        ),
+                                        2
+                                    )}
+                                </span>
                             )}
                             <span className="inline-block truncate max-w-[70px]">
                                 USDC

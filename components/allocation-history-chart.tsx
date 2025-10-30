@@ -152,6 +152,7 @@ interface ChartDataPoint {
     date: string
     time: string
     totalAssets: string
+    totalAssetsRaw: number
     allocations: {
         name: string
         value: number
@@ -320,55 +321,39 @@ export function AllocationHistoryChart() {
                 date: formattedDate.split(',')[0],
                 time: time,
                 totalAssets: abbreviateNumber(item.totalAssets),
+                totalAssetsRaw: item.totalAssets, // Keep raw value for Y-axis domain calculation
                 allocations: allocationsWithValues,
                 ...defaultAllocations
             }
 
-            // If there's a next item and values change, add intermediate points
-            if (index < rebalanceHistory.length - 1) {
-                const nextItem = rebalanceHistory[index + 1]
-                const hasChanges = item.allocations.some((allocation: any) => {
-                    const nextAllocation = nextItem.allocations.find((a: any) => a.address === allocation.address)
-                    return (nextAllocation?.value || 0) !== allocation.value
-                })
-
-                if (hasChanges) {
-                    // Add current values point
-                    transformedData.push(dataPoint)
-
-                    // Add intermediate point with same timestamp but next values
-                    const nextAllocationsWithValues = nextItem.allocations
-                        .filter((allocation: any) => allocation.value > 0)
-                        .map((allocation: any) => ({
-                            name: chartConfig[allocation.address]?.label || allocation.name,
-                            value: (nextItem.totalAssets * allocation.value) / 100,
-                            address: allocation.address,
-                        }))
-
-                    const nextDefaultAllocations = Object.keys(chartConfig).reduce((acc, address) => {
-                        acc[address] = 0
-                        return acc
-                    }, {} as Record<string, number>)
-
-                    nextAllocationsWithValues.forEach((allocation: any) => {
-                        nextDefaultAllocations[allocation.address] = allocation.value
-                    })
-
-                    transformedData.push({
-                        ...dataPoint,
-                        allocations: nextAllocationsWithValues,
-                        ...nextDefaultAllocations
-                    })
-                } else {
-                    transformedData.push(dataPoint)
-                }
-            } else {
-                transformedData.push(dataPoint)
-            }
+            transformedData.push(dataPoint)
         })
 
         return transformedData.sort((a, b) => new Date(a.rawTimestamp).getTime() - new Date(b.rawTimestamp).getTime())
-    }, [rebalanceHistory])
+    }, [rebalanceHistory, chartConfig])
+
+    // Calculate max Y-axis value based on actual total assets
+    const yAxisDomain = useMemo(() => {
+        if (chartData.length === 0) return [0, 100]
+        
+        const maxTotalAssets = Math.max(...chartData.map(d => d.totalAssetsRaw || 0))
+        // Add 10% padding to the top
+        const maxWithPadding = maxTotalAssets * 1.1
+        
+        // Verify stacked values match total assets
+        chartData.forEach((d, idx) => {
+            const stackedSum = Object.keys(chartConfig).reduce((sum, address) => {
+                return sum + (d[address] || 0)
+            }, 0)
+            // if (Math.abs(stackedSum - d.totalAssetsRaw) > 1) {
+            //     console.warn(`Data point ${idx}: Stacked sum (${stackedSum}) doesn't match totalAssetsRaw (${d.totalAssetsRaw})`)
+            // }
+        })
+        
+        // console.log('Y-axis domain:', [0, maxWithPadding], 'Max total assets:', maxTotalAssets)
+        
+        return [0, maxWithPadding]
+    }, [chartData, chartConfig])
 
     const memoizedAreasForChart = useMemo(() => {
         // Get unique strategy names from the allocation data
@@ -442,7 +427,7 @@ export function AllocationHistoryChart() {
                 {memoizedAreasForChart}
             </AreaChart>
         </Brush>
-    ), [startIndex, endIndex, memoizedAreasForChart, openDialog])
+    ), [startIndex, memoizedAreasForChart, openDialog])
 
     const content = (
         <Card className="w-full" id="allocation-history">
@@ -508,6 +493,8 @@ export function AllocationHistoryChart() {
                                         tickLine={true}
                                         axisLine={true}
                                         tickMargin={5}
+                                        domain={yAxisDomain}
+                                        allowDataOverflow={false}
                                         tick={({ x, y, payload, index }) => (
                                             <CustomYAxisTick
                                                 payload={payload as { value: number }}

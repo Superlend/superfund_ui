@@ -19,6 +19,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
     abbreviateNumber,
+    abbreviateNumberWithoutRounding,
     decimalPlacesCount,
     getExplorerLink,
     getLowestDisplayValue,
@@ -759,40 +760,44 @@ export default function SuperVaultTxDialog({
                 {isShowBlock({
                     transfer: true,
                 }) && (
-                        <div className="flex items-center gap-4 px-6 py-2 bg-gray-200 lg:bg-white rounded-5 w-full">
-                            <WalletIcon className="shrink-0 w-8 h-8 stroke-gray-600" />
-                            <div className="flex flex-col items-start gap-0 w-full">
-                                <div className="flex items-center justify-between w-fit max-md:gap-1">
-                                    <HeadingText
-                                        level="h3"
-                                        weight="normal"
-                                        className="text-gray-800 flex items-center gap-1"
-                                    >
-                                        {getTruncatedTxHash(assetDetails?.asset?.toWalletAddress)}
-                                    </HeadingText>
-                                    <CopyToClipBoardButton text={assetDetails?.asset?.toWalletAddress} />
-                                </div>
-                                <div className="flex items-center justify-start gap-1.5">
-                                    <BodyText
-                                        level="body2"
-                                        weight="medium"
-                                        className="text-gray-600"
-                                    >
-                                        Receiver
-                                    </BodyText>
-                                    <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
-                                    <BodyText
-                                        level="body2"
-                                        weight="medium"
-                                        className="text-gray-600 flex items-center gap-1"
-                                    >
-                                        {
-                                            chainDetails[
-                                                selectedChain as keyof typeof chainDetails
-                                            ]?.name
-                                        }
-                                    </BodyText>
-                                    {/* <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
+                    <div className="flex items-center gap-4 px-6 py-2 bg-gray-200 lg:bg-white rounded-5 w-full">
+                        <WalletIcon className="shrink-0 w-8 h-8 stroke-gray-600" />
+                        <div className="flex flex-col items-start gap-0 w-full">
+                            <div className="flex items-center justify-between w-fit max-md:gap-1">
+                                <HeadingText
+                                    level="h3"
+                                    weight="normal"
+                                    className="text-gray-800 flex items-center gap-1"
+                                >
+                                    {getTruncatedTxHash(
+                                        assetDetails?.asset?.toWalletAddress
+                                    )}
+                                </HeadingText>
+                                <CopyToClipBoardButton
+                                    text={assetDetails?.asset?.toWalletAddress}
+                                />
+                            </div>
+                            <div className="flex items-center justify-start gap-1.5">
+                                <BodyText
+                                    level="body2"
+                                    weight="medium"
+                                    className="text-gray-600"
+                                >
+                                    Receiver
+                                </BodyText>
+                                <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
+                                <BodyText
+                                    level="body2"
+                                    weight="medium"
+                                    className="text-gray-600 flex items-center gap-1"
+                                >
+                                    {
+                                        chainDetails[
+                                            selectedChain as keyof typeof chainDetails
+                                        ]?.name
+                                    }
+                                </BodyText>
+                                {/* <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
                                     <BodyText
                                         level="body3"
                                         weight="medium"
@@ -800,75 +805,77 @@ export default function SuperVaultTxDialog({
                                     >
                                         {PlatformTypeMap[assetDetails?.protocol_type as keyof typeof PlatformTypeMap]}
                                     </BodyText> */}
-                                </div>
                             </div>
                         </div>
-                    )}
+                    </div>
+                )}
                 {/* Block 1 */}
                 {isShowBlock({
                     deposit: true,
                     withdraw: true,
                     transfer: true,
                 }) && (
-                        <div className="flex items-center gap-4 px-6 py-2 bg-gray-200 lg:bg-white rounded-5 w-full">
-                            <ImageWithBadge
-                                mainImg={assetDetails?.asset?.token?.logo || ''}
-                                badgeImg={
-                                    chainDetails[
-                                        selectedChain as keyof typeof chainDetails
-                                    ]?.logo
-                                }
-                                mainImgAlt={assetDetails?.asset?.token?.symbol}
-                                badgeImgAlt={
-                                    chainDetails[
-                                        selectedChain as keyof typeof chainDetails
-                                    ]?.name
-                                }
-                                mainImgWidth={'32'}
-                                mainImgHeight={'32'}
-                                badgeImgWidth={'12'}
-                                badgeImgHeight={'12'}
-                                badgeCustomClass={'bottom-[-2px] right-[1px]'}
-                            />
-                            <div className="flex flex-col items-start gap-0 w-full">
-                                <HeadingText
-                                    level="h3"
-                                    weight="normal"
-                                    className="text-gray-800 flex items-center gap-1"
+                    <div className="flex items-center gap-4 px-6 py-2 bg-gray-200 lg:bg-white rounded-5 w-full">
+                        <ImageWithBadge
+                            mainImg={assetDetails?.asset?.token?.logo || ''}
+                            badgeImg={
+                                chainDetails[
+                                    selectedChain as keyof typeof chainDetails
+                                ]?.logo
+                            }
+                            mainImgAlt={assetDetails?.asset?.token?.symbol}
+                            badgeImgAlt={
+                                chainDetails[
+                                    selectedChain as keyof typeof chainDetails
+                                ]?.name
+                            }
+                            mainImgWidth={'32'}
+                            mainImgHeight={'32'}
+                            badgeImgWidth={'12'}
+                            badgeImgHeight={'12'}
+                            badgeCustomClass={'bottom-[-2px] right-[1px]'}
+                        />
+                        <div className="flex flex-col items-start gap-0 w-full">
+                            <HeadingText
+                                level="h3"
+                                weight="normal"
+                                className="text-gray-800 flex items-center gap-1"
+                            >
+                                {abbreviateNumberWithoutRounding(
+                                    Number(amount),
+                                    decimalPlacesCount(amount),
+                                    false
+                                )}
+                                <span
+                                    className="inline-block truncate max-w-[150px]"
+                                    title={assetDetails?.asset?.token?.symbol}
                                 >
-                                    {Number(amount).toFixed(
-                                        decimalPlacesCount(amount)
+                                    {assetDetails?.asset?.token?.symbol}
+                                </span>
+                            </HeadingText>
+                            <div className="flex items-center justify-start gap-1.5">
+                                <BodyText
+                                    level="body2"
+                                    weight="medium"
+                                    className="text-gray-600"
+                                >
+                                    {handleInputUsdAmount(
+                                        inputUsdAmount.toString()
                                     )}
-                                    <span
-                                        className="inline-block truncate max-w-[150px]"
-                                        title={assetDetails?.asset?.token?.symbol}
-                                    >
-                                        {assetDetails?.asset?.token?.symbol}
-                                    </span>
-                                </HeadingText>
-                                <div className="flex items-center justify-start gap-1.5">
-                                    <BodyText
-                                        level="body2"
-                                        weight="medium"
-                                        className="text-gray-600"
-                                    >
-                                        {handleInputUsdAmount(
-                                            inputUsdAmount.toString()
-                                        )}
-                                    </BodyText>
-                                    <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
-                                    <BodyText
-                                        level="body2"
-                                        weight="medium"
-                                        className="text-gray-600 flex items-center gap-1"
-                                    >
-                                        {
-                                            chainDetails[
-                                                selectedChain as keyof typeof chainDetails
-                                            ]?.name
-                                        }
-                                    </BodyText>
-                                    {/* <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
+                                </BodyText>
+                                <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
+                                <BodyText
+                                    level="body2"
+                                    weight="medium"
+                                    className="text-gray-600 flex items-center gap-1"
+                                >
+                                    {
+                                        chainDetails[
+                                            selectedChain as keyof typeof chainDetails
+                                        ]?.name
+                                    }
+                                </BodyText>
+                                {/* <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
                                     <BodyText
                                         level="body3"
                                         weight="medium"
@@ -876,16 +883,16 @@ export default function SuperVaultTxDialog({
                                     >
                                         {PlatformTypeMap[assetDetails?.protocol_type as keyof typeof PlatformTypeMap]}
                                     </BodyText> */}
-                                </div>
                             </div>
                         </div>
-                    )}
+                    </div>
+                )}
                 {/* Block 2 */}
                 {isShowBlock({
                     deposit: true,
                     withdraw: false,
-                }) &&
-                    (<div className="flex flex-col items-center justify-between px-6 bg-gray-200 lg:bg-white rounded-5 divide-y divide-gray-300 py-1">
+                }) && (
+                    <div className="flex flex-col items-center justify-between px-6 bg-gray-200 lg:bg-white rounded-5 divide-y divide-gray-300 py-1">
                         <div
                             className={`flex items-center justify-between w-full py-1`}
                         >
@@ -928,7 +935,8 @@ export default function SuperVaultTxDialog({
                                 {assetDetails?.asset?.token?.symbol}
                             </BodyText>
                         </div> */}
-                    </div>)}
+                    </div>
+                )}
                 {/* Block 3 */}
                 {/* Email subscription for successful deposits */}
                 {/* {isShowBlock({
