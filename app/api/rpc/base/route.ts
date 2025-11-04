@@ -46,6 +46,14 @@ async function tryProvider(
         }
 
         const data = await response.json()
+
+        // Check for JSON-RPC errors (even if HTTP status is 200)
+        if (data.error) {
+            throw new Error(
+                `JSON-RPC error ${data.error.code}: ${data.error.message}`
+            )
+        }
+
         return data
     } catch (error) {
         clearTimeout(timeoutId)
