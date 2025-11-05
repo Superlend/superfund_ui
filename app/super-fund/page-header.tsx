@@ -44,12 +44,12 @@ export default function PageHeader() {
                                 USDC SuperFund
                             </HeadingText>
                             <div className="flex items-center gap-2 flex-wrap">
-                                <Badge variant="green" size="md">
-                                    Low Risk
-                                </Badge>
                                 <div className="network-controls inline-flex items-center bg-white rounded-3 border border-gray-200 shadow-sm h-6 gap-1 pr-1 w-fit">
                                     <ChainSelector />
                                 </div>
+                                <Badge variant="yellow" size="md">
+                                    Low-Moderate Risk
+                                </Badge>
                             </div>
                         </div>
                         <BodyText level="body2" weight="medium" className="text-gray-600 max-sm:mt-2">
