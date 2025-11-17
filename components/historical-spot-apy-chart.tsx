@@ -14,6 +14,7 @@ import { TimelineFilterTabs } from '@/components/tabs/timeline-filter-tabs'
 import { useApyData } from '@/context/apy-data-provider'
 import { getRewardsTooltipContent, getRewardsTooltipMobileContent } from '@/lib/ui/getRewardsTooltipContent'
 import useDimensions from '@/hooks/useDimensions'
+import { handleDynamicNativeBoost, isEligibleForNativeBoost } from '@/lib/handleNativeBoost'
 
 enum ChartType {
     Area = 'area',
@@ -68,7 +69,8 @@ function CustomTooltip({ active, payload, label }: any) {
                                 key: 'superlend_rewards_apy',
                                 key_name: 'Superlend USDC Reward',
                                 value: abbreviateNumberWithoutRounding(Number(data?.boostApy)),
-                                logo: "/images/tokens/usdc.webp"
+                                logo: "/images/tokens/usdc.webp",
+                                show: Number(data?.boostApy) > 0
                             },
                         ],
                         apyCurrent: Number(data?.totalApy),
@@ -101,7 +103,8 @@ function CustomTooltip({ active, payload, label }: any) {
                                 key: 'superlend_rewards_apy',
                                 key_name: 'Superlend USDC Reward',
                                 value: abbreviateNumberWithoutRounding(Number(data?.boostApy)),
-                                logo: "/images/tokens/usdc.webp"
+                                logo: "/images/tokens/usdc.webp",
+                                show: Number(data?.boostApy) > 0
                             },
                         ],
                         apyCurrent: Number(data?.totalApy),
@@ -149,17 +152,18 @@ export default function HistoricalSpotApyChart({
     const { width } = useDimensions();
     const isDesktop = width > 768;
     const [chartType, setChartType] = useState<ChartType>(ChartType.Area)
-    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy, boostApyStartDate } = useApyData()
+    // const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy, boostApyStartDate } = useApyData()
     const averageSpotApy = useMemo(() => {
         if (!historicalData || historicalData.length === 0) return 0
         return historicalData.reduce((acc: number, item: any) => {
-            const date = new Date(item.timestamp * 1000)
+            const date = new Date(item.timestamp * 1000).getTime();
             // Only add BOOST_APY if the date is on or after May 12, 2025
-            const shouldAddBoost = date.getTime() >= boostApyStartDate;
+            const shouldAddBoost = isEligibleForNativeBoost(date);
+            const BOOST_APY = handleDynamicNativeBoost(Number(item.totalAssets));
             const TOTAL_SPOT_APY = Number(item.spotApy) + Number(item.rewardsApy) + (shouldAddBoost ? Number(BOOST_APY ?? 0) : 0);
             return acc + TOTAL_SPOT_APY
         }, 0) / historicalData.length
-    }, [historicalData, BOOST_APY, boostApyStartDate])
+    }, [historicalData])
 
     const chartData = useMemo(() => {
         return historicalData?.map((item: any) => {
@@ -174,10 +178,12 @@ export default function HistoricalSpotApyChart({
                 dateOptions
             ).format(date)
             const time = extractTimeFromDate(date, { exclude: ['seconds'] })
+            const timestamp = new Date(item.timestamp * 1000).getTime();
 
             // Only add BOOST_APY if the date is on or after May 12, 2025
-            const shouldAddBoost = date.getTime() >= boostApyStartDate;
-            const TOTAL_SPOT_APY = Number(item.spotApy) + Number(item.rewardsApy) + (shouldAddBoost ? Number(BOOST_APY ?? 0) : 0);
+            const shouldAddBoost = isEligibleForNativeBoost(timestamp);
+            const BOOST_APY = handleDynamicNativeBoost(Number(item.totalAssets));
+            const TOTAL_SPOT_APY = Number(item.spotApy) + Number(item.rewardsApy) + (shouldAddBoost ? BOOST_APY : 0);
 
             return {
                 rawTimestamp: item.timestamp,
@@ -190,7 +196,7 @@ export default function HistoricalSpotApyChart({
                 totalApy: Number(TOTAL_SPOT_APY).toFixed(2),
             }
         }).sort((a, b) => new Date(a.rawTimestamp).getTime() - new Date(b.rawTimestamp).getTime())
-    }, [historicalData, BOOST_APY, boostApyStartDate])
+    }, [historicalData])
 
     const yAxisDomain = useMemo(() => {
         if (!chartData || chartData.length === 0) return [0, 100]

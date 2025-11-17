@@ -198,15 +198,15 @@ function PositionDetailsTabContentUI({
         chainId: selectedChain,
         userAddress: walletAddress,
     })
-    const GLOBAL_BOOST_APY =
-        boostRewardsData
-            ?.filter(
-                (item) =>
-                    item.description?.includes(
-                        'A global boost for all users'
-                    ) ?? false
-            )
-            .reduce((acc, curr) => acc + curr.boost_apy / 100, 0) ?? 0
+    // const GLOBAL_BOOST_APY =
+    //     boostRewardsData
+    //         ?.filter(
+    //             (item) =>
+    //                 item.description?.includes(
+    //                     'A global boost for all users'
+    //                 ) ?? false
+    //         )
+    //         .reduce((acc, curr) => acc + curr.boost_apy / 100, 0) ?? 0
     const Farcaster_BOOST_APY =
         boostRewardsData
             ?.filter(
@@ -297,7 +297,7 @@ function PositionDetailsTabContentUI({
     const baseAPY =
         Number(spotApy ?? 0) +
         Number(effectiveApyData?.rewards_apy ?? 0) +
-        Number(GLOBAL_BOOST_APY ?? 0) +
+        // Number(GLOBAL_BOOST_APY ?? 0) +
         Number(Farcaster_BOOST_APY ?? 0)
     const LIQUIDITY_LAND_BOOST_APY = useMemo(() => {
         if (!isLiquidityLandUser) return 0
@@ -396,17 +396,17 @@ function PositionDetailsTabContentUI({
         const totalApy =
             Number(effectiveApyData?.rewards_apy ?? 0) +
             Number(spotApy ?? 0) +
-            Number(GLOBAL_BOOST_APY ?? 0) +
+            // Number(GLOBAL_BOOST_APY ?? 0) +
             Number(Farcaster_BOOST_APY ?? 0) +
             Number(LIQUIDITY_LAND_BOOST_APY ?? 0)
         const totalVaultApy =
             Number(effectiveApyData?.total_apy ?? 0) +
-            Number(GLOBAL_BOOST_APY ?? 0) +
+            // Number(GLOBAL_BOOST_APY ?? 0) +
             Number(Farcaster_BOOST_APY ?? 0)
         const total7DayAvgVaultApy =
             Number(days_7_avg_base_apy ?? 0) +
             Number(days_7_avg_rewards_apy ?? 0) +
-            Number(GLOBAL_BOOST_APY ?? 0) +
+            // Number(GLOBAL_BOOST_APY ?? 0) +
             Number(Farcaster_BOOST_APY ?? 0)
 
         return {
@@ -417,7 +417,7 @@ function PositionDetailsTabContentUI({
     }, [
         effectiveApyData,
         spotApy,
-        GLOBAL_BOOST_APY,
+        // GLOBAL_BOOST_APY,
         Farcaster_BOOST_APY,
         days_7_avg_base_apy,
         days_7_avg_rewards_apy,
@@ -461,7 +461,7 @@ function PositionDetailsTabContentUI({
                             <Skeleton className="h-10 w-16 rounded-4" />
                         </div>
                         <div className="w-[1.5px] h-4 bg-secondary-100/50 rounded-full m-auto"></div>
-                        <div className="flex flex-col items-start w-fit gap-1 m-auto">
+                        {/* <div className="flex flex-col items-start w-fit gap-1 m-auto">
                             <BodyText
                                 level="body2"
                                 weight="medium"
@@ -470,7 +470,7 @@ function PositionDetailsTabContentUI({
                                 Unrealized Interest
                             </BodyText>
                             <Skeleton className="h-10 w-16 rounded-4" />
-                        </div>
+                        </div> */}
                     </CardContent>
                 </Card>
                 <Card>
@@ -595,7 +595,7 @@ function PositionDetailsTabContentUI({
                                 <Skeleton className="h-10 w-16 rounded-4" />
                             )}
                         </div>
-                        <div className="flex flex-col items-start w-fit gap-1">
+                        {/* <div className="flex flex-col items-start w-fit gap-1">
                             <InfoTooltip
                                 label={
                                     <BodyText
@@ -726,7 +726,7 @@ function PositionDetailsTabContentUI({
                             {isLoadingPositionDetails && (
                                 <Skeleton className="h-10 w-16 rounded-4" />
                             )}
-                        </div>
+                        </div> */}
                     </div>
                 </CardContent>
             </Card>

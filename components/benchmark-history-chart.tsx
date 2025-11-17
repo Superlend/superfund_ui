@@ -48,6 +48,7 @@ import {
     TCustomYAxisTickProps
 } from '@/types/benchmark-chart'
 import { useApyData } from '@/context/apy-data-provider'
+import { handleDynamicNativeBoost, isEligibleForNativeBoost } from '@/lib/handleNativeBoost'
 
 // Add a new type for top morpho data
 interface TopMorphoInfo {
@@ -62,7 +63,7 @@ export function BenchmarkHistoryChart() {
     const [apiPeriod, setApiPeriod] = useState<Period | 'YEAR'>(Period.oneMonth)
     const [aaveRewardApy, setAaveRewardApy] = useState<number>(0)
     const { selectedChain } = useChain()
-    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy, boostApyStartDate } = useApyData()
+    // const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy, boostApyStartDate } = useApyData()
 
     // Get Superfund data
     // const { historicalData: superfundData, isLoading: superfundLoading } = useHistoricalData({
@@ -166,10 +167,12 @@ export function BenchmarkHistoryChart() {
 
         // Create maps for faster lookups
         const superfundMap = new Map<number, number>();
+        const superfundTvlMap = new Map<number, number>();
         if (superfundData && Array.isArray(superfundData)) {
             superfundData.forEach((item: any) => {
                 if (item && item.timestamp && item.totalApy && item.rewardsApy) {
                     superfundMap.set(item.timestamp, Number(item.spotApy ?? 0) + Number(item.rewardsApy ?? 0));
+                    superfundTvlMap.set(item.timestamp, Number(item.totalAssets ?? 0));
                 }
             });
         }
@@ -263,6 +266,7 @@ export function BenchmarkHistoryChart() {
             // Normalize timestamps to milliseconds if needed
             let normalizedSuperfundTimestamps = superfundTimestamps;
             let normalizedSuperfundMap = superfundMap;
+            let normalizedSuperfundTvlMap = superfundTvlMap;
             let normalizedAaveTimestamps = aaveTimestamps;
             let normalizedAaveMap = aaveMap;
             let normalizedMorphoMaps = morphoMaps;
@@ -279,9 +283,13 @@ export function BenchmarkHistoryChart() {
                     eulerFirstTimestamp?.toString().length === 13)) {
                 // Superfund in seconds, others in milliseconds
                 normalizedSuperfundMap = new Map();
+                normalizedSuperfundTvlMap = new Map();
                 normalizedSuperfundTimestamps = superfundTimestamps.map(ts => ts * 1000);
                 superfundMap.forEach((value, key) => {
                     normalizedSuperfundMap.set(key * 1000, value);
+                });
+                superfundTvlMap.forEach((value, key) => {
+                    normalizedSuperfundTvlMap.set(key * 1000, value);
                 });
             } else if (superfundFirstTimestamp.toString().length === 13 &&
                 (aaveFirstTimestamp?.toString().length === 10 ||
@@ -356,6 +364,7 @@ export function BenchmarkHistoryChart() {
             const combined = normalizedSuperfundTimestamps.map(timestamp => {
                 // Get Superfund value
                 const superfundValue = normalizedSuperfundMap.get(timestamp);
+                const superlendTvlValue = normalizedSuperfundTvlMap.get(timestamp);
 
                 // Try exact match for Aave first
                 let aaveValue = null;
@@ -427,6 +436,7 @@ export function BenchmarkHistoryChart() {
                 return {
                     timestamp,
                     superfund: superfundValue as number,
+                    superlendTvl: superlendTvlValue as number,
                     aave: aaveValue,
                     isAaveApproximated,
                     fluid: fluidValue,
@@ -512,7 +522,7 @@ export function BenchmarkHistoryChart() {
         if (!historicalData) return []
 
         return historicalData.map((item: TBenchmarkDataPoint) => {
-            const date = new Date(item.timestamp)
+            const date = new Date(item.timestamp * 1000)
             const dateOptions: any = {
                 year: 'numeric',
                 month: 'short',
@@ -531,7 +541,8 @@ export function BenchmarkHistoryChart() {
             }).format(date);
 
             // Check if the date is on or after boost APY start date
-            const shouldAddBoost = date.getTime() >= boostApyStartDate;
+            const shouldAddBoost = isEligibleForNativeBoost(item.timestamp);
+            const BOOST_APY = handleDynamicNativeBoost(Number(item.superlendTvl ?? 0));
 
             const superfundValue = Number(item.superfund) + (shouldAddBoost ? Number(BOOST_APY ?? 0) : 0);
 
@@ -543,9 +554,11 @@ export function BenchmarkHistoryChart() {
                 timestamp: `${formattedDate} ${time}`,
                 timeValue: time,
                 superfund: superfundValue ?? null,
+                superlendTvl: item.superlendTvl ?? null,
                 aave: selectedChain === ChainId.Sonic ? ((item.aave ?? 0) + aaveRewardApy) : (item.aave ?? null),
                 isAaveApproximated: item.isAaveApproximated || false,
                 superfundDisplay: abbreviateNumber(superfundValue ?? 0),
+                superlendTvlDisplay: abbreviateNumber(item.superlendTvl ?? 0),
                 aaveDisplay: abbreviateNumber(selectedChain === ChainId.Sonic ? ((item.aave ?? 0) + aaveRewardApy) : (item.aave ?? 0)),
                 fluid: item.fluid ?? null,
                 isFluidApproximated: item.isFluidApproximated || false,

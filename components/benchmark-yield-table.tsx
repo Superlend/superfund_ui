@@ -36,6 +36,7 @@ import useGetBenchmarkHistory from '@/hooks/useGetBenchmarkHistory'
 import { abbreviateNumber, getBoostApy } from '@/lib/utils'
 import ImageWithDefault from './ImageWithDefault'
 import { useApyData } from '@/context/apy-data-provider'
+import { handleDynamicNativeBoost, isEligibleForNativeBoost } from '@/lib/handleNativeBoost'
 
 // Add the TopMorphoInfo interface for consistency with the chart component
 interface TopMorphoInfo {
@@ -61,7 +62,7 @@ export function BenchmarkYieldTable() {
     const [benchmarkData, setBenchmarkData] = useState<BenchmarkData[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const { selectedChain } = useChain()
-    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy, boostApyStartDate } = useApyData()
+    // const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy, boostApyStartDate } = useApyData()
 
     // Get Superfund data
     // const { historicalData: superfundData, isLoading: superfundLoading } = useHistoricalData({
@@ -180,8 +181,8 @@ export function BenchmarkYieldTable() {
 
         const total = data.reduce((sum: number, item: any) => {
             const currentDate = new Date(item.timestamp * 1000).getTime();
-            // Only add BOOST_APY if the date is on or after May 12, 2025
-            const shouldAddBoost = currentDate >= boostApyStartDate;
+            const shouldAddBoost = isEligibleForNativeBoost(currentDate);
+            const BOOST_APY = handleDynamicNativeBoost(Number(item.totalAssets ?? 0));
             const itemValue = (Number(item.spotApy ?? 0) + Number(item.rewardsApy ?? 0)) + (shouldAddBoost ? Number(BOOST_APY ?? 0) : 0);
             return sum + (itemValue || 0);
         }, 0);
@@ -461,7 +462,7 @@ export function BenchmarkYieldTable() {
                     className="mt-2 sm:mt-0"
                 />
             </CardHeader>
-            <CardContent className="px-0 px-3 overflow-x-auto">
+            <CardContent className="px-3 overflow-x-auto">
                 {isLoading ? (
                     <div className="px-3 py-4">
                         <Skeleton className="h-64 w-full rounded-4" />

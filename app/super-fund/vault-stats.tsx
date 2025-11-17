@@ -19,6 +19,10 @@ import { useUserBalance } from '@/hooks/vault_hooks/useUserBalanceHook'
 import { useVaultHook } from '@/hooks/vault_hooks/vaultHook'
 import { starVariants } from '@/lib/animations'
 import { VAULT_ADDRESS_MAP } from '@/lib/constants'
+import {
+    handleDynamicNativeBoost,
+    isEligibleForNativeBoost,
+} from '@/lib/handleNativeBoost'
 import { getRewardsTooltipContent } from '@/lib/ui/getRewardsTooltipContent'
 import {
     abbreviateNumberWithoutRounding,
@@ -53,15 +57,15 @@ export default function VaultStats() {
         error: errorVault,
     } = useVaultHook()
 
-    const GLOBAL_BOOST_APY =
-        boostRewardsData
-            ?.filter(
-                (item: any) =>
-                    item.description?.includes(
-                        'A global boost for all users'
-                    ) ?? false
-            )
-            .reduce((acc: any, curr: any) => acc + curr.boost_apy / 100, 0) ?? 0
+    // const GLOBAL_BOOST_APY =
+    //     boostRewardsData
+    //         ?.filter(
+    //             (item: any) =>
+    //                 item.description?.includes(
+    //                     'A global boost for all users'
+    //                 ) ?? false
+    //         )
+    //         .reduce((acc: any, curr: any) => acc + curr.boost_apy / 100, 0) ?? 0
 
     const Farcaster_BOOST_APY =
         boostRewardsData
@@ -130,11 +134,11 @@ export default function VaultStats() {
         chain_id: selectedChain,
     })
 
-    const {
-        boostApy: BOOST_APY,
-        isLoading: isLoadingBoostApy,
-        boostApyStartDate,
-    } = useApyData()
+    // const {
+    //     boostApy: BOOST_APY,
+    //     isLoading: isLoadingBoostApy,
+    //     boostApyStartDate,
+    // } = useApyData()
 
     const totalInterestEarned = useMemo(() => {
         return (
@@ -162,7 +166,7 @@ export default function VaultStats() {
     const baseAPY =
         Number(spotApy ?? 0) +
         Number(effectiveApyData?.rewards_apy ?? 0) +
-        Number(GLOBAL_BOOST_APY ?? 0) +
+        // Number(GLOBAL_BOOST_APY ?? 0) +
         Number(Farcaster_BOOST_APY ?? 0)
 
     const TOTAL_APY = baseAPY
@@ -177,9 +181,12 @@ export default function VaultStats() {
             return 0
         return (
             historicalSpotApyData.reduce((acc: number, item: any) => {
-                const date = new Date(item.timestamp * 1000)
+                const date = new Date(item.timestamp * 1000).getTime()
                 // Only add BOOST_APY if the date is on or after May 12, 2025
-                const shouldAddBoost = date.getTime() >= boostApyStartDate
+                const shouldAddBoost = isEligibleForNativeBoost(date)
+                const BOOST_APY = handleDynamicNativeBoost(
+                    Number(item.totalAssets)
+                )
                 const TOTAL_SPOT_APY =
                     Number(item.spotApy) +
                     Number(item.rewardsApy) +
@@ -187,7 +194,7 @@ export default function VaultStats() {
                 return acc + TOTAL_SPOT_APY
             }, 0) / historicalSpotApyData.length
         )
-    }, [historicalSpotApyData, BOOST_APY, boostApyStartDate])
+    }, [historicalSpotApyData])
 
     const positionBreakdownList = [
         {
@@ -282,14 +289,14 @@ export default function VaultStats() {
                         ),
                         show: Number(effectiveApyData?.rewards_apy ?? 0) > 0,
                     },
-                    {
-                        key: 'superlend_rewards_apy',
-                        key_name: 'Superlend USDC Reward',
-                        value: abbreviateNumberWithoutRounding(
-                            GLOBAL_BOOST_APY ?? 0
-                        ),
-                        logo: '/images/tokens/usdc.webp',
-                    },
+                    // {
+                    //     key: 'superlend_rewards_apy',
+                    //     key_name: 'Superlend USDC Reward',
+                    //     value: abbreviateNumberWithoutRounding(
+                    //         GLOBAL_BOOST_APY ?? 0
+                    //     ),
+                    //     logo: '/images/tokens/usdc.webp',
+                    // },
                     {
                         key: 'farcaster_rewards_apy',
                         key_name: 'Farcaster Yieldrop',
@@ -332,8 +339,7 @@ export default function VaultStats() {
                     </div>
                 )
             },
-            isLoading:
-                isLoadingEffectiveApy || isLoadingSpotApy || isLoadingBoostApy,
+            isLoading: isLoadingEffectiveApy || isLoadingSpotApy,
             error: isErrorEffectiveApy,
         },
         {

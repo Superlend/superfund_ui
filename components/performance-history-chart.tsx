@@ -34,6 +34,7 @@ import { Expand } from 'lucide-react'
 import { BodyText, HeadingText } from './ui/typography'
 import { Skeleton } from './ui/skeleton'
 import { useApyData } from '@/context/apy-data-provider'
+import { handleDynamicNativeBoost, isEligibleForNativeBoost } from '@/lib/handleNativeBoost'
 
 
 const CustomTooltip = ({ active, payload }: any) => {
@@ -168,7 +169,7 @@ export function PerformanceHistoryChart() {
     })
     const [startIndex, setStartIndex] = useState(0)
     const [endIndex, setEndIndex] = useState(historicalData.length - 1)
-    const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy, boostApyStartDate } = useApyData()
+    // const { boostApy: BOOST_APY, isLoading: isLoadingBoostApy, boostApyStartDate } = useApyData()
 
     useEffect(() => {
         setStartIndex(0)
@@ -194,7 +195,8 @@ export function PerformanceHistoryChart() {
             const time = extractTimeFromDate(date, { exclude: ['seconds'] })
             
             // Only add BOOST_APY if the date is on or after May 12, 2025
-            const shouldAddBoost = date.getTime() >= boostApyStartDate;
+            const shouldAddBoost = isEligibleForNativeBoost(date.getTime());
+            const BOOST_APY = handleDynamicNativeBoost(Number(item.totalAssets ?? 0));
             const totalApyValue = shouldAddBoost ? Number(item.totalApy) + BOOST_APY : Number(item.totalApy);
 
             return {
