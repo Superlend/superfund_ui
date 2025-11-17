@@ -11,6 +11,7 @@ export type TBenchmarkProtocol = {
 export type TBenchmarkDataPoint = {
     timestamp: number
     superfund: number | null
+    superlendTvl?: number | null
     aave: number | null
     fluid?: number | null
     morphoGauntletPrime?: number | null
@@ -39,6 +40,7 @@ export type TFormattedBenchmarkDataPoint = TBenchmarkDataPoint & {
     timestamp: string
     timeValue: string
     superfundDisplay: string
+    superlendTvlDisplay?: string
     aaveDisplay: string
     fluidDisplay?: string
     morphoGauntletPrimeDisplay?: string

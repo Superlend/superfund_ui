@@ -110,15 +110,15 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
         userAddress: walletAddress,
     })
 
-    const GLOBAL_BOOST_APY =
-        boostRewardsData
-            ?.filter(
-                (item) =>
-                    item.description?.includes(
-                        'A global boost for all users'
-                    ) ?? false
-            )
-            .reduce((acc, curr) => acc + curr.boost_apy / 100, 0) ?? 0
+    // const GLOBAL_BOOST_APY =
+    //     boostRewardsData
+    //         ?.filter(
+    //             (item) =>
+    //                 item.description?.includes(
+    //                     'A global boost for all users'
+    //                 ) ?? false
+    //         )
+    //         .reduce((acc, curr) => acc + curr.boost_apy / 100, 0) ?? 0
 
     const Farcaster_BOOST_APY =
         boostRewardsData
@@ -141,7 +141,7 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
     const baseAPY =
         Number(effectiveApyData?.rewards_apy ?? 0) +
         Number(effectiveApyData?.base_apy ?? 0) +
-        Number(GLOBAL_BOOST_APY ?? 0) +
+        // Number(GLOBAL_BOOST_APY ?? 0) +
         Number(Farcaster_BOOST_APY ?? 0)
 
     const LIQUIDITY_LAND_BOOST_APY = useMemo(() => {
@@ -153,7 +153,7 @@ export default function TransferDialog({ open, setOpen }: TransferDialogProps) {
 
     const TOTAL_APY =
         Number(effectiveApyData?.rewards_apy ?? 0) +
-        Number(GLOBAL_BOOST_APY ?? 0) +
+        // Number(GLOBAL_BOOST_APY ?? 0) +
         Number(Farcaster_BOOST_APY ?? 0) +
         Number(effectiveApyData?.base_apy ?? 0) +
         Number(LIQUIDITY_LAND_BOOST_APY ?? 0)

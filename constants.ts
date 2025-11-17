@@ -30,7 +30,7 @@ export type TChainNamesBasedOnAaveMarkets = {
     bsc: 'bnb'
 }
 
-export const PERIOD_LIST: { label: string, value: Period }[] = [
+export const PERIOD_LIST: { label: string; value: Period }[] = [
     // {
     //     label: PeriodDisplay.oneDay,
     //     value: Period.oneDay,
@@ -287,10 +287,16 @@ export const MORPHO_WEBSITE_LINK = 'https://morpho.org/'
 export const EIP_20_SIGNED_APPROVALS_LINK =
     'https://eips.ethereum.org/EIPS/eip-2612'
 
-export const DOCUMENTATION_LINK = 'https://docs.superlend.xyz/superlend-vaults/superfunds'
+export const DOCUMENTATION_LINK =
+    'https://docs.superlend.xyz/superlend-vaults/superfunds'
 
-export const APY_RAMP_UP_EXPLANATION_DOCUMENTATION_LINK = 'https://docs.craft.do/editor/d/71fd7b22-8910-4b24-ee21-5c14ab0a71b2/CC6AEE76-9654-4E89-94F3-8B379327BC27?s=S3onFRBLuVP1Auieom2o2rEXcKhAQqvQvxwUaPCcyEgx'
+export const APY_RAMP_UP_EXPLANATION_DOCUMENTATION_LINK =
+    'https://docs.craft.do/editor/d/71fd7b22-8910-4b24-ee21-5c14ab0a71b2/CC6AEE76-9654-4E89-94F3-8B379327BC27?s=S3onFRBLuVP1Auieom2o2rEXcKhAQqvQvxwUaPCcyEgx'
 
-export const UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL = 'https://docs.superlend.xyz/superlend-vaults/superfunds/how-it-works#understanding-earnings-on-superfund'
+export const UNDERSTAND_EARNINGS_ON_SUPERFUND_BLOG_URL =
+    'https://docs.superlend.xyz/superlend-vaults/superfunds/how-it-works#understanding-earnings-on-superfund'
 
 export const LIQUIDITY_LAND_TARGET_APY = 15
+
+export const NATIVE_BOOST_APY_START_DATE = new Date(1747229347000).getTime()
+export const NATIVE_BOOST_APY_END_DATE = new Date(1762108547000).getTime()

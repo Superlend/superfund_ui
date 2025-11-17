@@ -116,15 +116,15 @@ export default function DepositAndWithdrawAssets() {
         chainId: selectedChain,
         userAddress: walletAddress,
     })
-    const GLOBAL_BOOST_APY =
-        boostRewardsData
-            ?.filter(
-                (item) =>
-                    item.description?.includes(
-                        'A global boost for all users'
-                    ) ?? false
-            )
-            .reduce((acc, curr) => acc + curr.boost_apy / 100, 0) ?? 0
+    // const GLOBAL_BOOST_APY =
+    //     boostRewardsData
+    //         ?.filter(
+    //             (item) =>
+    //                 item.description?.includes(
+    //                     'A global boost for all users'
+    //                 ) ?? false
+    //         )
+    //         .reduce((acc, curr) => acc + curr.boost_apy / 100, 0) ?? 0
     const Farcaster_BOOST_APY =
         boostRewardsData
             ?.filter(
@@ -136,7 +136,7 @@ export default function DepositAndWithdrawAssets() {
     const baseAPY =
         Number(spotApy ?? 0) +
         Number(effectiveApyData?.rewards_apy ?? 0) +
-        Number(GLOBAL_BOOST_APY ?? 0) +
+        // Number(GLOBAL_BOOST_APY ?? 0) +
         Number(Farcaster_BOOST_APY ?? 0)
 
     const TOTAL_APY = baseAPY
