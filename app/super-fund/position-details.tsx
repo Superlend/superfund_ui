@@ -526,7 +526,7 @@ function PositionDetailsTabContentUI({
                             Your Position
                         </HeadingText>
                     </div>
-                    <div className="grid sm:grid-cols-3 max-md:gap-4">
+                    <div className="grid sm:grid-cols-2 max-md:gap-4">
                         <div className="flex flex-col items-start w-fit gap-1">
                             <BodyText
                                 level="body2"
