@@ -36,7 +36,10 @@ export interface UserStatementData {
 export interface UserStatementsResponse {
   success: boolean
   message: string
-  data: UserStatementData[]
+  data: {
+    statements: UserStatementData[]
+    totalStatements: number
+  }
 }
 
 export interface UserStatementsParams {
@@ -47,7 +50,7 @@ export interface UserStatementsParams {
   offset?: number
 }
 
-export async function getUserStatements(params: UserStatementsParams): Promise<UserStatementData[]> {
+export async function getUserStatements(params: UserStatementsParams): Promise<UserStatementsResponse['data']> {
   const { userAddress, vaultAddress, chainId, limit, offset } = params
   
   // Build query parameters
@@ -62,7 +65,7 @@ export async function getUserStatements(params: UserStatementsParams): Promise<U
   const queryString = queryParams.toString()
   const path = `/user/statements/${userAddress}/${vaultAddress}/${chainId}${queryString ? `?${queryString}` : ''}`
   
-  return requestRewards<UserStatementData[]>({
+  return requestRewards<UserStatementsResponse['data']>({
     method: 'GET',
     path,
   })
