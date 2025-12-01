@@ -65,14 +65,16 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
         chainId,
     });
 
+    console.log(response);
+
     // Safeguard: if selectedStatementIndex is out of bounds, reset to 0
     useEffect(() => {
-        if (response && selectedStatementIndex >= response.length) {
+        if (response && selectedStatementIndex >= response?.statements?.length) {
             setSelectedStatementIndex(0);
         }
     }, [response, selectedStatementIndex]);
 
-    const data = response?.[selectedStatementIndex]
+    const data = response?.statements?.[selectedStatementIndex]
 
     // Helper function to format Unix timestamps into a readable date string
     const formatTimestamp = (timestamp: string) => {
@@ -611,7 +613,7 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                     <p className="text-lg text-gray-600">
                         Period: <span className="font-semibold">{formatTimestamp(data.openingBlockTimestamp)}</span> to <span className="font-semibold">{formatTimestamp(data.closingBlockTimestamp)}</span>
                     </p>
-                    {(response && (response.length > 1)) && (
+                    {(response && (response?.statements?.length > 1)) && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <button type='button'>
@@ -619,7 +621,7 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="center" className="w-64 rounded-4 overflow-hidden p-0 divide-y divide-tertiary-charcoal/10">
-                                {response.map((statement, index) => (
+                                {response?.statements?.map((statement, index) => (
                                     <DropdownMenuItem
                                         key={index}
                                         onClick={() => setSelectedStatementIndex(index)}
