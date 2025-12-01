@@ -65,8 +65,6 @@ function Statements({ userAddress, vaultAddress, chainId }: StatementsProps) {
         chainId,
     });
 
-    console.log(response);
-
     // Safeguard: if selectedStatementIndex is out of bounds, reset to 0
     useEffect(() => {
         if (response && selectedStatementIndex >= response?.statements?.length) {
