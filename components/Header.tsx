@@ -21,6 +21,7 @@ import { BodyText, HeadingText } from './ui/typography'
 import { abbreviateNumberWithoutRounding } from '@/lib/utils'
 import InfoTooltip from './tooltips/InfoTooltip'
 import { Skeleton } from './ui/skeleton'
+import ImageWithDefault from './ImageWithDefault'
 
 type TTab = {
     id: number
@@ -51,22 +52,28 @@ const Header: React.FC = () => {
     const [scrolled, setScrolled] = useState(false)
     const [miniAppUser, setMiniAppUser] = useState<any>(null)
     const { logEvent } = useAnalytics()
-    const { totalAssets: superlendTvl, isLoading: isLoadingSuperlendTvl, error: errorSuperlendTvl } = useVaultHook()
+    const {
+        totalAssets: superlendTvl,
+        isLoading: isLoadingSuperlendTvl,
+        error: errorSuperlendTvl,
+    } = useVaultHook()
     const [totalTVL, setTotalTVL] = useState(0)
     const [isLoadingMarketsTVL, setIsLoadingMarketsTVL] = useState(true)
 
     const logLogoClick = () => {
         logEvent('clicked_superlend_logo', {
             section: 'header_nav',
-            url: !isLandingPage ? 'https://funds.superlend.xyz' : 'https://www.superlend.xyz'
+            url: !isLandingPage
+                ? 'https://funds.superlend.xyz'
+                : 'https://www.superlend.xyz',
         })
     }
 
     const logLaunchAppBtnClick = () => {
         logEvent('clicked_superlend_launch_app_btn', {
             section: 'header_nav',
-            title: "Launch App",
-            url: "https://funds.superlend.xyz/super-fund/base"
+            title: 'Launch App',
+            url: 'https://funds.superlend.xyz/super-fund/base',
         })
     }
 
@@ -84,7 +91,7 @@ const Header: React.FC = () => {
             })
     }, [])
 
-    const isLoadingTotalTVL = isLoadingSuperlendTvl || isLoadingMarketsTVL;
+    const isLoadingTotalTVL = isLoadingSuperlendTvl || isLoadingMarketsTVL
 
     const totalTvl = useMemo(() => {
         return Number(superlendTvl ?? 0) + Number(totalTVL ?? 0)
@@ -135,13 +142,17 @@ const Header: React.FC = () => {
         router.push(`${tab.href}`)
     }
 
-    const HEADER_STYLES = `z-50 sticky top-0 left-0 ${isLandingPage ? (scrolled ? 'bg-white shadow-sm' : 'bg-primary') : 'md:top-5'
-        } w-full transition-all duration-300`
+    const HEADER_STYLES = `z-50 sticky left-0 ${
+        isLandingPage
+            ? `${scrolled ? 'bg-white shadow-sm' : 'bg-primary'} top-8 md:top-10`
+            : 'top-12 md:top-12'
+    } w-full transition-all duration-300`
 
-    const NAV_BAR_STYLES = `flex overflow-hidden gap-5 max-lg:gap-10 justify-between items-center py-0 pr-[8px] pl-4 sm:pl-[20px] w-full font-semibold uppercase mx-auto ${isLandingPage
-        ? `max-w-[1400px] py-4 ${scrolled ? 'text-gray-800' : 'text-white'}`
-        : 'max-w-[1200px] md:rounded-6 bg-white bg-opacity-40 backdrop-blur shadow-[0px_2px_2px_rgba(0,0,0,0.02)] mx-auto min-h-[56px]'
-        }`
+    const NAV_BAR_STYLES = `flex overflow-hidden gap-5 max-lg:gap-10 justify-between items-center py-0 pr-[8px] pl-4 sm:pl-[20px] w-full font-semibold uppercase mx-auto ${
+        isLandingPage
+            ? `max-w-[1400px] py-4 ${scrolled ? 'text-gray-800' : 'text-white'}`
+            : 'max-w-[1200px] md:rounded-6 bg-white bg-opacity-40 backdrop-blur shadow-[0px_2px_2px_rgba(0,0,0,0.02)] mx-auto min-h-[56px]'
+    }`
 
     const BUTTON_DEFAULT_DESKTOP_STYLES =
         'group self-stretch p-0 rounded-[14px] uppercase hover:text-primary'
@@ -189,14 +200,22 @@ const Header: React.FC = () => {
                 <nav className={NAV_BAR_STYLES}>
                     <div className="flex flex-wrap items-center justify-between gap-1 md:gap-4">
                         <Link
-                            href={isLandingPage ? 'https://www.superlend.xyz' : '/'}
+                            href={
+                                isLandingPage
+                                    ? 'https://www.superlend.xyz'
+                                    : '/'
+                            }
                             target={miniAppUser ? '_self' : '_blank'}
-                            className="relative md:w-[24px] md:w-fit p-0 shrink-0"
+                            className="relative md:w-fit p-0 shrink-0"
                             onClick={logLogoClick}
                         >
-                            <img
+                            <ImageWithDefault
                                 loading="lazy"
-                                src={isLandingPage && !scrolled ? '/images/logos/superlend_white_logo.svg' : '/images/logos/superlend-logo.webp'}
+                                src={
+                                    isLandingPage && !scrolled
+                                        ? '/images/logos/superlend_white_logo.svg'
+                                        : '/images/logos/superlend-logo.webp'
+                                }
                                 alt="Superlend logo"
                                 className="object-contain shrink-0 my-auto aspect-[6.54] cursor-pointer"
                                 width={isLandingPage ? 180 : 144}
@@ -209,18 +228,38 @@ const Header: React.FC = () => {
                                     Beta
                                 </Badge> */}
                         </Link>
-                        <div className={`flex items-center gap-1 ${isLandingPage ? 'max-md:ml-11' : 'max-md:ml-8'}`}>
-                            <div className={`text-sm font-medium leading-none ${(isLandingPage && !scrolled) ? 'text-gray-200' : 'text-gray-700'} flex items-center gap-1`}>
+                        <div
+                            className={`flex items-center gap-1 ${isLandingPage ? 'max-md:ml-11' : 'max-md:ml-8'}`}
+                        >
+                            <div
+                                className={`text-sm font-medium leading-none ${isLandingPage && !scrolled ? 'text-gray-200' : 'text-gray-700'} flex items-center gap-1`}
+                            >
                                 TVL
-                                {isLoadingTotalTVL && <Skeleton className="w-8 h-4 rounded-3" />}
-                                {!isLoadingTotalTVL && <span className="text-sm">${abbreviateNumberWithoutRounding(totalTvl)}</span>}
+                                {isLoadingTotalTVL && (
+                                    <Skeleton className="w-8 h-4 rounded-3" />
+                                )}
+                                {!isLoadingTotalTVL && (
+                                    <span className="text-sm">
+                                        $
+                                        {abbreviateNumberWithoutRounding(
+                                            totalTvl
+                                        )}
+                                    </span>
+                                )}
                             </div>
                             <InfoTooltip
                                 isResponsive={false}
                                 label={<InfoIcon className="w-3 h-3" />}
-                                content={<BodyText level="body2" weight="normal" className="text-gray-600">
-                                    TVL across all superlend markets and vaults.
-                                </BodyText>}
+                                content={
+                                    <BodyText
+                                        level="body2"
+                                        weight="normal"
+                                        className="text-gray-600"
+                                    >
+                                        TVL across all superlend markets and
+                                        vaults.
+                                    </BodyText>
+                                }
                             />
                         </div>
                     </div>
@@ -249,10 +288,18 @@ const Header: React.FC = () => {
                     <div className="flex items-center gap-[12px]">
                         {!isHomePage && <ConnectWalletButton />}
                         {isLandingPage && (
-                            <Link target={miniAppUser ? '_self' : '_blank'} href="/super-fund/base" onClick={logLaunchAppBtnClick}>
+                            <Link
+                                target={miniAppUser ? '_self' : '_blank'}
+                                href="/super-fund/base"
+                                onClick={logLaunchAppBtnClick}
+                            >
                                 <Button
                                     size="lg"
-                                    variant={isLandingPage && !scrolled ? 'secondary' : 'primary'}
+                                    variant={
+                                        isLandingPage && !scrolled
+                                            ? 'secondary'
+                                            : 'primary'
+                                    }
                                     className={`group rounded-4 py-3 ${isLandingPage && !scrolled ? 'text-primary' : ''}`}
                                 >
                                     <span>Launch App</span>
