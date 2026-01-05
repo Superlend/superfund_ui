@@ -6,7 +6,8 @@ import ContextProvider from '@/context'
 import Footer from '@/components/Footer'
 import { GoogleTagManager } from '@next/third-parties/google'
 import ScrollToTop from '@/components/ScrollToTop'
-import { Toaster } from 'react-hot-toast'
+import { Toaster as HotToaster } from 'react-hot-toast'
+import TopBanner from '@/components/ui-extra/top-banner'
 
 const frame = {
     version: 'next',
@@ -84,11 +85,12 @@ export default function RootLayout({
                 <ScrollToTop />
                 <GoogleTagManager gtmId={GTM_ID} />
                 <ContextProvider cookies={cookies}>
+                    <TopBanner />
                     <Header />
                     {children}
                     <Footer />
                 </ContextProvider>
-                <Toaster
+                <HotToaster
                     position="bottom-right"
                     toastOptions={{
                         duration: Infinity,
@@ -97,13 +99,16 @@ export default function RootLayout({
                             color: '#374151',
                             border: '1px solid #e5e7eb',
                             borderRadius: '12px',
-                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                            boxShadow:
+                                '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
                             padding: '16px',
                             fontSize: '14px',
                             maxWidth: '400px',
                         },
                     }}
                 />
+                {/* <Toaster />
+                <V2LiveTrigger /> */}
             </body>
         </html>
     )

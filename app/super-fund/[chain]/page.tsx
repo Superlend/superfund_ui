@@ -250,7 +250,7 @@ export default function SuperVaultChainPage({ params }: ChainPageProps) {
 
     // Wrap content in a chain provider with forced chain ID from URL
     return (
-        <MainContainer className="flex flex-col flex-wrap gap-5 w-full mx-auto md:my-14">
+        <MainContainer className="flex flex-col flex-wrap gap-5 w-full mx-auto">
             <PageHeader />
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-[16px]">
                 <div className="flex flex-col gap-10">

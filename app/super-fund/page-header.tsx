@@ -16,9 +16,10 @@ import TransferDialog from '@/components/dialogs/TransferDialog'
 
 export default function PageHeader() {
     const { selectedChain, chainDetails } = useChain()
-    const currentChainDetails = chainDetails[selectedChain as keyof typeof chainDetails]
-    const activeAccount = useActiveAccount();
-    const isWalletConnected = !!activeAccount;
+    const currentChainDetails =
+        chainDetails[selectedChain as keyof typeof chainDetails]
+    const activeAccount = useActiveAccount()
+    const isWalletConnected = !!activeAccount
 
     const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false)
 
@@ -40,7 +41,11 @@ export default function PageHeader() {
                     />
                     <div className="w-full">
                         <div className="flex flex-wrap items-center gap-1 sm:gap-2">
-                            <HeadingText level="h4" weight="medium" className="mr-1 text-gray-800">
+                            <HeadingText
+                                level="h4"
+                                weight="medium"
+                                className="mr-1 text-gray-800"
+                            >
                                 USDC SuperFund
                             </HeadingText>
                             <div className="flex items-center gap-2 flex-wrap">
@@ -52,12 +57,17 @@ export default function PageHeader() {
                                 </Badge>
                             </div>
                         </div>
-                        <BodyText level="body2" weight="medium" className="text-gray-600 max-sm:mt-2">
-                            Your stablecoin savings account, optimized for yield.
+                        <BodyText
+                            level="body2"
+                            weight="medium"
+                            className="text-gray-600 max-sm:mt-2"
+                        >
+                            Your stablecoin savings account, optimized for
+                            yield.
                         </BodyText>
                     </div>
                 </div>
-                {isWalletConnected &&
+                {isWalletConnected && (
                     <div className="flex items-center gap-2 max-md:mt-4 max-md:mb-2">
                         <Button
                             variant="primaryOutline"
@@ -69,11 +79,7 @@ export default function PageHeader() {
                             Send
                             <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                         </Button>
-                        <Button
-                            variant="primary"
-                            size="sm"
-                            asChild
-                        >
+                        <Button variant="primary" size="sm" asChild>
                             <Link
                                 href={`/super-fund/${currentChainDetails.name.toLowerCase()}/statement`}
                                 className="flex items-center gap-1 group max-md:flex-1"
@@ -84,7 +90,7 @@ export default function PageHeader() {
                             </Link>
                         </Button>
                     </div>
-                }
+                )}
             </div>
             <TransferDialog
                 open={isTransferDialogOpen}
