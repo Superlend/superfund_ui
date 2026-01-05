@@ -18,7 +18,8 @@ const V2LiveToast = ({ id, onDismiss }: V2LiveToastProps) => {
     }
 
     const handleExplore = () => {
-        handleDismiss()
+        // handleDismiss()
+        window.open('https://beta.superlend.xyz/', '_blank')
     }
 
     return (
