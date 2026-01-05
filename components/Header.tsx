@@ -288,24 +288,25 @@ const Header: React.FC = () => {
                     <div className="flex items-center gap-[12px]">
                         {!isHomePage && <ConnectWalletButton />}
                         {isLandingPage && (
-                            <Link
-                                target={miniAppUser ? '_self' : '_blank'}
-                                href="/super-fund/base"
-                                onClick={logLaunchAppBtnClick}
+                            <Button
+                                size="lg"
+                                variant={
+                                    isLandingPage && !scrolled
+                                        ? 'secondary'
+                                        : 'primary'
+                                }
+                                className={`group rounded-4 py-3 ${isLandingPage && !scrolled ? 'text-primary' : ''}`}
+                                asChild
                             >
-                                <Button
-                                    size="lg"
-                                    variant={
-                                        isLandingPage && !scrolled
-                                            ? 'secondary'
-                                            : 'primary'
-                                    }
-                                    className={`group rounded-4 py-3 ${isLandingPage && !scrolled ? 'text-primary' : ''}`}
+                                <Link
+                                    target={miniAppUser ? '_self' : '_blank'}
+                                    href="/super-fund/base"
+                                    onClick={logLaunchAppBtnClick}
                                 >
                                     <span>Launch App</span>
                                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                                </Button>
-                            </Link>
+                                </Link>
+                            </Button>
                         )}
                         {/* <Button variant="outline" size={"md"} className="hidden max-md:block rounded-[12px] py-2 border border-gray-500 py-[6px]" onClick={() => setOpenMenu(true)}>
               <Menu className='text-gray-600' />
