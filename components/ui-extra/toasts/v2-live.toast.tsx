@@ -19,7 +19,10 @@ const V2LiveToast = ({ id, onDismiss }: V2LiveToastProps) => {
 
     const handleExplore = () => {
         // handleDismiss()
-        window.open('https://beta.superlend.xyz/', '_blank')
+        window.open(
+            'https://beta.superlend.xyz/vaults/8453-0x10076ed296571ce4fde5b1fdf0eb9014a880e47b?tab=vault-info',
+            '_blank'
+        )
     }
 
     return (
