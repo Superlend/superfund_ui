@@ -27,34 +27,34 @@ interface BannerStyle {
 }
 
 export default function TopBanner() {
-    const [isVisible, setIsVisible] = useState(false)
+    // const [isVisible, setIsVisible] = useState(false)
     const [currentVariantIndex, setCurrentVariantIndex] = useState(
         BANNER_VARIANTS.length - 1
     )
     const [isMobile, setIsMobile] = useState(false)
     const variant = BANNER_VARIANTS[currentVariantIndex]
 
-    useEffect(() => {
-        // Add initial delay before showing the banner
-        const timer = setTimeout(() => {
-            setIsVisible(true)
-            document.documentElement.classList.add('banner-visible')
-        }, 1000)
+    // useEffect(() => {
+    //     // Add initial delay before showing the banner
+    //     const timer = setTimeout(() => {
+    //         setIsVisible(true)
+    //         document.documentElement.classList.add('banner-visible')
+    //     }, 1000)
 
-        // Check screen size initially and on resize
-        const checkScreenSize = () => {
-            setIsMobile(window.innerWidth < 640) // Using 640px as the breakpoint (sm in Tailwind)
-        }
+    //     // Check screen size initially and on resize
+    //     const checkScreenSize = () => {
+    //         setIsMobile(window.innerWidth < 640) // Using 640px as the breakpoint (sm in Tailwind)
+    //     }
 
-        checkScreenSize() // Check initial screen size
-        window.addEventListener('resize', checkScreenSize)
+    //     checkScreenSize() // Check initial screen size
+    //     window.addEventListener('resize', checkScreenSize)
 
-        return () => {
-            clearTimeout(timer)
-            document.documentElement.classList.remove('banner-visible')
-            window.removeEventListener('resize', checkScreenSize)
-        }
-    }, [])
+    //     return () => {
+    //         clearTimeout(timer)
+    //         document.documentElement.classList.remove('banner-visible')
+    //         window.removeEventListener('resize', checkScreenSize)
+    //     }
+    // }, [])
 
     // Testing function to cycle through variants
     const cycleVariant = () => {
@@ -135,14 +135,13 @@ export default function TopBanner() {
           }
 
     // Hide banner if onboarding is open on mobile
-    const shouldShowBanner = isVisible
+    // const shouldShowBanner = isVisible
 
     return (
         <AnimatePresence>
-            {shouldShowBanner && (
-                <>
-                    {/* REMOVE IN PRODUCTION - Variant Toggle Button */}
-                    {/* <div className="fixed top-2 right-2 z-[61]">
+            <>
+                {/* REMOVE IN PRODUCTION - Variant Toggle Button */}
+                {/* <div className="fixed top-2 right-2 z-[61]">
                         <Button
                             variant="outline"
                             size="sm"
@@ -156,38 +155,38 @@ export default function TopBanner() {
                         </Button>
                     </div> */}
 
-                    <motion.div
-                        initial={bannerAnimation.initial}
-                        animate={bannerAnimation.animate}
-                        exit={bannerAnimation.exit}
-                        transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
-                        className={`fixed top-0 left-0 w-full z-[100] overflow-hidden ${currentVariant.container}`}
-                    >
-                        {/* Background */}
-                        <ImageWithDefault
-                            src="/banners/v2-announcement-bg.png"
-                            alt="V2 Announcement Background"
-                            fill="true"
-                            className="absolute top-0 left-0 w-full h-full object-cover"
-                        />
-                        {/* Left cloud */}
-                        <ImageWithDefault
-                            src="/icons/cloud-blue-fading-bottom-top.svg"
-                            alt="Cloud Blue Fading Bottom Top"
-                            width={177.97}
-                            height={69.61}
-                            className="absolute -bottom-10 -left-16 max-md:hidden"
-                        />
-                        {/* Right cloud */}
-                        <ImageWithDefault
-                            src="/icons/cloud-blue-fading-bottom-top.svg"
-                            alt="Cloud Blue Fading Bottom Top"
-                            width={177.97}
-                            height={69.61}
-                            className="absolute -bottom-10 -right-5 max-md:hidden"
-                        />
-                        {/* Animated background elements */}
-                        {/* <motion.div
+                <motion.div
+                    // initial={bannerAnimation.initial}
+                    // animate={bannerAnimation.animate}
+                    // exit={bannerAnimation.exit}
+                    // transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
+                    className={`fixed top-0 left-0 w-full z-[100] overflow-hidden ${currentVariant.container}`}
+                >
+                    {/* Background */}
+                    <ImageWithDefault
+                        src="/banners/v2-announcement-bg.png"
+                        alt="V2 Announcement Background"
+                        fill="true"
+                        className="absolute top-0 left-0 w-full h-full object-cover"
+                    />
+                    {/* Left cloud */}
+                    <ImageWithDefault
+                        src="/icons/cloud-blue-fading-bottom-top.svg"
+                        alt="Cloud Blue Fading Bottom Top"
+                        width={177.97}
+                        height={69.61}
+                        className="absolute -bottom-10 -left-16 max-md:hidden"
+                    />
+                    {/* Right cloud */}
+                    <ImageWithDefault
+                        src="/icons/cloud-blue-fading-bottom-top.svg"
+                        alt="Cloud Blue Fading Bottom Top"
+                        width={177.97}
+                        height={69.61}
+                        className="absolute -bottom-10 -right-5 max-md:hidden"
+                    />
+                    {/* Animated background elements */}
+                    {/* <motion.div
                             className="absolute inset-0 w-full h-full overflow-hidden"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -281,59 +280,58 @@ export default function TopBanner() {
                             )}
                         </motion.div> */}
 
-                        <motion.div
-                            className="max-w-[1200px] mx-auto px-4 flex items-center justify-between relative py-2 sm:py-0 sm:h-[44px]"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.3, delay: 0.1 }}
-                        >
-                            <div className="w-fit mx-auto flex flex-col sm:flex-row items-center justify-center gap-2">
-                                <div className="flex-1 flex items-center justify-center sm:justify-start gap-2">
-                                    <ImageWithDefault
-                                        src="/icons/glowing-star.svg"
-                                        alt="Glowing Star"
-                                        width={16}
-                                        height={16}
-                                        className="max-sm:hidden"
-                                    />
-                                    <div className="flex items-center justify-center gap-2">
-                                        <BodyText
-                                            level="body1"
-                                            weight="medium"
-                                            className={`text-white text-center sm:text-left`}
-                                        >
-                                            Superlend V2 is Live!
-                                        </BodyText>
-                                        <div className="bg-[#B0E3FF] h-1 w-1 rounded-full max-sm:hidden" />
-                                        <ExternalLink
-                                            href="https://app.superlend.xyz/vaults"
-                                            className="text-orange-500 font-medium"
-                                            variant="primary"
-                                            showIcon={false}
-                                            suffixIcon={
-                                                <ExternalLinkIcon className="w-3 h-3 storke-orange-500" />
-                                            }
-                                        >
-                                            Try Out{' '}
-                                            <span className="max-sm:hidden">
-                                                the New UI
-                                            </span>
-                                        </ExternalLink>
-                                    </div>
-                                    <ImageWithDefault
-                                        src="/icons/glowing-star.svg"
-                                        alt="Glowing Star"
-                                        width={16}
-                                        height={16}
-                                        className="max-sm:hidden"
-                                    />
+                    <motion.div
+                        className="max-w-[1200px] mx-auto px-4 flex items-center justify-between relative py-2 sm:py-0 sm:h-[44px]"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.3, delay: 0.1 }}
+                    >
+                        <div className="w-fit mx-auto flex flex-col sm:flex-row items-center justify-center gap-2">
+                            <div className="flex-1 flex items-center justify-center sm:justify-start gap-2">
+                                <ImageWithDefault
+                                    src="/icons/glowing-star.svg"
+                                    alt="Glowing Star"
+                                    width={16}
+                                    height={16}
+                                    className="max-sm:hidden"
+                                />
+                                <div className="flex items-center justify-center gap-2">
+                                    <BodyText
+                                        level="body1"
+                                        weight="medium"
+                                        className={`text-white text-center sm:text-left`}
+                                    >
+                                        Superlend V2 is Live!
+                                    </BodyText>
+                                    <div className="bg-[#B0E3FF] h-1 w-1 rounded-full max-sm:hidden" />
+                                    <ExternalLink
+                                        href="https://app.superlend.xyz/vaults"
+                                        className="text-orange-500 font-medium"
+                                        variant="primary"
+                                        showIcon={false}
+                                        suffixIcon={
+                                            <ExternalLinkIcon className="w-3 h-3 storke-orange-500" />
+                                        }
+                                    >
+                                        Try Out{' '}
+                                        <span className="max-sm:hidden">
+                                            the New UI
+                                        </span>
+                                    </ExternalLink>
                                 </div>
+                                <ImageWithDefault
+                                    src="/icons/glowing-star.svg"
+                                    alt="Glowing Star"
+                                    width={16}
+                                    height={16}
+                                    className="max-sm:hidden"
+                                />
                             </div>
-                        </motion.div>
+                        </div>
                     </motion.div>
-                </>
-            )}
+                </motion.div>
+            </>
         </AnimatePresence>
     )
 }
