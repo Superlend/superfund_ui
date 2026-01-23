@@ -203,9 +203,8 @@ const Header: React.FC = () => {
                             href={
                                 isLandingPage
                                     ? 'https://www.superlend.xyz'
-                                    : '/'
+                                    : '/super-fund/base'
                             }
-                            target={miniAppUser ? '_self' : '_blank'}
                             className="relative md:w-fit p-0 shrink-0"
                             onClick={logLogoClick}
                         >

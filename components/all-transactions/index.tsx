@@ -1227,8 +1227,6 @@ function TransactionItem({
             )}
           </div>
         </div>
-
-
       </div>
     </TooltipProvider>
   )

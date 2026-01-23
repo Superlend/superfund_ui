@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const ALLOWED_PATHS = ['/', '/waitlist', '/super-fund/base', '/super-fund/base/txs', '/super-fund/base/statement']
+const ALLOWED_PATHS = ['/super-fund/base', '/super-fund/base/txs', '/super-fund/base/statement']
 
 export function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
 
-    // if (url.pathname === '/') {
-    //     url.pathname = '/super-fund'
-    //     return NextResponse.redirect(url)
-    // }
+    if (url.pathname === '/') {
+        url.pathname = '/super-fund/base'
+        return NextResponse.redirect(url)
+    }
 
     // Skip redirecting API routes
     if (url.pathname.startsWith('/api')) {
@@ -30,10 +30,10 @@ export function middleware(request: NextRequest) {
         return NextResponse.next()
     }
 
-    if (url.pathname === '/super-fund/sonic') {
-        url.pathname = '/waitlist'
-        return NextResponse.redirect(url)
-    }
+    // if (url.pathname === '/super-fund/sonic') {
+    //     url.pathname = '/waitlist'
+    //     return NextResponse.redirect(url)
+    // }
 
     // Redirect all other paths to waitlist
     url.pathname = '/super-fund/base'
